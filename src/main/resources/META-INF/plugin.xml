@@ -1,15 +1,47 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <id>com.github.chbndrhnns.intellijplatformplugincopy</id>
-    <name>intellij-platform-plugin-copy</name>
+    <id>com.github.chbndrhnns.connexion</id>
+    <name>Connexion</name>
     <vendor>chbndrhnns</vendor>
 
-    <depends>com.intellij.modules.platform</depends>
+    <description><![CDATA[
+        Connexion / OpenAPI assistance for PyCharm and IntelliJ-based IDEs.
 
-    <resource-bundle>messages.MyBundle</resource-bundle>
+        <ul>
+            <li><b>Inspections</b> for unresolved Connexion references in JSON and YAML OpenAPI specs.</li>
+            <li><b>Navigation</b> between Python handlers and OpenAPI operations.</li>
+            <li><b>Line markers</b> to jump between spec and implementation.</li>
+        </ul>
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.python</depends>
+    <depends>com.intellij.modules.json</depends>
+    <depends optional="true" config-file="yaml-support.xml">org.jetbrains.plugins.yaml</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.chbndrhnns.intellijplatformplugincopy.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
-        <postStartupActivity implementation="com.github.chbndrhnns.intellijplatformplugincopy.startup.MyProjectActivity" />
+        <psi.referenceContributor language="JSON"
+                                  implementation="com.github.chbndrhnns.connexion.features.connexion.ConnexionJsonReferenceContributor"/>
+
+        <localInspection language="JSON"
+                         implementationClass="com.github.chbndrhnns.connexion.features.connexion.ConnexionJsonInspection"
+                         displayName="Connexion: Unresolved reference"
+                         groupName="Connexion"
+                         enabledByDefault="true"
+                         level="ERROR"/>
+
+        <codeInsight.lineMarkerProvider language="Python"
+                                        implementationClass="com.github.chbndrhnns.connexion.features.connexion.ConnexionPythonLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="JSON"
+                                        implementationClass="com.github.chbndrhnns.connexion.features.connexion.ConnexionJsonLineMarkerProvider"/>
     </extensions>
+
+    <actions>
+        <action id="Connexion.GoToOpenApiOperation"
+                class="com.github.chbndrhnns.connexion.features.connexion.GoToOpenApiOperationAction"
+                text="Connexion: Go to OpenAPI Operation"
+                description="Navigate to OpenAPI declaration">
+            <add-to-group group-id="EditorPopupMenu.GoTo" anchor="after" relative-to-action="FindUsages"/>
+        </action>
+    </actions>
 </idea-plugin>

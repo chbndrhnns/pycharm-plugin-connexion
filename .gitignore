@@ -5,3 +5,7 @@
 .kotlin
 .qodana
 build
+hs_err*.log
+.aider*
+
+.junie/memory

@@ -1,0 +1,14 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <psi.referenceContributor language="yaml"
+                                  implementation="com.github.chbndrhnns.connexion.features.connexion.ConnexionYamlReferenceContributor"/>
+        <localInspection language="yaml"
+                         implementationClass="com.github.chbndrhnns.connexion.features.connexion.ConnexionYamlInspection"
+                         displayName="Unresolved Connexion reference"
+                         groupName="Connexion"
+                         enabledByDefault="true"
+                         level="ERROR"/>
+        <codeInsight.lineMarkerProvider language="yaml"
+                                        implementationClass="com.github.chbndrhnns.connexion.features.connexion.ConnexionYamlLineMarkerProvider"/>
+    </extensions>
+</idea-plugin>
