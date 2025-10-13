@@ -11,5 +11,11 @@
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow factoryClass="com.github.chbndrhnns.intellijplatformplugincopy.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
         <postStartupActivity implementation="com.github.chbndrhnns.intellijplatformplugincopy.startup.MyProjectActivity" />
+
+        <intentionAction>
+            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.TypeMismatchQuickFixIntention</className>
+            <category>Type mismatch</category>
+        </intentionAction>
+        <notificationGroup id="TypeMismatchNotifications" displayType="BALLOON" isLogByDefault="true"/>
     </extensions>
 </idea-plugin>

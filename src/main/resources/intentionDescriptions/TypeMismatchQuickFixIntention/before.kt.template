@@ -1,0 +1,4 @@
+// Before applying the intention
+fun example(x: Any) {
+    val y: Int = x // Expected type 'Int', got 'Any'
+}

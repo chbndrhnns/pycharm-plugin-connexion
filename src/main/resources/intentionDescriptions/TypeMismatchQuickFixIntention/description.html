@@ -1,0 +1,31 @@
+<html>
+<body>
+<p>
+    Shows the full "expected type vs actual type" mismatch details in a balloon when the caret is on a corresponding editor highlight.
+</p>
+<p>
+    This intention becomes available when the caret is placed on a highlighted type mismatch (for example, "Expected type 'Int', got 'Any'").
+    When invoked, it reads the visible highlight at the caret and displays its full description in a balloon notification. No code changes are performed.
+</p>
+<p>
+    Implementation notes:
+</p>
+<ul>
+    <li>Uses only public APIs by scanning the document's markup model (DocumentMarkupModel + MarkupModelEx) for RangeHighlighters overlapping the caret.</li>
+    <li>Selects the best matching highlighter (prefers higher layer; tie-breaker by smaller covered range) and extracts the tooltip text.</li>
+    <li>Heuristically detects messages containing both "expected … type" and one of "actual"/"got"/"found" (case-insensitive).</li>
+</ul>
+<p>
+    Example:
+</p>
+<pre><code>
+fun example(x: Any) {
+    val y: Int = x // Expected type 'Int', got 'Any'
+}
+</code></pre>
+<!-- tooltip end -->
+<p>
+    Tip: Place the caret on the underlined mismatch and press Alt+Enter to invoke "Show type mismatch details".
+</p>
+</body>
+</html>
