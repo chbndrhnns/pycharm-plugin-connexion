@@ -35,7 +35,7 @@ class PyLightProjectDescriptor private constructor(private val myName: String?, 
 
     constructor(name: String) : this(name, LanguageLevel.getLatest())
 
-    override fun getSdk(): Sdk {
+    override fun getSdk(): Sdk? {
         return if (myName == null) {
             PythonMockSdk.create(myLevel, *additionalRoots)
         } else {
@@ -43,7 +43,8 @@ class PyLightProjectDescriptor private constructor(private val myName: String?, 
             PythonMockSdk.create(myName)
         }
     }
-    protected val additionalRoots: Array<VirtualFile?>
+
+    protected val additionalRoots: Array<VirtualFile>
         /**
          * @return additional roots to add to mock python
          * @apiNote ignored when name is provided.
