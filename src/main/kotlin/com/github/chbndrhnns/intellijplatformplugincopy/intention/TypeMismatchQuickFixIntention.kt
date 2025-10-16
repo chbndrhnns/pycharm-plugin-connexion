@@ -1,31 +1,32 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention
 
+import com.intellij.codeInsight.daemon.impl.HighlightInfo
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.editor.ex.MarkupModelEx
+import com.intellij.openapi.editor.impl.DocumentMarkupModel
+import com.intellij.openapi.editor.markup.HighlighterTargetArea
+import com.intellij.openapi.editor.markup.RangeHighlighter
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiFile
-import com.intellij.openapi.editor.markup.HighlighterTargetArea
-import com.intellij.openapi.editor.markup.RangeHighlighter
-import com.intellij.openapi.editor.ex.MarkupModelEx
-import com.intellij.openapi.editor.impl.DocumentMarkupModel
 
 /**
  * Offers a quick-fix intention when the caret is on a highlight that reports
- * an "expected type vs actual type" mismatch. Triggering the action shows a
- * balloon notification with the full highlight description.
+ * an "expected type vs actual type" mismatch from specific inspections.
  *
- * Note: This implementation uses the public MarkupModel/RangeHighlighter API as
- * recommended in docs/highlighter.md and avoids accessing private impl classes
- * like HighlightInfo/DaemonCodeAnalyzerImpl#getHighlights.
  */
 class TypeMismatchQuickFixIntention : IntentionAction, HighPriorityAction, DumbAware {
 
     private var lastMessage: String? = null
+
+    private val supportedInspectionIds = setOf(
+        "PyTypeCheckerInspection"
+    )
 
     override fun getText(): String = "Show type mismatch details"
 
@@ -68,7 +69,7 @@ class TypeMismatchQuickFixIntention : IntentionAction, HighPriorityAction, DumbA
 
         mm.processRangeHighlightersOverlappingWith(start, end) { h ->
             if (h.isValid && h.targetArea == HighlighterTargetArea.EXACT_RANGE && h.errorStripeTooltip != null) {
-                if (isCaretInside(h, offset)) {
+                if (isCaretInside(h, offset) && isFromSupportedInspection(h)) {
                     best = chooseBetter(best, h)
                 }
             }
@@ -84,6 +85,16 @@ class TypeMismatchQuickFixIntention : IntentionAction, HighPriorityAction, DumbA
 
         val normalized = tooltipText.trim().lowercase()
         return if (isTypeMismatchMessage(normalized)) tooltipText else null
+    }
+
+    private fun isFromSupportedInspection(highlighter: RangeHighlighter): Boolean {
+        val tooltip = highlighter.errorStripeTooltip ?: return false
+
+        if (tooltip is HighlightInfo && tooltip.inspectionToolId in supportedInspectionIds) {
+            return true
+
+        }
+        return false
     }
 
     private fun chooseBetter(current: RangeHighlighter?, candidate: RangeHighlighter): RangeHighlighter {

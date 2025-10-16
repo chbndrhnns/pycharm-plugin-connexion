@@ -1,57 +1,76 @@
-### Short answer
-You can’t call `DaemonCodeAnalyzerImpl#getHighlights` from a plugin because it’s `@TestOnly` and the whole `impl` package is not part of the open API. There is no public API that returns a list of `HighlightInfo`s.
+# Highlighter Documentation
 
-### What you can use from public API
-If your goal is to access the highlights currently shown in the editor (what users see on the screen and in the error stripe), you can read them through the editor’s markup models. That is the supported, public way:
+## TypeMismatchQuickFixIntention
 
-- Get the document’s markup model via `DocumentMarkupModel.forDocument(document, project, /* create= */ false)`.
-- Iterate `RangeHighlighter`s in the desired range.
-- Optionally filter by layer or by tooltip/attributes if you need to approximate severity.
+This intention provides a quick-fix action for type mismatch highlights that come from specific code inspections.
 
-Example:
-```java
-Editor editor = /* your editor */;
-Project project = editor.getProject();
-Document document = editor.getDocument();
-MarkupModel model = DocumentMarkupModel.forDocument(document, project, false);
+### Supported Inspections
 
-if (model instanceof MarkupModelEx mm) {
-  int start = 0;
-  int end = document.getTextLength();
-  List<RangeHighlighter> result = new ArrayList<>();
-  mm.processRangeHighlightersOverlappingWith(start, end, h -> {
-    // Filter if you care only about daemon highlights (as opposed to your own)
-    // Common heuristics:
-    //  - Layer close to HighlighterLayer.ERROR/WARNING
-    //  - Has error stripe mark or tooltip
-    //  - HighlighterTargetArea.EXACT_RANGE
-    if (h.getTargetArea() == HighlighterTargetArea.EXACT_RANGE && h.getErrorStripeTooltip() != null) {
-      result.add(h);
-    }
-    return true; // continue
-  });
+The intention now filters highlights to only show for specific inspection tool IDs:
 
-  // Now `result` holds the highlighters that correspond to visible highlights
-  // You can inspect: h.getStartOffset(), h.getEndOffset(), h.getTextAttributes(...),
-  // h.getErrorStripeMarkColor(), h.getErrorStripeTooltip(), etc.
-}
+- **PyTypeCheckerInspection**: Python type checking inspection that reports type mismatches
+- Extensible for additional inspections (see below)
+
+### How It Works
+
+1. **Inspection Filtering**: The intention checks if a highlight comes from a supported inspection using multiple
+   detection methods:
+    - **HighlightInfo Analysis**: Examines quick-fix actions and descriptions for inspection clues
+    - **Text Pattern Matching**: Falls back to analyzing tooltip text patterns
+    - **Reflection**: As a last resort, uses reflection to access internal fields
+
+2. **Pattern Detection**: Each supported inspection has configurable text patterns:
+   ```kotlin
+   "PyTypeCheckerInspection" to { text ->
+       text.contains("expected type") && (text.contains("got") || text.contains("actual")) ||
+       text.contains("type checker") && text.contains("python") ||
+       text.contains("incompatible type") && text.contains("expected")
+   }
+   ```
+
+3. **Type Mismatch Validation**: Additionally validates that the message contains type mismatch patterns:
+    - "expected" + "type" keywords
+    - "actual" or "got" or "found" keywords
+
+### Extending for New Inspections
+
+To add support for a new inspection:
+
+1. Add the inspection ID to `supportedInspectionIds`:
+   ```kotlin
+   private val supportedInspectionIds = setOf(
+       "PyTypeCheckerInspection",
+       "YourNewInspectionId"  // Add here
+   )
+   ```
+
+2. Add pattern detection logic to `inspectionPatterns`:
+   ```kotlin
+   "YourNewInspectionId" to { text ->
+       // Your pattern matching logic here
+       text.contains("your pattern") && text.contains("keywords")
+   }
+   ```
+
+3. Update the `getInspectionToolId` method to recognize the new inspection:
+   ```kotlin
+   // Add new patterns in the quick-fix analysis section
+   if (className.contains("yournew") && className.contains("inspection")) {
+       return "YourNewInspectionId"
+   }
+   ```
+
+### API Usage
+
+The intention automatically filters highlights and only shows the quick-fix for supported inspections. Users will see
+the "Show type mismatch details" option only when the caret is positioned on a type mismatch highlight from a supported
+inspection.
+
+### Testing
+
+The test enables `PyTypeCheckerInspection` and verifies that the intention is available for Python type mismatches:
+
+```kotlin
+myFixture.enableInspections(PyTypeCheckerInspection::class.java)
+myFixture.findSingleIntention("Show type mismatch details")
 ```
-Notes:
-- `RangeHighlighter` is a stable, public abstraction. Avoid relying on `HighlightInfo` or `HighlightInfo.HIGHLIGHT_INFO_KEY` — both live in `impl` and can change without notice.
-- If you need a severity-like notion, you can approximate using:
-  - `h.getLayer()` (compare to `HighlighterLayer.ERROR`, `HighlighterLayer.WARNING`, etc.)
-  - `h.getErrorStripeMarkColor()` and `h.isThinErrorStripeMark()`
-  - The tooltip object’s type/content (many inspections set a structured tooltip)
-
-### Ensuring highlights are available
-The daemon runs asynchronously. There’s no public API to “block until all highlighting is done”. Typical approaches:
-- If you operate in response to user actions after the editor has been visible for a bit, highlights are usually already present.
-- If you must trigger highlighting, you can call `DaemonCodeAnalyzer.getInstance(project).restart(psiFile)` and later read the markup model, but you cannot wait synchronously using public API. Consider designing your feature to react to updates (e.g., via editor repaint/error-stripe changes) instead of waiting.
-
-### Alternatives depending on your goal
-- If you actually need results of a specific inspection, prefer running that inspection via the inspections API and consuming its `ProblemDescriptor`s, instead of scraping daemon highlights.
-- For file-level (gutter/header) problems, `WolfTheProblemSolver` exposes whether a file has problems, but not the per-range details.
-
-### Summary
-- `DaemonCodeAnalyzerImpl#getHighlights` is test-only; there’s no public equivalent returning `HighlightInfo`.
-- Public, supported way: query the editor’s `MarkupModel`/`MarkupModelEx` for `RangeHighlighter`s and use their public properties (offsets, attributes, tooltip, stripe mark) to get the highlights users see.
