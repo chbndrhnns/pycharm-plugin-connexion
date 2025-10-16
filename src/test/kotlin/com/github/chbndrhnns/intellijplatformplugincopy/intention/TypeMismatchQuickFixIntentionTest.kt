@@ -1,8 +1,14 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention
 
 import com.github.chbndrhnns.intellijplatformplugincopy.MyPlatformTestCase
+import com.jetbrains.python.inspections.PyTypeCheckerInspection
 
 internal class TypeMismatchQuickFixIntentionTest : MyPlatformTestCase() {
+
+    override fun setUp() {
+        super.setUp()
+        myFixture.enableInspections(PyTypeCheckerInspection::class.java)
+    }
 
     fun testQuickfixIsAvailable() {
         myFixture.configureByText(
@@ -13,12 +19,7 @@ internal class TypeMismatchQuickFixIntentionTest : MyPlatformTestCase() {
             """.trimIndent()
         )
 
-//        myFixture.doHighlighting()
-
-        val intentionName = "Show type mismatch details"
-        val intentions = myFixture.availableIntentions
-        val found = intentions.any { it.text == intentionName }
-
-        assertTrue("Expected to find intention '$intentionName' using daemon-produced highlighting", found)
+        myFixture.doHighlighting()
+        myFixture.findSingleIntention("Show type mismatch details")
     }
 }
