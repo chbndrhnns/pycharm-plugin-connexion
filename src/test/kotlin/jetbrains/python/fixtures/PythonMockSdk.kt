@@ -16,13 +16,9 @@ import com.jetbrains.python.psi.LanguageLevel
 import com.jetbrains.python.sdk.PythonSdkAdditionalData
 import com.jetbrains.python.sdk.PythonSdkType
 import com.jetbrains.python.sdk.PythonSdkUtil
-import com.jetbrains.python.sdk.flavors.PyFlavorAndData
-import com.jetbrains.python.sdk.flavors.PyFlavorData
-import com.jetbrains.python.sdk.flavors.VirtualEnvSdkFlavor
 import org.jdom.Element
 import org.jetbrains.annotations.NonNls
 import java.io.File
-import java.util.*
 
 object PythonMockSdk {
     fun create(): Sdk {
@@ -52,13 +48,7 @@ object PythonMockSdk {
         val sdk = ProjectJdkTable.getInstance().createSdk(sdkName, sdkType)
         val sdkModificator = sdk.sdkModificator
         sdkModificator.homePath = "$sdkPath/bin/python"
-        sdkModificator.sdkAdditionalData =
-            PythonSdkAdditionalData(
-                PyFlavorAndData(
-                    PyFlavorData.Empty,
-                    VirtualEnvSdkFlavor.getInstance()
-                )
-            )
+        sdkModificator.sdkAdditionalData = PythonSdkAdditionalData()
         sdkModificator.versionString = toVersionString(level)
 
         createRoots(sdkPath, level).forEach { vFile ->
