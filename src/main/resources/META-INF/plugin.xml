@@ -17,6 +17,11 @@
             <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.TypeMismatchQuickFixIntention</className>
             <category>Type mismatch</category>
         </intentionAction>
+        <intentionAction>
+            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.WrapWithExpectedTypeIntention
+            </className>
+            <category>Type mismatch</category>
+        </intentionAction>
         <notificationGroup id="TypeMismatchNotifications" displayType="BALLOON" isLogByDefault="true"/>
     </extensions>
 </idea-plugin>

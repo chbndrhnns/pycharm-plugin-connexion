@@ -1,0 +1,27 @@
+<html>
+<body>
+<!-- Intention description for "Wrap With Expected Type" -->
+<p>Wraps an expression causing a type mismatch with the expected type constructor.</p>
+
+<p>When a type mismatch is detected (e.g., expected <code>str</code> but got <code>Path</code>),
+    this intention automatically wraps the problematic expression with the expected type constructor.</p>
+
+<p>Example:</p>
+<table border="1">
+    <tr>
+        <th>Before</th>
+        <th>After</th>
+    </tr>
+    <tr>
+        <td>
+            <pre><code>a: str = Path("val")</code></pre>
+        </td>
+        <td>
+            <pre><code>a: str = str(Path("val"))</code></pre>
+        </td>
+    </tr>
+</table>
+
+<p>This helps quickly fix type annotation mismatches by automatically applying the appropriate type conversion.</p>
+</body>
+</html>

@@ -22,4 +22,40 @@ internal class TypeMismatchQuickFixIntentionTest : MyPlatformTestCase() {
         myFixture.doHighlighting()
         myFixture.findSingleIntention("Show type mismatch details")
     }
+
+    fun testWrapIntentionIsAvailable() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            from pathlib import Path
+            a: str = Path(<caret>"val")
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intentions = myFixture.availableIntentions
+        val wrapIntention = intentions.find { it.text.startsWith("Wrap with") }
+        assertNotNull("Wrap intention should be available", wrapIntention)
+    }
+
+    fun testWrapInExpectedType() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            from pathlib import Path
+            a: str = Path(<caret>"val")
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Wrap with str()")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            from pathlib import Path
+            a: str = str(Path("val"))
+            """.trimIndent()
+        )
+    }
 }
