@@ -8,10 +8,10 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
-import com.jetbrains.python.psi.LanguageLevel
-import com.jetbrains.python.psi.PyElementGenerator
-import com.jetbrains.python.psi.PyExpression
-import com.jetbrains.python.psi.PyParenthesizedExpression
+import com.intellij.psi.PsiNamedElement
+import com.jetbrains.python.codeInsight.imports.AddImportHelper
+import com.jetbrains.python.psi.*
+import com.jetbrains.python.psi.impl.PyBuiltinCache
 import com.jetbrains.python.psi.types.TypeEvalContext
 
 /**
@@ -22,6 +22,7 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
 
     private var problematicElement: PyExpression? = null
     private var expectedTypeName: String? = null
+    private var expectedTypeElement: PsiNamedElement? = null
 
     override fun getText(): String =
         expectedTypeName?.let { "Wrap with $it()" } ?: "Wrap with expected type"
@@ -31,6 +32,7 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
     override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
         problematicElement = null
         expectedTypeName = null
+        expectedTypeElement = null
 
         // Find problematic element at caret
         val context = TypeEvalContext.codeAnalysis(project, file)
@@ -41,6 +43,12 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
             if (names.actual != null && names.expected != null && names.actual != names.expected) {
                 problematicElement = elementAtCaret
                 expectedTypeName = PyTypeIntentions.canonicalCtorName(names.expected)
+
+                // Try to resolve the expected type element for import handling
+                if (names.expectedElement is PsiNamedElement) {
+                    expectedTypeElement = names.expectedElement
+                }
+
                 return true
             }
         }
@@ -51,6 +59,9 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
         val element = problematicElement ?: return
         val typeToWrapWith = expectedTypeName ?: "str"
+
+        // Add import BEFORE modifying the element, using the original element as anchor
+        addImportIfNeeded(file, element)
 
         val generator = PyElementGenerator.getInstance(project)
 
@@ -83,6 +94,54 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
     }
 
     override fun startInWriteAction(): Boolean = true
+
+    /**
+     * Adds import for the expected type if it's not a builtin and needs importing.
+     * Prevents duplicate imports (handles both absolute and relative module forms).
+     */
+    private fun addImportIfNeeded(file: PsiFile, anchor: PyExpression) {
+        val typeElement = expectedTypeElement ?: return
+
+        // Don't import builtins
+        if (PyBuiltinCache.getInstance(anchor).isBuiltin(typeElement)) {
+            return
+        }
+
+        val typeName = typeElement.name ?: return
+
+        // Check if already imported using any import style (absolute or relative)
+        if (isImported(file, typeName)) {
+            return
+        }
+
+        // Use the platform's import helper to add the import
+        AddImportHelper.addImport(typeElement, file, anchor)
+    }
+
+    /**
+     * Checks if the given type name is already imported in whatever import form.
+     * Handles both absolute and relative imports of the symbol.
+     */
+    private fun isImported(file: PsiFile, name: String): Boolean {
+        val pyFile = file as? PyFile ?: return false
+        // Check 'from ... import ...' (absolute and relative)
+        for (import in pyFile.importBlock) {
+            when (import) {
+                is PyFromImportStatement -> {
+                    if (import.importElements.any { it.importedQName?.lastComponent == name }) {
+                        return true
+                    }
+                }
+
+                is PyImportStatement -> {
+                    if (import.importElements.any { it.visibleName == name }) {
+                        return true
+                    }
+                }
+            }
+        }
+        return false
+    }
 
     /**
      * Unwrap parenthesized expressions.
