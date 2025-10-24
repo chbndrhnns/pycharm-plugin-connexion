@@ -2,8 +2,9 @@
 
 ## Pending Tasks
 
-- [ ] Caret inside of str
-- [ ]
+- [ ] Perform imports
+- [ ] Wrap correctly if function argument has unnecessary parentheses
+- [ ] Unwrap if inner type is expected type
 
 ## In Progress Tasks
 

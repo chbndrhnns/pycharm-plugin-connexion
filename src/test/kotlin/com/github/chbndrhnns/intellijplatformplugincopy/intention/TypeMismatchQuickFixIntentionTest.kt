@@ -134,7 +134,7 @@ internal class TypeMismatchQuickFixIntentionTest : MyPlatformTestCase() {
         )
     }
 
-    fun testWrapParenthesizedStrInPath() {
+    fun testWrapParenthesizedAssignment() {
         myFixture.configureByText(
             "a.py",
             """
@@ -156,7 +156,7 @@ internal class TypeMismatchQuickFixIntentionTest : MyPlatformTestCase() {
     }
 
 
-    fun testWrapNestedParenthesizedStrInPath() {
+    fun testWrapNestedParenthesizedAssignment() {
         myFixture.configureByText(
             "a.py",
             """
@@ -178,7 +178,6 @@ internal class TypeMismatchQuickFixIntentionTest : MyPlatformTestCase() {
     }
 
     fun testWrapWithTypeFromSecondModule() {
-        // Create a second module with a custom type
         myFixture.addFileToProject(
             "custom_types.py",
             """
