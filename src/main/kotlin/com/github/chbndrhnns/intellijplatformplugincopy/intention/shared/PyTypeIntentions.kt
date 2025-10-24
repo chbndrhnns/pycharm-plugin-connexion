@@ -37,8 +37,50 @@ object PyTypeIntentions {
             current = current.parent
         }
 
-        // Prioritize call expressions, then parenthesized, then strings, then others
+        // Context-aware prioritization:
+        // If we have a string and it's inside a function call argument, prefer the string
+        // Otherwise, prefer call expressions for assignment contexts
+        if (bestString != null && isInsideFunctionCallArgument(bestString)) {
+            return bestString
+        }
+
+        // For assignment contexts, prefer call expressions, then parenthesized, then strings, then others
         return bestCall ?: bestParenthesized ?: bestString ?: bestOther
+    }
+
+    /**
+     * Check if the expression is inside a function call argument (not an assignment).
+     */
+    private fun isInsideFunctionCallArgument(expr: PyExpression): Boolean {
+        // Walk up to see if we're inside a function call argument
+        val argList = PsiTreeUtil.getParentOfType(expr, PyArgumentList::class.java)
+        if (argList != null) {
+            val call = PsiTreeUtil.getParentOfType(argList, PyCallExpression::class.java)
+            if (call != null && argList.arguments.contains(expr)) {
+                // Check if this call is itself in an assignment context AND
+                // the expected type context comes from the assignment, not the call parameter
+                val assignment = PsiTreeUtil.getParentOfType(call, PyAssignmentStatement::class.java)
+                if (assignment != null && assignment.assignedValue == call) {
+                    // This call is directly assigned. Check if we have type info from assignment.
+                    // If the assignment target has a type annotation, then this is assignment context
+                    val hasAssignmentTypeAnnotation = assignment.targets.any { target ->
+                        (target as? PyTargetExpression)?.annotation != null
+                    }
+                    if (hasAssignmentTypeAnnotation) {
+                        return false  // This is an assignment context - wrap the call, not the argument
+                    }
+                }
+
+                // Check if this call is itself a return value
+                val returnStmt = PsiTreeUtil.getParentOfType(call, PyReturnStatement::class.java)
+                if (returnStmt != null && returnStmt.expression == call) {
+                    return false  // This is a return context - wrap the call, not the argument
+                }
+
+                return true  // This is truly a function argument context
+            }
+        }
+        return false
     }
 
     /** Compute short display names for actual/expected types. */

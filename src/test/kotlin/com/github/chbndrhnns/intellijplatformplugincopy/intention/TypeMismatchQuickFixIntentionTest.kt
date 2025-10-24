@@ -38,7 +38,6 @@ internal class TypeMismatchQuickFixIntentionTest : MyPlatformTestCase() {
         myFixture.doHighlighting()
         myFixture.findSingleIntention("Wrap with str()")
     }
-
     fun testIsAvailableForReturnValues() {
         myFixture.configureByText(
             "a.py",
@@ -172,6 +171,92 @@ internal class TypeMismatchQuickFixIntentionTest : MyPlatformTestCase() {
             """
             from pathlib import Path
             a: Path = Path("val")
+            """.trimIndent()
+        )
+    }
+
+    fun testWrapWithTypeFromSecondModule() {
+        // Create a second module with a custom type
+        myFixture.addFileToProject(
+            "custom_types.py",
+            """
+            class CustomWrapper:
+                def __init__(self, value: str):
+                    self.value = value
+            """.trimIndent()
+        )
+
+        myFixture.configureByText(
+            "main.py",
+            """
+            from custom_types import CustomWrapper
+            
+            def process_data(data: CustomWrapper) -> str:
+                return data.value
+            
+            # This should trigger a type mismatch
+            result = process_data(<caret>"some_string")
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+
+        val intention = myFixture.findSingleIntention("Wrap with CustomWrapper()")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            from custom_types import CustomWrapper
+            
+            def process_data(data: CustomWrapper) -> str:
+                return data.value
+            
+            # This should trigger a type mismatch
+            result = process_data(CustomWrapper("some_string"))
+            """.trimIndent()
+        )
+    }
+
+    fun testWrapWithUnimportedTypeFromSecondModule() {
+        // Create a second module with a custom type
+        myFixture.addFileToProject(
+            "utils.py",
+            """
+            class DataProcessor:
+                def __init__(self, raw_data: str):
+                    self.data = raw_data.upper()
+                    
+                def process(self) -> str:
+                    return self.data
+            """.trimIndent()
+        )
+
+        myFixture.configureByText(
+            "worker.py",
+            """
+            from utils import DataProcessor
+            
+            def handle_input(processor: DataProcessor) -> None:
+                print(processor.process())
+            
+            # Type mismatch: expected DataProcessor, got str
+            handle_input("<caret>raw_input_data")
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Wrap with DataProcessor()")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            from utils import DataProcessor
+            
+            def handle_input(processor: DataProcessor) -> None:
+                print(processor.process())
+            
+            # Type mismatch: expected DataProcessor, got str
+            handle_input(DataProcessor("raw_input_data"))
             """.trimIndent()
         )
     }
