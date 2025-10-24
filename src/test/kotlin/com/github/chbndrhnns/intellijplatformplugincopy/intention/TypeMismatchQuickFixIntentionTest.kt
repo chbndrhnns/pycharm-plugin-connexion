@@ -52,6 +52,27 @@ internal class TypeMismatchQuickFixIntentionTest : MyPlatformTestCase() {
         )
     }
 
+    fun testWrapParenthesizedStrInPath() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            from pathlib import Path
+            a: Path = ("<caret>val")
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Wrap with Path()")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            from pathlib import Path
+            a: Path = Path("val")
+            """.trimIndent()
+        )
+    }
+
     fun testWrapIntentionPreviewShowsActualCode() {
         myFixture.configureByText(
             "a.py",
@@ -84,5 +105,26 @@ internal class TypeMismatchQuickFixIntentionTest : MyPlatformTestCase() {
         // Verify that the intention text shows the actual expected type
         assertNotNull("Wrap intention should be available", wrapIntention)
         assertEquals("Intention text should show actual expected type", "Wrap with str()", wrapIntention?.text)
+    }
+
+    fun testWrapNestedParenthesizedStrInPath() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            from pathlib import Path
+            a: Path = (("<caret>val"))
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Wrap with Path()")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            from pathlib import Path
+            a: Path = Path("val")
+            """.trimIndent()
+        )
     }
 }

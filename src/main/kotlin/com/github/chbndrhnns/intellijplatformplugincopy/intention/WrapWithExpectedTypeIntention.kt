@@ -11,6 +11,7 @@ import com.intellij.psi.PsiFile
 import com.jetbrains.python.psi.LanguageLevel
 import com.jetbrains.python.psi.PyElementGenerator
 import com.jetbrains.python.psi.PyExpression
+import com.jetbrains.python.psi.PyParenthesizedExpression
 import com.jetbrains.python.psi.types.TypeEvalContext
 
 /**
@@ -53,9 +54,14 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
         val typeToWrapWith = expectedTypeName ?: "str"
 
         val generator = PyElementGenerator.getInstance(project)
+
+        // Use PSI-based approach to unwrap parentheses
+        val unwrapped = unwrapParen(element) ?: element
+        val textToWrap = unwrapped.text
+
         val wrappedExpression = generator.createExpressionFromText(
             LanguageLevel.getLatest(),
-            "$typeToWrapWith(${element.text})"
+            "$typeToWrapWith($textToWrap)"
         )
 
         element.replace(wrappedExpression)
@@ -65,17 +71,29 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
         val element = problematicElement ?: return IntentionPreviewInfo.EMPTY
         val typeToWrapWith = expectedTypeName ?: "str"
 
-        // Create the original and modified text for a custom diff preview
-        val originalText = element.text
+        val unwrapped = unwrapParen(element) ?: element
+        val originalText = unwrapped.text
         val modifiedText = "$typeToWrapWith($originalText)"
 
         return IntentionPreviewInfo.CustomDiff(
             file.fileType,
             file.name,
-            originalText,
+            element.text,
             modifiedText
         )
     }
 
     override fun startInWriteAction(): Boolean = true
+
+    /**
+     * Unwrap parenthesized expressions.
+     * Recursively unwraps nested parentheses until reaching the actual expression.
+     */
+    private fun unwrapParen(expr: PyExpression?): PyExpression? {
+        var cur = expr
+        while (cur is PyParenthesizedExpression) {
+            cur = cur.containedExpression  // may become null for "()"
+        }
+        return cur
+    }
 }

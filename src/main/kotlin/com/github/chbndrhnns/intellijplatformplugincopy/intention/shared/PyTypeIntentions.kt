@@ -21,6 +21,7 @@ object PyTypeIntentions {
         var current: PsiElement? = leaf
         var bestString: PyExpression? = null
         var bestCall: PyExpression? = null
+        var bestParenthesized: PyExpression? = null
         var bestOther: PyExpression? = null
 
         // Walk up the PSI tree and collect candidates
@@ -29,14 +30,15 @@ object PyTypeIntentions {
                 when (current) {
                     is PyCallExpression -> bestCall = current
                     is PyStringLiteralExpression -> bestString = current
+                    is PyParenthesizedExpression -> bestParenthesized = current
                     else -> if (bestOther == null) bestOther = current
                 }
             }
             current = current.parent
         }
 
-        // Prioritize call expressions, then strings, then others
-        return bestCall ?: bestString ?: bestOther
+        // Prioritize call expressions, then parenthesized, then strings, then others
+        return bestCall ?: bestParenthesized ?: bestString ?: bestOther
     }
 
     /** Compute short display names for actual/expected types. */
