@@ -17,16 +17,26 @@ object PyTypeIntentions {
     fun findExpressionAtCaret(editor: Editor, file: PsiFile): PyExpression? {
         val offset = editor.caretModel.offset
         val leaf = file.findElementAt(offset) ?: return null
+
         var current: PsiElement? = leaf
-        var best: PyExpression? = null
-        while (current != null) {
+        var bestString: PyExpression? = null
+        var bestCall: PyExpression? = null
+        var bestOther: PyExpression? = null
+
+        // Walk up the PSI tree and collect candidates
+        while (current != null && current != file) {
             if (current is PyExpression) {
-                best = current
-                if (current is PyCallExpression) return current
+                when (current) {
+                    is PyCallExpression -> bestCall = current
+                    is PyStringLiteralExpression -> bestString = current
+                    else -> if (bestOther == null) bestOther = current
+                }
             }
             current = current.parent
         }
-        return best
+
+        // Prioritize call expressions, then strings, then others
+        return bestCall ?: bestString ?: bestOther
     }
 
     /** Compute short display names for actual/expected types. */

@@ -31,6 +31,27 @@ internal class TypeMismatchQuickFixIntentionTest : MyPlatformTestCase() {
         )
     }
 
+    fun testWrapStrInPath() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            from pathlib import Path
+            a: Path = "<caret>val"
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Wrap with Path()")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            from pathlib import Path
+            a: Path = Path("val")
+            """.trimIndent()
+        )
+    }
+
     fun testWrapIntentionPreviewShowsActualCode() {
         myFixture.configureByText(
             "a.py",
