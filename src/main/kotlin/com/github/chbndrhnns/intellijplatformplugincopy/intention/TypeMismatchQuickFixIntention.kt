@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention
 
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions
 import com.intellij.codeInsight.daemon.impl.HighlightInfo
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
@@ -15,11 +16,7 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiFile
-import com.intellij.psi.util.PsiTreeUtil
-import com.jetbrains.python.psi.PyAssignmentStatement
 import com.jetbrains.python.psi.PyExpression
-import com.jetbrains.python.psi.PyTargetExpression
-import com.jetbrains.python.psi.types.PyType
 import com.jetbrains.python.psi.types.TypeEvalContext
 
 /**
@@ -48,8 +45,8 @@ class TypeMismatchQuickFixIntention : IntentionAction, HighPriorityAction, DumbA
         }
 
         // Try to compute type mismatch details using Python type system
-        val element = findElementAtCaret(editor, file)
-        if (element is PyExpression) {
+        val element = PyTypeIntentions.findExpressionAtCaret(editor, file)
+        if (element != null) {
             val details = computeTypeMismatchDetails(element, project, file)
             if (details != null) {
                 typeMismatchDetails = details
@@ -150,112 +147,17 @@ class TypeMismatchQuickFixIntention : IntentionAction, HighPriorityAction, DumbA
     ): TypeMismatchDetails? {
         try {
             val context = TypeEvalContext.codeAnalysis(project, file)
-            val (actualType, expectedType) = computeTypeInfo(element, context)
+            val names = PyTypeIntentions.computeTypeNames(element, context)
 
-            if (actualType != null && expectedType != null && actualType != expectedType) {
-                val contextInfo = extractContextInfo(element)
-                return TypeMismatchDetails(expectedType, actualType, contextInfo)
+            if (names.actual != null && names.expected != null && names.actual != names.expected) {
+                val contextInfo = PyTypeIntentions.extractContextInfo(element)
+                return TypeMismatchDetails(names.expected!!, names.actual!!, contextInfo)
             }
 
         } catch (_: Exception) {
         }
 
         return null
-    }
-
-    private fun computeTypeInfo(expression: PyExpression, context: TypeEvalContext): Pair<String?, String?> {
-        // Use PyTypeProvider extension point approach - compute actual and expected types
-        val actualType = context.getType(expression)
-        val expectedType = getExpectedTypeFromContext(expression, context)
-
-        val actualTypeName = actualType?.name ?: "Unknown"
-        val expectedTypeName = expectedType?.name ?: "Unknown"
-
-        return Pair(actualTypeName, expectedTypeName)
-    }
-
-    private fun getExpectedTypeFromContext(expression: PyExpression, context: TypeEvalContext): PyType? {
-        // Use the same logic as WrapWithExpectedTypeIntention for consistency
-        val parent = expression.parent
-
-        // Check if we're in an assignment statement
-        if (parent is PyAssignmentStatement) {
-            val targets = parent.targets
-            for (target in targets) {
-                if (target is PyTargetExpression) {
-                    val annotationValue = target.annotation?.value
-                    if (annotationValue is PyExpression) {
-                        return context.getType(annotationValue)
-                    }
-                }
-            }
-        }
-
-        // Check if we're in a function call argument
-        val argumentList = PsiTreeUtil.getParentOfType(expression, com.jetbrains.python.psi.PyArgumentList::class.java)
-        if (argumentList != null) {
-            val callExpression =
-                PsiTreeUtil.getParentOfType(argumentList, com.jetbrains.python.psi.PyCallExpression::class.java)
-            if (callExpression != null) {
-                // For function arguments, we'd typically use the function signature
-                val callee = callExpression.callee
-                if (callee is PyExpression) {
-                    val calleeType = context.getType(callee)
-                    return calleeType // Simplified - in real implementation, get parameter type
-                }
-            }
-        }
-
-        return null
-    }
-
-    /**
-     * Extracts context information about where the type mismatch occurs.
-     */
-    private fun extractContextInfo(element: PyExpression): String {
-        // Look for variable names, function calls, etc.
-        var current = element.parent
-        while (current != null) {
-            if (current is PyAssignmentStatement) {
-                val targets = current.targets
-                if (targets.isNotEmpty() && targets[0] is PyTargetExpression) {
-                    val varName = (targets[0] as PyTargetExpression).name
-                    if (varName != null) {
-                        return "variable '$varName'"
-                    }
-                }
-            }
-            current = current.parent
-        }
-
-        return ""
-    }
-
-    /**
-     * Checks if child is a descendant of parent element.
-     */
-    private fun isChildOf(child: com.intellij.psi.PsiElement, parent: com.intellij.psi.PsiElement): Boolean {
-        var current: com.intellij.psi.PsiElement? = child
-        while (current != null) {
-            if (current == parent) return true
-            current = current.parent
-        }
-        return false
-    }
-
-    /**
-     * Finds the PSI element at the current caret position.
-     */
-    private fun findElementAtCaret(editor: Editor, file: PsiFile): com.intellij.psi.PsiElement? {
-        val offset = editor.caretModel.offset
-        var element = file.findElementAt(offset)
-
-        // Walk up to find a meaningful expression
-        while (element != null && element !is PyExpression) {
-            element = element.parent
-        }
-
-        return element
     }
 
     private fun isFromSupportedInspection(highlighter: RangeHighlighter): Boolean {
