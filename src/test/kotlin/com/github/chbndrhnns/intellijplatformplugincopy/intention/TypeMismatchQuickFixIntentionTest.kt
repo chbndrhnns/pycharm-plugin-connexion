@@ -10,7 +10,69 @@ internal class TypeMismatchQuickFixIntentionTest : MyPlatformTestCase() {
         myFixture.enableInspections(PyTypeCheckerInspection::class.java)
     }
 
-    fun testWrapInExpectedType() {
+    fun testWrapIntentionPreviewShowsActualCode() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            from pathlib import Path
+            a: str = Path(<caret>"val")
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+
+        val intention = myFixture.findSingleIntention("Wrap with str()")
+        val previewText = myFixture.getIntentionPreviewText(intention)
+        assertEquals("str(Path(\"val\"))", previewText)
+    }
+
+    fun testIsAvailableForAssignments() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            from pathlib import Path
+            a: str = Path(<caret>"val")
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+
+        val intention = myFixture.findSingleIntention("Wrap with str()")
+    }
+
+    fun _testIsAvailableForReturnValues() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            def do(val: float) -> str:
+                return val
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+
+        val intention = myFixture.findSingleIntention("Wrap with str()")
+    }
+
+    fun testWrapIntentionTextUsesActualType() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            from pathlib import Path  
+            a: str = Path(<caret>"val")
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intentions = myFixture.availableIntentions
+        val wrapIntention = intentions.find { it.text.startsWith("Wrap with") }
+
+        // Verify that the intention text shows the actual expected type
+        assertNotNull("Wrap intention should be available", wrapIntention)
+        assertEquals("Intention text should show actual expected type", "Wrap with str()", wrapIntention?.text)
+    }
+
+    fun testWrapPathInStr() {
         myFixture.configureByText(
             "a.py",
             """
@@ -73,39 +135,6 @@ internal class TypeMismatchQuickFixIntentionTest : MyPlatformTestCase() {
         )
     }
 
-    fun testWrapIntentionPreviewShowsActualCode() {
-        myFixture.configureByText(
-            "a.py",
-            """
-            from pathlib import Path
-            a: str = Path(<caret>"val")
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-
-        val intention = myFixture.findSingleIntention("Wrap with str()")
-        val previewText = myFixture.getIntentionPreviewText(intention)
-        assertEquals("str(Path(\"val\"))", previewText)
-    }
-
-    fun testWrapIntentionTextUsesActualType() {
-        myFixture.configureByText(
-            "a.py",
-            """
-            from pathlib import Path  
-            a: str = Path(<caret>"val")
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intentions = myFixture.availableIntentions
-        val wrapIntention = intentions.find { it.text.startsWith("Wrap with") }
-
-        // Verify that the intention text shows the actual expected type
-        assertNotNull("Wrap intention should be available", wrapIntention)
-        assertEquals("Intention text should show actual expected type", "Wrap with str()", wrapIntention?.text)
-    }
 
     fun testWrapNestedParenthesizedStrInPath() {
         myFixture.configureByText(
@@ -124,6 +153,27 @@ internal class TypeMismatchQuickFixIntentionTest : MyPlatformTestCase() {
             """
             from pathlib import Path
             a: Path = Path("val")
+            """.trimIndent()
+        )
+    }
+
+    fun _testUsesInferredType() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            def do(val: float) -> str:
+                return val
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Wrap with str()")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            def do(val: float) -> str:
+                return str(val)
             """.trimIndent()
         )
     }
