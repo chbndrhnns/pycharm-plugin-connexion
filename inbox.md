@@ -6,6 +6,6 @@
 
 ## In Progress Tasks
 
-- [ ] Use actual values in preview
-
 ## Completed Tasks
+
+- [x] Use actual values in preview
