@@ -33,17 +33,16 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
         expectedTypeName = null
 
         // Find problematic element at caret
-        val element = PyTypeIntentions.findExpressionAtCaret(editor, file) ?: return false
-
-        // Use Python type system to compute expected type
         val context = TypeEvalContext.codeAnalysis(project, file)
-        val names = PyTypeIntentions.computeTypeNames(element, context)
+        val elementAtCaret = PyTypeIntentions.findExpressionAtCaret(editor, file)
 
-        // Only show if we have both actual and expected types and they differ
-        if (names.actual != null && names.expected != null && names.actual != names.expected) {
-            problematicElement = element
-            expectedTypeName = PyTypeIntentions.canonicalCtorName(names.expected)
-            return true
+        if (elementAtCaret != null) {
+            val names = PyTypeIntentions.computeTypeNames(elementAtCaret, context)
+            if (names.actual != null && names.expected != null && names.actual != names.expected) {
+                problematicElement = elementAtCaret
+                expectedTypeName = PyTypeIntentions.canonicalCtorName(names.expected)
+                return true
+            }
         }
 
         return false

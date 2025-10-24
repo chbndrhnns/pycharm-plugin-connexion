@@ -36,16 +36,15 @@ internal class TypeMismatchQuickFixIntentionTest : MyPlatformTestCase() {
         )
 
         myFixture.doHighlighting()
-
-        val intention = myFixture.findSingleIntention("Wrap with str()")
+        myFixture.findSingleIntention("Wrap with str()")
     }
 
-    fun _testIsAvailableForReturnValues() {
+    fun testIsAvailableForReturnValues() {
         myFixture.configureByText(
             "a.py",
             """
             def do(val: float) -> str:
-                return val
+                return <caret>val
             """.trimIndent()
         )
 
@@ -114,6 +113,26 @@ internal class TypeMismatchQuickFixIntentionTest : MyPlatformTestCase() {
         )
     }
 
+    fun testWrapReturnValue() {
+        myFixture.configureByText(
+            "a.py", """
+            def do(val: float) -> str:
+                return <caret>val
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Wrap with str()")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            def do(val: float) -> str:
+                return str(val)
+            """.trimIndent()
+        )
+    }
+
     fun testWrapParenthesizedStrInPath() {
         myFixture.configureByText(
             "a.py",
@@ -153,27 +172,6 @@ internal class TypeMismatchQuickFixIntentionTest : MyPlatformTestCase() {
             """
             from pathlib import Path
             a: Path = Path("val")
-            """.trimIndent()
-        )
-    }
-
-    fun _testUsesInferredType() {
-        myFixture.configureByText(
-            "a.py",
-            """
-            def do(val: float) -> str:
-                return val
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Wrap with str()")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
-            """
-            def do(val: float) -> str:
-                return str(val)
             """.trimIndent()
         )
     }

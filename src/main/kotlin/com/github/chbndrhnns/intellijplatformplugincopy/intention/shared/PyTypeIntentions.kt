@@ -92,6 +92,13 @@ object PyTypeIntentions {
             }
         }
 
+        // Return statement: def f(...) -> T: return <expr>
+        if (parent is PyReturnStatement) {
+            val fn = PsiTreeUtil.getParentOfType(parent, PyFunction::class.java)
+            val retAnnExpr = fn?.annotation?.value
+            if (retAnnExpr is PyExpression) return ctx.getType(retAnnExpr)
+        }
+
         // Function call argument: f(<expr>)
         resolveParamType(expr, ctx)?.let { return it }
 
