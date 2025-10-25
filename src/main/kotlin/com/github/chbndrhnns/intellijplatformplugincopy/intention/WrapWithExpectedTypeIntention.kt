@@ -9,9 +9,12 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNamedElement
+import com.intellij.psi.util.QualifiedName
+import com.jetbrains.python.codeInsight.dataflow.scope.ScopeUtil
 import com.jetbrains.python.codeInsight.imports.AddImportHelper
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.impl.PyBuiltinCache
+import com.jetbrains.python.psi.resolve.PyResolveUtil
 import com.jetbrains.python.psi.types.TypeEvalContext
 
 /**
@@ -109,7 +112,21 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
 
         val typeName = typeElement.name ?: return
 
-        // Check if already imported using any import style (absolute or relative)
+        val pyFile = file as? PyFile
+
+        // If the symbol is already available in the current scope (module/locals/imports/builtins), do not import
+        val owner = ScopeUtil.getScopeOwner(anchor) ?: pyFile
+        if (owner != null) {
+            val tec = TypeEvalContext.codeAnalysis(file.project, file)
+            val resolved = PyResolveUtil.resolveQualifiedNameInScope(
+                QualifiedName.fromDottedString(typeName), owner, tec
+            )
+            if (resolved.isNotEmpty()) {
+                return
+            }
+        }
+
+        // Check if already imported using any import style (absolute and relative)
         if (isImported(file, typeName)) {
             return
         }
@@ -142,6 +159,7 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
         }
         return false
     }
+
 
     /**
      * Unwrap parenthesized expressions.

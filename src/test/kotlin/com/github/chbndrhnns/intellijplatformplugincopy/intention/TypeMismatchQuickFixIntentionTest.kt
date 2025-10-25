@@ -251,4 +251,40 @@ internal class TypeMismatchQuickFixIntentionTest : MyPlatformTestCase() {
             """.trimIndent()
         )
     }
+
+    fun testWrapAndNoImportIfSameModule() {
+        myFixture.configureByText(
+            "main.py",
+            """
+            class CustomWrapper:
+                def __init__(self, value: str):
+                    self.value = value
+
+            def process_data(data: CustomWrapper) -> str:
+                return data.value
+
+
+            result = process_data(<caret>"some_string")
+            """.trimIndent()
+        )
+        myFixture.configureByFile("main.py")
+        myFixture.doHighlighting()
+
+        val intention = myFixture.findSingleIntention("Wrap with CustomWrapper()")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            class CustomWrapper:
+                def __init__(self, value: str):
+                    self.value = value
+
+            def process_data(data: CustomWrapper) -> str:
+                return data.value
+
+
+            result = process_data(CustomWrapper("some_string"))
+            """.trimIndent()
+        )
+    }
 }
