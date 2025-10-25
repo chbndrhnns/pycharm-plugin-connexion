@@ -3,6 +3,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.shared
 import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.types.PyType
@@ -66,28 +67,36 @@ object PyTypeIntentions {
         val argList = PsiTreeUtil.getParentOfType(expr, PyArgumentList::class.java)
         if (argList != null) {
             val call = PsiTreeUtil.getParentOfType(argList, PyCallExpression::class.java)
-            if (call != null && argList.arguments.contains(expr)) {
-                // Check if this call is itself in an assignment context AND
-                // the expected type context comes from the assignment, not the call parameter
-                val assignment = PsiTreeUtil.getParentOfType(call, PyAssignmentStatement::class.java)
-                if (assignment != null && assignment.assignedValue == call) {
-                    // This call is directly assigned. Check if we have type info from assignment.
-                    // If the assignment target has a type annotation, then this is assignment context
-                    val hasAssignmentTypeAnnotation = assignment.targets.any { target ->
-                        (target as? PyTargetExpression)?.annotation != null
+            if (call != null) {
+                // Determine whether 'expr' is within any positional or keyword argument
+                val inPositional = argList.arguments.any { it == expr || PsiTreeUtil.isAncestor(it, expr, false) }
+                val inKeyword = argList.arguments.asSequence()
+                    .mapNotNull { it as? PyKeywordArgument }
+                    .any { kw ->
+                        val v = kw.valueExpression
+                        v != null && (v == expr || PsiTreeUtil.isAncestor(v, expr, false))
                     }
-                    if (hasAssignmentTypeAnnotation) {
-                        return false  // This is an assignment context - wrap the call, not the argument
+                if (inPositional || inKeyword) {
+                    // Check if this call is itself in an assignment context AND
+                    // the expected type context comes from the assignment, not the call parameter
+                    val assignment = PsiTreeUtil.getParentOfType(call, PyAssignmentStatement::class.java)
+                    if (assignment != null && assignment.assignedValue == call) {
+                        val hasAssignmentTypeAnnotation = assignment.targets.any { target ->
+                            (target as? PyTargetExpression)?.annotation != null
+                        }
+                        if (hasAssignmentTypeAnnotation) {
+                            return false  // Assignment context - wrap the call, not the argument
+                        }
                     }
-                }
 
-                // Check if this call is itself a return value
-                val returnStmt = PsiTreeUtil.getParentOfType(call, PyReturnStatement::class.java)
-                if (returnStmt != null && returnStmt.expression == call) {
-                    return false  // This is a return context - wrap the call, not the argument
-                }
+                    // Check if this call is itself a return value
+                    val returnStmt = PsiTreeUtil.getParentOfType(call, PyReturnStatement::class.java)
+                    if (returnStmt != null && returnStmt.expression == call) {
+                        return false  // Return context - wrap the call, not the argument
+                    }
 
-                return true  // This is truly a function argument context
+                    return true  // Truly an argument context
+                }
             }
         }
         return false
@@ -100,7 +109,13 @@ object PyTypeIntentions {
     fun computeTypeNames(expr: PyExpression, ctx: TypeEvalContext): TypeNames {
         val actual = TypeNameRenderer.render(ctx.getType(expr))
         val expectedInfo = getExpectedTypeInfo(expr, ctx)
-        val expected = TypeNameRenderer.render(expectedInfo?.type)
+        var expected = TypeNameRenderer.render(expectedInfo?.type)
+        // Fallback: if expected type couldn't be inferred but we resolved a named element (e.g., class in annotation),
+        // use its simple name to drive intention text like "Wrap with OtherStr()".
+        if ((expected == "Unknown" || expectedInfo?.type == null) && expectedInfo?.element is PsiNamedElement) {
+            val name = (expectedInfo.element as PsiNamedElement).name
+            if (!name.isNullOrBlank()) expected = name ?: expected
+        }
         return TypeNames(
             actual = actual,
             expected = expected,
@@ -163,6 +178,50 @@ object PyTypeIntentions {
 
         val calleeExpr = call.callee as? PyReferenceExpression ?: return null
         val resolved = calleeExpr.reference.resolve()
+
+        // Handle dataclass-like constructor calls: callee resolves to a class, and arguments map to fields
+        if (resolved is PyClass) {
+            // Prefer keyword argument mapping for robustness
+            val keywordArg = (args.getOrNull(argIndex) as? PyKeywordArgument)
+                ?: PsiTreeUtil.getParentOfType(expr, PyKeywordArgument::class.java)
+            val keywordName = keywordArg?.keyword
+            if (!keywordName.isNullOrBlank()) {
+                // Try via standard class attribute lookup first
+                val classAttr = resolved.findClassAttribute(keywordName, true, ctx)
+                var annExpr: PyExpression? = (classAttr as? PyTargetExpression)?.annotation?.value as? PyExpression
+
+                // If not found (e.g., annotation-only dataclass field), scan statement list for annotated targets
+                if (annExpr == null) {
+                    val stmts = resolved.statementList.statements
+                    for (st in stmts) {
+                        val targets = PsiTreeUtil.findChildrenOfType(st, PyTargetExpression::class.java)
+                        val hit = targets.firstOrNull { it.name == keywordName }
+                        val v = hit?.annotation?.value
+                        if (v is PyExpression) {
+                            annExpr = v
+                            break
+                        }
+                    }
+                }
+
+                if (annExpr is PyExpression) {
+                    val resolvedTypeElement =
+                        if (annExpr is PyReferenceExpression) annExpr.reference.resolve() else annExpr
+                    return TypeInfo(ctx.getType(annExpr), resolvedTypeElement)
+                }
+            }
+            // Fallback: no keyword; try positional mapping using class attributes order (best-effort)
+            // We attempt to collect annotated class attributes in textual order
+            val fields = resolved.classAttributes.filterIsInstance<PyTargetExpression>()
+            val annotated = fields.mapNotNull { it.annotation?.value as? PyExpression }
+            val targetAnn = annotated.getOrNull(argIndex)
+            if (targetAnn != null) {
+                val resolvedTypeElement =
+                    if (targetAnn is PyReferenceExpression) targetAnn.reference.resolve() else targetAnn
+                return TypeInfo(ctx.getType(targetAnn), resolvedTypeElement)
+            }
+            return null
+        }
 
         val pyFunc = resolved as? PyFunction ?: return null
         val params = pyFunc.parameterList.parameters
