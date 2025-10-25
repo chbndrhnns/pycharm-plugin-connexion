@@ -14,6 +14,7 @@ import com.jetbrains.python.codeInsight.dataflow.scope.ScopeUtil
 import com.jetbrains.python.codeInsight.imports.AddImportHelper
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.impl.PyBuiltinCache
+import com.jetbrains.python.psi.impl.PyPsiUtils
 import com.jetbrains.python.psi.resolve.PyResolveUtil
 import com.jetbrains.python.psi.types.TypeEvalContext
 
@@ -68,8 +69,8 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
 
         val generator = PyElementGenerator.getInstance(project)
 
-        // Use PSI-based approach to unwrap parentheses
-        val unwrapped = unwrapParen(element) ?: element
+        // Normalize by ignoring syntactic parentheses using platform helper
+        val unwrapped = PyPsiUtils.flattenParens(element) ?: element
         val textToWrap = unwrapped.text
 
         val wrappedExpression = generator.createExpressionFromText(
@@ -84,7 +85,7 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
         val element = problematicElement ?: return IntentionPreviewInfo.EMPTY
         val typeToWrapWith = expectedTypeName ?: "str"
 
-        val unwrapped = unwrapParen(element) ?: element
+        val unwrapped = PyPsiUtils.flattenParens(element) ?: element
         val originalText = unwrapped.text
         val modifiedText = "$typeToWrapWith($originalText)"
 
@@ -161,15 +162,4 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
     }
 
 
-    /**
-     * Unwrap parenthesized expressions.
-     * Recursively unwraps nested parentheses until reaching the actual expression.
-     */
-    private fun unwrapParen(expr: PyExpression?): PyExpression? {
-        var cur = expr
-        while (cur is PyParenthesizedExpression) {
-            cur = cur.containedExpression  // may become null for "()"
-        }
-        return cur
-    }
 }

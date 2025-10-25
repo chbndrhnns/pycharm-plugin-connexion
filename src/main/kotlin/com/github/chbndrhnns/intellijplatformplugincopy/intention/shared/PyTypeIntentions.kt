@@ -44,11 +44,16 @@ object PyTypeIntentions {
 
         // Context-aware prioritization:
         // If we have a string and it's inside a function call argument, prefer the string
-        // Otherwise, prefer call expressions for assignment contexts
         if (bestString != null && isInsideFunctionCallArgument(bestString)) {
             return bestString
         }
+        // If the caret is within a parenthesized argument (e.g., ("foo")), prefer that argument
+        if (bestParenthesized != null && isInsideFunctionCallArgument(bestParenthesized)) {
+            // If there's also a string inside, prefer the inner-most string
+            return bestString ?: bestParenthesized
+        }
 
+        // Otherwise, prefer call expressions for assignment contexts
         // For assignment contexts, prefer call expressions, then parenthesized, then strings, then others
         return bestCall ?: bestParenthesized ?: bestString ?: bestOther
     }
@@ -150,7 +155,10 @@ object PyTypeIntentions {
 
         // Determine argument position ignoring named/keyword args for simplicity
         val args = argList.arguments
-        val argIndex = args.indexOfFirst { it == expr }
+        // Robustly locate the argument index even when the caret expression is nested
+        // (e.g., extra parentheses around the literal). Consider an argument a match
+        // if it is the same element or an ancestor of the caret expression.
+        val argIndex = args.indexOfFirst { it == expr || PsiTreeUtil.isAncestor(it, expr, false) }
         if (argIndex < 0) return null
 
         val calleeExpr = call.callee as? PyReferenceExpression ?: return null
