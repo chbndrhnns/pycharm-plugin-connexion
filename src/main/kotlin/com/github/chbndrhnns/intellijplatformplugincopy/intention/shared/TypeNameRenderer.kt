@@ -1,8 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.shared
 
-import com.jetbrains.python.PyNames
 import com.jetbrains.python.psi.types.*
-
 
 /**
  * Stable, compact, and configurable stringification of PyType trees.
@@ -19,20 +17,15 @@ object TypeNameRenderer {
     fun render(type: PyType?, options: Options = Options()): String =
         when (type) {
             null -> "Unknown"
+            is PyNoneType -> "None"
             is PyUnionType -> renderUnion(type, options)
             is PyTupleType -> renderTuple(type, options)
             is PyCollectionType -> renderCollection(type, options)
-            is PyClassType -> if (isNoneType(type)) "None" else renderClass(type, options)
+            is PyClassType -> renderClass(type, options)
             else -> type.name ?: "Unknown"
         }
 
     // --- helpers ---
-
-    private fun isNoneType(type: PyType?): Boolean {
-        if (type !is PyClassType) return false
-        val qName = type.classQName
-        return qName != null && PyNames.NONE.contains(qName)
-    }
 
     private fun renderUnion(union: PyUnionType, o: Options): String {
         // Flatten nested unions into a single ordered set of parts, tracking None separately
@@ -42,14 +35,9 @@ object TypeNameRenderer {
         fun collect(t: PyType?) {
             when (t) {
                 null -> {}
+                is PyNoneType -> hasNone = true
                 is PyUnionType -> t.members.forEach { collect(it) }
-                else -> {
-                    if (isNoneType(t)) {
-                        hasNone = true
-                    } else {
-                        parts += render(t, o)
-                    }
-                }
+                else -> parts += render(t, o)
             }
         }
         union.members.forEach { collect(it) }
