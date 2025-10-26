@@ -122,8 +122,8 @@ object PyTypeIntentions {
         // Fallback: if expected type couldn't be inferred but we resolved a named element (e.g., class in annotation),
         // use its simple name to drive intention text like "Wrap with OtherStr()".
         if ((expected == "Unknown" || expectedInfo?.type == null) && expectedInfo?.element is PsiNamedElement) {
-            val name = (expectedInfo.element as PsiNamedElement).name
-            if (!name.isNullOrBlank()) expected = name ?: expected
+            val name = expectedInfo.element.name
+            if (!name.isNullOrBlank()) expected = name
         }
         return TypeNames(
             actual = actual,
@@ -197,7 +197,7 @@ object PyTypeIntentions {
             if (!keywordName.isNullOrBlank()) {
                 // Try via standard class attribute lookup first
                 val classAttr = resolved.findClassAttribute(keywordName, true, ctx)
-                var annExpr: PyExpression? = (classAttr as? PyTargetExpression)?.annotation?.value as? PyExpression
+                var annExpr: PyExpression? = classAttr?.annotation?.value
 
                 // If not found (e.g., annotation-only dataclass field), scan statement list for annotated targets
                 if (annExpr == null) {
@@ -222,7 +222,7 @@ object PyTypeIntentions {
             // Fallback: no keyword; try positional mapping using class attributes order (best-effort)
             // We attempt to collect annotated class attributes in textual order
             val fields = resolved.classAttributes.filterIsInstance<PyTargetExpression>()
-            val annotated = fields.mapNotNull { it.annotation?.value as? PyExpression }
+            val annotated = fields.mapNotNull { it.annotation?.value }
             val targetAnn = annotated.getOrNull(argIndex)
             if (targetAnn != null) {
                 val resolvedTypeElement =
