@@ -24,6 +24,15 @@ object PyTypeIntentions {
         val offset = editor.caretModel.offset
         val leaf = file.findElementAt(offset) ?: return null
 
+        // Special case: caret on a keyword argument name (e.g., Data(v|al="abc"))
+        // In that case, operate on the value expression of the keyword argument.
+        PsiTreeUtil.getParentOfType(leaf, PyKeywordArgument::class.java)?.let { kw ->
+            val value = kw.valueExpression
+            if (value != null && !PsiTreeUtil.isAncestor(value, leaf, false)) {
+                return value
+            }
+        }
+
         var current: PsiElement? = leaf
         var bestString: PyExpression? = null
         var bestCall: PyExpression? = null
