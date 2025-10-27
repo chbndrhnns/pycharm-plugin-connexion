@@ -1,4 +1,4 @@
-// Copyright 2000-2021 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
+// Copyright 2000-2020 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package jetbrains.python.fixtures
 
 import com.intellij.openapi.application.ApplicationManager
@@ -6,84 +6,109 @@ import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.projectRoots.SdkAdditionalData
 import com.intellij.openapi.projectRoots.SdkTypeId
-import com.intellij.openapi.roots.OrderRootType.CLASSES
+import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.containers.ContainerUtil
 import com.jetbrains.python.PyNames
-import com.jetbrains.python.codeInsight.typing.PyTypeShed.findStdlibRootsForLanguageLevel
+import com.jetbrains.python.codeInsight.typing.PyTypeShed
 import com.jetbrains.python.psi.LanguageLevel
 import com.jetbrains.python.sdk.PythonSdkAdditionalData
-import com.jetbrains.python.sdk.PythonSdkType
+import com.jetbrains.python.sdk.PythonSdkType.MOCK_PY_MARKER_KEY
 import com.jetbrains.python.sdk.PythonSdkUtil
+import com.jetbrains.python.sdk.flavors.PyFlavorAndData
+import com.jetbrains.python.sdk.flavors.PyFlavorData
+import com.jetbrains.python.sdk.flavors.VirtualEnvSdkFlavor
+import jetbrains.python.fixtures.PythonTestUtil.testDataPath
 import org.jdom.Element
 import org.jetbrains.annotations.NonNls
 import java.io.File
+import java.util.function.Consumer
 
+/**
+ * @author yole
+ */
 object PythonMockSdk {
-    fun create(): Sdk {
-        return create(LanguageLevel.getLatest())
-    }
-
-    fun create(sdkPath: String): Sdk {
-        return create(sdkPath, LanguageLevel.getLatest())
+    fun create(name: String): Sdk {
+        return create(name, LanguageLevel.getLatest())
     }
 
     fun create(level: LanguageLevel, vararg additionalRoots: VirtualFile): Sdk {
-        return create(PythonTestUtil.testDataPath + "/MockSdk", level, *additionalRoots)
+        return create("MockSdk_" + System.nanoTime(), level, *additionalRoots)
     }
 
-    private fun create(sdkPath: String, level: LanguageLevel, vararg additionalRoots: VirtualFile): Sdk {
-        val sdkName = "Mock " + PyNames.PYTHON_SDK_ID_NAME + " " + level.toPythonVersion()
-        return create(sdkName, sdkPath, PyMockSdkType(level), level, *additionalRoots)
+    private fun create(name: String, level: LanguageLevel, vararg additionalRoots: VirtualFile): Sdk {
+        return create(name, PyMockSdkType(level), level, *additionalRoots)
     }
 
     fun create(
-        sdkName: String,
-        sdkPath: String,
+        pathSuffix: String,
         sdkType: SdkTypeId,
         level: LanguageLevel,
         vararg additionalRoots: VirtualFile
     ): Sdk {
-        val sdk = ProjectJdkTable.getInstance().createSdk(sdkName, sdkType)
+        val sdkName = "Mock " + PyNames.PYTHON_SDK_ID_NAME + " " + level.toPythonVersion() + " " + System.nanoTime()
+        return create(sdkName, pathSuffix, sdkType, level, *additionalRoots)
+    }
+
+    fun create(
+        name: String,
+        pathSuffix: String,
+        sdkType: SdkTypeId,
+        level: LanguageLevel,
+        vararg additionalRoots: VirtualFile
+    ): Sdk {
+        val mockSdkPath = "$testDataPath/$pathSuffix"
+        val jdkTable = ProjectJdkTable.getInstance()
+        val sdk = jdkTable.createSdk(name, sdkType)
         val sdkModificator = sdk.sdkModificator
-        sdkModificator.homePath = "$sdkPath/bin/python"
-        sdkModificator.sdkAdditionalData = PythonSdkAdditionalData()
+        sdkModificator.homePath = "$mockSdkPath/bin/python"
+        sdkModificator.sdkAdditionalData = PythonSdkAdditionalData(
+            PyFlavorAndData(
+                PyFlavorData.Empty,
+                VirtualEnvSdkFlavor.getInstance()
+            )
+        )
         sdkModificator.versionString = toVersionString(level)
 
-        createRoots(sdkPath, level).forEach { vFile ->
-            if (vFile != null) sdkModificator.addRoot(vFile, CLASSES)
-        }
+        createRoots(mockSdkPath, level).forEach(Consumer { vFile: VirtualFile? ->
+            sdkModificator.addRoot(vFile!!, OrderRootType.CLASSES)
+        })
 
-        listOf(*additionalRoots).forEach { vFile ->
-            sdkModificator.addRoot(vFile, CLASSES)
+        additionalRoots.forEach { vFile ->
+            sdkModificator.addRoot(vFile, OrderRootType.CLASSES)
         }
 
         val application = ApplicationManager.getApplication()
-        val runnable = Runnable { sdkModificator.commitChanges() }
+        val runnable = Runnable {
+            sdkModificator.commitChanges()
+            // Register the SDK in ProjectJdkTable
+            jdkTable.addJdk(sdk)
+        }
         if (application.isDispatchThread) {
             application.runWriteAction(runnable)
         } else {
             application.invokeAndWait { application.runWriteAction(runnable) }
         }
-        sdk.putUserData(PythonSdkType.MOCK_PY_MARKER_KEY, true)
+        sdk.putUserData(MOCK_PY_MARKER_KEY, true)
         return sdk
-
-        // com.jetbrains.python.psi.resolve.PythonSdkPathCache.getInstance() corrupts SDK, so have to clone
-        //return sdk.clone();
     }
 
-    private fun createRoots(@NonNls mockSdkPath: String, level: LanguageLevel): MutableList<VirtualFile?> {
-        val result = ArrayList<VirtualFile?>()
-
+    private fun createRoots(@NonNls mockSdkPath: String, level: LanguageLevel): List<VirtualFile> {
+        val result = ArrayList<VirtualFile>()
         val localFS = LocalFileSystem.getInstance()
         ContainerUtil.addIfNotNull(result, localFS.refreshAndFindFileByIoFile(File(mockSdkPath, "Lib")))
         ContainerUtil.addIfNotNull(
             result,
             localFS.refreshAndFindFileByIoFile(File(mockSdkPath, PythonSdkUtil.SKELETON_DIR_NAME))
         )
+        // PyUserSkeletonsUtil is removed in IntelliJ 2025.2
+        // ContainerUtil.addIfNotNull(result, PyUserSkeletonsUtil.getUserSkeletonsDirectory())
 
-        result.addAll(findStdlibRootsForLanguageLevel(level))
+        // Skip TypeShed loading in tests to prevent hanging
+        if (System.getProperty("idea.test.execution.policy") != "LEGACY") {
+            result.addAll(PyTypeShed.findAllRootsForLanguageLevel(level))
+        }
 
         return result
     }
@@ -101,9 +126,7 @@ object PythonMockSdk {
             return toVersionString(myLevel)
         }
 
-        override fun saveAdditionalData(additionalData: SdkAdditionalData, additional: Element) {
-        }
-
+        override fun saveAdditionalData(additionalData: SdkAdditionalData, additional: Element) {}
         override fun loadAdditionalData(currentSdk: Sdk, additional: Element): SdkAdditionalData? {
             return null
         }
