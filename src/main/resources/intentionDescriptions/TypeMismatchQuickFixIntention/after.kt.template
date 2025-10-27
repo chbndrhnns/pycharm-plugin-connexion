@@ -1,4 +1,0 @@
-// After applying the intention (shows balloon with details; no code change)
-fun example(x: Any) {
-    val y: Int = x // Expected type 'Int', got 'Any'
-}
