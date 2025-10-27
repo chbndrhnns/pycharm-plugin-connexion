@@ -148,6 +148,30 @@ internal class TypeMismatchQuickFixIntentionTest : MyPlatformTestCase() {
         assertNull("Intention 'Wrap with str()' should NOT be available", intention)
     }
 
+    fun testWrapNoQuotedValue() {
+        myFixture.configureByText(
+            "a.py", """
+            def process_data(arg: str) -> int:
+                return int(1)
+            
+            result = process_data(1<caret>23)
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Wrap with str()")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            def process_data(arg: str) -> int:
+                return int(1)
+            
+            result = process_data("123")
+            """.trimIndent()
+        )
+    }
+
     fun testWrapDataclassArgument() {
         myFixture.configureByText(
             "a.py", """

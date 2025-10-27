@@ -62,6 +62,10 @@ object PyTypeIntentions {
             // If there's also a string inside, prefer the inner-most string
             return bestString ?: bestParenthesized
         }
+        // If we're inside any function call argument (positional or keyword), prefer the innermost expression
+        if (bestOther != null && isInsideFunctionCallArgument(bestOther)) {
+            return bestOther
+        }
 
         // Otherwise, prefer call expressions for assignment contexts
         // For assignment contexts, prefer call expressions, then parenthesized, then strings, then others

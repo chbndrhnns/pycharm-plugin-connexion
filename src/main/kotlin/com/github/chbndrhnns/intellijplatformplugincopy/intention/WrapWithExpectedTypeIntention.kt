@@ -74,12 +74,20 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
 
         // Normalize by ignoring syntactic parentheses using platform helper
         val unwrapped = PyPsiUtils.flattenParens(element) ?: element
-        val textToWrap = unwrapped.text
 
-        val wrappedExpression = generator.createExpressionFromText(
-            LanguageLevel.getLatest(),
-            "$typeToWrapWith($textToWrap)"
-        )
+        val wrappedExpression = if (typeToWrapWith == "str" && unwrapped is PyNumericLiteralExpression) {
+            // Special case: when wrapping a bare numeric literal with expected str, replace it with a quoted literal
+            generator.createExpressionFromText(
+                LanguageLevel.getLatest(),
+                "\"${unwrapped.text}\""
+            )
+        } else {
+            val textToWrap = unwrapped.text
+            generator.createExpressionFromText(
+                LanguageLevel.getLatest(),
+                "$typeToWrapWith($textToWrap)"
+            )
+        }
 
         element.replace(wrappedExpression)
     }
@@ -90,7 +98,11 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
 
         val unwrapped = PyPsiUtils.flattenParens(element) ?: element
         val originalText = unwrapped.text
-        val modifiedText = "$typeToWrapWith($originalText)"
+        val modifiedText = if (typeToWrapWith == "str" && unwrapped is PyNumericLiteralExpression) {
+            "\"$originalText\""
+        } else {
+            "$typeToWrapWith($originalText)"
+        }
 
         return IntentionPreviewInfo.CustomDiff(
             file.fileType,
