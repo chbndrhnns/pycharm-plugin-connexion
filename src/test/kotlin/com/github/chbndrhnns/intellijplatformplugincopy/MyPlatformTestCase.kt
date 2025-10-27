@@ -9,5 +9,6 @@ abstract class MyPlatformTestCase : BasePlatformTestCase() {
     override fun getProjectDescriptor(): LightProjectDescriptor {
         return PyLightProjectDescriptor(LanguageLevel.getLatest())
     }
+
     override fun getTestDataPath(): String = "src/test/testData"
 }
