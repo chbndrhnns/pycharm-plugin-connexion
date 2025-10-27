@@ -252,8 +252,8 @@ object PyTypeIntentions {
     }
 
     /** Pretty name selection used by wrapping intention. */
-    fun canonicalCtorName(typeName: String?): String = when (typeName) {
-        null, "Unknown" -> "str"
+    fun canonicalCtorName(typeName: String?): String? = when (typeName) {
+        null, "Unknown" -> null
         // keep simple builtins as-is
         "str", "int", "float", "bool", "list", "dict", "set", "tuple" -> typeName
         // If we receive a union/optional string, default to the first non-None-ish item

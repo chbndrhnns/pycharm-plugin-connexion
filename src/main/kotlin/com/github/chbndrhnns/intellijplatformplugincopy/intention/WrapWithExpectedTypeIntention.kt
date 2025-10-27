@@ -45,15 +45,18 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
         if (elementAtCaret != null) {
             val names = PyTypeIntentions.computeTypeNames(elementAtCaret, context)
             if (names.actual != null && names.expected != null && names.actual != names.expected) {
-                problematicElement = elementAtCaret
-                expectedTypeName = PyTypeIntentions.canonicalCtorName(names.expected)
+                val ctor = PyTypeIntentions.canonicalCtorName(names.expected)
+                if (!ctor.isNullOrBlank()) {
+                    problematicElement = elementAtCaret
+                    expectedTypeName = ctor
 
-                // Try to resolve the expected type element for import handling
-                if (names.expectedElement is PsiNamedElement) {
-                    expectedTypeElement = names.expectedElement
+                    // Try to resolve the expected type element for import handling
+                    if (names.expectedElement is PsiNamedElement) {
+                        expectedTypeElement = names.expectedElement
+                    }
+
+                    return true
                 }
-
-                return true
             }
         }
 
@@ -62,7 +65,7 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
 
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
         val element = problematicElement ?: return
-        val typeToWrapWith = expectedTypeName ?: "str"
+        val typeToWrapWith = expectedTypeName ?: return
 
         // Add import BEFORE modifying the element, using the original element as anchor
         addImportIfNeeded(file, element)
@@ -83,7 +86,7 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
 
     override fun generatePreview(project: Project, editor: Editor, file: PsiFile): IntentionPreviewInfo {
         val element = problematicElement ?: return IntentionPreviewInfo.EMPTY
-        val typeToWrapWith = expectedTypeName ?: "str"
+        val typeToWrapWith = expectedTypeName ?: return IntentionPreviewInfo.EMPTY
 
         val unwrapped = PyPsiUtils.flattenParens(element) ?: element
         val originalText = unwrapped.text
