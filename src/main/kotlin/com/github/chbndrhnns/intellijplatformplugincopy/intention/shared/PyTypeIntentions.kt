@@ -155,6 +155,29 @@ object PyTypeIntentions {
     }
 
     /**
+     * Determines the best constructor name to use for wrapping based on expected type information
+     * around the given expression. Prefers PSI-based resolution; falls back to type-based unwrapping.
+     */
+    fun expectedCtorName(expr: PyExpression, ctx: TypeEvalContext): String? {
+        val info = getExpectedTypeInfo(expr, ctx) ?: return null
+
+        // First, try PSI-based resolution which also handles text-only union spellings.
+        info.annotationExpr?.let { ann ->
+            val fromPsi = canonicalCtorName(ann, ctx)
+            if (!fromPsi.isNullOrBlank() && !fromPsi.equals("UnionType", true) && !fromPsi.equals("Union", true)) {
+                return fromPsi
+            }
+        }
+
+        // Fallback: use the expected type, unwrap unions/optionals and pick the first non-None class
+        val base = info.type?.let { firstNonNoneMember(it) }
+        if (base is PyClassType) {
+            return base.name ?: base.classQName?.substringAfterLast('.')
+        }
+        return base?.name
+    }
+
+    /**
      * Container for both type and its source element.
      */
     private data class TypeInfo(
@@ -312,46 +335,9 @@ object PyTypeIntentions {
             return base.name
         }
 
-        // Fallback path when the type provider cannot infer a type for the annotation PSI (e.g., some union spellings).
-        // Use a minimal, local text interpretation of the annotation expression to choose a constructor name
-        // (first non-None branch for unions/optionals), without calling the deprecated string-based API.
-        val raw = element.text?.trim().orEmpty()
-        if (raw.isEmpty()) return null
-
-        fun simple(n: String): String = n.trim().removeSuffix("]").substringAfterLast('.')
-        fun isNoneish(s: String): Boolean {
-            val t0 = s.trim().removeSuffix("]").substringAfterLast('.')
-            return t0 == "None" || t0 == "NoneType"
-        }
-
-        // Builtins passthrough
-        when (raw) {
-            "str", "int", "float", "bool", "list", "dict", "set", "tuple" -> return raw
-        }
-
-        // PEP 604: A | B | None
-        if (raw.contains("|")) {
-            val first = raw.split('|')
-                .map { it.trim() }
-                .firstOrNull { it.isNotBlank() && !isNoneish(it) }
-            return first?.let { simple(it) }
-        }
-
-        // typing forms: Optional[T], Union[A, B, ...]
-        val head = raw.substringBefore("[").substringAfterLast('.')
-        val body = raw.substringAfter("[", missingDelimiterValue = "").removeSuffix("]")
-        if (head.equals("Optional", ignoreCase = true)) {
-            val inner = body.substringBefore(',').substringBefore('|').trim()
-            if (inner.isNotBlank()) return simple(inner)
-        }
-        if (head.equals("Union", ignoreCase = true)) {
-            val parts = body.split(',')
-            val first = parts.map { it.trim() }.firstOrNull { it.isNotBlank() && !isNoneish(it) }
-            if (first != null) return simple(first)
-        }
-
-        // Default: strip qualifiers
-        return simple(raw)
+        // If there's no resolvable type for the annotation PSI, do not attempt text parsing.
+        // We target Python 3.11+, so proper union types should be provided by the type system.
+        return null
     }
 
     /** Unwrap unions and pick the first non-None member. */
