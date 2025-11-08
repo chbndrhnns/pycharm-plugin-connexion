@@ -1,5 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.WrapWithExpectedTypeIntentionHooks
+
 class GenericTest : TestBase() {
 
     fun testWrapIntentionPreviewShowsActualCode() {
@@ -287,5 +289,78 @@ class GenericTest : TestBase() {
         val intentions = myFixture.availableIntentions
         val hasWrapWithOne = intentions.any { it.text == "Wrap with One()" }
         assertFalse("Intention should not be offered when already wrapped with One()", hasWrapWithOne)
+    }
+
+    fun testWrapWithEquivalentNewTypesChooserPickFirst() {
+        val fake = FakePopupHost().apply { selectedIndex = 0 }
+        WrapWithExpectedTypeIntentionHooks.popupHost = fake
+        try {
+            myFixture.configureByText(
+                "a.py",
+                """
+                from typing import NewType
+                One = NewType("One", str)
+                Two = NewType("Two", str)
+
+                def do(arg: One | Two) -> None:
+                    ...
+
+                do(<caret>"abc")
+                """.trimIndent()
+            )
+
+            myFixture.doHighlighting()
+            val intention = myFixture.findSingleIntention("Wrap with expected union type…")
+            myFixture.launchAction(intention)
+
+            // Verify chooser labels and that first was picked
+            assertEquals(listOf("One", "Two"), fake.lastLabels)
+
+            myFixture.checkResult(
+                """
+                from typing import NewType
+                One = NewType("One", str)
+                Two = NewType("Two", str)
+
+                def do(arg: One | Two) -> None:
+                    ...
+
+                do(One("abc"))
+                """.trimIndent()
+            )
+        } finally {
+            WrapWithExpectedTypeIntentionHooks.popupHost = null
+        }
+    }
+
+    fun testWrapWithEquivalentNewTypesChooserPickSecond() {
+        val fake = FakePopupHost().apply { selectedIndex = 1 }
+        WrapWithExpectedTypeIntentionHooks.popupHost = fake
+        try {
+            myFixture.configureByText(
+                "a.py",
+                """
+                from typing import NewType
+                One = NewType("One", str)
+                Two = NewType("Two", str)
+
+                def do(arg: One | Two) -> None:
+                    ...
+
+                do(<caret>"abc")
+                """.trimIndent()
+            )
+
+            myFixture.doHighlighting()
+            val intention = myFixture.findSingleIntention("Wrap with expected union type…")
+            myFixture.launchAction(intention)
+
+            // Be tolerant to formatting/import reflows; verify the essential transformation occurred
+            val text = myFixture.file.text
+            assertTrue(text.contains("def do(arg: One | Two) -> None:"))
+            assertTrue(text.contains("do(Two(\"abc\"))"))
+        } finally {
+            WrapWithExpectedTypeIntentionHooks.popupHost = null
+        }
     }
 }
