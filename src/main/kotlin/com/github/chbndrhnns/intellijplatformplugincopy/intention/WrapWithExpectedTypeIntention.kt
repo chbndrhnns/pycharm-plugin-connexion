@@ -82,6 +82,23 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
                 LanguageLevel.getLatest(),
                 "\"${unwrapped.text}\""
             )
+        } else if (typeToWrapWith == "list") {
+            // Prefer [] over list() for non-container expressions. If we're wrapping another
+            // container (e.g., tuple, set, dict, list, or a comprehension/generator), keep list().
+            val textToWrap = unwrapped.text
+            if (isContainerExpression(unwrapped)) {
+                // Use the original element text for containers to preserve required parentheses/brackets
+                val containerText = problematicElement?.text ?: textToWrap
+                generator.createExpressionFromText(
+                    LanguageLevel.getLatest(),
+                    "list($containerText)"
+                )
+            } else {
+                generator.createExpressionFromText(
+                    LanguageLevel.getLatest(),
+                    "[${textToWrap}]"
+                )
+            }
         } else {
             val textToWrap = unwrapped.text
             generator.createExpressionFromText(
@@ -99,10 +116,10 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
 
         val unwrapped = PyPsiUtils.flattenParens(element) ?: element
         val originalText = unwrapped.text
-        val modifiedText = if (typeToWrapWith == "str" && unwrapped is PyNumericLiteralExpression) {
-            "\"$originalText\""
-        } else {
-            "$typeToWrapWith($originalText)"
+        val modifiedText = when {
+            typeToWrapWith == "str" && unwrapped is PyNumericLiteralExpression -> "\"$originalText\""
+            typeToWrapWith == "list" -> if (isContainerExpression(unwrapped)) "list($originalText)" else "[$originalText]"
+            else -> "$typeToWrapWith($originalText)"
         }
 
         return IntentionPreviewInfo.CustomDiff(
@@ -111,6 +128,27 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
             element.text,
             modifiedText
         )
+    }
+
+
+    /**
+     * Determines whether the given expression is a container literal or a
+     * comprehension/generator, in which case wrapping with list(expr) is preferred
+     * over [expr] to preserve iteration semantics rather than nesting.
+     */
+    private fun isContainerExpression(expr: PyExpression): Boolean {
+        return when (expr) {
+            is PyListLiteralExpression,
+            is PyTupleExpression,
+            is PySetLiteralExpression,
+            is PyDictLiteralExpression,
+            is PyListCompExpression,
+            is PySetCompExpression,
+            is PyDictCompExpression,
+            is PyGeneratorExpression -> true
+
+            else -> false
+        }
     }
 
     override fun startInWriteAction(): Boolean = true
