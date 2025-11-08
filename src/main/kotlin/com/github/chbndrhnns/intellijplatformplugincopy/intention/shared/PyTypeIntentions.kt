@@ -201,7 +201,10 @@ object PyTypeIntentions {
                     val annExpr = t.annotation?.value
                     if (annExpr is PyExpression) {
                         val named = (annExpr as? PyReferenceExpression)?.reference?.resolve() as? PsiNamedElement
-                        return TypeInfo(ctx.getType(annExpr), annExpr, named)
+                        // Important: get type from the target element rather than the annotation PSI
+                        // so unions like "int | None" are represented as PyUnionType with members.
+                        val targetType = ctx.getType(t)
+                        return TypeInfo(targetType, annExpr, named)
                     }
                 }
             }
@@ -213,7 +216,9 @@ object PyTypeIntentions {
             val retAnnExpr = fn?.annotation?.value
             if (retAnnExpr is PyExpression) {
                 val named = (retAnnExpr as? PyReferenceExpression)?.reference?.resolve() as? PsiNamedElement
-                return TypeInfo(ctx.getType(retAnnExpr), retAnnExpr, named)
+                // Prefer the function's evaluated return type over the raw annotation PSI type.
+                val returnType = fn?.let { ctx.getReturnType(it) }
+                return TypeInfo(returnType, retAnnExpr, named)
             }
         }
 
@@ -250,6 +255,7 @@ object PyTypeIntentions {
                 // Try via standard class attribute lookup first
                 val classAttr = resolved.findClassAttribute(keywordName, true, ctx)
                 var annExpr: PyExpression? = classAttr?.annotation?.value
+                var typeSource: PyTypedElement? = classAttr
 
                 // If not found (e.g., annotation-only dataclass field), scan statement list for annotated targets
                 if (annExpr == null) {
@@ -260,6 +266,7 @@ object PyTypeIntentions {
                         val v = hit?.annotation?.value
                         if (v is PyExpression) {
                             annExpr = v
+                            typeSource = hit
                             break
                         }
                     }
@@ -267,7 +274,10 @@ object PyTypeIntentions {
 
                 if (annExpr is PyExpression) {
                     val named = (annExpr as? PyReferenceExpression)?.reference?.resolve() as? PsiNamedElement
-                    return TypeInfo(ctx.getType(annExpr), annExpr, named)
+                    // Prefer the evaluated type of the annotated target (field) if available,
+                    // it carries the real union members; fall back to the annotation PSI type.
+                    val evaluated = typeSource?.let { ctx.getType(it) } ?: ctx.getType(annExpr)
+                    return TypeInfo(evaluated, annExpr, named)
                 }
             }
             // Fallback: no keyword; try positional mapping using class attributes order (best-effort)
@@ -277,7 +287,9 @@ object PyTypeIntentions {
             val targetAnn = annotated.getOrNull(argIndex)
             if (targetAnn != null) {
                 val named = (targetAnn as? PyReferenceExpression)?.reference?.resolve() as? PsiNamedElement
-                return TypeInfo(ctx.getType(targetAnn), targetAnn, named)
+                val sourceTarget = fields.getOrNull(argIndex)
+                val evaluated = sourceTarget?.let { ctx.getType(it) } ?: ctx.getType(targetAnn)
+                return TypeInfo(evaluated, targetAnn, named)
             }
             return null
         }
