@@ -45,7 +45,7 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
         if (elementAtCaret != null) {
             val names = PyTypeIntentions.computeTypeNames(elementAtCaret, context)
             if (names.actual != null && names.expected != null && names.actual != names.expected) {
-                val ctor = PyTypeIntentions.canonicalCtorName(names.expected)
+                val ctor = names.expectedCtorElement?.let { PyTypeIntentions.canonicalCtorName(it, context) }
                 if (!ctor.isNullOrBlank()) {
                     problematicElement = elementAtCaret
                     expectedTypeName = ctor

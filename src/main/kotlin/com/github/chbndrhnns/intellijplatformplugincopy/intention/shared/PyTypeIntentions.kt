@@ -6,7 +6,9 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.*
+import com.jetbrains.python.psi.types.PyClassType
 import com.jetbrains.python.psi.types.PyType
+import com.jetbrains.python.psi.types.PyUnionType
 import com.jetbrains.python.psi.types.TypeEvalContext
 
 /** Lightweight DTOs shared by intentions. */
@@ -14,6 +16,9 @@ data class TypeNames(
     val actual: String?,
     val expected: String?,
     val actualElement: PsiElement?,
+    // The PSI element to use for resolving the constructor name via PSI (typically the annotation expression)
+    val expectedCtorElement: PyTypedElement?,
+    // The resolved named element (class/function) used for import handling, if available
     val expectedElement: PsiElement?
 )
 
@@ -62,9 +67,26 @@ object PyTypeIntentions {
             // If there's also a string inside, prefer the inner-most string
             return bestString ?: bestParenthesized
         }
-        // If we're inside any function call argument (positional or keyword), prefer the innermost expression
-        if (bestOther != null && isInsideFunctionCallArgument(bestOther)) {
-            return bestOther
+        // If we're inside any function call argument (positional or keyword), return the actual argument root expression.
+        if ((bestCall != null || bestOther != null) && (bestCall?.let { isInsideFunctionCallArgument(it) } == true || bestOther?.let {
+                isInsideFunctionCallArgument(
+                    it
+                )
+            } == true)) {
+            val argList = PsiTreeUtil.getParentOfType(leaf, PyArgumentList::class.java)
+            val call = PsiTreeUtil.getParentOfType(leaf, PyCallExpression::class.java)
+            if (argList != null && call != null) {
+                val args = argList.arguments
+                // Find argument containing the leaf
+                val arg = args.firstOrNull { it == leaf || PsiTreeUtil.isAncestor(it, leaf, false) }
+                if (arg is PyKeywordArgument) {
+                    arg.valueExpression?.let { return it }
+                } else if (arg is PyExpression) {
+                    return arg
+                }
+            }
+            // Fallback to call over bare reference
+            return bestCall ?: bestOther
         }
 
         // Otherwise, prefer call expressions for assignment contexts
@@ -122,25 +144,26 @@ object PyTypeIntentions {
     fun computeTypeNames(expr: PyExpression, ctx: TypeEvalContext): TypeNames {
         val actual = TypeNameRenderer.render(ctx.getType(expr))
         val expectedInfo = getExpectedTypeInfo(expr, ctx)
-        var expected = TypeNameRenderer.render(expectedInfo?.type)
-        // Fallback: if expected type couldn't be inferred but we resolved a named element (e.g., class in annotation),
-        // use its simple name to drive intention text like "Wrap with OtherStr()".
-        if ((expected == "Unknown" || expectedInfo?.type == null) && expectedInfo?.element is PsiNamedElement) {
-            val name = expectedInfo.element.name
-            if (!name.isNullOrBlank()) expected = name
-        }
+        val expected = TypeNameRenderer.render(expectedInfo?.type)
         return TypeNames(
             actual = actual,
             expected = expected,
             actualElement = expr,
-            expectedElement = expectedInfo?.element
+            expectedCtorElement = expectedInfo?.annotationExpr,
+            expectedElement = expectedInfo?.resolvedNamed
         )
     }
 
     /**
      * Container for both type and its source element.
      */
-    private data class TypeInfo(val type: PyType?, val element: PsiElement?)
+    private data class TypeInfo(
+        val type: PyType?,
+        // The raw annotation expression, if any (used for PSI-based constructor resolution)
+        val annotationExpr: PyTypedElement?,
+        // The resolved symbol behind the annotation (class/function), if any (used for import handling)
+        val resolvedNamed: PsiNamedElement?
+    )
 
     /**
      * Unified logic to get expected type information from surrounding context.
@@ -154,7 +177,8 @@ object PyTypeIntentions {
                 if (t is PyTargetExpression) {
                     val annExpr = t.annotation?.value
                     if (annExpr is PyExpression) {
-                        return TypeInfo(ctx.getType(annExpr), annExpr)
+                        val named = (annExpr as? PyReferenceExpression)?.reference?.resolve() as? PsiNamedElement
+                        return TypeInfo(ctx.getType(annExpr), annExpr, named)
                     }
                 }
             }
@@ -165,7 +189,8 @@ object PyTypeIntentions {
             val fn = PsiTreeUtil.getParentOfType(parent, PyFunction::class.java)
             val retAnnExpr = fn?.annotation?.value
             if (retAnnExpr is PyExpression) {
-                return TypeInfo(ctx.getType(retAnnExpr), retAnnExpr)
+                val named = (retAnnExpr as? PyReferenceExpression)?.reference?.resolve() as? PsiNamedElement
+                return TypeInfo(ctx.getType(retAnnExpr), retAnnExpr, named)
             }
         }
 
@@ -218,9 +243,8 @@ object PyTypeIntentions {
                 }
 
                 if (annExpr is PyExpression) {
-                    val resolvedTypeElement =
-                        if (annExpr is PyReferenceExpression) annExpr.reference.resolve() else annExpr
-                    return TypeInfo(ctx.getType(annExpr), resolvedTypeElement)
+                    val named = (annExpr as? PyReferenceExpression)?.reference?.resolve() as? PsiNamedElement
+                    return TypeInfo(ctx.getType(annExpr), annExpr, named)
                 }
             }
             // Fallback: no keyword; try positional mapping using class attributes order (best-effort)
@@ -229,9 +253,8 @@ object PyTypeIntentions {
             val annotated = fields.mapNotNull { it.annotation?.value }
             val targetAnn = annotated.getOrNull(argIndex)
             if (targetAnn != null) {
-                val resolvedTypeElement =
-                    if (targetAnn is PyReferenceExpression) targetAnn.reference.resolve() else targetAnn
-                return TypeInfo(ctx.getType(targetAnn), resolvedTypeElement)
+                val named = (targetAnn as? PyReferenceExpression)?.reference?.resolve() as? PsiNamedElement
+                return TypeInfo(ctx.getType(targetAnn), targetAnn, named)
             }
             return null
         }
@@ -242,30 +265,107 @@ object PyTypeIntentions {
 
         val param = params[argIndex]
         val annValue = (param as? PyNamedParameter)?.annotation?.value
-        return if (annValue is PyExpression) {
-            // For imports, we need to resolve the annotation reference to get the actual class/type definition
-            val resolvedTypeElement = if (annValue is PyReferenceExpression) {
-                annValue.reference.resolve()
-            } else {
-                annValue
+        // Important: ask the type of the parameter element (not the annotation PSI),
+        // because ctx.getType(annotationExpr) may be null for PEP 604 unions.
+        val paramType = (param as? PyTypedElement)?.let { ctx.getType(it) }
+
+        // Try to resolve a concrete named element for import handling.
+        // 1) If the annotation is a simple reference, resolve it directly.
+        // 2) Otherwise, if we have a type, unwrap unions/optionals and take the first non-None class type.
+        val resolvedNamed: PsiNamedElement? = when (annValue) {
+            is PyReferenceExpression -> annValue.reference.resolve() as? PsiNamedElement
+            else -> {
+                val base = paramType?.let { firstNonNoneMember(it) }
+                (base as? PyClassType)?.pyClass as? PsiNamedElement
             }
-            TypeInfo(ctx.getType(annValue), resolvedTypeElement)
+        }
+
+        return if (annValue is PyExpression || paramType != null) {
+            TypeInfo(
+                type = paramType,
+                annotationExpr = annValue as? PyTypedElement,
+                resolvedNamed = resolvedNamed
+            )
         } else {
             null
         }
     }
 
-    /** Pretty name selection used by wrapping intention. */
-    fun canonicalCtorName(typeName: String?): String? = when (typeName) {
-        null, "Unknown" -> null
-        // keep simple builtins as-is
-        "str", "int", "float", "bool", "list", "dict", "set", "tuple" -> typeName
-        // If we receive a union/optional string, default to the first non-None-ish item
-        else -> typeName
-            .substringBefore("|")
-            .trim()
-            .removeSuffix("]")
-            .substringAfterLast('.')
+    /**
+     * PSI-based constructor name resolution.
+     * - Unwraps unions/optionals via PyUnionType/PyOptionalType
+     * - Picks the first non-None branch deterministically
+     * - Returns simple class name for classes and builtin names for PyBuiltinType
+     */
+    fun canonicalCtorName(element: PyTypedElement, ctx: TypeEvalContext): String? {
+        val t = ctx.getType(element)
+        if (t != null) {
+            val base = firstNonNoneMember(t) ?: return null
+
+            // Classes and builtins are represented as PyClassType
+            if (base is PyClassType) {
+                // Prefer short name; fall back to last component of qualified name
+                return base.name ?: base.classQName?.substringAfterLast('.')
+            }
+
+            // For other types, try generic name
+            return base.name
+        }
+
+        // Fallback path when the type provider cannot infer a type for the annotation PSI (e.g., some union spellings).
+        // Use a minimal, local text interpretation of the annotation expression to choose a constructor name
+        // (first non-None branch for unions/optionals), without calling the deprecated string-based API.
+        val raw = element.text?.trim().orEmpty()
+        if (raw.isEmpty()) return null
+
+        fun simple(n: String): String = n.trim().removeSuffix("]").substringAfterLast('.')
+        fun isNoneish(s: String): Boolean {
+            val t0 = s.trim().removeSuffix("]").substringAfterLast('.')
+            return t0 == "None" || t0 == "NoneType"
+        }
+
+        // Builtins passthrough
+        when (raw) {
+            "str", "int", "float", "bool", "list", "dict", "set", "tuple" -> return raw
+        }
+
+        // PEP 604: A | B | None
+        if (raw.contains("|")) {
+            val first = raw.split('|')
+                .map { it.trim() }
+                .firstOrNull { it.isNotBlank() && !isNoneish(it) }
+            return first?.let { simple(it) }
+        }
+
+        // typing forms: Optional[T], Union[A, B, ...]
+        val head = raw.substringBefore("[").substringAfterLast('.')
+        val body = raw.substringAfter("[", missingDelimiterValue = "").removeSuffix("]")
+        if (head.equals("Optional", ignoreCase = true)) {
+            val inner = body.substringBefore(',').substringBefore('|').trim()
+            if (inner.isNotBlank()) return simple(inner)
+        }
+        if (head.equals("Union", ignoreCase = true)) {
+            val parts = body.split(',')
+            val first = parts.map { it.trim() }.firstOrNull { it.isNotBlank() && !isNoneish(it) }
+            if (first != null) return simple(first)
+        }
+
+        // Default: strip qualifiers
+        return simple(raw)
+    }
+
+    /** Unwrap unions and pick the first non-None member. */
+    private fun firstNonNoneMember(t: PyType): PyType? {
+        if (t is PyUnionType) {
+            return t.members.firstOrNull { it != null && !isNoneType(it) }
+        }
+        return t
+    }
+
+    private fun isNoneType(type: PyType?): Boolean {
+        if (type !is PyClassType) return false
+        val qName = type.classQName
+        return qName != null && com.jetbrains.python.PyNames.NONE.contains(qName)
     }
 
     /** Human-friendly context for messages (e.g., variable names). */

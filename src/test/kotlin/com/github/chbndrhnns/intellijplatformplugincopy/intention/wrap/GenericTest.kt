@@ -172,4 +172,99 @@ class GenericTest : TestBase() {
             """.trimIndent()
         )
     }
+
+    fun testWrapWithPep604UnionChoosesFirstBranch() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            from pathlib import Path
+            
+            def f(x: str | int) -> None:
+                pass
+            
+            f(<caret>Path("val"))
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        // Expect to wrap to the first branch: str()
+        val intention = myFixture.findSingleIntention("Wrap with str()")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            from pathlib import Path
+            
+            def f(x: str | int) -> None:
+                pass
+            
+            f(str(Path("val")))
+            """.trimIndent()
+        )
+    }
+
+    fun testWrapWithOptionalPicksInnerTypeNotNone() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            from typing import Optional
+            from pathlib import Path
+            
+            def f(x: Optional[str]) -> None:
+                pass
+            
+            f(<caret>Path("val"))
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        // Expect Optional[str] -> choose str()
+        val intention = myFixture.findSingleIntention("Wrap with str()")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            from typing import Optional
+            from pathlib import Path
+            
+            def f(x: Optional[str]) -> None:
+                pass
+            
+            f(str(Path("val")))
+            """.trimIndent()
+        )
+    }
+
+    fun testWrapWithUnionCustomFirstPicksCustom() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            class CustomWrapper:
+                def __init__(self, value: str):
+                    self.value = value
+            
+            def f(x: CustomWrapper | str) -> None:
+                pass
+            
+            f(<caret>"abc")
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Wrap with CustomWrapper()")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            class CustomWrapper:
+                def __init__(self, value: str):
+                    self.value = value
+            
+            def f(x: CustomWrapper | str) -> None:
+                pass
+            
+            f(CustomWrapper("abc"))
+            """.trimIndent()
+        )
+    }
 }
