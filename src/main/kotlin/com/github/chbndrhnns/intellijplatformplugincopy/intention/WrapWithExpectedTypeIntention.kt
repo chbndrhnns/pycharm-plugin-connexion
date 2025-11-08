@@ -9,6 +9,7 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNamedElement
+import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.QualifiedName
 import com.jetbrains.python.codeInsight.dataflow.scope.ScopeUtil
 import com.jetbrains.python.codeInsight.imports.AddImportHelper
@@ -48,6 +49,7 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
                 // Derive constructor name robustly (handles unions/optionals across SDK variants)
                 val ctor = PyTypeIntentions.expectedCtorName(elementAtCaret, context)
                 if (!ctor.isNullOrBlank()) {
+                    if (isAlreadyWrappedWith(elementAtCaret, ctor)) return false
                     problematicElement = elementAtCaret
                     expectedTypeName = ctor
 
@@ -212,6 +214,29 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
                 }
             }
         }
+        return false
+    }
+
+
+    /**
+     * Returns true if the given expression is already wrapped by a call to the same constructor
+     * that we intend to suggest. Prevents multi-wrap like One(One("abc")).
+     */
+    private fun isAlreadyWrappedWith(expr: PyExpression, ctorName: String): Boolean {
+        // Case A: the expression itself is a call to ctorName
+        if (expr is PyCallExpression) {
+            val calleeName = (expr.callee as? PyReferenceExpression)?.name
+            if (calleeName == ctorName) return true
+        }
+
+        // Case B: the expression is an argument inside a call to ctorName
+        val argList = PsiTreeUtil.getParentOfType(expr, PyArgumentList::class.java)
+        val call = PsiTreeUtil.getParentOfType(expr, PyCallExpression::class.java)
+        if (argList != null && call != null && PsiTreeUtil.isAncestor(argList, expr, false)) {
+            val calleeName = (call.callee as? PyReferenceExpression)?.name
+            if (calleeName == ctorName) return true
+        }
+
         return false
     }
 

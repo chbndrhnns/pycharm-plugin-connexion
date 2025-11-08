@@ -267,4 +267,25 @@ class GenericTest : TestBase() {
             """.trimIndent()
         )
     }
+
+    fun testNoMultiWrapOnSameCtorWhenFirstWrapFailed() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            from typing import NewType
+            One = NewType("One", int)
+
+            def do(arg: One | None) -> None:
+                ...
+
+            def test_():
+                do(One(<caret>"abc"))
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intentions = myFixture.availableIntentions
+        val hasWrapWithOne = intentions.any { it.text == "Wrap with One()" }
+        assertFalse("Intention should not be offered when already wrapped with One()", hasWrapWithOne)
+    }
 }
