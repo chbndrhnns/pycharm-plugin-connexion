@@ -1,9 +1,9 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.WrapWithExpectedTypeIntention
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.ui.PopupHost
 import com.intellij.openapi.editor.Editor
 
-class FakePopupHost : WrapWithExpectedTypeIntention.PopupHost {
+class FakePopupHost : PopupHost {
     var lastTitle: String? = null
     var lastLabels: List<String> = emptyList()
     var selectedIndex: Int = 0

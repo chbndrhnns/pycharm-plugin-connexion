@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention
 
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.ui.PopupHost
 import org.jetbrains.annotations.TestOnly
 
 /**
@@ -12,5 +13,5 @@ object WrapWithExpectedTypeIntentionHooks {
     /** Optional popup host injection used by tests to simulate chooser selection. */
     @TestOnly
     @JvmStatic
-    var popupHost: WrapWithExpectedTypeIntention.PopupHost? = null
+    var popupHost: PopupHost? = null
 }
