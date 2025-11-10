@@ -152,4 +152,20 @@ class SimpleWrapTest : TestBase() {
             """.trimIndent()
         )
     }
+
+    fun testDoNotOfferNoneWrappingInNestedListCall() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            def do(arg: list[str]):
+                return arg
+
+            do(l<caret>ist(0))
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val noneIntention = myFixture.availableIntentions.find { it.text == "Wrap with None()" }
+        assertNull("Intention 'Wrap with None()' must NOT be available", noneIntention)
+    }
 }

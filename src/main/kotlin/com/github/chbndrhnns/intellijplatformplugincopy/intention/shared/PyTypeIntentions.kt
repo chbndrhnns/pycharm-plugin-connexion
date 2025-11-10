@@ -164,7 +164,11 @@ object PyTypeIntentions {
         // First, try PSI-based resolution which also handles text-only union spellings.
         info.annotationExpr?.let { ann ->
             val fromPsi = canonicalCtorName(ann, ctx)
-            if (!fromPsi.isNullOrBlank() && !fromPsi.equals("UnionType", true) && !fromPsi.equals("Union", true)) {
+            if (!fromPsi.isNullOrBlank()
+                && !fromPsi.equals("UnionType", true)
+                && !fromPsi.equals("Union", true)
+                && !fromPsi.equals("None", true) // guard against treating None as a constructor
+            ) {
                 return fromPsi
             }
         }
@@ -172,9 +176,11 @@ object PyTypeIntentions {
         // Fallback: use the expected type, unwrap unions/optionals and pick the first non-None class
         val base = info.type?.let { firstNonNoneMember(it) }
         if (base is PyClassType) {
-            return base.name ?: base.classQName?.substringAfterLast('.')
+            val name = base.name ?: base.classQName?.substringAfterLast('.')
+            return if (name.equals("None", true)) null else name
         }
-        return base?.name
+        val name = base?.name
+        return if (name.equals("None", true)) null else name
     }
 
     /**
@@ -340,11 +346,13 @@ object PyTypeIntentions {
             // Classes and builtins are represented as PyClassType
             if (base is PyClassType) {
                 // Prefer short name; fall back to last component of qualified name
-                return base.name ?: base.classQName?.substringAfterLast('.')
+                val name = base.name ?: base.classQName?.substringAfterLast('.')
+                return if (name.equals("None", true)) null else name
             }
 
             // For other types, try generic name
-            return base.name
+            val name = base.name
+            return if (name.equals("None", true)) null else name
         }
 
         // If there's no resolvable type for the annotation PSI, do not attempt text parsing.
@@ -361,9 +369,14 @@ object PyTypeIntentions {
     }
 
     private fun isNoneType(type: PyType?): Boolean {
-        if (type !is PyClassType) return false
-        val qName = type.classQName
-        return qName != null && com.jetbrains.python.PyNames.NONE.contains(qName)
+        if (type == null) return false
+        val asClass = type as? PyClassType ?: return false
+        val qName = asClass.classQName ?: return false
+        // Recognize common forms of None/NoneType fully qualified and short
+        return qName.endsWith("NoneType") ||
+                qName.equals("None", true) ||
+                qName.equals("builtins.None", true) ||
+                qName.equals("builtins.NoneType", true)
     }
 
     /** Human-friendly context for messages (e.g., variable names). */
