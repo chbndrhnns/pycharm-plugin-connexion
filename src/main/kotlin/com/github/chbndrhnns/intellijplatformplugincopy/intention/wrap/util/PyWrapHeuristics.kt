@@ -23,6 +23,13 @@ object PyWrapHeuristics {
         is PyDictCompExpression,
         is PyGeneratorExpression -> true
 
+        is PyCallExpression -> {
+            val calleeName = (expr.callee as? PyReferenceExpression)?.name
+            // Treat common iterable/container factories as containers to avoid nesting
+            // e.g., prefer list(set()) over [set()] and list(range(...)) over [range(...)]
+            calleeName in setOf("set", "tuple", "dict", "range")
+        }
+
         else -> false
     }
 

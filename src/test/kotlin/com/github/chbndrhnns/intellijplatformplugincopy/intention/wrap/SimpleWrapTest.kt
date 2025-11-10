@@ -102,4 +102,54 @@ class SimpleWrapTest : TestBase() {
             """.trimIndent()
         )
     }
+
+    fun testWrapSetCallIntoListParam() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            def do(arg: list[str]):
+                return arg
+
+            do(s<caret>et())
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Wrap with list()")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            def do(arg: list[str]):
+                return arg
+
+            do(list(set()))
+            """.trimIndent()
+        )
+    }
+
+    fun testWrapRangeCallIntoListParam() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            def do(arg: list[int]):
+                return arg
+
+            do(r<caret>ange(3))
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Wrap with list()")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            def do(arg: list[int]):
+                return arg
+
+            do(list(range(3)))
+            """.trimIndent()
+        )
+    }
 }
