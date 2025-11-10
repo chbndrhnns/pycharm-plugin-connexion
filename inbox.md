@@ -25,7 +25,7 @@ def do(arg: list[CloudId]) -> None:
     print(arg)
 
 
-do([ < caret > "abc"])
+do(["abc"])
 ```
 
 ## In Progress Tasks
