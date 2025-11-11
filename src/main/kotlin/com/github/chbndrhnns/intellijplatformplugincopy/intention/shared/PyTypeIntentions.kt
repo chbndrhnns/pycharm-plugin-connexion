@@ -393,4 +393,174 @@ object PyTypeIntentions {
         return ""
     }
 
+    /**
+     * If [element] is an item inside a list literal and the list itself has an expected
+     * parameterized type like list[T], return the constructor name for T and its resolved element.
+     * Currently supports only list literals as a minimal, low-risk addition.
+     */
+    fun tryContainerItemCtor(
+        element: PyExpression,
+        ctx: TypeEvalContext
+    ): Pair<String, PsiNamedElement?>? {
+        val container = findEnclosingContainer(element) ?: return null
+        val pos = locatePositionInContainer(element, container) ?: return null
+        return expectedElementCtorForContainerItem(pos, container, ctx)
+    }
+
+    /**
+     * Returns true if the actual type of [element] already matches the expected constructor name [expectedCtorName].
+     * Used to suppress false-positive suggestions like wrapping an `int` with `int()`.
+     */
+    fun isElementAlreadyOfCtor(element: PyExpression, expectedCtorName: String, ctx: TypeEvalContext): Boolean {
+        val actualName = TypeNameRenderer.render(ctx.getType(element)).lowercase()
+        return actualName == expectedCtorName.lowercase()
+    }
+
+    // --- Container element analysis (generalized) ---
+    private sealed interface ContainerPos {
+        data object Item : ContainerPos
+        data class TupleItem(val index: Int) : ContainerPos
+        data object DictKey : ContainerPos
+        data object DictValue : ContainerPos
+    }
+
+    private fun findEnclosingContainer(element: PyExpression): PyExpression? {
+        val container = PsiTreeUtil.getParentOfType(
+            element,
+            PyListLiteralExpression::class.java,
+            PySetLiteralExpression::class.java,
+            PyTupleExpression::class.java,
+            PyDictLiteralExpression::class.java,
+            PyListCompExpression::class.java,
+            PySetCompExpression::class.java,
+            PyDictCompExpression::class.java
+        ) ?: return null
+
+        val contains = when (container) {
+            is PyListLiteralExpression -> container.elements.any {
+                it == element || PsiTreeUtil.isAncestor(
+                    it,
+                    element,
+                    false
+                )
+            }
+
+            is PySetLiteralExpression -> container.elements.any {
+                it == element || PsiTreeUtil.isAncestor(
+                    it,
+                    element,
+                    false
+                )
+            }
+
+            is PyTupleExpression -> container.elements.any {
+                it == element || PsiTreeUtil.isAncestor(
+                    it,
+                    element,
+                    false
+                )
+            }
+
+            is PyDictLiteralExpression -> container.elements.any { kv ->
+                val k = kv.key
+                val v = kv.value
+                (k != null && (k == element || PsiTreeUtil.isAncestor(k, element, false))) ||
+                        (v != null && (v == element || PsiTreeUtil.isAncestor(v, element, false)))
+            }
+
+            is PyListCompExpression, is PySetCompExpression, is PyDictCompExpression -> true
+            else -> false
+        }
+        return if (contains) container else null
+    }
+
+    private fun locatePositionInContainer(element: PyExpression, container: PyExpression): ContainerPos? =
+        when (container) {
+            is PyListLiteralExpression, is PySetLiteralExpression -> ContainerPos.Item
+            is PyTupleExpression -> ContainerPos.TupleItem(indexOfItemInTuple(container as PyTupleExpression, element))
+            is PyDictLiteralExpression -> {
+                val kv = PsiTreeUtil.getParentOfType(element, PyKeyValueExpression::class.java) ?: return null
+                when {
+                    kv.key != null && (kv.key == element || PsiTreeUtil.isAncestor(
+                        kv.key,
+                        element,
+                        false
+                    )) -> ContainerPos.DictKey
+
+                    kv.value != null && (kv.value == element || PsiTreeUtil.isAncestor(
+                        kv.value,
+                        element,
+                        false
+                    )) -> ContainerPos.DictValue
+
+                    else -> null
+                }
+            }
+
+            is PyListCompExpression, is PySetCompExpression -> ContainerPos.Item
+            is PyDictCompExpression -> ContainerPos.DictValue // best-effort: treat result as value
+            else -> null
+        }
+
+    private fun indexOfItemInTuple(tuple: PyTupleExpression, item: PyExpression): Int {
+        val idx = tuple.elements.indexOfFirst { it == item || PsiTreeUtil.isAncestor(it, item, false) }
+        return if (idx >= 0) idx else 0
+    }
+
+    private fun expectedElementCtorForContainerItem(
+        pos: ContainerPos,
+        container: PyExpression,
+        ctx: TypeEvalContext
+    ): Pair<String, PsiNamedElement?>? {
+        val info = getExpectedTypeInfo(container, ctx) ?: return null
+        val ann = info.annotationExpr as? PyExpression ?: return null
+        val sub = ann as? PySubscriptionExpression ?: return null
+        val baseName = (sub.operand as? PyReferenceExpression)?.name?.lowercase()
+        val arg = sub.indexExpression ?: return null
+
+        val chosenArg: PyExpression? = when (baseName) {
+            // Single-arg generics and their typing variants
+            "list", "set", "sequence", "collection", "iterable", "mutablesequence" -> singleArg(arg)
+            "tuple" -> tupleArgFor(pos, arg)
+            "dict", "mapping", "mutablemapping" -> dictArgFor(pos, arg)
+            // Also handle capitalized typing names by best-effort
+            else -> when (baseName?.lowercase()) {
+                "tuple" -> tupleArgFor(pos, arg)
+                "dict" -> dictArgFor(pos, arg)
+                else -> singleArg(arg)
+            }
+        }
+
+        val typeExpr = chosenArg as? PyTypedElement ?: return null
+        val ctor = canonicalCtorName(typeExpr, ctx) ?: return null
+        val named = (chosenArg as? PyReferenceExpression)?.reference?.resolve() as? PsiNamedElement
+        return ctor to named
+    }
+
+    private fun singleArg(arg: PyExpression): PyExpression? = when (arg) {
+        is PyTupleExpression -> arg.elements.firstOrNull() as? PyExpression
+        else -> arg
+    }
+
+    private fun tupleArgFor(pos: ContainerPos, arg: PyExpression): PyExpression? {
+        val args = (arg as? PyTupleExpression)?.elements
+        if (args == null || args.isEmpty()) return singleArg(arg)
+        return when (pos) {
+            is ContainerPos.TupleItem -> args.getOrNull(pos.index) as? PyExpression
+                ?: args.firstOrNull() as? PyExpression
+
+            else -> args.firstOrNull() as? PyExpression
+        }
+    }
+
+    private fun dictArgFor(pos: ContainerPos, arg: PyExpression): PyExpression? {
+        val args = (arg as? PyTupleExpression)?.elements ?: return null
+        if (args.isEmpty()) return null
+        return when (pos) {
+            ContainerPos.DictKey -> args.getOrNull(0) as? PyExpression
+            ContainerPos.DictValue -> args.getOrNull(1) as? PyExpression ?: args.getOrNull(0) as? PyExpression
+            else -> args.firstOrNull() as? PyExpression
+        }
+    }
+
 }
