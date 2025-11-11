@@ -371,4 +371,33 @@ class SimpleWrapTest : TestBase() {
             """.trimIndent()
         )
     }
+
+    fun testOfferBoolWrappingForKeywordOnlyParam() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            class CompletedProcess: ...
+
+            def run(*, shell: bool = False) -> CompletedProcess:
+                return CompletedProcess()
+
+            run(shell=<caret>0)
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Wrap with bool()")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            class CompletedProcess: ...
+
+            def run(*, shell: bool = False) -> CompletedProcess:
+                return CompletedProcess()
+
+            run(shell=bool(0))
+            """.trimIndent()
+        )
+    }
 }

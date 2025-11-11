@@ -302,13 +302,24 @@ object PyTypeIntentions {
 
         val pyFunc = resolved as? PyFunction ?: return null
         val params = pyFunc.parameterList.parameters
-        if (argIndex >= params.size) return null
 
-        val param = params[argIndex]
-        val annValue = (param as? PyNamedParameter)?.annotation?.value
+        // Prefer keyword mapping when available; this correctly handles keyword-only parameters
+        val kwArg = (args.getOrNull(argIndex) as? PyKeywordArgument)
+            ?: PsiTreeUtil.getParentOfType(expr, PyKeywordArgument::class.java)
+
+        val targetParam: PyParameter? = if (kwArg != null) {
+            val name = kwArg.keyword
+            if (!name.isNullOrBlank()) params.firstOrNull { (it as? PyNamedParameter)?.name == name } else null
+        } else {
+            // For positional args, compute index among positional arguments only
+            val positionalArgs = args.filter { it !is PyKeywordArgument }
+            val posIndex = positionalArgs.indexOf(args.getOrNull(argIndex))
+            if (posIndex >= 0) params.getOrNull(posIndex) else null
+        }
+        val annValue = (targetParam as? PyNamedParameter)?.annotation?.value
         // Important: ask the type of the parameter element (not the annotation PSI),
         // because ctx.getType(annotationExpr) may be null for PEP 604 unions.
-        val paramType = (param as? PyTypedElement)?.let { ctx.getType(it) }
+        val paramType = (targetParam as? PyTypedElement)?.let { ctx.getType(it) }
 
         // Try to resolve a concrete named element for import handling.
         // 1) If the annotation is a simple reference, resolve it directly.
