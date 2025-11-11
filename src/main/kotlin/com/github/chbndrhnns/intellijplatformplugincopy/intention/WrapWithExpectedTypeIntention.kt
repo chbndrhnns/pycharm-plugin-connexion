@@ -119,10 +119,10 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
             is com.jetbrains.python.psi.PyListLiteralExpression -> {
                 val offset = editor.caretModel.offset
                 val elems = elementAtCaret.elements
-                val exact = elems.firstOrNull { it.textRange.containsOffset(offset) } as? PyExpression
+                val exact = elems.firstOrNull { it.textRange.containsOffset(offset) }
                 exact ?: run {
-                    val right = elems.firstOrNull { it.textRange.startOffset >= offset } as? PyExpression
-                    val left = elems.lastOrNull { it.textRange.endOffset <= offset } as? PyExpression
+                    val right = elems.firstOrNull { it.textRange.startOffset >= offset }
+                    val left = elems.lastOrNull { it.textRange.endOffset <= offset }
                     right ?: left
                 }
             }
@@ -130,10 +130,10 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
             is com.jetbrains.python.psi.PySetLiteralExpression -> {
                 val offset = editor.caretModel.offset
                 val elems = elementAtCaret.elements
-                val exact = elems.firstOrNull { it.textRange.containsOffset(offset) } as? PyExpression
+                val exact = elems.firstOrNull { it.textRange.containsOffset(offset) }
                 exact ?: run {
-                    val right = elems.firstOrNull { it.textRange.startOffset >= offset } as? PyExpression
-                    val left = elems.lastOrNull { it.textRange.endOffset <= offset } as? PyExpression
+                    val right = elems.firstOrNull { it.textRange.startOffset >= offset }
+                    val left = elems.lastOrNull { it.textRange.endOffset <= offset }
                     right ?: left
                 }
             }
@@ -141,10 +141,10 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
             is com.jetbrains.python.psi.PyTupleExpression -> {
                 val offset = editor.caretModel.offset
                 val elems = elementAtCaret.elements
-                val exact = elems.firstOrNull { it.textRange.containsOffset(offset) } as? PyExpression
+                val exact = elems.firstOrNull { it.textRange.containsOffset(offset) }
                 exact ?: run {
-                    val right = elems.firstOrNull { it.textRange.startOffset >= offset } as? PyExpression
-                    val left = elems.lastOrNull { it.textRange.endOffset <= offset } as? PyExpression
+                    val right = elems.firstOrNull { it.textRange.startOffset >= offset }
+                    val left = elems.lastOrNull { it.textRange.endOffset <= offset }
                     right ?: left
                 }
             }
@@ -155,15 +155,15 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
                 val exactInPair = pairs.firstOrNull { pair ->
                     val k = pair.key
                     val v = pair.value
-                    (k != null && k.textRange.containsOffset(offset)) || (v != null && v.textRange.containsOffset(offset))
+                    (k.textRange.containsOffset(offset)) || (v != null && v.textRange.containsOffset(offset))
                 }
                 when {
                     exactInPair != null -> {
                         val k = exactInPair.key
                         val v = exactInPair.value
                         when {
-                            k != null && k.textRange.containsOffset(offset) -> k as? PyExpression
-                            v != null && v.textRange.containsOffset(offset) -> v as? PyExpression
+                            k.textRange.containsOffset(offset) -> k
+                            v != null && v.textRange.containsOffset(offset) -> v
                             else -> null
                         }
                     }
@@ -174,7 +174,7 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
                         val left = pairs.lastOrNull { it.textRange.endOffset <= offset }
                         val pair = right ?: left
                         // default to key if present
-                        (pair?.key ?: pair?.value) as? PyExpression
+                        (pair?.key ?: pair?.value)
                     }
                 }
             }
