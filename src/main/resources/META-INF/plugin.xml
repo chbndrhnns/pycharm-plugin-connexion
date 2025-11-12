@@ -1,7 +1,7 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
     <id>com.github.chbndrhnns.intellijplatformplugincopy</id>
-    <name>PyCharm DDD Toolkit</name>
+    <name>Python DDD Toolkit</name>
     <vendor>chbndrhnns</vendor>
 
     <depends>com.intellij.modules.platform</depends>
