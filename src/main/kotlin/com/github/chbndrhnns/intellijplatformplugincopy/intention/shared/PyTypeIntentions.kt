@@ -214,47 +214,52 @@ object PyTypeIntentions {
         }
     }
 
-    /**
-     * Check if the expression is inside a function call argument (not an assignment).
-     */
-    private fun isInsideFunctionCallArgument(expr: PyExpression): Boolean {
-        // Walk up to see if we're inside a function call argument
-        val argList = PsiTreeUtil.getParentOfType(expr, PyArgumentList::class.java)
-        if (argList != null) {
-            val call = PsiTreeUtil.getParentOfType(argList, PyCallExpression::class.java)
-            if (call != null) {
-                // Determine whether 'expr' is within any positional or keyword argument
-                val inPositional = argList.arguments.any { it == expr || PsiTreeUtil.isAncestor(it, expr, false) }
-                val inKeyword = argList.arguments.asSequence()
-                    .mapNotNull { it as? PyKeywordArgument }
-                    .any { kw ->
-                        val v = kw.valueExpression
-                        v != null && (v == expr || PsiTreeUtil.isAncestor(v, expr, false))
-                    }
-                if (inPositional || inKeyword) {
-                    // Check if this call is itself in an assignment context AND
-                    // the expected type context comes from the assignment, not the call parameter
-                    val assignment = PsiTreeUtil.getParentOfType(call, PyAssignmentStatement::class.java)
-                    if (assignment != null && assignment.assignedValue == call) {
-                        val hasAssignmentTypeAnnotation = assignment.targets.any { target ->
-                            (target as? PyTargetExpression)?.annotation != null
-                        }
-                        if (hasAssignmentTypeAnnotation) {
-                            return false  // Assignment context - wrap the call, not the argument
-                        }
-                    }
+    /** Returns the owning argument list and call when [expr] is inside an argument of that call, or null otherwise. */
+    private fun inArgList(expr: PyExpression): Pair<PyArgumentList, PyCallExpression>? {
+        val argList = PsiTreeUtil.getParentOfType(expr, PyArgumentList::class.java) ?: return null
+        val call = PsiTreeUtil.getParentOfType(argList, PyCallExpression::class.java) ?: return null
 
-                    // Check if this call is itself a return value
-                    val returnStmt = PsiTreeUtil.getParentOfType(call, PyReturnStatement::class.java)
-                    if (returnStmt != null && returnStmt.expression == call) {
-                        return false  // Return context - wrap the call, not the argument
-                    }
+        // Is the expression within any positional argument?
+        val inPositional = argList.arguments.any { it == expr || PsiTreeUtil.isAncestor(it, expr, false) }
 
-                    return true  // Truly an argument context
-                }
+        // Or within the value of a keyword argument?
+        val inKeyword = argList.arguments.asSequence()
+            .mapNotNull { it as? PyKeywordArgument }
+            .any { kw ->
+                val v = kw.valueExpression
+                v != null && (v == expr || PsiTreeUtil.isAncestor(v, expr, false))
             }
+
+        return if (inPositional || inKeyword) argList to call else null
+    }
+
+    /** True if [call] is used as an assigned value where the assignment has a type annotation. */
+    private fun isExcludedAssignment(call: PyCallExpression): Boolean {
+        val assignment = PsiTreeUtil.getParentOfType(call, PyAssignmentStatement::class.java)
+        if (assignment != null && assignment.assignedValue == call) {
+            val hasAnnotation = assignment.targets.any { target ->
+                (target as? PyTargetExpression)?.annotation != null
+            }
+            if (hasAnnotation) return true
         }
         return false
+    }
+
+    /** True if [call] is directly the returned expression of a return statement. */
+    private fun isExcludedReturn(call: PyCallExpression): Boolean {
+        val returnStmt = PsiTreeUtil.getParentOfType(call, PyReturnStatement::class.java)
+        return returnStmt != null && returnStmt.expression == call
+    }
+
+    /**
+     * Check if the expression is inside a function call argument (not an assignment/return wrapper context).
+     */
+    private fun isInsideFunctionCallArgument(expr: PyExpression): Boolean {
+        val pair = inArgList(expr) ?: return false
+        val call = pair.second
+        if (isExcludedAssignment(call)) return false
+        if (isExcludedReturn(call)) return false
+        return true
     }
 
     /**
