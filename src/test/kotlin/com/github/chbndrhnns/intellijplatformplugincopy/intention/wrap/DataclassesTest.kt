@@ -129,4 +129,44 @@ class DataclassesTest : TestBase() {
             """.trimIndent()
         )
     }
+
+    fun testWrapDataclassListOfNewType_wrapsElements() {
+        myFixture.configureByText(
+            "a.py", """
+            from dataclasses import dataclass
+            from typing import NewType
+
+            Item = NewType("Item", str)
+
+            @dataclass
+            class Data:
+                items: list[Item]
+
+            def test_():
+                items = ["abc"]
+                Data(items=i<caret>tems)
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Wrap items with Item()")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            from dataclasses import dataclass
+            from typing import NewType
+
+            Item = NewType("Item", str)
+
+            @dataclass
+            class Data:
+                items: list[Item]
+
+            def test_():
+                items = ["abc"]
+                Data(items=[Item(v) for v in items])
+            """.trimIndent()
+        )
+    }
 }

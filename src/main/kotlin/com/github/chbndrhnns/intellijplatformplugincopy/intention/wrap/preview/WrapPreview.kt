@@ -29,4 +29,25 @@ class WrapPreview {
             modifiedText
         )
     }
+
+    fun buildElementwise(
+        file: PsiFile,
+        element: PyExpression,
+        container: String,
+        itemCtorName: String
+    ): IntentionPreviewInfo {
+        val unwrapped = PyPsiUtils.flattenParens(element) ?: element
+        val src = unwrapped.text
+        val v = "v"
+        val text = when (container.lowercase()) {
+            "list" -> "[${itemCtorName}($v) for $v in $src]"
+            else -> "[${itemCtorName}($v) for $v in $src]"
+        }
+        return IntentionPreviewInfo.CustomDiff(
+            file.fileType,
+            file.name,
+            element.text,
+            text
+        )
+    }
 }

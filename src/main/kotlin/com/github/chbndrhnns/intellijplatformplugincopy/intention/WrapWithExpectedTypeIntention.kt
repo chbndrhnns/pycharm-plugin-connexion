@@ -44,6 +44,14 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
         val candidates: List<ExpectedCtor>
     ) : WrapPlan
 
+    // Element-wise wrapping plan (e.g., list[Item] expected, wrap as [Item(v) for v in src])
+    private data class Elementwise(
+        override val element: PyExpression,
+        val container: String, // e.g., "list"
+        val itemCtorName: String,
+        val itemCtorElement: PsiNamedElement?
+    ) : WrapPlan
+
     private companion object {
         val PLAN_KEY: Key<WrapPlan> = Key.create("wrap.with.expected.plan")
     }
@@ -69,6 +77,8 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
             is UnionChoice -> "Wrap with expected union type…"
             is Single -> plan.ctorName.takeIf { it.isNotBlank() }?.let { "Wrap with $it()" }
                 ?: "Wrap with expected type"
+
+            is Elementwise -> "Wrap items with ${plan.itemCtorName}()"
         }
         return true
     }
@@ -94,6 +104,17 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
             is Single -> {
                 applier.apply(project, file, plan.element, plan.ctorName, plan.ctorElement)
             }
+
+            is Elementwise -> {
+                applier.applyElementwise(
+                    project,
+                    file,
+                    plan.element,
+                    plan.container,
+                    plan.itemCtorName,
+                    plan.itemCtorElement
+                )
+            }
         }
     }
 
@@ -105,6 +126,8 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
             is Single -> {
                 previewBuilder.build(file, plan.element, plan.ctorName)
             }
+
+            is Elementwise -> previewBuilder.buildElementwise(file, plan.element, plan.container, plan.itemCtorName)
         }
     }
 
@@ -114,36 +137,106 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
         val context = TypeEvalContext.codeAnalysis(project, file)
         val elementAtCaret = PyTypeIntentions.findExpressionAtCaret(editor, file) ?: return null
 
+        // Special-case: when a tuple literal is provided where list[T] is expected, prefer list(tuple)
+        // rather than element-wise mapping. This matches user expectations and tests.
+        run {
+            val ctor = expectedListItemCtor(elementAtCaret, context)
+            val enclosingTuple = com.intellij.psi.util.PsiTreeUtil.getParentOfType(
+                elementAtCaret,
+                com.jetbrains.python.psi.PyTupleExpression::class.java
+            )
+            val tupleTarget = when {
+                elementAtCaret is com.jetbrains.python.psi.PyTupleExpression -> elementAtCaret
+                enclosingTuple != null -> enclosingTuple
+                else -> null
+            }
+            if (ctor != null && tupleTarget != null) {
+                if (!PyWrapHeuristics.isAlreadyWrappedWith(tupleTarget, "list", null)) {
+                    return Single(tupleTarget, "list", null)
+                }
+            }
+        }
+
         // Prefer container-element analysis (e.g., items inside list literals) before generic logic.
         // When the caret expression is a container literal, locate the specific item under the caret
         // and target that element for wrapping; otherwise keep the original element.
         val containerItemTarget = PyTypeIntentions.findContainerItemAtCaret(editor, elementAtCaret)
             ?: elementAtCaret
 
+        // If we're inside a tuple literal but the expected container is a list[T], do NOT offer
+        // element-level wrapping (e.g., int(...)) — we'll prefer list(tuple) below.
+        val expectedListForArg = expectedListItemCtor(elementAtCaret, context) != null
+        val insideTupleLiteral = elementAtCaret is com.jetbrains.python.psi.PyTupleExpression ||
+                elementAtCaret.parent is com.jetbrains.python.psi.PyTupleExpression
+        val suppressItemLevelDueToTupleVsList = expectedListForArg && insideTupleLiteral
+
         // Always attempt element-level container analysis: the helper discovers the enclosing container itself
-        PyTypeIntentions.tryContainerItemCtor(containerItemTarget, context)?.let { ctor ->
-            val suppressedContainers = setOf("list", "set", "tuple", "dict")
-            if (!suppressedContainers.contains(ctor.name.lowercase())) {
-                // Suppress if the element already has the expected type (e.g., int in list[int])
-                if (PyTypeIntentions.elementDisplaysAsCtor(
-                        containerItemTarget,
-                        ctor.name,
-                        context
-                    ) == CtorMatch.MATCHES
-                ) {
-                    return null
+        if (!suppressItemLevelDueToTupleVsList) PyTypeIntentions.tryContainerItemCtor(containerItemTarget, context)
+            ?.let { ctor ->
+                val suppressedContainers = setOf("list", "set", "tuple", "dict")
+                if (!suppressedContainers.contains(ctor.name.lowercase())) {
+                    // Suppress if the element already has the expected type (e.g., int in list[int])
+                    if (PyTypeIntentions.elementDisplaysAsCtor(
+                            containerItemTarget,
+                            ctor.name,
+                            context
+                        ) == CtorMatch.MATCHES
+                    ) {
+                        return null
+                    }
+                    if (!PyWrapHeuristics.isAlreadyWrappedWith(containerItemTarget, ctor.name, ctor.symbol)) {
+                        return Single(containerItemTarget, ctor.name, ctor.symbol)
+                    }
                 }
-                if (!PyWrapHeuristics.isAlreadyWrappedWith(containerItemTarget, ctor.name, ctor.symbol)) {
-                    return Single(containerItemTarget, ctor.name, ctor.symbol)
+            }
+        // Suppress generic wrapping when caret is on certain container literals where only element-level makes sense.
+        // Note: allow tuple literals to enable converting tuple -> list (test expectation).
+        if (elementAtCaret is com.jetbrains.python.psi.PyListLiteralExpression ||
+            elementAtCaret is com.jetbrains.python.psi.PySetLiteralExpression ||
+            elementAtCaret is com.jetbrains.python.psi.PyDictLiteralExpression
+        ) return null
+
+        // Try wrapping when expected type is list[T]
+        expectedListItemCtor(elementAtCaret, context)?.let { ctor ->
+            // If the source is already an iterable/container-like expression (e.g., set(), range(), comp),
+            // or the caret is inside a tuple literal, prefer list(expr) over element-wise mapping.
+            val containerish = PyWrapHeuristics.isContainerExpression(elementAtCaret) ||
+                    elementAtCaret.parent is com.jetbrains.python.psi.PyTupleExpression
+            if (containerish) {
+                val targetForList: PyExpression = when (elementAtCaret) {
+                    is com.jetbrains.python.psi.PyTupleExpression -> elementAtCaret
+                    else -> (elementAtCaret.parent as? PyExpression) ?: elementAtCaret
+                }
+                if (!PyWrapHeuristics.isAlreadyWrappedWith(targetForList, "list", null)) {
+                    return Single(targetForList, "list", null)
+                }
+            } else {
+                // If the source is a scalar literal, prefer a singleton list over element-wise mapping.
+                when (elementAtCaret) {
+                    is com.jetbrains.python.psi.PyStringLiteralExpression,
+                    is com.jetbrains.python.psi.PyNumericLiteralExpression,
+                    is com.jetbrains.python.psi.PyBoolLiteralExpression -> {
+                        if (!PyWrapHeuristics.isAlreadyWrappedWith(elementAtCaret, "list", null)) {
+                            return Single(elementAtCaret, "list", null)
+                        }
+                    }
+                }
+                // Otherwise, offer element-wise wrapping: [T(v) for v in expr]
+                if (!PyWrapHeuristics.isAlreadyWrappedWith(
+                        elementAtCaret,
+                        ctor.name,
+                        ctor.symbol
+                    )
+                ) {
+                    return Elementwise(
+                        elementAtCaret,
+                        container = "list",
+                        itemCtorName = ctor.name,
+                        itemCtorElement = ctor.symbol
+                    )
                 }
             }
         }
-        // Suppress generic wrapping when caret is on container literals; we only support element-level here
-        if (elementAtCaret is com.jetbrains.python.psi.PyListLiteralExpression ||
-            elementAtCaret is com.jetbrains.python.psi.PySetLiteralExpression ||
-            elementAtCaret is com.jetbrains.python.psi.PyTupleExpression ||
-            elementAtCaret is com.jetbrains.python.psi.PyDictLiteralExpression
-        ) return null
 
         val names = PyTypeIntentions.computeDisplayTypeNames(elementAtCaret, context)
         if (names.actual == null || names.expected == null || names.actual == names.expected) return null
@@ -181,6 +274,28 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
             return Single(elementAtCaret, ctor, ctorElem)
         }
         return null
+    }
+
+    /** Minimal helper to detect expected list[T] item ctor from the expected annotation. */
+    private fun expectedListItemCtor(expr: PyExpression, ctx: TypeEvalContext): ExpectedCtor? {
+        val info = PyTypeIntentions.computeDisplayTypeNames(expr, ctx)
+        val annExpr = info.expectedAnnotationElement as? com.jetbrains.python.psi.PyExpression ?: return null
+        val sub = annExpr as? com.jetbrains.python.psi.PySubscriptionExpression ?: return null
+
+        val baseName = (sub.operand as? com.jetbrains.python.psi.PyReferenceExpression)
+            ?.name?.lowercase() ?: return null
+        if (baseName != "list") return null
+
+        val idx = sub.indexExpression as? com.jetbrains.python.psi.PyExpression ?: return null
+        val inner = when (idx) {
+            is com.jetbrains.python.psi.PyTupleExpression -> idx.elements.firstOrNull()
+            else -> idx
+        } as? com.jetbrains.python.psi.PyTypedElement ?: return null
+
+        val ctorName = PyTypeIntentions.canonicalCtorName(inner, ctx) ?: return null
+        val sym = (inner as? com.jetbrains.python.psi.PyReferenceExpression)
+            ?.reference?.resolve() as? PsiNamedElement
+        return ExpectedCtor(ctorName, sym)
     }
 
 

@@ -41,4 +41,31 @@ class WrapApplier(
             element.replace(wrapped)
         }
     }
+
+    /**
+     * Apply element-wise wrapping using a comprehension. Currently supports list comprehensions.
+     */
+    fun applyElementwise(
+        project: Project,
+        file: PsiFile,
+        element: PyExpression,
+        container: String,
+        itemCtorName: String,
+        itemCtorElement: PsiNamedElement?
+    ) {
+        WriteCommandAction.runWriteCommandAction(project) {
+            // Ensure import for the item ctor if needed
+            imports.ensureImportedIfNeeded(file, element as PyTypedElement, itemCtorElement)
+
+            val generator = PyElementGenerator.getInstance(project)
+            val srcText = (PyPsiUtils.flattenParens(element) ?: element).text
+            val v = "v"
+            val comp = when (container.lowercase()) {
+                "list" -> "[${itemCtorName}($v) for $v in $srcText]"
+                else -> "[${itemCtorName}($v) for $v in $srcText]" // safe fallback
+            }
+            val wrapped = generator.createExpressionFromText(LanguageLevel.getLatest(), comp)
+            element.replace(wrapped)
+        }
+    }
 }
