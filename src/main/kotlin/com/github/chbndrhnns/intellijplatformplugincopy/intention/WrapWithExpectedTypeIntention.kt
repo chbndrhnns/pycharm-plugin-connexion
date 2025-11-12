@@ -145,11 +145,11 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
             elementAtCaret is com.jetbrains.python.psi.PyDictLiteralExpression
         ) return null
 
-        val names = PyTypeIntentions.computeTypeNames(elementAtCaret, context)
+        val names = PyTypeIntentions.computeDisplayTypeNames(elementAtCaret, context)
         if (names.actual == null || names.expected == null || names.actual == names.expected) return null
 
         val ctor = PyTypeIntentions.expectedCtorName(elementAtCaret, context)
-        val annElement = names.expectedCtorElement
+        val annElement = names.expectedAnnotationElement
         val unionCtors = annElement?.let { UnionCandidates.collect(it, elementAtCaret) } ?: emptyList()
 
         if (unionCtors.size >= 2) {

@@ -17,7 +17,7 @@ data class TypeNames(
     val expected: String?,
     val actualElement: PsiElement?,
     // The PSI element to use for resolving the constructor name via PSI (typically the annotation expression)
-    val expectedCtorElement: PyTypedElement?,
+    val expectedAnnotationElement: PyTypedElement?,
     // The resolved named element (class/function) used for import handling, if available
     val expectedElement: PsiElement?
 )
@@ -266,7 +266,7 @@ object PyTypeIntentions {
      * Compute short display names for actual/expected types,
      * and ensure expectedElement is correctly set to the type annotation element (if present).
      */
-    fun computeTypeNames(expr: PyExpression, ctx: TypeEvalContext): TypeNames {
+    fun computeDisplayTypeNames(expr: PyExpression, ctx: TypeEvalContext): TypeNames {
         val actual = TypeNameRenderer.render(ctx.getType(expr))
         val expectedInfo = getExpectedTypeInfo(expr, ctx)
         val expected = TypeNameRenderer.render(expectedInfo?.type)
@@ -274,7 +274,7 @@ object PyTypeIntentions {
             actual = actual,
             expected = expected,
             actualElement = expr,
-            expectedCtorElement = expectedInfo?.annotationExpr,
+            expectedAnnotationElement = expectedInfo?.annotationExpr,
             expectedElement = expectedInfo?.resolvedNamed
         )
     }
