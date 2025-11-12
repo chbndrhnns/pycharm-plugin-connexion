@@ -1,5 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention
 
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.CtorMatch
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedCtor
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.apply.WrapApplier
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.preview.WrapPreview
@@ -39,7 +41,7 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
 
     private data class UnionChoice(
         override val element: PyExpression,
-        val candidates: List<Pair<String, PsiNamedElement?>>
+        val candidates: List<ExpectedCtor>
     ) : WrapPlan
 
     private companion object {
@@ -82,9 +84,9 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
                     editor = editor,
                     title = "Select expected type",
                     items = candidates,
-                    render = { it.first },
+                    render = { it.name },
                     onChosen = { chosen ->
-                        applier.apply(project, file, plan.element, chosen.first, chosen.second)
+                        applier.apply(project, file, plan.element, chosen.name, chosen.symbol)
                     }
                 )
             }
@@ -113,103 +115,35 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
         val elementAtCaret = PyTypeIntentions.findExpressionAtCaret(editor, file) ?: return null
 
         // Prefer container-element analysis (e.g., items inside list literals) before generic logic.
-        // When the caret expression is the list literal itself (common with multiple elements),
-        // locate the specific item under the caret and target that element for wrapping.
-        val containerItemTarget = when (elementAtCaret) {
-            is com.jetbrains.python.psi.PyListLiteralExpression -> {
-                val offset = editor.caretModel.offset
-                val elems = elementAtCaret.elements
-                val exact = elems.firstOrNull { it.textRange.containsOffset(offset) }
-                exact ?: run {
-                    val right = elems.firstOrNull { it.textRange.startOffset >= offset }
-                    val left = elems.lastOrNull { it.textRange.endOffset <= offset }
-                    right ?: left
+        // When the caret expression is a container literal, locate the specific item under the caret
+        // and target that element for wrapping; otherwise keep the original element.
+        val containerItemTarget = PyTypeIntentions.findContainerItemAtCaret(editor, elementAtCaret)
+            ?: elementAtCaret
+
+        // Always attempt element-level container analysis: the helper discovers the enclosing container itself
+        PyTypeIntentions.tryContainerItemCtor(containerItemTarget, context)?.let { ctor ->
+            val suppressedContainers = setOf("list", "set", "tuple", "dict")
+            if (!suppressedContainers.contains(ctor.name.lowercase())) {
+                // Suppress if the element already has the expected type (e.g., int in list[int])
+                if (PyTypeIntentions.elementDisplaysAsCtor(
+                        containerItemTarget,
+                        ctor.name,
+                        context
+                    ) == CtorMatch.MATCHES
+                ) {
+                    return null
                 }
-            }
-
-            is com.jetbrains.python.psi.PySetLiteralExpression -> {
-                val offset = editor.caretModel.offset
-                val elems = elementAtCaret.elements
-                val exact = elems.firstOrNull { it.textRange.containsOffset(offset) }
-                exact ?: run {
-                    val right = elems.firstOrNull { it.textRange.startOffset >= offset }
-                    val left = elems.lastOrNull { it.textRange.endOffset <= offset }
-                    right ?: left
-                }
-            }
-
-            is com.jetbrains.python.psi.PyTupleExpression -> {
-                val offset = editor.caretModel.offset
-                val elems = elementAtCaret.elements
-                val exact = elems.firstOrNull { it.textRange.containsOffset(offset) }
-                exact ?: run {
-                    val right = elems.firstOrNull { it.textRange.startOffset >= offset }
-                    val left = elems.lastOrNull { it.textRange.endOffset <= offset }
-                    right ?: left
-                }
-            }
-
-            is com.jetbrains.python.psi.PyDictLiteralExpression -> {
-                val offset = editor.caretModel.offset
-                val pairs = elementAtCaret.elements
-                val exactInPair = pairs.firstOrNull { pair ->
-                    val k = pair.key
-                    val v = pair.value
-                    (k.textRange.containsOffset(offset)) || (v != null && v.textRange.containsOffset(offset))
-                }
-                when {
-                    exactInPair != null -> {
-                        val k = exactInPair.key
-                        val v = exactInPair.value
-                        when {
-                            k.textRange.containsOffset(offset) -> k
-                            v != null && v.textRange.containsOffset(offset) -> v
-                            else -> null
-                        }
-                    }
-
-                    else -> {
-                        // choose nearest pair; prefer right neighbor
-                        val right = pairs.firstOrNull { it.textRange.startOffset >= offset }
-                        val left = pairs.lastOrNull { it.textRange.endOffset <= offset }
-                        val pair = right ?: left
-                        // default to key if present
-                        (pair?.key ?: pair?.value)
-                    }
-                }
-            }
-
-            else -> elementAtCaret
-        }
-
-        if (containerItemTarget != null) {
-            PyTypeIntentions.tryContainerItemCtor(containerItemTarget, context)?.let { (ctorName, ctorElem) ->
-                val suppressedContainers = setOf("list", "set", "tuple", "dict")
-                if (!suppressedContainers.contains(ctorName.lowercase())) {
-                    // Suppress if the element already has the expected type (e.g., int in list[int])
-                    if (PyTypeIntentions.isElementAlreadyOfCtor(containerItemTarget, ctorName, context)) {
-                        return null
-                    }
-                    if (!PyWrapHeuristics.isAlreadyWrappedWith(containerItemTarget, ctorName, ctorElem)) {
-                        return Single(containerItemTarget, ctorName, ctorElem)
-                    }
+                if (!PyWrapHeuristics.isAlreadyWrappedWith(containerItemTarget, ctor.name, ctor.symbol)) {
+                    return Single(containerItemTarget, ctor.name, ctor.symbol)
                 }
             }
         }
-        // If we're inside a list literal but couldn't resolve a concrete item, avoid
-        // offering the generic list() wrapping which would be a false positive here.
-        if (elementAtCaret is com.jetbrains.python.psi.PyListLiteralExpression && containerItemTarget === null) {
-            return null
-        }
-
-        // Suppress generic wrapping with container types when caret is on container literals
-        if (elementAtCaret is com.jetbrains.python.psi.PySetLiteralExpression ||
+        // Suppress generic wrapping when caret is on container literals; we only support element-level here
+        if (elementAtCaret is com.jetbrains.python.psi.PyListLiteralExpression ||
+            elementAtCaret is com.jetbrains.python.psi.PySetLiteralExpression ||
             elementAtCaret is com.jetbrains.python.psi.PyTupleExpression ||
             elementAtCaret is com.jetbrains.python.psi.PyDictLiteralExpression
-        ) {
-            // We only want element-level suggestions in these contexts
-            return null
-        }
+        ) return null
 
         val names = PyTypeIntentions.computeTypeNames(elementAtCaret, context)
         if (names.actual == null || names.expected == null || names.actual == names.expected) return null
@@ -219,10 +153,26 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
         val unionCtors = annElement?.let { UnionCandidates.collect(it, elementAtCaret) } ?: emptyList()
 
         if (unionCtors.size >= 2) {
-            val wrappedWithAny =
-                unionCtors.any { PyWrapHeuristics.isAlreadyWrappedWith(elementAtCaret, it.first, it.second) }
+            // Filter out candidates that already match the element's actual displayed type
+            val differing = unionCtors.filter {
+                PyTypeIntentions.elementDisplaysAsCtor(elementAtCaret, it.name, context) == CtorMatch.DIFFERS
+            }
+            val wrappedWithAny = differing.any {
+                PyWrapHeuristics.isAlreadyWrappedWith(elementAtCaret, it.name, it.symbol)
+            }
             if (wrappedWithAny) return null
-            return UnionChoice(elementAtCaret, unionCtors)
+
+            when (differing.size) {
+                0 -> return null
+                1 -> {
+                    val only = differing.first()
+                    if (!PyWrapHeuristics.isAlreadyWrappedWith(elementAtCaret, only.name, only.symbol))
+                        return Single(elementAtCaret, only.name, only.symbol)
+                    return null
+                }
+
+                else -> return UnionChoice(elementAtCaret, differing)
+            }
         }
 
         if (!ctor.isNullOrBlank()) {

@@ -225,6 +225,72 @@ class SimpleWrapTest : TestBase() {
         )
     }
 
+    fun testUnionAutoSelect_PathOverStr() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            from pathlib import Path
+            from typing import Union
+
+            a: Union[Path, str] = <caret>"val"
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Wrap with Path()")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            from pathlib import Path
+            from typing import Union
+
+            a: Union[Path, str] = Path("val")
+            """.trimIndent()
+        )
+    }
+
+    // Builtin-only unions are intentionally ignored for chooser/auto-select
+    // (we don't show a chooser for int|str since both are builtins). Covered by other tests.
+
+    fun testWrapDictKeyAndValue() {
+        // Key wrapping: expect int() for a str literal into Dict[int, int]
+        myFixture.configureByText(
+            "a.py",
+            """
+            from typing import Dict
+            val: Dict[int, int] = {<caret>"k": 1}
+            """.trimIndent()
+        )
+        myFixture.doHighlighting()
+        val keyIntent = myFixture.findSingleIntention("Wrap with int()")
+        myFixture.launchAction(keyIntent)
+        myFixture.checkResult(
+            """
+            from typing import Dict
+            val: Dict[int, int] = {int("k"): 1}
+            """.trimIndent()
+        )
+
+        // Value wrapping
+        myFixture.configureByText(
+            "b.py",
+            """
+            from typing import Dict
+            val: Dict[str, int] = {"k": <caret>True}
+            """.trimIndent()
+        )
+        myFixture.doHighlighting()
+        val valIntent = myFixture.findSingleIntention("Wrap with int()")
+        myFixture.launchAction(valIntent)
+        myFixture.checkResult(
+            """
+            from typing import Dict
+            val: Dict[str, int] = {"k": int(True)}
+            """.trimIndent()
+        )
+    }
+
     fun testDoNotOfferListWrappingInsideListLiteral_OneElement() {
         myFixture.configureByText(
             "a.py",

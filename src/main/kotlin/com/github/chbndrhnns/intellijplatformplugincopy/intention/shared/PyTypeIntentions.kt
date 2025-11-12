@@ -22,8 +22,90 @@ data class TypeNames(
     val expectedElement: PsiElement?
 )
 
+/** Small value object for constructor selection results. */
+data class ExpectedCtor(
+    val name: String,
+    val symbol: PsiNamedElement?
+)
+
+/** Match result used when comparing an element's displayed type with an expected constructor. */
+enum class CtorMatch { MATCHES, DIFFERS }
+
 /** Encapsulates small helpers used by multiple intentions. */
 object PyTypeIntentions {
+    /** Central guard for names that must not be treated as constructors. */
+    private fun isNonCtorName(name: String?): Boolean =
+        name.isNullOrBlank() || name.equalsAnyIgnoreCase("Union", "UnionType", "None")
+
+    /** Convenience: equals any of the provided options, ignoring case. */
+    private fun String.equalsAnyIgnoreCase(vararg options: String): Boolean =
+        options.any { this.equals(it, ignoreCase = true) }
+
+    /** Convenience: short name or, if absent, tail of qualified name. */
+    private fun PyClassType.shortOrQualifiedTail(): String? =
+        this.name ?: this.classQName?.substringAfterLast('.')
+
+    /** Small holder for caret candidates collected while walking up the PSI tree. */
+    private data class CaretCandidates(
+        val string: PyExpression? = null,
+        val call: PyExpression? = null,
+        val parenthesized: PyExpression? = null,
+        val other: PyExpression? = null,
+    )
+
+    /** Collect candidate expressions around caret by walking up the PSI tree once. */
+    private fun collectCandidates(leaf: PsiElement, file: PsiFile): CaretCandidates {
+        var current: PsiElement? = leaf
+        var bestString: PyExpression? = null
+        var bestCall: PyExpression? = null
+        var bestParenthesized: PyExpression? = null
+        var bestOther: PyExpression? = null
+
+        while (current != null && current != file) {
+            if (current is PyExpression) {
+                when (current) {
+                    is PyCallExpression -> bestCall = current
+                    is PyStringLiteralExpression -> bestString = current
+                    is PyParenthesizedExpression -> bestParenthesized = current
+                    else -> if (bestOther == null) bestOther = current
+                }
+            }
+            current = current.parent
+        }
+        return CaretCandidates(bestString, bestCall, bestParenthesized, bestOther)
+    }
+
+    /** Choose the most suitable expression for wrapping from collected candidates and context. */
+    private fun chooseBest(c: CaretCandidates, leaf: PsiElement): PyExpression? {
+        // Prefer string literal when it is an argument
+        if (c.string != null && isInsideFunctionCallArgument(c.string)) return c.string
+
+        // Prefer parenthesized argument when applicable, but inner string wins
+        if (c.parenthesized != null && isInsideFunctionCallArgument(c.parenthesized))
+            return c.string ?: c.parenthesized
+
+        // If inside any call argument, return the real argument root
+        val inArg = listOfNotNull(c.call, c.other).any { isInsideFunctionCallArgument(it) }
+        if (inArg) {
+            val argList = PsiTreeUtil.getParentOfType(leaf, PyArgumentList::class.java)
+            val call = PsiTreeUtil.getParentOfType(leaf, PyCallExpression::class.java)
+            if (argList != null && call != null) {
+                val args = argList.arguments
+                val arg = args.firstOrNull { it == leaf || PsiTreeUtil.isAncestor(it, leaf, false) }
+                if (arg is PyKeywordArgument) {
+                    arg.valueExpression?.let { return it }
+                } else if (arg is PyExpression) {
+                    return arg
+                }
+            }
+            // Fallback to call over bare reference
+            return c.call ?: c.other
+        }
+
+        // Generic prioritization outside of argument contexts
+        return c.call ?: c.parenthesized ?: c.string ?: c.other
+    }
+
     /** Walk the PSI upwards to find the most suitable expression at the caret. */
     fun findExpressionAtCaret(editor: Editor, file: PsiFile): PyExpression? {
         val offset = editor.caretModel.offset
@@ -38,60 +120,98 @@ object PyTypeIntentions {
             }
         }
 
-        var current: PsiElement? = leaf
-        var bestString: PyExpression? = null
-        var bestCall: PyExpression? = null
-        var bestParenthesized: PyExpression? = null
-        var bestOther: PyExpression? = null
+        // Prefer the real argument expression only when truly in argument context (not assignment/return)
+        argumentRootAtCaret(leaf)?.let { candidate ->
+            if (isInsideFunctionCallArgument(candidate)) return candidate
+        }
 
-        // Walk up the PSI tree and collect candidates
-        while (current != null && current != file) {
-            if (current is PyExpression) {
-                when (current) {
-                    is PyCallExpression -> bestCall = current
-                    is PyStringLiteralExpression -> bestString = current
-                    is PyParenthesizedExpression -> bestParenthesized = current
-                    else -> if (bestOther == null) bestOther = current
+        // Collect candidates once and perform context-aware selection
+        val candidates = collectCandidates(leaf, file)
+        return chooseBest(candidates, leaf)
+    }
+
+    /**
+     * If the caret is within a container literal (list/set/tuple/dict), this helper tries to return the
+     * concrete element expression that the caret points at. It mirrors the manual selection logic that
+     * used to live in the intention and centralizes it for reuse.
+     * Returns null when not inside a supported container or a specific element cannot be determined.
+     */
+    fun findContainerItemAtCaret(editor: Editor, containerOrElement: PyExpression): PyExpression? {
+        val offset = editor.caretModel.offset
+        return when (containerOrElement) {
+            is PyListLiteralExpression -> {
+                val elems = containerOrElement.elements
+                val exact = elems.firstOrNull { it.textRange.containsOffset(offset) }
+                exact ?: run {
+                    val right = elems.firstOrNull { it.textRange.startOffset >= offset }
+                    val left = elems.lastOrNull { it.textRange.endOffset <= offset }
+                    right ?: left
                 }
             }
-            current = current.parent
-        }
 
-        // Context-aware prioritization:
-        // If we have a string and it's inside a function call argument, prefer the string
-        if (bestString != null && isInsideFunctionCallArgument(bestString)) {
-            return bestString
-        }
-        // If the caret is within a parenthesized argument (e.g., ("foo")), prefer that argument
-        if (bestParenthesized != null && isInsideFunctionCallArgument(bestParenthesized)) {
-            // If there's also a string inside, prefer the inner-most string
-            return bestString ?: bestParenthesized
-        }
-        // If we're inside any function call argument (positional or keyword), return the actual argument root expression.
-        if ((bestCall != null || bestOther != null) && (bestCall?.let { isInsideFunctionCallArgument(it) } == true || bestOther?.let {
-                isInsideFunctionCallArgument(
-                    it
-                )
-            } == true)) {
-            val argList = PsiTreeUtil.getParentOfType(leaf, PyArgumentList::class.java)
-            val call = PsiTreeUtil.getParentOfType(leaf, PyCallExpression::class.java)
-            if (argList != null && call != null) {
-                val args = argList.arguments
-                // Find argument containing the leaf
-                val arg = args.firstOrNull { it == leaf || PsiTreeUtil.isAncestor(it, leaf, false) }
-                if (arg is PyKeywordArgument) {
-                    arg.valueExpression?.let { return it }
-                } else if (arg is PyExpression) {
-                    return arg
+            is PySetLiteralExpression -> {
+                val elems = containerOrElement.elements
+                val exact = elems.firstOrNull { it.textRange.containsOffset(offset) }
+                exact ?: run {
+                    val right = elems.firstOrNull { it.textRange.startOffset >= offset }
+                    val left = elems.lastOrNull { it.textRange.endOffset <= offset }
+                    right ?: left
                 }
             }
-            // Fallback to call over bare reference
-            return bestCall ?: bestOther
-        }
 
-        // Otherwise, prefer call expressions for assignment contexts
-        // For assignment contexts, prefer call expressions, then parenthesized, then strings, then others
-        return bestCall ?: bestParenthesized ?: bestString ?: bestOther
+            is PyTupleExpression -> {
+                val elems = containerOrElement.elements
+                val exact = elems.firstOrNull { it.textRange.containsOffset(offset) }
+                exact ?: run {
+                    val right = elems.firstOrNull { it.textRange.startOffset >= offset }
+                    val left = elems.lastOrNull { it.textRange.endOffset <= offset }
+                    right ?: left
+                }
+            }
+
+            is PyDictLiteralExpression -> {
+                val pairs = containerOrElement.elements
+                val exactInPair = pairs.firstOrNull { pair ->
+                    val k = pair.key
+                    val v = pair.value
+                    (k.textRange.containsOffset(offset)) || (v != null && v.textRange.containsOffset(offset))
+                }
+                when {
+                    exactInPair != null -> {
+                        val k = exactInPair.key
+                        val v = exactInPair.value
+                        when {
+                            k.textRange.containsOffset(offset) -> k
+                            v != null && v.textRange.containsOffset(offset) -> v
+                            else -> null
+                        }
+                    }
+
+                    else -> {
+                        // choose nearest pair; prefer right neighbor
+                        val right = pairs.firstOrNull { it.textRange.startOffset >= offset }
+                        val left = pairs.lastOrNull { it.textRange.endOffset <= offset }
+                        val pair = right ?: left
+                        // default to key if present
+                        (pair?.key ?: pair?.value)
+                    }
+                }
+            }
+
+            else -> null
+        }
+    }
+
+    /** Returns the argument root expression at caret, resolving keyword arguments to their values. */
+    private fun argumentRootAtCaret(leaf: PsiElement): PyExpression? {
+        val argList = PsiTreeUtil.getParentOfType(leaf, PyArgumentList::class.java) ?: return null
+        val args = argList.arguments
+        val arg = args.firstOrNull { it == leaf || PsiTreeUtil.isAncestor(it, leaf, false) }
+        return when (arg) {
+            is PyKeywordArgument -> arg.valueExpression
+            is PyExpression -> arg
+            else -> null
+        }
     }
 
     /**
@@ -155,8 +275,10 @@ object PyTypeIntentions {
     }
 
     /**
-     * Determines the best constructor name to use for wrapping based on expected type information
-     * around the given expression. Prefers PSI-based resolution; falls back to type-based unwrapping.
+     * Determines the best constructor name to use for wrapping based on the expected type information
+     * around [expr]. Prefers PSI-based resolution (annotation PSI) so we preserve author-written spellings
+     * such as `int | None`; falls back to the evaluated type when PSI lacks resolution. Returns a short
+     * constructor name (e.g., `str`, `Path`) or null when no meaningful constructor can be determined.
      */
     fun expectedCtorName(expr: PyExpression, ctx: TypeEvalContext): String? {
         val info = getExpectedTypeInfo(expr, ctx) ?: return null
@@ -164,11 +286,7 @@ object PyTypeIntentions {
         // First, try PSI-based resolution which also handles text-only union spellings.
         info.annotationExpr?.let { ann ->
             val fromPsi = canonicalCtorName(ann, ctx)
-            if (!fromPsi.isNullOrBlank()
-                && !fromPsi.equals("UnionType", true)
-                && !fromPsi.equals("Union", true)
-                && !fromPsi.equals("None", true) // guard against treating None as a constructor
-            ) {
+            if (!isNonCtorName(fromPsi)) {
                 return fromPsi
             }
         }
@@ -176,11 +294,11 @@ object PyTypeIntentions {
         // Fallback: use the expected type, unwrap unions/optionals and pick the first non-None class
         val base = info.type?.let { firstNonNoneMember(it) }
         if (base is PyClassType) {
-            val name = base.name ?: base.classQName?.substringAfterLast('.')
-            return if (name.equals("None", true)) null else name
+            val name = base.shortOrQualifiedTail()
+            return if (isNonCtorName(name)) null else name
         }
         val name = base?.name
-        return if (name.equals("None", true)) null else name
+        return if (isNonCtorName(name)) null else name
     }
 
     /**
@@ -240,90 +358,101 @@ object PyTypeIntentions {
         val argList = PsiTreeUtil.getParentOfType(expr, PyArgumentList::class.java) ?: return null
         val call = PsiTreeUtil.getParentOfType(argList, PyCallExpression::class.java) ?: return null
 
-        // Determine argument position ignoring named/keyword args for simplicity
         val args = argList.arguments
-        // Robustly locate the argument index even when the caret expression is nested
-        // (e.g., extra parentheses around the literal). Consider an argument a match
-        // if it is the same element or an ancestor of the caret expression.
-        val argIndex = args.indexOfFirst { it == expr || PsiTreeUtil.isAncestor(it, expr, false) }
+        val argIndex = argIndexOf(expr, argList)
         if (argIndex < 0) return null
 
-        val calleeExpr = call.callee as? PyReferenceExpression ?: return null
-        val resolved = calleeExpr.reference.resolve()
+        val callee = resolvedCallee(call) ?: return null
 
-        // Handle dataclass-like constructor calls: callee resolves to a class, and arguments map to fields
-        if (resolved is PyClass) {
-            // Prefer keyword argument mapping for robustness
-            val keywordArg = (args.getOrNull(argIndex) as? PyKeywordArgument)
-                ?: PsiTreeUtil.getParentOfType(expr, PyKeywordArgument::class.java)
-            val keywordName = keywordArg?.keyword
-            if (!keywordName.isNullOrBlank()) {
-                // Try via standard class attribute lookup first
-                val classAttr = resolved.findClassAttribute(keywordName, true, ctx)
-                var annExpr: PyExpression? = classAttr?.annotation?.value
-                var typeSource: PyTypedElement? = classAttr
+        return when (callee) {
+            is PyClass -> {
+                val kw = keywordNameAt(args, argIndex, expr)
+                kw?.let { classFieldTypeInfo(callee, it, ctx) }
+                    ?: positionalFieldTypeInfo(callee, argIndex, ctx)
+            }
 
-                // If not found (e.g., annotation-only dataclass field), scan statement list for annotated targets
-                if (annExpr == null) {
-                    val stmts = resolved.statementList.statements
-                    for (st in stmts) {
-                        val targets = PsiTreeUtil.findChildrenOfType(st, PyTargetExpression::class.java)
-                        val hit = targets.firstOrNull { it.name == keywordName }
-                        val v = hit?.annotation?.value
-                        if (v is PyExpression) {
-                            annExpr = v
-                            typeSource = hit
-                            break
-                        }
-                    }
-                }
+            is PyFunction -> {
+                val kw = keywordNameAt(args, argIndex, expr)
+                functionParamTypeInfo(callee, argList, argIndex, kw, ctx)
+            }
 
-                if (annExpr is PyExpression) {
-                    val named = (annExpr as? PyReferenceExpression)?.reference?.resolve() as? PsiNamedElement
-                    // Prefer the evaluated type of the annotated target (field) if available,
-                    // it carries the real union members; fall back to the annotation PSI type.
-                    val evaluated = typeSource?.let { ctx.getType(it) } ?: ctx.getType(annExpr)
-                    return TypeInfo(evaluated, annExpr, named)
+            else -> null
+        }
+    }
+
+    // --- Parameter/field resolution helpers (extracted for clarity) ---
+    private fun resolvedCallee(call: PyCallExpression): PsiElement? =
+        (call.callee as? PyReferenceExpression)?.reference?.resolve()
+
+    private fun argIndexOf(expr: PyExpression, argList: PyArgumentList): Int =
+        argList.arguments.indexOfFirst { it == expr || PsiTreeUtil.isAncestor(it, expr, false) }
+
+    private fun keywordNameAt(args: Array<PyExpression>, index: Int, expr: PyExpression): String? =
+        (args.getOrNull(index) as? PyKeywordArgument)?.keyword
+            ?: PsiTreeUtil.getParentOfType(expr, PyKeywordArgument::class.java)?.keyword
+
+    private fun classFieldTypeInfo(
+        pyClass: PyClass,
+        fieldName: String,
+        ctx: TypeEvalContext
+    ): TypeInfo? {
+        val classAttr = pyClass.findClassAttribute(fieldName, true, ctx)
+        var annExpr: PyExpression? = classAttr?.annotation?.value
+        var typeSource: PyTypedElement? = classAttr
+
+        if (annExpr == null) {
+            val stmts = pyClass.statementList.statements
+            for (st in stmts) {
+                val targets = PsiTreeUtil.findChildrenOfType(st, PyTargetExpression::class.java)
+                val hit = targets.firstOrNull { it.name == fieldName }
+                val v = hit?.annotation?.value
+                if (v is PyExpression) {
+                    annExpr = v
+                    typeSource = hit
+                    break
                 }
             }
-            // Fallback: no keyword; try positional mapping using class attributes order (best-effort)
-            // We attempt to collect annotated class attributes in textual order
-            val fields = resolved.classAttributes.filterIsInstance<PyTargetExpression>()
-            val annotated = fields.mapNotNull { it.annotation?.value }
-            val targetAnn = annotated.getOrNull(argIndex)
-            if (targetAnn != null) {
-                val named = (targetAnn as? PyReferenceExpression)?.reference?.resolve() as? PsiNamedElement
-                val sourceTarget = fields.getOrNull(argIndex)
-                val evaluated = sourceTarget?.let { ctx.getType(it) } ?: ctx.getType(targetAnn)
-                return TypeInfo(evaluated, targetAnn, named)
-            }
-            return null
         }
 
-        val pyFunc = resolved as? PyFunction ?: return null
+        if (annExpr is PyExpression) {
+            val named = (annExpr as? PyReferenceExpression)?.reference?.resolve() as? PsiNamedElement
+            val evaluated = typeSource?.let { ctx.getType(it) } ?: ctx.getType(annExpr)
+            return TypeInfo(evaluated, annExpr, named)
+        }
+        return null
+    }
+
+    private fun positionalFieldTypeInfo(pyClass: PyClass, index: Int, ctx: TypeEvalContext): TypeInfo? {
+        val fields = pyClass.classAttributes.filterIsInstance<PyTargetExpression>()
+        val annotated = fields.mapNotNull { it.annotation?.value }
+        val targetAnn = annotated.getOrNull(index) ?: return null
+        val named = (targetAnn as? PyReferenceExpression)?.reference?.resolve() as? PsiNamedElement
+        val sourceTarget = fields.getOrNull(index)
+        val evaluated = sourceTarget?.let { ctx.getType(it) } ?: ctx.getType(targetAnn)
+        return TypeInfo(evaluated, targetAnn, named)
+    }
+
+    private fun functionParamTypeInfo(
+        pyFunc: PyFunction,
+        argList: PyArgumentList,
+        argIndex: Int,
+        kwName: String?,
+        ctx: TypeEvalContext
+    ): TypeInfo? {
         val params = pyFunc.parameterList.parameters
+        val args = argList.arguments
 
-        // Prefer keyword mapping when available; this correctly handles keyword-only parameters
-        val kwArg = (args.getOrNull(argIndex) as? PyKeywordArgument)
-            ?: PsiTreeUtil.getParentOfType(expr, PyKeywordArgument::class.java)
-
-        val targetParam: PyParameter? = if (kwArg != null) {
-            val name = kwArg.keyword
-            if (!name.isNullOrBlank()) params.firstOrNull { (it as? PyNamedParameter)?.name == name } else null
+        val targetParam: PyParameter? = if (!kwName.isNullOrBlank()) {
+            params.firstOrNull { (it as? PyNamedParameter)?.name == kwName }
         } else {
-            // For positional args, compute index among positional arguments only
             val positionalArgs = args.filter { it !is PyKeywordArgument }
             val posIndex = positionalArgs.indexOf(args.getOrNull(argIndex))
             if (posIndex >= 0) params.getOrNull(posIndex) else null
         }
+
         val annValue = (targetParam as? PyNamedParameter)?.annotation?.value
-        // Important: ask the type of the parameter element (not the annotation PSI),
-        // because ctx.getType(annotationExpr) may be null for PEP 604 unions.
         val paramType = (targetParam as? PyTypedElement)?.let { ctx.getType(it) }
 
-        // Try to resolve a concrete named element for import handling.
-        // 1) If the annotation is a simple reference, resolve it directly.
-        // 2) Otherwise, if we have a type, unwrap unions/optionals and take the first non-None class type.
         val resolvedNamed: PsiNamedElement? = when (annValue) {
             is PyReferenceExpression -> annValue.reference.resolve() as? PsiNamedElement
             else -> {
@@ -338,9 +467,7 @@ object PyTypeIntentions {
                 annotationExpr = annValue as? PyTypedElement,
                 resolvedNamed = resolvedNamed
             )
-        } else {
-            null
-        }
+        } else null
     }
 
     /**
@@ -357,13 +484,13 @@ object PyTypeIntentions {
             // Classes and builtins are represented as PyClassType
             if (base is PyClassType) {
                 // Prefer short name; fall back to last component of qualified name
-                val name = base.name ?: base.classQName?.substringAfterLast('.')
-                return if (name.equals("None", true)) null else name
+                val name = base.shortOrQualifiedTail()
+                return if (isNonCtorName(name)) null else name
             }
 
             // For other types, try generic name
             val name = base.name
-            return if (name.equals("None", true)) null else name
+            return if (isNonCtorName(name)) null else name
         }
 
         // If there's no resolvable type for the annotation PSI, do not attempt text parsing.
@@ -399,22 +526,36 @@ object PyTypeIntentions {
     fun tryContainerItemCtor(
         element: PyExpression,
         ctx: TypeEvalContext
-    ): Pair<String, PsiNamedElement?>? {
+    ): ExpectedCtor? {
         val container = findEnclosingContainer(element) ?: return null
         val pos = locatePositionInContainer(element) ?: return null
-        return expectedElementCtorForContainerItem(pos, container, ctx)
+        return expectedCtorForContainerItem(pos, container, ctx)
     }
 
     /**
      * Returns true if the actual type of [element] already matches the expected constructor name [expectedCtorName].
      * Used to suppress false-positive suggestions like wrapping an `int` with `int()`.
      */
+    @Deprecated(
+        "Use elementDisplaysAsCtor and compare against CtorMatch instead",
+        ReplaceWith("elementDisplaysAsCtor(element, expectedCtorName, ctx) == CtorMatch.MATCHES")
+    )
     fun isElementAlreadyOfCtor(element: PyExpression, expectedCtorName: String, ctx: TypeEvalContext): Boolean {
         val actualName = TypeNameRenderer.render(ctx.getType(element)).lowercase()
         return actualName == expectedCtorName.lowercase()
     }
 
+    /** More explicit variant that returns a match enum rather than a boolean. */
+    fun elementDisplaysAsCtor(element: PyExpression, expectedCtorName: String, ctx: TypeEvalContext): CtorMatch {
+        val actualName = TypeNameRenderer.render(ctx.getType(element)).lowercase()
+        return if (actualName == expectedCtorName.lowercase()) CtorMatch.MATCHES else CtorMatch.DIFFERS
+    }
+
     // --- Container element analysis (generalized) ---
+    /**
+     * Describes the position of an element within a container literal/comprehension.
+     * This allows us to select the correct generic type argument for the element under the caret.
+     */
     private sealed interface ContainerPos {
         data object Item : ContainerPos
         data class TupleItem(val index: Int) : ContainerPos
@@ -423,6 +564,10 @@ object PyTypeIntentions {
     }
 
     // Make detection and classification of container cases explicit and discoverable
+    /**
+     * Classifies supported container PSI nodes we analyze for item-level wrapping suggestions.
+     * The analysis is intentionally limited to common literals and comprehensions to keep risk low.
+     */
     private sealed interface ContainerKind {
         data object ListLit : ContainerKind
         data object SetLit : ContainerKind
@@ -442,7 +587,11 @@ object PyTypeIntentions {
     private fun PsiElement.isAncestorOrSelfOf(other: PsiElement): Boolean =
         this == other || PsiTreeUtil.isAncestor(this, other, false)
 
-    private fun nearestContainerOfInterest(el: PyExpression): PyExpression? =
+    /**
+     * Finds the nearest enclosing container node (list/set/tuple/dict literal or comprehension).
+     * This is a cheap PSI walk upward and does not attempt to resolve arbitrary iterables.
+     */
+    private fun findNearestContainer(el: PyExpression): PyExpression? =
         PsiTreeUtil.getParentOfType(
             el,
             PyListLiteralExpression::class.java,
@@ -465,30 +614,35 @@ object PyTypeIntentions {
         else -> error("Unsupported container: ${container::class.java.simpleName}")
     }
 
-    private fun locatePosIn(container: PyExpression, element: PyExpression): ContainerPos? = when (container) {
-        is PyListLiteralExpression, is PySetLiteralExpression -> ContainerPos.Item
-        is PyTupleExpression -> {
-            val idx = container.elements.indexOfFirst { it.isAncestorOrSelfOf(element) }
-            if (idx >= 0) ContainerPos.TupleItem(idx) else null
-        }
-
-        is PyDictLiteralExpression -> {
-            val kv = PsiTreeUtil.getParentOfType(element, PyKeyValueExpression::class.java) ?: return null
-            when {
-                kv.key.isAncestorOrSelfOf(element) -> ContainerPos.DictKey
-                kv.value?.isAncestorOrSelfOf(element) == true -> ContainerPos.DictValue
-                else -> null
+    /**
+     * Locates the logical position of [element] within the given [container], e.g. tuple item index,
+     * dict key vs value, or generic item for sequence/set types.
+     */
+    private fun locateElementPosition(container: PyExpression, element: PyExpression): ContainerPos? =
+        when (container) {
+            is PyListLiteralExpression, is PySetLiteralExpression -> ContainerPos.Item
+            is PyTupleExpression -> {
+                val idx = container.elements.indexOfFirst { it.isAncestorOrSelfOf(element) }
+                if (idx >= 0) ContainerPos.TupleItem(idx) else null
             }
-        }
 
-        is PyListCompExpression, is PySetCompExpression -> ContainerPos.Item
-        is PyDictCompExpression -> ContainerPos.DictValue
-        else -> null
-    }
+            is PyDictLiteralExpression -> {
+                val kv = PsiTreeUtil.getParentOfType(element, PyKeyValueExpression::class.java) ?: return null
+                when {
+                    kv.key.isAncestorOrSelfOf(element) -> ContainerPos.DictKey
+                    kv.value?.isAncestorOrSelfOf(element) == true -> ContainerPos.DictValue
+                    else -> null
+                }
+            }
+
+            is PyListCompExpression, is PySetCompExpression -> ContainerPos.Item
+            is PyDictCompExpression -> ContainerPos.DictValue
+            else -> null
+        }
 
     private fun analyzeContainer(element: PyExpression): ContainerContext? {
-        val c = nearestContainerOfInterest(element) ?: return null
-        val pos = locatePosIn(c, element) ?: return null
+        val c = findNearestContainer(element) ?: return null
+        val pos = locateElementPosition(c, element) ?: return null
         val kind = classifyContainer(c)
         return ContainerContext(c, kind, pos)
     }
@@ -499,24 +653,44 @@ object PyTypeIntentions {
     private fun locatePositionInContainer(element: PyExpression): ContainerPos? =
         analyzeContainer(element)?.pos
 
-    private fun expectedElementCtorForContainerItem(
+    /**
+     * Public-facing helper used by intentions to obtain the constructor for the element type inside
+     * a parameterized container. It relies on the surrounding expected type, e.g. `list[T]` or
+     * `dict[K, V]`, and picks the appropriate generic argument based on the element position.
+     */
+    private fun expectedCtorForContainerItem(
         pos: ContainerPos,
         container: PyExpression,
         ctx: TypeEvalContext
-    ): Pair<String, PsiNamedElement?>? {
+    ): ExpectedCtor? {
         val cc = ContainerContext(container, classifyContainer(container), pos)
-        return expectedElementCtorFor(ctx, cc)
+        return expectedCtorFor(ctx, cc)
     }
 
     // --- Typing subscription policy (explicit) ---
+    /**
+     * Captures the arity/shape of typing subscripts we care about.
+     * - One   → containers with a single type argument, e.g. list[T], set[T], Iterable[T]
+     * - TwoKV → key/value mappings, e.g. dict[K, V], Mapping[K, V]
+     * - TupleN(n) → fixed-length tuples, e.g. tuple[T1, T2, ...]
+     */
     private sealed interface GenericShape {
-        data object One : GenericShape            // list[T], set[T], Iterable[T], ...
-        data object TwoKV : GenericShape          // dict[K, V], Mapping[K, V], ...
-        data class TupleN(val n: Int) : GenericShape // tuple[T1, T2, ...]
+        /** list[T], set[T], Iterable[T], ... */
+        data object One : GenericShape
+
+        /** dict[K, V], Mapping[K, V], ... */
+        data object TwoKV : GenericShape
+
+        /** tuple[T1, T2, ...] */
+        data class TupleN(val n: Int) : GenericShape
     }
 
     private enum class TypingBase { LIST, SET, SEQUENCE, COLLECTION, ITERABLE, MUTABLE_SEQUENCE, TUPLE, DICT, MAPPING, MUTABLE_MAPPING }
 
+    /**
+     * Maps lower-cased textual callee names from typing subscripts to a normalized base we support.
+     * We intentionally keep this small to avoid surprising matches; new bases can be added as needed.
+     */
     private val NAME_TO_BASE: Map<String, TypingBase> = mapOf(
         "list" to TypingBase.LIST,
         "set" to TypingBase.SET,
@@ -555,10 +729,10 @@ object PyTypeIntentions {
             }
         }
 
-    private fun expectedElementCtorFor(
+    private fun expectedCtorFor(
         ctx: TypeEvalContext,
         cc: ContainerContext
-    ): Pair<String, PsiNamedElement?>? {
+    ): ExpectedCtor? {
         val info = getExpectedTypeInfo(cc.container, ctx) ?: return null
         val annExpr = info.annotationExpr as? PyExpression ?: return null
         val sub = annExpr as? PySubscriptionExpression ?: return null
@@ -571,7 +745,7 @@ object PyTypeIntentions {
 
         val ctor = canonicalCtorName(chosen, ctx) ?: return null
         val named = (chosen as? PyReferenceExpression)?.reference?.resolve() as? PsiNamedElement
-        return ctor to named
+        return ExpectedCtor(ctor, named)
     }
 
     private fun singleArg(arg: PyExpression): PyExpression? = when (arg) {
