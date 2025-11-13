@@ -7,7 +7,7 @@ import jetbrains.python.fixtures.PyLightProjectDescriptor
 
 abstract class MyPlatformTestCase : BasePlatformTestCase() {
     override fun getProjectDescriptor(): LightProjectDescriptor {
-        return PyLightProjectDescriptor(LanguageLevel.getLatest())
+        return PyLightProjectDescriptor(LanguageLevel.PYTHON311)
     }
 
     override fun getTestDataPath(): String = "src/test/testData"

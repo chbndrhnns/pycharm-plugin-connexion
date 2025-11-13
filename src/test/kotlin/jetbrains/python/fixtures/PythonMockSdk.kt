@@ -24,11 +24,11 @@ import java.util.function.Consumer
 
 object PythonMockSdk {
     fun create(): Sdk {
-        return create(LanguageLevel.getLatest())
+        return create(LanguageLevel.PYTHON311)
     }
 
     fun create(sdkPath: String): Sdk {
-        return create(sdkPath, LanguageLevel.getLatest())
+        return create(sdkPath, LanguageLevel.PYTHON311)
     }
 
     fun create(level: LanguageLevel, vararg additionalRoots: VirtualFile): Sdk {
