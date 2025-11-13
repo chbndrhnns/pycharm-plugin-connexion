@@ -169,4 +169,56 @@ class DataclassesTest : TestBase() {
             """.trimIndent()
         )
     }
+
+    fun testWrapDataclassListOfUnionNewType_showsChooserAndAppliesChoice() {
+        val fake = FakePopupHost().apply { selectedIndex = 0 }
+        com.github.chbndrhnns.intellijplatformplugincopy.intention.WrapWithExpectedTypeIntentionHooks.popupHost = fake
+        try {
+            myFixture.configureByText(
+                "a.py", """
+            from dataclasses import dataclass
+            from typing import NewType
+
+            Item = NewType("Item", str)
+            Item2 = NewType("Item2", str)
+
+            @dataclass
+            class Data:
+                items: list[Item | Item2]
+
+            def test_():
+                items = ["abc"]
+                Data(items=i<caret>tems)
+            """.trimIndent()
+            )
+
+            myFixture.doHighlighting()
+            val intention = myFixture.findSingleIntention("Wrap with expected union type…")
+            myFixture.launchAction(intention)
+
+            // Debug actual text to diagnose formatting differences if the comparison fails
+            println("[DEBUG_LOG] ACTUAL RESULT\n" + myFixture.file.text)
+
+            myFixture.checkResult(
+                """
+            from dataclasses import dataclass
+            from typing import NewType
+
+            Item = NewType("Item", str)
+            Item2 = NewType("Item2", str)
+
+            @dataclass
+            class Data:
+                items: list[Item | Item2]
+
+            def test_():
+                items = ["abc"]
+                Data(items=[Item(v) for v in items])
+            """.trimIndent()
+            )
+        } finally {
+            com.github.chbndrhnns.intellijplatformplugincopy.intention.WrapWithExpectedTypeIntentionHooks.popupHost =
+                null
+        }
+    }
 }

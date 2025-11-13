@@ -45,6 +45,12 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
         val candidates: List<ExpectedCtor>
     ) : WrapPlan
 
+    private data class ElementwiseUnionChoice(
+        override val element: PyExpression,
+        val container: String,
+        val candidates: List<ExpectedCtor>
+    ) : WrapPlan
+
     // Element-wise wrapping plan (e.g., list[Item] expected, wrap as [Item(v) for v in src])
     private data class Elementwise(
         override val element: PyExpression,
@@ -76,6 +82,7 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
         // Update dynamic text used by tests to locate the intention
         lastText = when (plan) {
             is UnionChoice -> "Wrap with expected union type…"
+            is ElementwiseUnionChoice -> "Wrap with expected union type…"
             is Single -> plan.ctorName.takeIf { it.isNotBlank() }?.let { "Wrap with $it()" }
                 ?: "Wrap with expected type"
 
@@ -102,6 +109,27 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
                 )
             }
 
+            is ElementwiseUnionChoice -> {
+                val candidates = plan.candidates
+                val popupHost = WrapWithExpectedTypeIntentionHooks.popupHost ?: JbPopupHost()
+                popupHost.showChooser(
+                    editor = editor,
+                    title = "Select expected type",
+                    items = candidates,
+                    render = { it.name },
+                    onChosen = { chosen ->
+                        applier.applyElementwise(
+                            project,
+                            file,
+                            plan.element,
+                            plan.container,
+                            chosen.name,
+                            chosen.symbol
+                        )
+                    }
+                )
+            }
+
             is Single -> {
                 applier.apply(project, file, plan.element, plan.ctorName, plan.ctorElement)
             }
@@ -124,6 +152,7 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
             editor.getUserData(PLAN_KEY) ?: analyzeAtCaret(project, editor, file) ?: return IntentionPreviewInfo.EMPTY
         return when (plan) {
             is UnionChoice -> IntentionPreviewInfo.EMPTY
+            is ElementwiseUnionChoice -> IntentionPreviewInfo.EMPTY
             is Single -> {
                 previewBuilder.build(file, plan.element, plan.ctorName)
             }
@@ -150,6 +179,33 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
                 "tuple" -> elementAtCaret is PyTupleExpression
                 else -> false
             }
+            // Prefer element-wise plan when outer container is already satisfied by the argument's actual type
+            // (even if it's a variable, not a literal/comprehension), and we can infer the item ctor.
+            val isContainerLiteral = when (elementAtCaret) {
+                is PyListLiteralExpression, is PySetLiteralExpression, is PyDictLiteralExpression,
+                is PyListCompExpression, is PySetCompExpression, is PyDictCompExpression, is PyTupleExpression -> true
+
+                else -> false
+            }
+            if (!isContainerLiteral) {
+                val match = PyTypeIntentions.elementDisplaysAsCtor(elementAtCaret, outerCtor.name, context)
+                val names = PyTypeIntentions.computeDisplayTypeNames(elementAtCaret, context)
+                val actualUsesSameOuter = names.actual?.lowercase()?.startsWith(outerCtor.name.lowercase()) == true
+                if (match == CtorMatch.MATCHES || actualUsesSameOuter) {
+                    val candidates = PyTypeIntentions.expectedItemCtorsForContainer(elementAtCaret, context)
+                    if (candidates.isNotEmpty()) {
+                        if (candidates.size >= 2) {
+                            return ElementwiseUnionChoice(elementAtCaret, outerCtor.name, candidates)
+                        }
+                        val only = candidates.first()
+                        if (!PyWrapHeuristics.isAlreadyWrappedWith(elementAtCaret, only.name, only.symbol)) {
+                            return Elementwise(elementAtCaret, outerCtor.name, only.name, only.symbol)
+                        }
+                    }
+                }
+            }
+
+            // Fallback: if outer container differs, propose wrapping with the container ctor.
             if (!isSameContainerLiteral && !isInsideMatchingContainer(elementAtCaret, outerCtor.name)) {
                 val differs =
                     PyTypeIntentions.elementDisplaysAsCtor(elementAtCaret, outerCtor.name, context) == CtorMatch.DIFFERS

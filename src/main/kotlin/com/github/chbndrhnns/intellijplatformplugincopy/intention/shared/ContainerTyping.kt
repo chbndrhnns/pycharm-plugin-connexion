@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.shared
 
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util.UnionCandidates
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.util.PsiTreeUtil
@@ -14,6 +15,73 @@ internal object ContainerTyping {
         val container = findEnclosingContainer(element) ?: return null
         val pos = locatePositionInContainer(element) ?: return null
         return expectedCtorForContainerItem(pos, container, ctx)
+    }
+
+    // New: expected item-ctor for a container-typed expression even if caret is not inside the container
+    fun expectedItemCtorForContainer(expr: PyExpression, ctx: TypeEvalContext): ExpectedCtor? {
+        val info = ExpectedTypeInfo.getExpectedTypeInfo(expr, ctx) ?: return null
+        val annExpr = info.annotationExpr as? PyExpression ?: return null
+        val sub = annExpr as? PySubscriptionExpression ?: return null
+
+        val baseName = (sub.operand as? PyReferenceExpression)?.name?.lowercase() ?: return null
+        val base = NAME_TO_BASE[baseName] ?: return null
+        val indexExpr = sub.indexExpression ?: return null
+
+        val shape = shapeOf(base, indexExpr)
+        // Choose the item position inside the container
+        val chosen = pickTypeArgFor(ContainerPos.Item, shape, indexExpr) as? PyTypedElement ?: return null
+
+        // Try canonical resolution first (this already prefers first non-None for simple unions)
+        ExpectedTypeInfo.canonicalCtorName(chosen, ctx)?.let { ctorName ->
+            val named = (chosen as? PyReferenceExpression)?.reference?.resolve() as? PsiNamedElement
+            return ExpectedCtor(ctorName, named)
+        }
+
+        // Fallback for PEP 604 unions in annotations like list[Item | Item2]: pick the first member.
+        when (chosen) {
+            is PyBinaryExpression -> {
+                val left = chosen.leftExpression as? PyTypedElement
+                val right = chosen.rightExpression as? PyTypedElement
+
+                // Prefer left unless it is clearly None/NoneType; then try right.
+                fun ctorFor(side: PyTypedElement?): ExpectedCtor? {
+                    if (side == null) return null
+                    val name = ExpectedTypeInfo.canonicalCtorName(side, ctx) ?: return null
+                    if (name.lowercase() == "none") return null
+                    val symbol = (side as? PyReferenceExpression)?.reference?.resolve() as? PsiNamedElement
+                    return ExpectedCtor(name, symbol)
+                }
+
+                return ctorFor(left) ?: ctorFor(right)
+            }
+
+            else -> {}
+        }
+
+        return null
+    }
+
+    // New: union-aware candidates for the item ctor position inside a container annotation
+    fun expectedItemCtorsForContainer(expr: PyExpression, ctx: TypeEvalContext): List<ExpectedCtor> {
+        val info = ExpectedTypeInfo.getExpectedTypeInfo(expr, ctx) ?: return emptyList()
+        val annExpr = info.annotationExpr as? PyExpression ?: return emptyList()
+        val sub = annExpr as? PySubscriptionExpression ?: return emptyList()
+
+        val baseName = (sub.operand as? PyReferenceExpression)?.name?.lowercase() ?: return emptyList()
+        val base = NAME_TO_BASE[baseName] ?: return emptyList()
+        val indexExpr = sub.indexExpression ?: return emptyList()
+
+        val shape = shapeOf(base, indexExpr)
+        val chosen = pickTypeArgFor(ContainerPos.Item, shape, indexExpr) as? PyTypedElement ?: return emptyList()
+
+        // Prefer union candidates when available
+        val union = UnionCandidates.collect(chosen, expr)
+        if (union.isNotEmpty()) return union
+
+        // Fall back to single canonical ctor if resolvable
+        val ctor = ExpectedTypeInfo.canonicalCtorName(chosen, ctx)
+        val named = (chosen as? PyReferenceExpression)?.reference?.resolve() as? PsiNamedElement
+        return ctor?.let { listOf(ExpectedCtor(it, named)) } ?: emptyList()
     }
 
     // ---- Model ----

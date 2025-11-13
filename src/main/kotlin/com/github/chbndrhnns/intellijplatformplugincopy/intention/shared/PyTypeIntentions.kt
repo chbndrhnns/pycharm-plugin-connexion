@@ -36,6 +36,14 @@ object PyTypeIntentions {
     fun tryContainerItemCtor(element: PyExpression, ctx: TypeEvalContext): ExpectedCtor? =
         ContainerTyping.tryContainerItemCtor(element, ctx)
 
+    // New: expected item ctor for a container-typed expression even when not inside the container
+    fun expectedItemCtorForContainer(expr: PyExpression, ctx: TypeEvalContext): ExpectedCtor? =
+        ContainerTyping.expectedItemCtorForContainer(expr, ctx)
+
+    // New: all candidate item ctors for container-typed expression (union-aware)
+    fun expectedItemCtorsForContainer(expr: PyExpression, ctx: TypeEvalContext): List<ExpectedCtor> =
+        ContainerTyping.expectedItemCtorsForContainer(expr, ctx)
+
     fun elementDisplaysAsCtor(element: PyExpression, expectedCtorName: String, ctx: TypeEvalContext): CtorMatch =
         ExpectedTypeInfo.elementDisplaysAsCtor(element, expectedCtorName, ctx)
 }
