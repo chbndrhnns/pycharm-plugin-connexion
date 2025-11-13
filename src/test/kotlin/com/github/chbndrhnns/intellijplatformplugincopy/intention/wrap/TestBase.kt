@@ -13,7 +13,7 @@ abstract class TestBase : MyPlatformTestCase() {
     override fun setUp() {
         System.setProperty(
             "idea.python.helpers.path",
-            Paths.get(PathManager.getCommunityHomePath(), "python", "helpers").toString()
+            Paths.get(PathManager.getHomePath(), "plugins", "python-ce", "helpers").toString()
         );
         super.setUp()
         val sdk = PythonMockSdk.create(LanguageLevel.PYTHON311, myFixture.tempDirFixture.getFile("/")!!)
