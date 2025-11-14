@@ -10,7 +10,6 @@ import com.jetbrains.python.psi.PyNumericLiteralExpression
 import com.jetbrains.python.psi.impl.PyBuiltinCache
 import com.jetbrains.python.psi.impl.PyPsiUtils
 import com.jetbrains.python.psi.resolve.QualifiedNameFinder
-import com.jetbrains.python.psi.types.TypeEvalContext
 
 /**
  * Builds an intention preview diff for a given wrapping action.
@@ -33,23 +32,7 @@ class WrapPreview(
             "list" -> "[$originalText]"
             else -> "$ctorName($originalText)"
         }
-
-        val maybeImport = renderImportPreviewLine(file, element, ctorElement)
-        val before = buildString {
-            if (maybeImport != null) append(maybeImport).append('\n')
-            append(element.text)
-        }
-        val after = buildString {
-            if (maybeImport != null) append(maybeImport).append('\n')
-            append(modifiedText)
-        }
-
-        return IntentionPreviewInfo.CustomDiff(
-            file.fileType,
-            file.name,
-            before,
-            after
-        )
+        return buildDiffWithOptionalImport(file, element, modifiedText, ctorElement)
     }
 
     fun buildElementwise(
@@ -66,14 +49,26 @@ class WrapPreview(
             "list" -> "[${itemCtorName}($v) for $v in $src]"
             else -> "[${itemCtorName}($v) for $v in $src]"
         }
-        val maybeImport = renderImportPreviewLine(file, element, itemCtorElement)
+        return buildDiffWithOptionalImport(file, element, text, itemCtorElement)
+    }
+
+    /**
+     * Helper to build a CustomDiff preview, optionally prefixing the before/after with a single import line.
+     */
+    private fun buildDiffWithOptionalImport(
+        file: PsiFile,
+        originalElement: PyExpression,
+        modifiedText: String,
+        ctorElement: PsiNamedElement?
+    ): IntentionPreviewInfo {
+        val maybeImport = renderImportPreviewLine(file, originalElement, ctorElement)
         val before = buildString {
             if (maybeImport != null) append(maybeImport).append('\n')
-            append(element.text)
+            append(originalElement.text)
         }
         val after = buildString {
             if (maybeImport != null) append(maybeImport).append('\n')
-            append(text)
+            append(modifiedText)
         }
         return IntentionPreviewInfo.CustomDiff(
             file.fileType,
@@ -95,7 +90,6 @@ class WrapPreview(
         if (imports.isImported(file, ctorElement.name ?: return null)) return null
 
         // If name already resolvable in scope, skip import
-        val tec = TypeEvalContext.codeAnalysis(file.project, file)
         val name = ctorElement.name ?: return null
         // Reuse the same logic as applier: if resolvable, no import needed
         // We can't directly call the private resolve here; best-effort: rely on isImported + show canonical path
