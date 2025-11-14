@@ -11,6 +11,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Iconable
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiFile
+import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.PyCallExpression
 import com.jetbrains.python.psi.PyExpression
 import com.jetbrains.python.psi.PyReferenceExpression
@@ -84,29 +85,61 @@ class UnwrapToExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
         val context = TypeEvalContext.codeAnalysis(project, file)
         val original = PyTypeIntentions.findExpressionAtCaret(editor, file) as? PyExpression ?: return null
 
-        // Support caret both on the call itself and on its single argument. This mirrors how
+        // Support caret both on the call itself and on its single argument, including when the
+        // caret sits on the literal or on parentheses inside the argument. This mirrors how
         // WrapWithExpectedTypeIntention first finds the expression at caret and then may move
         // to its parent when deciding what to transform.
         val flattened = PyPsiUtils.flattenParens(original) as? PyExpression ?: original
+
+        // If the caret is actually inside the sole argument of a call expression, prefer to
+        // treat that argument as the caret expression. This allows us to unwrap the inner
+        // argument call (e.g. `UserId(10)`) even when the outer call (e.g. `f(...)`) is the
+        // expression that findExpressionAtCaret returned.
+        val offset = editor.caretModel.offset
+        val caretTarget: PyExpression = when (flattened) {
+            is PyCallExpression -> {
+                val args = flattened.arguments
+                if (args.size == 1) {
+                    val soleArg = args[0]
+                    if (soleArg is PyExpression && soleArg.textRange.containsOffset(offset)) {
+                        soleArg
+                    } else {
+                        flattened
+                    }
+                } else {
+                    flattened
+                }
+            }
+
+            else -> flattened
+        }
         val call: PyCallExpression
         val innerExpr: PyExpression
 
-        when (flattened) {
+        when (caretTarget) {
             is PyCallExpression -> {
-                call = flattened
+                call = caretTarget
                 val args = call.arguments
                 if (args.size != 1) return null
                 innerExpr = args[0] as? PyExpression ?: return null
             }
 
             else -> {
-                val parentCall = flattened.parent as? PyCallExpression ?: return null
+                // When the caret is on the inner literal or parentheses, the parent of the
+                // expression-at-caret is often a PyArgumentList rather than the call itself.
+                // Walk up to the nearest enclosing PyCallExpression and ensure the caret
+                // expression is (or belongs to) its single argument.
+                val parentCall = PsiTreeUtil.getParentOfType(caretTarget, PyCallExpression::class.java)
+                    ?: return null
                 val args = parentCall.arguments
                 if (args.size != 1) return null
-                // Only unwrap when the caret is on that single argument.
-                if (args[0] != flattened) return null
+
+                val soleArg = args[0]
+                // Only unwrap when the caret is on that single argument or inside it.
+                if (soleArg != caretTarget && !PsiTreeUtil.isAncestor(soleArg, caretTarget, false)) return null
+
                 call = parentCall
-                innerExpr = flattened
+                innerExpr = soleArg as? PyExpression ?: return null
             }
         }
 

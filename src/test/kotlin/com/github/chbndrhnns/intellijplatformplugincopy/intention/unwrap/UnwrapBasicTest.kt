@@ -64,6 +64,68 @@ class UnwrapBasicTest : BasePlatformTestCase() {
         )
     }
 
+    fun testArgument_NewType_CaretOnInnerLiteral_UnwrapsToParameterType() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            from typing import NewType
+            UserId = NewType("UserId", int)
+
+            def f(user_id: int) -> None:
+                ...
+
+            f(UserId(<caret>10))
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Unwrap UserId()")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            from typing import NewType
+            UserId = NewType("UserId", int)
+
+            def f(user_id: int) -> None:
+                ...
+
+            f(10)
+            """.trimIndent()
+        )
+    }
+
+    fun testArgument_NewType_CaretOnInnerParenthesis_UnwrapsToParameterType() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            from typing import NewType
+            UserId = NewType("UserId", int)
+
+            def f(user_id: int) -> None:
+                ...
+
+            f(UserId<caret>(10))
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Unwrap UserId()")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            from typing import NewType
+            UserId = NewType("UserId", int)
+
+            def f(user_id: int) -> None:
+                ...
+
+            f(10)
+            """.trimIndent()
+        )
+    }
+
     fun testReturn_NewType_UnwrapsToReturnType() {
         myFixture.configureByText(
             "a.py",
