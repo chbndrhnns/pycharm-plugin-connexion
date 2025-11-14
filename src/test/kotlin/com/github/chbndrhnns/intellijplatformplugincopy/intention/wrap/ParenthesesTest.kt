@@ -1,6 +1,9 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 
-class ParenthesesTest : TestBase() {
+/**
+ * Parentheses and nesting related wrap tests.
+ */
+class WrapParenthesesTest : TestBase() {
 
     fun testWrapParenthesizedAssignment() {
         myFixture.configureByText(

@@ -1,6 +1,9 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 
-class DataclassesTest : TestBase() {
+/**
+ * Dataclass-related wrap tests.
+ */
+class WrapDataclassesTest : TestBase() {
 
     fun testWrapDataclassArgument() {
         myFixture.configureByText(

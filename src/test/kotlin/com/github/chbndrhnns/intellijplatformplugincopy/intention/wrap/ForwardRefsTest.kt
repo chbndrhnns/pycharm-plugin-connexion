@@ -2,7 +2,10 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.WrapWithExpectedTypeIntentionHooks
 
-class ForwardRefsTest : TestBase() {
+/**
+ * Wrap intention behavior for forward-referenced types.
+ */
+class WrapForwardRefsTest : TestBase() {
 
     fun testNonContainerForwardRef_param() {
         myFixture.configureByText(
