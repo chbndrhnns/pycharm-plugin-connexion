@@ -47,10 +47,14 @@ object UnionCandidates {
                         e.indexExpression?.let { idx ->
                             when (idx) {
                                 is PyTupleExpression -> idx.elements.forEach { el ->
-                                    (el as? PyReferenceExpression)?.let { addRef(it) }
+                                    when (el) {
+                                        is PyReferenceExpression -> addRef(el)
+                                        is PyExpression -> visit(el) // allow nested A|B inside tuple args
+                                    }
                                 }
 
                                 is PyReferenceExpression -> addRef(idx)
+                                is PyExpression -> visit(idx) // handle Union[A | B] and Optional[A | B]
                             }
                         }
                         return
