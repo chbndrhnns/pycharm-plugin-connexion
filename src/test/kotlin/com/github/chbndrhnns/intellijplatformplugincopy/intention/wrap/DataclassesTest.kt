@@ -199,9 +199,6 @@ class WrapDataclassesTest : TestBase() {
             val intention = myFixture.findSingleIntention("Wrap with expected union type…")
             myFixture.launchAction(intention)
 
-            // Debug actual text to diagnose formatting differences if the comparison fails
-            println("[DEBUG_LOG] ACTUAL RESULT\n" + myFixture.file.text)
-
             myFixture.checkResult(
                 """
             from dataclasses import dataclass

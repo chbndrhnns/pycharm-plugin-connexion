@@ -7,7 +7,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
  */
 class WrapCollectionsTest : TestBase() {
 
-    fun testWrapStringIntoListProducesSingleElement() {
+    fun testList_StringLiteral_WrapsIntoSingleElement() {
         myFixture.configureByText(
             "a.py",
             """
@@ -34,7 +34,7 @@ class WrapCollectionsTest : TestBase() {
         )
     }
 
-    fun testWrapIntIntoListUsesLiteral() {
+    fun testList_IntLiteral_WrapsIntoSingleElement() {
         myFixture.configureByText(
             "a.py",
             """
@@ -61,7 +61,7 @@ class WrapCollectionsTest : TestBase() {
         )
     }
 
-    fun testWrapTupleIntoListUsesConstructor() {
+    fun testList_TupleValue_WrapsUsingListConstructor() {
         myFixture.configureByText(
             "a.py",
             """
@@ -77,9 +77,6 @@ class WrapCollectionsTest : TestBase() {
         val intention = myFixture.findSingleIntention("Wrap with list()")
         myFixture.launchAction(intention)
 
-        // Debug actual text to diagnose formatting differences if the comparison fails
-        println("[DEBUG_LOG] ACTUAL RESULT\\n" + myFixture.file.text)
-
         myFixture.checkResult(
             """
             def do(l: list[int]):
@@ -91,7 +88,7 @@ class WrapCollectionsTest : TestBase() {
         )
     }
 
-    fun testWrapSetCallIntoListParam() {
+    fun testListParam_SetCall_WrapsWithListConstructor() {
         myFixture.configureByText(
             "a.py",
             """
@@ -116,7 +113,7 @@ class WrapCollectionsTest : TestBase() {
         )
     }
 
-    fun testWrapRangeCallIntoListParam() {
+    fun testListParam_RangeCall_WrapsWithListConstructor() {
         myFixture.configureByText(
             "a.py",
             """

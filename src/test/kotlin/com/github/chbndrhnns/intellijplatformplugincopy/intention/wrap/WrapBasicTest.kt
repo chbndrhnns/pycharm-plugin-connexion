@@ -6,7 +6,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
  */
 class WrapBasicTest : TestBase() {
 
-    fun testWrapPathInStr() {
+    fun testAssignment_PathToStr_WrapsWithStrConstructor() {
         myFixture.configureByText(
             "a.py",
             """
@@ -27,7 +27,7 @@ class WrapBasicTest : TestBase() {
         )
     }
 
-    fun testWrapStrInPath() {
+    fun testAssignment_StrToPath_WrapsWithPathConstructor() {
         myFixture.configureByText(
             "a.py",
             """
@@ -48,7 +48,7 @@ class WrapBasicTest : TestBase() {
         )
     }
 
-    fun testWrapReturnValue() {
+    fun testReturn_FloatToStr_WrapsWithStrConstructor() {
         myFixture.configureByText(
             "a.py", """
             def do(val: float) -> str:
@@ -68,7 +68,7 @@ class WrapBasicTest : TestBase() {
         )
     }
 
-    fun testNoDefaultWrapOfArgument() {
+    fun testCall_NoExpectedType_NoStrWrapOffered() {
         myFixture.configureByText(
             "a.py", """
             def process_data() -> int:
@@ -83,7 +83,7 @@ class WrapBasicTest : TestBase() {
         assertNull("Intention 'Wrap with str()' should NOT be available", intention)
     }
 
-    fun testWrapNoQuotedValue() {
+    fun testArgument_IntLiteral_ReplacedWithStrLiteral() {
         myFixture.configureByText(
             "a.py", """
             def process_data(arg: str) -> int:
@@ -107,7 +107,7 @@ class WrapBasicTest : TestBase() {
         )
     }
 
-    fun testOfferBoolWrappingForKeywordOnlyParam() {
+    fun testKeywordOnlyParam_IntToBool_WrapsWithBoolConstructor() {
         myFixture.configureByText(
             "a.py",
             """
