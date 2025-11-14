@@ -23,7 +23,12 @@ internal object ExpectedTypeInfo {
     fun computeDisplayTypeNames(expr: PyExpression, ctx: TypeEvalContext): TypeNames {
         val actual = TypeNameRenderer.render(ctx.getType(expr))
         val expectedInfo = getExpectedTypeInfo(expr, ctx)
-        val expected = TypeNameRenderer.render(expectedInfo?.type)
+        var expected = TypeNameRenderer.render(expectedInfo?.type)
+        if (expected == "Unknown") {
+            // Fall back to annotation text (e.g., forward ref strings) when evaluator can’t render
+            val ann = expectedInfo?.annotationExpr
+            if (ann != null) canonicalCtorName(ann, ctx)?.let { expected = it }
+        }
         return TypeNames(
             actual = actual,
             expected = expected,
@@ -50,6 +55,13 @@ internal object ExpectedTypeInfo {
     }
 
     fun canonicalCtorName(element: PyTypedElement, ctx: TypeEvalContext): String? {
+        // If the typed element is a string literal annotation (forward ref), use its textual name
+        (element as? PyStringLiteralExpression)?.let { str ->
+            val raw = str.stringValue
+            val name = raw?.substringAfterLast('.')
+            if (!name.isNullOrBlank() && !isNonCtorName(name)) return name
+        }
+
         val t = ctx.getType(element)
         if (t != null) {
             val base = firstNonNoneMember(t) ?: return null

@@ -249,6 +249,17 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
                         return null
                     }
                     if (!PyWrapHeuristics.isAlreadyWrappedWith(containerItemTarget, ctor.name, ctor.symbol)) {
+                        // Prefer elementwise plan/label when expected outer container is present
+                        // but only when the caret-targeted item is NOT inside a literal container.
+                        val outer = expectedOuterContainerCtor(elementAtCaret, context)
+                        if (outer != null) {
+                            val p = containerItemTarget.parent
+                            val isLiteral =
+                                p is PyListLiteralExpression || p is PySetLiteralExpression || p is PyTupleExpression || p is PyDictLiteralExpression
+                            if (!isLiteral) {
+                                return Elementwise(containerItemTarget, outer.name, ctor.name, ctor.symbol)
+                            }
+                        }
                         return Single(containerItemTarget, ctor.name, ctor.symbol)
                     }
                 }

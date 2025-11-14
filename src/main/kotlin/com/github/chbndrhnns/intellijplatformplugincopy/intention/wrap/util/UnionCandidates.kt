@@ -31,6 +31,79 @@ object UnionCandidates {
             out += ExpectedCtor(name, resolved)
         }
 
+        fun addString(str: PyStringLiteralExpression) {
+            val raw = str.stringValue ?: return
+
+            fun resolveInSameFile(simpleName: String): PsiNamedElement? {
+                val file = anchor.containingFile
+                // Only search same-file top-level classes; this is cheap and handles common forward refs
+                val classes = com.intellij.psi.util.PsiTreeUtil.findChildrenOfType(file, PyClass::class.java)
+                return classes.firstOrNull { it.name == simpleName }
+            }
+
+            fun resolveQualified(dotted: String): PsiNamedElement? {
+                // Best-effort cross-module resolution for strings like "pkg.mod.Class" without relying on import resolver.
+                val parts = dotted.split('.')
+                if (parts.isEmpty()) return null
+                val name = parts.last()
+                val modulePath = parts.dropLast(1).joinToString("/")
+                val scope = com.intellij.psi.search.GlobalSearchScope.projectScope(anchor.project)
+                return try {
+                    val candidates = com.jetbrains.python.psi.stubs.PyClassNameIndex.find(name, anchor.project, scope)
+                    candidates.firstOrNull { cls ->
+                        val path = cls.containingFile?.virtualFile?.path ?: return@firstOrNull false
+                        // Match end of path so it works on different OS path prefixes
+                        path.replace('\\', '/').endsWith("/$modulePath.py")
+                    } ?: candidates.firstOrNull()
+                } catch (_: Throwable) {
+                    null
+                }
+            }
+
+            fun resolveViaImports(simpleName: String): PsiNamedElement? {
+                val file = anchor.containingFile
+                val imports =
+                    com.intellij.psi.util.PsiTreeUtil.findChildrenOfType(file, PyFromImportStatement::class.java)
+                for (stmt in imports) {
+                    val importSource = stmt.importSourceQName?.toString() ?: continue
+                    for (el in stmt.importElements) {
+                        // visible name in this file (consider alias)
+                        val visible = el.asName ?: el.importedQName?.lastComponent
+                        if (visible == simpleName) {
+                            val full = if (importSource.isNotBlank()) "$importSource.$simpleName" else simpleName
+                            val resolved = resolveQualified(full)
+                            if (resolved != null) return resolved
+                        }
+                    }
+                }
+                return null
+            }
+
+            fun addToken(token: String) {
+                val trimmed = token.trim()
+                if (trimmed.isEmpty()) return
+                val name = trimmed.substringAfterLast('.')
+                if (name.isBlank()) return
+
+                val resolved: PsiNamedElement? = when {
+                    // If appears qualified, try cross-module resolution
+                    trimmed.contains('.') -> resolveQualified(trimmed)
+                    else -> resolveInSameFile(name) ?: resolveViaImports(name)
+                }
+                out += ExpectedCtor(name, resolved)
+            }
+
+            // Handle PEP 604 unions written inside quotes, e.g. "A|B" or "A | B"
+            if (raw.contains('|')) {
+                raw.split('|')
+                    .map { it.trim() }
+                    .filter { it.isNotEmpty() }
+                    .forEach { part -> addToken(part) }
+                return
+            }
+            addToken(raw)
+        }
+
         fun visit(e: PyExpression) {
             when (e) {
                 is PyBinaryExpression -> {
@@ -54,6 +127,7 @@ object UnionCandidates {
                                 }
 
                                 is PyReferenceExpression -> addRef(idx)
+                                is PyStringLiteralExpression -> addString(idx)
                                 is PyExpression -> visit(idx) // handle Union[A | B] and Optional[A | B]
                             }
                         }
@@ -62,7 +136,10 @@ object UnionCandidates {
                 }
             }
 
-            (e as? PyReferenceExpression)?.let { addRef(it) }
+            when (e) {
+                is PyReferenceExpression -> addRef(e)
+                is PyStringLiteralExpression -> addString(e)
+            }
         }
 
         // Tolerate redundant parentheses around unions: ((A | B))
@@ -77,9 +154,14 @@ object UnionCandidates {
         // Deduplicate by simple name
         val distinct = out.toList().distinctBy { it.name }
 
-        // Filter out builtins and unresolved; require at least two non-builtin candidates
+        // Filter out explicit None/builtins; allow unresolved textual candidates from forward refs
         val builtins = PyBuiltinCache.getInstance(anchor)
-        val nonBuiltin = distinct.filter { it.symbol != null && !builtins.isBuiltin(it.symbol) }
-        return if (nonBuiltin.size >= 2 && nonBuiltin.size == distinct.size) nonBuiltin else emptyList()
+        val filtered = distinct.filter {
+            val n = it.name
+            if (n.equals("None", ignoreCase = true)) return@filter false
+            val sym = it.symbol
+            sym == null || !builtins.isBuiltin(sym)
+        }
+        return if (filtered.size >= 2) filtered else emptyList()
     }
 }

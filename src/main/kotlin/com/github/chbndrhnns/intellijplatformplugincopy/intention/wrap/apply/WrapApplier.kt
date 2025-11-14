@@ -59,13 +59,21 @@ class WrapApplier(
 
             val generator = PyElementGenerator.getInstance(project)
             val srcText = (PyPsiUtils.flattenParens(element) ?: element).text
-            val v = "v"
-            val comp = when (container.lowercase()) {
-                "list" -> "[${itemCtorName}($v) for $v in $srcText]"
-                else -> "[${itemCtorName}($v) for $v in $srcText]" // safe fallback
+            // If we're inside a literal list, just wrap this single item to keep the literal structure
+            val p = element.parent
+            if (container.equals("list", ignoreCase = true) && p is PyListLiteralExpression) {
+                val itemWrapped =
+                    generator.createExpressionFromText(LanguageLevel.getLatest(), "$itemCtorName($srcText)")
+                element.replace(itemWrapped)
+            } else {
+                val v = "v"
+                val comp = when (container.lowercase()) {
+                    "list" -> "[${itemCtorName}($v) for $v in $srcText]"
+                    else -> "[${itemCtorName}($v) for $v in $srcText]" // safe fallback
+                }
+                val wrapped = generator.createExpressionFromText(LanguageLevel.getLatest(), comp)
+                element.replace(wrapped)
             }
-            val wrapped = generator.createExpressionFromText(LanguageLevel.getLatest(), comp)
-            element.replace(wrapped)
         }
     }
 }
