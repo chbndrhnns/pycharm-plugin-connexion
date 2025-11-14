@@ -10,6 +10,8 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
+        <applicationService
+                serviceImplementation="com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState"/>
         <toolWindow factoryClass="com.github.chbndrhnns.intellijplatformplugincopy.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
         <postStartupActivity implementation="com.github.chbndrhnns.intellijplatformplugincopy.startup.MyProjectActivity" />
 
@@ -18,5 +20,10 @@
             </className>
             <category>Type mismatch</category>
         </intentionAction>
+
+        <applicationConfigurable
+                displayName="DDD Toolkit"
+                id="com.github.chbndrhnns.intellijplatformplugincopy.settings"
+                instance="com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsConfigurable"/>
     </extensions>
 </idea-plugin>

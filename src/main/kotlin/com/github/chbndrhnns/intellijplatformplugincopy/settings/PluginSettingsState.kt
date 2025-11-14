@@ -1,0 +1,25 @@
+package com.github.chbndrhnns.intellijplatformplugincopy.settings
+
+import com.intellij.openapi.components.PersistentStateComponent
+import com.intellij.openapi.components.State
+import com.intellij.openapi.components.Storage
+import com.intellij.openapi.components.service
+
+@State(name = "PycharmDddToolkitSettings", storages = [Storage("pycharm-ddd-toolkit.xml")])
+class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> {
+    data class State(
+        var enableWrapIntention: Boolean = true,
+    )
+
+    private var myState = State()
+
+    override fun getState(): State = myState
+    override fun loadState(state: State) {
+        myState = state
+    }
+
+    companion object {
+        @JvmStatic
+        fun instance(): PluginSettingsState = service()
+    }
+}

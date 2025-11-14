@@ -10,6 +10,7 @@ import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.ui.JbPopu
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util.PyImportService
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util.PyWrapHeuristics
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util.UnionCandidates
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
@@ -72,6 +73,12 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
     override fun getFamilyName(): String = "Type mismatch wrapper"
 
     override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
+        // Feature switch: hide intention entirely when disabled via settings
+        if (!PluginSettingsState.instance().state.enableWrapIntention) {
+            editor.putUserData(PLAN_KEY, null)
+            lastText = "Wrap with expected type"
+            return false
+        }
         val plan = analyzeAtCaret(project, editor, file) ?: run {
             editor.putUserData(PLAN_KEY, null)
             lastText = "Wrap with expected type"
@@ -148,6 +155,9 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
     }
 
     override fun generatePreview(project: Project, editor: Editor, file: PsiFile): IntentionPreviewInfo {
+        if (!PluginSettingsState.instance().state.enableWrapIntention) {
+            return IntentionPreviewInfo.EMPTY
+        }
         val plan =
             editor.getUserData(PLAN_KEY) ?: analyzeAtCaret(project, editor, file) ?: return IntentionPreviewInfo.EMPTY
         return when (plan) {
