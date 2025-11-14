@@ -20,6 +20,33 @@ class GenericTest : TestBase() {
         assertEquals("str(Path(\"val\"))", previewText)
     }
 
+    fun testPreviewShowsImportLineWhenNeeded() {
+        myFixture.addFileToProject(
+            "b.py",
+            """
+            class B:
+                def __init__(self, value: str):
+                    self.value = value
+
+            def consume(x: B) -> None:
+                ...
+            """.trimIndent()
+        )
+        myFixture.configureByText(
+            "a.py",
+            """
+            from b import consume
+
+            consume(<caret>"val")
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Wrap with B()")
+        val previewText = myFixture.getIntentionPreviewText(intention)
+        assertEquals("from b import B\nB(\"val\")", previewText)
+    }
+
     fun testUnionChooserShowsFqnForClasses() {
         val fake = FakePopupHost().apply { selectedIndex = 0 }
         WrapWithExpectedTypeIntentionHooks.popupHost = fake

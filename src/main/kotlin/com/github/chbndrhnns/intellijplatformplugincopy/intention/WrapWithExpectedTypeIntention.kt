@@ -164,10 +164,16 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
             is UnionChoice -> IntentionPreviewInfo.EMPTY
             is ElementwiseUnionChoice -> IntentionPreviewInfo.EMPTY
             is Single -> {
-                previewBuilder.build(file, plan.element, plan.ctorName)
+                previewBuilder.build(file, plan.element, plan.ctorName, plan.ctorElement)
             }
 
-            is Elementwise -> previewBuilder.buildElementwise(file, plan.element, plan.container, plan.itemCtorName)
+            is Elementwise -> previewBuilder.buildElementwise(
+                file,
+                plan.element,
+                plan.container,
+                plan.itemCtorName,
+                plan.itemCtorElement
+            )
         }
     }
 
