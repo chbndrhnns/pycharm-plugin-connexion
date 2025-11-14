@@ -5,6 +5,9 @@ import com.intellij.psi.PsiNamedElement
 import com.jetbrains.python.PyTokenTypes
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.impl.PyBuiltinCache
+import com.jetbrains.python.psi.types.PyClassType
+import com.jetbrains.python.psi.types.PyTypeUtil
+import com.jetbrains.python.psi.types.TypeEvalContext
 
 /**
  * Utility that extracts constructor candidates from union-like annotations.
@@ -19,6 +22,11 @@ import com.jetbrains.python.psi.impl.PyBuiltinCache
  */
 object UnionCandidates {
     fun collect(annotation: PyTypedElement, anchor: PyExpression): List<ExpectedCtor> {
+        // Prefer type-provider based union handling first: this covers PEP 604 unions, typing.Union/Optional,
+        // quoted annotations and forward refs via PyTypingTypeProvider/TypeEvalContext.
+        val fromTypes = collectFromTypes(annotation, anchor)
+        if (fromTypes.size >= 2) return fromTypes
+
         val expr = annotation as? PyExpression ?: return emptyList()
         val out = LinkedHashSet<ExpectedCtor>()
 
@@ -171,5 +179,33 @@ object UnionCandidates {
             sym == null || !builtins.isBuiltin(sym)
         }
         return if (filtered.size >= 2) filtered else emptyList()
+    }
+
+    /**
+     * Primary implementation: rely on the type system to parse/normalize unions instead of hand-parsing text.
+     * Falls back to the legacy PSI/text logic above when type information is missing or yields < 2 candidates.
+     */
+    private fun collectFromTypes(annotation: PyTypedElement, anchor: PyExpression): List<ExpectedCtor> {
+        val file = anchor.containingFile
+        val project = anchor.project
+        val ctx = TypeEvalContext.userInitiated(project, file)
+        val type = ctx.getType(annotation) ?: return emptyList()
+
+        val builtins = PyBuiltinCache.getInstance(anchor)
+        val byName = LinkedHashMap<String, ExpectedCtor>()
+
+        PyTypeUtil.toStream(type).forEach { member ->
+            val classType = member as? PyClassType ?: return@forEach
+            val cls = classType.pyClass as? PsiNamedElement ?: return@forEach
+            val name = cls.name ?: return@forEach
+
+            // Mirror legacy filters: drop explicit None and builtins.
+            if (name.equals("None", ignoreCase = true)) return@forEach
+            if (builtins.isBuiltin(cls)) return@forEach
+
+            byName.putIfAbsent(name, ExpectedCtor(name, cls))
+        }
+
+        return byName.values.toList()
     }
 }
