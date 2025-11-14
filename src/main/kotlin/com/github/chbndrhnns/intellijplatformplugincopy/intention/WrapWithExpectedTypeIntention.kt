@@ -71,7 +71,7 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
     private val applier = WrapApplier(imports)
     private val previewBuilder = WrapPreview()
 
-    override fun getIcon(@Iconable.IconFlags flags: Int): Icon = AllIcons.Actions.QuickfixBulb
+    override fun getIcon(@Iconable.IconFlags flags: Int): Icon = AllIcons.Actions.IntentionBulb
 
     override fun getText(): String = lastText
 
