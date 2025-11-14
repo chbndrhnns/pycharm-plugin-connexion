@@ -1,0 +1,8 @@
+from typing import NewType
+
+UserId = NewType("UserId", int)
+
+def f(x: int) -> None:
+    pass
+
+f(UserId(<caret>42))

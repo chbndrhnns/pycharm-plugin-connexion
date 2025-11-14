@@ -19,6 +19,12 @@
             <category>Type mismatch</category>
         </intentionAction>
 
+        <intentionAction>
+            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.UnwrapToExpectedTypeIntention
+            </className>
+            <category>Type mismatch</category>
+        </intentionAction>
+
         <applicationConfigurable
                 displayName="DDD Toolkit"
                 id="com.github.chbndrhnns.intellijplatformplugincopy.settings"
