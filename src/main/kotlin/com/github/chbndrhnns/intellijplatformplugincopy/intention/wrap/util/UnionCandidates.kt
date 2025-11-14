@@ -36,9 +36,17 @@ object UnionCandidates {
 
             fun resolveInSameFile(simpleName: String): PsiNamedElement? {
                 val file = anchor.containingFile
-                // Only search same-file top-level classes; this is cheap and handles common forward refs
+                // Search same-file top-level symbols by name: classes, functions, and assignment targets (e.g., NewType aliases)
                 val classes = com.intellij.psi.util.PsiTreeUtil.findChildrenOfType(file, PyClass::class.java)
-                return classes.firstOrNull { it.name == simpleName }
+                classes.firstOrNull { it.name == simpleName }?.let { return it }
+
+                val funcs = com.intellij.psi.util.PsiTreeUtil.findChildrenOfType(file, PyFunction::class.java)
+                funcs.firstOrNull { it.name == simpleName }?.let { return it }
+
+                val targets = com.intellij.psi.util.PsiTreeUtil.findChildrenOfType(file, PyTargetExpression::class.java)
+                targets.firstOrNull { it.name == simpleName }?.let { return it }
+
+                return null
             }
 
             fun resolveQualified(dotted: String): PsiNamedElement? {

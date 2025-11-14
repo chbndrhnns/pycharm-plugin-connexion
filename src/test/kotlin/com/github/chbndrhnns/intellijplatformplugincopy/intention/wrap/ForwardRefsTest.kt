@@ -290,9 +290,9 @@ class ForwardRefsTest : TestBase() {
             val intention = myFixture.findSingleIntention("Wrap with expected union type…")
             myFixture.launchAction(intention)
 
-            // Ensure chooser contained both options
-            assertTrue(fake.lastLabels.contains("Two"))
-            assertTrue(fake.lastLabels.contains("One"))
+            // Ensure chooser contained both options (allow labels to include FQNs)
+            assertTrue(fake.lastLabels.any { it.startsWith("Two") })
+            assertTrue(fake.lastLabels.any { it.startsWith("One") })
 
             myFixture.checkResult(
                 """
@@ -307,6 +307,37 @@ class ForwardRefsTest : TestBase() {
                 do1(One("abc"))
                 """.trimIndent()
             )
+        } finally {
+            WrapWithExpectedTypeIntentionHooks.popupHost = null
+        }
+    }
+
+    fun testUnionChooserShowsFqnForForwardRef_newTypesQuotedUnion() {
+        val fake = FakePopupHost().apply { selectedIndex = 0 }
+        WrapWithExpectedTypeIntentionHooks.popupHost = fake
+        try {
+            myFixture.configureByText(
+                "a.py",
+
+                """
+                from typing import NewType
+
+                One = NewType("One", str)
+                Two = NewType("Two", int)
+
+                def do1(arg: "Two|One") -> None:
+                    return arg
+
+                do1(<caret>"abc")
+                """.trimIndent()
+            )
+
+            myFixture.doHighlighting()
+            val intention = myFixture.findSingleIntention("Wrap with expected union type…")
+            myFixture.launchAction(intention)
+
+            // FQNs should be shown for NewType aliases resolved as targets in the same file
+            assertEquals(listOf("Two (a.Two)", "One (a.One)"), fake.lastLabels)
         } finally {
             WrapWithExpectedTypeIntentionHooks.popupHost = null
         }

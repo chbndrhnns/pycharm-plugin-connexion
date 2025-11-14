@@ -27,10 +27,10 @@ class WrapPreview(
     ): IntentionPreviewInfo {
         val unwrapped = PyPsiUtils.flattenParens(element) ?: element
         val originalText = unwrapped.text
-        val modifiedText = when {
-            ctorName == "str" && unwrapped is PyNumericLiteralExpression -> "\"$originalText\""
-            ctorName == "list" && PyWrapHeuristics.isContainerExpression(unwrapped) -> "list($originalText)"
-            ctorName == "list" -> "[$originalText]"
+        val modifiedText = when (ctorName) {
+            "str" if unwrapped is PyNumericLiteralExpression -> "\"$originalText\""
+            "list" if PyWrapHeuristics.isContainerExpression(unwrapped) -> "list($originalText)"
+            "list" -> "[$originalText]"
             else -> "$ctorName($originalText)"
         }
 
