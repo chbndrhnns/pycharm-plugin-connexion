@@ -12,8 +12,6 @@
     <extensions defaultExtensionNs="com.intellij">
         <applicationService
                 serviceImplementation="com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState"/>
-        <toolWindow factoryClass="com.github.chbndrhnns.intellijplatformplugincopy.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
-        <postStartupActivity implementation="com.github.chbndrhnns.intellijplatformplugincopy.startup.MyProjectActivity" />
 
         <intentionAction>
             <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.WrapWithExpectedTypeIntention
