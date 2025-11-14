@@ -52,7 +52,7 @@ class UnwrapToExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
     override fun getIcon(@Iconable.IconFlags flags: Int): Icon = AllIcons.Actions.IntentionBulb
 
     override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
-        if (!PluginSettingsState.instance().state.enableWrapIntention) {
+        if (!PluginSettingsState.instance().state.enableUnwrapIntention) {
             editor.putUserData(PLAN_KEY, null)
             lastText = "Unwrap to expected type"
             return false

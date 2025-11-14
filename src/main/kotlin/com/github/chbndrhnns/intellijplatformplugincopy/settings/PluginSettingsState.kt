@@ -9,6 +9,7 @@ import com.intellij.openapi.components.service
 class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> {
     data class State(
         var enableWrapIntention: Boolean = true,
+        var enableUnwrapIntention: Boolean = true,
     )
 
     private var myState = State()
