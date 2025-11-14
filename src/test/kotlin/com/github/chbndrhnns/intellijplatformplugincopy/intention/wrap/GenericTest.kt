@@ -20,6 +20,57 @@ class GenericTest : TestBase() {
         assertEquals("str(Path(\"val\"))", previewText)
     }
 
+    fun testUnionChooserShowsFqnForClasses() {
+        val fake = FakePopupHost().apply { selectedIndex = 0 }
+        WrapWithExpectedTypeIntentionHooks.popupHost = fake
+        try {
+            myFixture.configureByText(
+                "a.py",
+                """
+                class User:
+                    def __init__(self, value: str):
+                        self.value = value
+
+                class Token:
+                    def __init__(self, value: str):
+                        self.value = value
+
+                def f(x: User | Token) -> None:
+                    ...
+
+                f(<caret>"abc")
+                """.trimIndent()
+            )
+
+            myFixture.doHighlighting()
+            val intention = myFixture.findSingleIntention("Wrap with expected union type…")
+            myFixture.launchAction(intention)
+
+            // Verify chooser labels include fully qualified names for classes
+            assertEquals(listOf("User (a.User)", "Token (a.Token)"), fake.lastLabels)
+
+            // Also verify the first choice was applied
+            myFixture.checkResult(
+                """
+                class User:
+                    def __init__(self, value: str):
+                        self.value = value
+
+                class Token:
+                    def __init__(self, value: str):
+                        self.value = value
+
+                def f(x: User | Token) -> None:
+                    ...
+
+                f(User("abc"))
+                """.trimIndent()
+            )
+        } finally {
+            WrapWithExpectedTypeIntentionHooks.popupHost = null
+        }
+    }
+
     fun testIsAvailableForAssignments() {
         myFixture.configureByText(
             "a.py",
@@ -313,8 +364,8 @@ class GenericTest : TestBase() {
             val intention = myFixture.findSingleIntention("Wrap with expected union type…")
             myFixture.launchAction(intention)
 
-            // Verify chooser labels and that first was picked
-            assertEquals(listOf("One", "Two"), fake.lastLabels)
+            // Verify chooser labels include fully qualified names for NewType aliases and that first was picked
+            assertEquals(listOf("One (a.One)", "Two (a.Two)"), fake.lastLabels)
 
             myFixture.checkResult(
                 """

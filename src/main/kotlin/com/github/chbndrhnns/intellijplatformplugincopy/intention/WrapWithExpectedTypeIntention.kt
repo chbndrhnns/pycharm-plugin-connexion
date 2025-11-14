@@ -102,7 +102,7 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
                     editor = editor,
                     title = "Select expected type",
                     items = candidates,
-                    render = { it.name },
+                    render = { renderUnionLabel(it) },
                     onChosen = { chosen ->
                         applier.apply(project, file, plan.element, chosen.name, chosen.symbol)
                     }
@@ -116,7 +116,7 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
                     editor = editor,
                     title = "Select expected type",
                     items = candidates,
-                    render = { it.name },
+                    render = { renderUnionLabel(it) },
                     onChosen = { chosen ->
                         applier.applyElementwise(
                             project,
@@ -304,6 +304,18 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
             return Single(elementAtCaret, ctor, ctorElem)
         }
         return null
+    }
+
+    /**
+     * Render label for union choice popup items.
+     * - If the symbol has a qualified name (classes, NewType aliases, functions, etc.),
+     *   include it in parentheses to disambiguate (e.g., `User (a.User)`, `One (a.One)`).
+     * - Otherwise, fall back to the simple name.
+     */
+    private fun renderUnionLabel(ctor: ExpectedCtor): String {
+        val qNameOwner = ctor.symbol as? PyQualifiedNameOwner
+        val fqn = qNameOwner?.qualifiedName
+        return if (!fqn.isNullOrBlank()) "${ctor.name} ($fqn)" else ctor.name
     }
 
     /** Detect the expected outer container and map to concrete Python constructors we can call (list/set/tuple/dict). */
