@@ -38,6 +38,17 @@ private fun isSupportedCtor(name: String?, symbol: PsiNamedElement?, builtins: P
  */
 private class StringAnnotationResolver(private val anchor: PyExpression) {
 
+    /** Lazily collected same-file symbols, indexed by simple name. */
+    private val sameFileSymbols: SameFileSymbols by lazy { collectSameFileSymbols(anchor) }
+
+    /** Lazily collected from-import statements in the current file. */
+    private val fromImports: Collection<PyFromImportStatement> by lazy {
+        com.intellij.psi.util.PsiTreeUtil.findChildrenOfType(
+            anchor.containingFile,
+            PyFromImportStatement::class.java
+        )
+    }
+
     fun resolveToken(token: String): Pair<String, PsiNamedElement?>? {
         val trimmed = token.trim()
         if (trimmed.isEmpty()) return null
@@ -55,17 +66,10 @@ private class StringAnnotationResolver(private val anchor: PyExpression) {
     }
 
     private fun resolveInSameFile(simpleName: String): PsiNamedElement? {
-        val file = anchor.containingFile
-        // Search same-file top-level symbols by name: classes, functions, and assignment targets (e.g., NewType aliases)
-        val classes = com.intellij.psi.util.PsiTreeUtil.findChildrenOfType(file, PyClass::class.java)
-        classes.firstOrNull { it.name == simpleName }?.let { return it }
-
-        val funcs = com.intellij.psi.util.PsiTreeUtil.findChildrenOfType(file, PyFunction::class.java)
-        funcs.firstOrNull { it.name == simpleName }?.let { return it }
-
-        val targets = com.intellij.psi.util.PsiTreeUtil.findChildrenOfType(file, PyTargetExpression::class.java)
-        targets.firstOrNull { it.name == simpleName }?.let { return it }
-
+        // Use cached same-file symbols instead of re-scanning PSI on every call.
+        sameFileSymbols.classes[simpleName]?.let { return it }
+        sameFileSymbols.functions[simpleName]?.let { return it }
+        sameFileSymbols.targets[simpleName]?.let { return it }
         return null
     }
 
@@ -91,10 +95,8 @@ private class StringAnnotationResolver(private val anchor: PyExpression) {
     }
 
     private fun resolveViaImports(simpleName: String): PsiNamedElement? {
-        val file = anchor.containingFile
-        val imports =
-            com.intellij.psi.util.PsiTreeUtil.findChildrenOfType(file, PyFromImportStatement::class.java)
-        for (stmt in imports) {
+        // Iterate over cached from-imports; PSI is scanned only once per resolver instance.
+        for (stmt in fromImports) {
             val importSource = stmt.importSourceQName?.toString() ?: continue
             for (el in stmt.importElements) {
                 // visible name in this file (consider alias)
@@ -108,6 +110,39 @@ private class StringAnnotationResolver(private val anchor: PyExpression) {
         }
         return null
     }
+}
+
+private data class SameFileSymbols(
+    val classes: Map<String, PyClass>,
+    val functions: Map<String, PyFunction>,
+    val targets: Map<String, PyTargetExpression>,
+)
+
+private fun collectSameFileSymbols(anchor: PyExpression): SameFileSymbols {
+    val file = anchor.containingFile
+
+    val classes = com.intellij.psi.util.PsiTreeUtil.findChildrenOfType(file, PyClass::class.java)
+        .mapNotNull { cls ->
+            val name = cls.name ?: return@mapNotNull null
+            name to cls
+        }
+        .toMap()
+
+    val functions = com.intellij.psi.util.PsiTreeUtil.findChildrenOfType(file, PyFunction::class.java)
+        .mapNotNull { fn ->
+            val name = fn.name ?: return@mapNotNull null
+            name to fn
+        }
+        .toMap()
+
+    val targets = com.intellij.psi.util.PsiTreeUtil.findChildrenOfType(file, PyTargetExpression::class.java)
+        .mapNotNull { target ->
+            val name = target.name ?: return@mapNotNull null
+            name to target
+        }
+        .toMap()
+
+    return SameFileSymbols(classes, functions, targets)
 }
 
 object UnionCandidates {
