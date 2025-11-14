@@ -14,20 +14,23 @@ import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsS
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Iconable
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNamedElement
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.types.TypeEvalContext
+import javax.swing.Icon
 
 /**
  * Intention that wraps an expression causing a type mismatch with the expected type constructor.
  * Uses the Python type system APIs for robust type inference.
  */
-class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbAware {
+class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbAware, Iconable {
     // Minimal retained state: dynamic text shown by the IDE, updated in isAvailable().
     private var lastText: String = "Wrap with expected type"
 
@@ -67,6 +70,8 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
     private val imports = PyImportService()
     private val applier = WrapApplier(imports)
     private val previewBuilder = WrapPreview()
+
+    override fun getIcon(@Iconable.IconFlags flags: Int): Icon = AllIcons.Actions.QuickfixBulb
 
     override fun getText(): String = lastText
 
