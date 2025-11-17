@@ -8,8 +8,12 @@ class SettingsToggleTest : TestBase() {
         val svc = PluginSettingsState.instance()
         val old = svc.state
         try {
-            // Disable the intention via settings
-            svc.loadState(old.copy(enableWrapIntention = false))
+            svc.loadState(
+                PluginSettingsState.State(
+                    enableWrapIntention = false,
+                    enableUnwrapIntention = old.enableUnwrapIntention,
+                )
+            )
 
             myFixture.configureByText(
                 "a.py",
@@ -32,7 +36,12 @@ class SettingsToggleTest : TestBase() {
         val svc = PluginSettingsState.instance()
         val old = svc.state
         try {
-            svc.loadState(old.copy(enableWrapIntention = true))
+            svc.loadState(
+                PluginSettingsState.State(
+                    enableWrapIntention = true,
+                    enableUnwrapIntention = old.enableUnwrapIntention,
+                )
+            )
 
             myFixture.configureByText(
                 "a.py",
