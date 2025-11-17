@@ -25,6 +25,12 @@
             <category>Type mismatch</category>
         </intentionAction>
 
+        <intentionAction>
+            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.IntroduceCustomTypeFromStdlibIntention
+            </className>
+            <category>Custom types</category>
+        </intentionAction>
+
         <applicationConfigurable
                 displayName="DDD Toolkit"
                 id="com.github.chbndrhnns.intellijplatformplugincopy.settings"
