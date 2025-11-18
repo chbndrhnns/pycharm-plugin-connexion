@@ -1,5 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 
+import com.github.chbndrhnns.intellijplatformplugincopy.TestBase
+
 /**
  * Legacy list-related wrap tests.
  *

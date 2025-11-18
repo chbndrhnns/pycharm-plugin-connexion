@@ -1,6 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.HeavyTestBase
+import com.github.chbndrhnns.intellijplatformplugincopy.HeavyTestBase
 
 /**
  * Placeholder for a future heavy multi-module variant of the cross-module

@@ -1,6 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.TestBase
+import com.github.chbndrhnns.intellijplatformplugincopy.TestBase
 
 /**
  * Basic behavior for introducing a custom type from a stdlib/builtin type

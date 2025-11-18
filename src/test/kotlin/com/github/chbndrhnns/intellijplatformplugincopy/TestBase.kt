@@ -1,8 +1,8 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
+package com.github.chbndrhnns.intellijplatformplugincopy
 
 import PythonMockSdk
-import com.github.chbndrhnns.intellijplatformplugincopy.MyPlatformTestCase
 import com.intellij.openapi.application.PathManager
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.util.Disposer
 import com.jetbrains.python.inspections.PyTypeCheckerInspection
@@ -18,7 +18,7 @@ abstract class TestBase : MyPlatformTestCase() {
         super.setUp()
         val sdk = PythonMockSdk.create(LanguageLevel.PYTHON311, myFixture.tempDirFixture.getFile("/")!!)
         Disposer.register(testRootDisposable) {
-            com.intellij.openapi.application.runWriteAction {
+            runWriteAction {
                 ProjectJdkTable.getInstance().removeJdk(sdk)
             }
         }

@@ -1,5 +1,8 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 
+import com.github.chbndrhnns.intellijplatformplugincopy.FakePopupHost
+import com.github.chbndrhnns.intellijplatformplugincopy.TestBase
+
 /**
  * Wrap intention behavior when the expected type is a union (without forward refs).
  */

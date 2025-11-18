@@ -1,5 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 
+import com.github.chbndrhnns.intellijplatformplugincopy.TestBase
+
 /**
  * Basic wrap intention behavior: assignments, arguments, returns without
  * collections, unions, forward refs or dataclasses.

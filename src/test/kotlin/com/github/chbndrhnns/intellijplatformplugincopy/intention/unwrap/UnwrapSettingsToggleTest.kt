@@ -1,6 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.unwrap
 
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.TestBase
+import com.github.chbndrhnns.intellijplatformplugincopy.TestBase
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 
 class UnwrapSettingsToggleTest : TestBase() {
