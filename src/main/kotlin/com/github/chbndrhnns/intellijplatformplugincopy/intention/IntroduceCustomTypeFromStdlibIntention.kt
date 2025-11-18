@@ -37,6 +37,11 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         val builtinName: String,
         val annotationRef: PyReferenceExpression? = null,
         val expression: PyExpression? = null,
+        /**
+         * Optional preferred base class name derived from surrounding context,
+         * e.g. an assignment target or keyword argument name.
+         */
+        val preferredClassName: String? = null,
     )
 
     override fun getText(): String = lastText
@@ -62,15 +67,17 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         val target = findTarget(editor, pyFile) ?: return
 
         val builtinName = target.builtinName
-        val capitalizedBuiltin = when (builtinName) {
-            "int" -> "Int"
-            "str" -> "Str"
-            "float" -> "Float"
-            "bool" -> "Bool"
-            "bytes" -> "Bytes"
-            else -> builtinName.replaceFirstChar { it.uppercaseChar() }
+        val baseTypeName = target.preferredClassName ?: run {
+            val capitalizedBuiltin = when (builtinName) {
+                "int" -> "Int"
+                "str" -> "Str"
+                "float" -> "Float"
+                "bool" -> "Bool"
+                "bytes" -> "Bytes"
+                else -> builtinName.replaceFirstChar { it.uppercaseChar() }
+            }
+            "Custom" + capitalizedBuiltin
         }
-        val baseTypeName = "Custom" + capitalizedBuiltin
 
         val generator = PyElementGenerator.getInstance(project)
 
@@ -115,7 +122,26 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
             if (name != null && name in SUPPORTED_BUILTINS) {
                 val annotation = PsiTreeUtil.getParentOfType(ref, PyAnnotation::class.java, false)
                 if (annotation != null) {
-                    return Target(builtinName = name, annotationRef = ref)
+                    val owner = PsiTreeUtil.getParentOfType(ref, PyAnnotationOwner::class.java, true)
+
+                    val identifier = when (owner) {
+                        is PyTargetExpression -> owner.name
+                        is PyNamedParameter -> owner.name
+                        is PyTypeDeclarationStatement -> {
+                            // For type declarations like ``product_id: int`` inside
+                            // classes (e.g. dataclass fields), the annotation owner
+                            // is a PyTypeDeclarationStatement. Its children include
+                            // the target expression for the field; use that name.
+                            val firstTarget = PsiTreeUtil.getChildOfType(owner, PyTargetExpression::class.java)
+                            firstTarget?.name
+                        }
+
+                        else -> null
+                    }
+
+                    val preferredName = identifier?.let { id -> deriveClassNameFromIdentifier(id) }
+
+                    return Target(builtinName = name, annotationRef = ref, preferredClassName = preferredName)
                 }
             }
         }
@@ -151,7 +177,44 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         candidate ?: return null
         if (candidate !in SUPPORTED_BUILTINS) return null
 
-        return Target(builtinName = candidate, expression = expr)
+        val preferredNameFromKeyword = PsiTreeUtil.getParentOfType(expr, PyKeywordArgument::class.java, false)
+            ?.takeIf { it.valueExpression == expr }
+            ?.keyword
+            ?.let { deriveClassNameFromIdentifier(it) }
+
+        val preferredNameFromAssignment = if (preferredNameFromKeyword == null) {
+            val assignment = PsiTreeUtil.getParentOfType(expr, PyAssignmentStatement::class.java, false)
+            if (assignment != null && assignment.assignedValue == expr) {
+                val firstTarget = assignment.targets.firstOrNull() as? PyTargetExpression
+                val id = firstTarget?.name
+                id?.let { deriveClassNameFromIdentifier(it) }
+            } else null
+        } else null
+
+        val preferredName = preferredNameFromKeyword ?: preferredNameFromAssignment
+
+        return Target(builtinName = candidate, expression = expr, preferredClassName = preferredName)
+    }
+
+    /**
+     * Derive a PascalCase class name from an identifier such as ``product_id``
+     * or ``my_arg``. To keep changes minimal, we currently only derive a name
+     * when the identifier contains an underscore so that simple names like
+     * ``val`` continue to use the existing builtin-based naming.
+     */
+    private fun deriveClassNameFromIdentifier(identifier: String): String? {
+        if (!identifier.contains('_')) return null
+
+        val parts = identifier.split('_').filter { it.isNotEmpty() }
+        if (parts.isEmpty()) return null
+
+        return parts.joinToString(separator = "") { part ->
+            if (part.isEmpty()) "" else {
+                val head = part[0].uppercaseChar()
+                val tail = part.substring(1)
+                head + tail
+            }
+        }
     }
 
     /**

@@ -34,6 +34,29 @@ class CustomTypeAdditionalContextsTest : TestBase() {
         assertTrue(result.contains("Data(val=Customint(1))"))
     }
 
+    fun testDataclassField_WithSnakeCaseName_UsesFieldNameForClass() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            import dataclasses
+
+
+            @dataclasses.dataclass
+            class D:
+                product_id: i<caret>nt
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Introduce custom type from int")
+        myFixture.launchAction(intention)
+
+        val result = myFixture.file.text
+        println("[DEBUG_LOG] Resulting file (dataclass field):\n$result")
+        assertTrue(result.contains("class Productid(int):"))
+        assertTrue(result.contains("product_id: Productid"))
+    }
+
     fun testStringLiteral_NoAnnotation_WrapsWithCustomStr() {
         myFixture.configureByText(
             "a.py",
@@ -86,5 +109,45 @@ class CustomTypeAdditionalContextsTest : TestBase() {
         val result = myFixture.file.text
         assertTrue(result.contains("class Customfloat(float):"))
         assertTrue(result.contains("val = Customfloat(4567.6)"))
+    }
+
+    fun testIntAssignment_WithSnakeCaseName_UsesTargetNameForClass() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            product_id = 12<caret>34
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Introduce custom type from int")
+        myFixture.launchAction(intention)
+
+        val result = myFixture.file.text
+        println("[DEBUG_LOG] Resulting file (int assignment):\n$result")
+        assertTrue(result.contains("class Productid(int):"))
+        assertTrue(result.contains("product_id = Productid(1234)"))
+    }
+
+    fun testKeywordArgument_WithSnakeCaseName_UsesKeywordForClass() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            def do(my_arg: int) -> None:
+                ...
+
+            def test_():
+                do(my_arg=12<caret>34)
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Introduce custom type from int")
+        myFixture.launchAction(intention)
+
+        val result = myFixture.file.text
+        println("[DEBUG_LOG] Resulting file (keyword arg):\n$result")
+        assertTrue(result.contains("class Myarg(int):"))
+        assertTrue(result.contains("do(my_arg=Myarg(1234))"))
     }
 }
