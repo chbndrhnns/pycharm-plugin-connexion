@@ -1,0 +1,4 @@
+def f(x: int) -> None:
+    pass
+
+f(<caret>42)

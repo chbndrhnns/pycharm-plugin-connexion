@@ -1,0 +1,7 @@
+class CustomInt(int):
+    pass
+
+def f(x: CustomInt) -> None:
+    pass
+
+f(CustomInt(<caret>42))
