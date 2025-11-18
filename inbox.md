@@ -2,6 +2,7 @@
 
 ## Pending Tasks
 
+- [ ] Move heavy test base out of wrap
 - [ ] Unwrap if inner type is expected type
 - Container types: list items
 

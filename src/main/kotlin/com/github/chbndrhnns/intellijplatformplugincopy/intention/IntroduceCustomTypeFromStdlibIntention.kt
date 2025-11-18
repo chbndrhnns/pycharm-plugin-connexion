@@ -155,7 +155,7 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
             // dataclass field annotation now.
             if (target.annotationRef == null) {
                 val typeDecl = PsiTreeUtil.getParentOfType(field, PyTypeDeclarationStatement::class.java, false)
-                val annExpr = typeDecl?.annotation?.value as? PyExpression
+                val annExpr = typeDecl?.annotation?.value
                 if (annExpr != null) {
                     // Replace the builtin reference inside the annotation with
                     // the new type reference, falling back to a plain
@@ -423,7 +423,7 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
                 .filterIsInstance<PyKeywordArgument>()
                 .firstOrNull { it.keyword == fieldName }
             if (keywordArg != null) {
-                val valueExpr = keywordArg.valueExpression as? PyExpression ?: continue
+                val valueExpr = keywordArg.valueExpression ?: continue
                 wrapArgumentExpressionIfNeeded(valueExpr, wrapperTypeName, generator)
                 continue
             }
@@ -437,7 +437,7 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
             val positionalArgs = allArgs.filter { it !is PyKeywordArgument }
             if (fieldIndex >= positionalArgs.size) continue
 
-            val valueExpr = positionalArgs[fieldIndex] as? PyExpression ?: continue
+            val valueExpr = positionalArgs[fieldIndex] ?: continue
             wrapArgumentExpressionIfNeeded(valueExpr, wrapperTypeName, generator)
         }
     }
@@ -471,16 +471,10 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
     private fun deriveClassNameFromIdentifier(identifier: String): String? {
         if (!identifier.contains('_')) return null
 
-        val parts = identifier.split('_').filter { it.isNotEmpty() }
-        if (parts.isEmpty()) return null
+        val collapsed = identifier.replace("_", "")
+        if (collapsed.isEmpty()) return null
 
-        return parts.joinToString(separator = "") { part ->
-            if (part.isEmpty()) "" else {
-                val head = part[0].uppercaseChar()
-                val tail = part.substring(1)
-                head + tail
-            }
-        }
+        return collapsed.replaceFirstChar { it.uppercaseChar() }
     }
 
     /**
