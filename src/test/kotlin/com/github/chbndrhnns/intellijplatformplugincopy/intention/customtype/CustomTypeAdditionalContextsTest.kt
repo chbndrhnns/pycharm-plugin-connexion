@@ -30,8 +30,8 @@ class CustomTypeAdditionalContextsTest : TestBase() {
         myFixture.launchAction(intention)
 
         val result = myFixture.file.text
-        assertTrue(result.contains("class CustomInt(int):"))
-        assertTrue(result.contains("Data(val=CustomInt(1))"))
+        assertTrue(result.contains("class Customint(int):"))
+        assertTrue(result.contains("Data(val=Customint(1))"))
     }
 
     fun testStringLiteral_NoAnnotation_WrapsWithCustomStr() {
@@ -50,8 +50,8 @@ class CustomTypeAdditionalContextsTest : TestBase() {
         myFixture.launchAction(intention)
 
         val result = myFixture.file.text
-        assertTrue(result.contains("class CustomStr(str):"))
-        assertTrue(result.contains("expect_str(CustomStr(\"abc\"))"))
+        assertTrue(result.contains("class Customstr(str):"))
+        assertTrue(result.contains("expect_str(Customstr(\"abc\"))"))
     }
 
     fun testStringLiteralAssignment_NoAnnotation_WrapsWithCustomStr() {
@@ -67,8 +67,8 @@ class CustomTypeAdditionalContextsTest : TestBase() {
         myFixture.launchAction(intention)
 
         val result = myFixture.file.text
-        assertTrue(result.contains("class CustomStr(str):"))
-        assertTrue(result.contains("val = CustomStr(\"str\")"))
+        assertTrue(result.contains("class Customstr(str):"))
+        assertTrue(result.contains("val = Customstr(\"str\")"))
     }
 
     fun testFloatLiteralAssignment_UsesFloatAndWrapsValue() {
@@ -84,7 +84,7 @@ class CustomTypeAdditionalContextsTest : TestBase() {
         myFixture.launchAction(intention)
 
         val result = myFixture.file.text
-        assertTrue(result.contains("class CustomFloat(float):"))
-        assertTrue(result.contains("val = CustomFloat(4567.6)"))
+        assertTrue(result.contains("class Customfloat(float):"))
+        assertTrue(result.contains("val = Customfloat(4567.6)"))
     }
 }

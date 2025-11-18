@@ -1,0 +1,13 @@
+<html>
+<body>
+Introduces a custom domain type subclass from a builtin/stdlib type such as <code>int</code> or <code>str</code>.
+The intention
+<ul>
+    <li>creates a new class like <code>CustomInt(int): pass</code> in the current module,</li>
+    <li>rewrites the current usage or annotation to refer to the new type, and</li>
+    <li>places the caret on the new class name and starts inline rename so you can choose the final name while updating
+        usages.
+    </li>
+</ul>
+</body>
+</html>

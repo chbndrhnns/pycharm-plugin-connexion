@@ -21,8 +21,19 @@ class CustomTypeBasicTest : TestBase() {
         val intention = myFixture.findSingleIntention("Introduce custom type from int")
         myFixture.launchAction(intention)
 
+        // After running the intention, the caret should be on the introduced
+        // class name so that inline rename can start immediately.
+        val caretOffset = myFixture.editor.caretModel.offset
+
         val result = myFixture.file.text
-        assertTrue("Generated class should subclass the builtin type", result.contains("class CustomInt(int):"))
-        assertTrue("Annotation should be rewritten to the new type", result.contains("def f(x: CustomInt) -> None:"))
+        println("[DEBUG_LOG] Resulting file:\n$result")
+        assertTrue("Generated class should subclass the builtin type", result.contains("class Customint(int):"))
+        assertTrue("Annotation should be rewritten to the new type", result.contains("def f(x: Customint) -> None:"))
+
+        val classNameIndex = result.indexOf("Customint(int)")
+        assertTrue(
+            "Caret should be placed on the new class name for inline rename", classNameIndex != -1 &&
+                    caretOffset in classNameIndex until (classNameIndex + "CustomInt".length)
+        )
     }
 }

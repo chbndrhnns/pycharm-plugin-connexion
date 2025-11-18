@@ -4,12 +4,18 @@ import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeI
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.actionSystem.DataContext
+import com.intellij.openapi.actionSystem.impl.SimpleDataContext
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Iconable
+import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.refactoring.rename.RenameHandler
+import com.intellij.refactoring.rename.RenameHandlerRegistry
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.types.TypeEvalContext
 import javax.swing.Icon
@@ -56,16 +62,25 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         val target = findTarget(editor, pyFile) ?: return
 
         val builtinName = target.builtinName
-        val newTypeName = "Custom" + builtinName.replaceFirstChar { it.uppercaseChar() }
+        val capitalizedBuiltin = when (builtinName) {
+            "int" -> "Int"
+            "str" -> "Str"
+            "float" -> "Float"
+            "bool" -> "Bool"
+            "bytes" -> "Bytes"
+            else -> builtinName.replaceFirstChar { it.uppercaseChar() }
+        }
+        val baseTypeName = "Custom" + capitalizedBuiltin
 
         val generator = PyElementGenerator.getInstance(project)
 
         // Generate the new class definition in the current module.
+        val newTypeName = suggestUniqueClassName(pyFile, baseTypeName)
         val classText = "class $newTypeName($builtinName):\n    pass"
         val newClass = generator.createFromText(LanguageLevel.getLatest(), PyClass::class.java, classText)
 
         val anchor = pyFile.firstChild
-        pyFile.addBefore(newClass, anchor)
+        val inserted = pyFile.addBefore(newClass, anchor) as? PyClass ?: return
 
         // Replace the annotation reference or expression usage with the new type.
         val newRef = generator.createExpressionFromText(LanguageLevel.getLatest(), newTypeName)
@@ -83,6 +98,8 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
                 target.expression.replace(wrapped)
             }
         }
+
+        startInlineRename(project, editor, inserted, pyFile)
     }
 
     override fun startInWriteAction(): Boolean = true
@@ -135,6 +152,46 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         if (candidate !in SUPPORTED_BUILTINS) return null
 
         return Target(builtinName = candidate, expression = expr)
+    }
+
+    /**
+     * Ensure that the initial custom type name does not clash with an existing
+     * top-level class in the target file. This mirrors the logic described in
+     * docs/inline-rename.md.
+     */
+    private fun suggestUniqueClassName(file: PyFile, baseName: String): String {
+        val usedNames = file.topLevelClasses.mapNotNull { it.name }.toMutableSet()
+
+        if (!usedNames.contains(baseName)) return baseName
+
+        var index = 1
+        var candidate = "$baseName$index"
+        while (usedNames.contains(candidate)) {
+            index++
+            candidate = "$baseName$index"
+        }
+        return candidate
+    }
+
+    /**
+     * Position the caret on the newly created class name and invoke the
+     * platform rename handler so that inline rename (with purple indicator)
+     * is available immediately after the intention runs.
+     */
+    private fun startInlineRename(project: Project, editor: Editor, inserted: PyClass, pyFile: PyFile) {
+        val nameId = inserted.nameIdentifier ?: return
+
+        val document = editor.document
+        PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(document)
+
+        editor.caretModel.moveToOffset(nameId.textOffset)
+
+        val dataContext: DataContext = SimpleDataContext.getSimpleContext(CommonDataKeys.EDITOR, editor, null)
+        val handler: RenameHandler = RenameHandlerRegistry.getInstance().getRenameHandler(dataContext) ?: return
+
+        if (handler.isAvailableOnDataContext(dataContext)) {
+            handler.invoke(project, editor, pyFile, dataContext)
+        }
     }
 
     companion object {
