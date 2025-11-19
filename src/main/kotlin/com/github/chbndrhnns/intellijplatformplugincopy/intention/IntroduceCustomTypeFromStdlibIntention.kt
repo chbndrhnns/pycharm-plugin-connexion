@@ -192,10 +192,14 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         }
 
         // Only trigger inline rename when the new class was inserted into the
-        // same file that the user is currently editing. When we generate the
-        // class in a different module (e.g., the dataclass definition file),
-        // we avoid jumping editors for now.
-        if (targetFileForNewClass == pyFile) {
+        // same file that the user is currently editing *and* we did not
+        // already derive a semantic preferred class name from context. For
+        // names like ``ProductId`` that come from identifiers such as
+        // ``product_id``, we want to keep that name stable instead of letting
+        // the rename infrastructure adjust it (which may, for example,
+        // normalise it to ``Productid``). Inline rename remains available for
+        // generic names like ``CustomInt``.
+        if (targetFileForNewClass == pyFile && target.preferredClassName == null) {
             startInlineRename(project, editor, inserted, pyFile)
         }
     }
@@ -254,7 +258,7 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         // a supported builtin. This covers cases like arguments and literals where
         // the stdlib type is implied rather than written explicitly.
         val exprFromCaret = PyTypeIntentions.findExpressionAtCaret(editor, file)
-        val expr = exprFromCaret as? PyExpression
+        val expr = exprFromCaret
             ?: PsiTreeUtil.getParentOfType(leaf, PyStringLiteralExpression::class.java, false)
             ?: PsiTreeUtil.getParentOfType(leaf, PyNumericLiteralExpression::class.java, false)
             ?: return null
@@ -288,7 +292,14 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
 
         val preferredNameFromAssignment = if (preferredNameFromKeyword == null) {
             val assignment = PsiTreeUtil.getParentOfType(expr, PyAssignmentStatement::class.java, false)
-            if (assignment != null && assignment.assignedValue == expr) {
+            if (assignment != null) {
+                // Prefer deriving the class name from the assignment target
+                // whenever the caret expression participates in an
+                // assignment like ``product_id = 1234``. We intentionally do
+                // not require that the caret expression is *exactly* the
+                // assigned value expression because helper utilities may
+                // return sub‑expressions; using the target name is still the
+                // right behaviour in all such cases.
                 val firstTarget = assignment.targets.firstOrNull() as? PyTargetExpression
                 val id = firstTarget?.name
                 id?.let { deriveClassNameFromIdentifier(it) }
@@ -481,10 +492,13 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
     private fun deriveClassNameFromIdentifier(identifier: String): String? {
         if (!identifier.contains('_')) return null
 
-        val collapsed = identifier.replace("_", "")
-        if (collapsed.isEmpty()) return null
+        // Convert snake_case to PascalCase, e.g. ``product_id`` -> ``ProductId``.
+        val parts = identifier.split('_').filter { it.isNotEmpty() }
+        if (parts.isEmpty()) return null
 
-        return collapsed.replaceFirstChar { it.uppercaseChar() }
+        return parts.joinToString(separator = "") { part ->
+            part.replaceFirstChar { it.uppercaseChar() }
+        }
     }
 
     /**

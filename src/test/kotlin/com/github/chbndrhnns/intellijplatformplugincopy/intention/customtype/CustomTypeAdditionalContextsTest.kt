@@ -76,18 +76,18 @@ class CustomTypeAdditionalContextsTest : TestBase() {
             import dataclasses
             
             
-            class Productid(int):
+            class ProductId(int):
                 pass
             
             
             @dataclasses.dataclass
             class D:
-                product_id: Productid
+                product_id: ProductId
             
             
             def do():
-                D(product_id=Productid(123))
-                D(product_id=Productid(456))
+                D(product_id=ProductId(123))
+                D(product_id=ProductId(456))
             """.trimIndent()
         )
     }
@@ -120,19 +120,19 @@ class CustomTypeAdditionalContextsTest : TestBase() {
             import dataclasses
             
             
-            class Productid(int):
+            class ProductId(int):
                 pass
             
             
             @dataclasses.dataclass
             class D:
-                product_id: Productid
+                product_id: ProductId
                 other: str
             
             
             def do():
-                D(Productid(123), "x")
-                D(Productid(456), other="y")
+                D(ProductId(123), "x")
+                D(ProductId(456), other="y")
             """.trimIndent()
         )
     }
@@ -164,18 +164,18 @@ class CustomTypeAdditionalContextsTest : TestBase() {
             import dataclasses
             
             
-            class Productid(int):
+            class ProductId(int):
                 pass
             
             
             @dataclasses.dataclass
             class D:
-                product_id: Productid
+                product_id: ProductId
             
             
             def do():
-                D(product_id=Productid(123))
-                D(product_id=Productid(456))
+                D(product_id=ProductId(123))
+                D(product_id=ProductId(456))
             """.trimIndent()
         )
     }
@@ -208,19 +208,19 @@ class CustomTypeAdditionalContextsTest : TestBase() {
                 import dataclasses
 
                 
-                class Productid(int):
+                class ProductId(int):
                     pass
                 
                 
                 @dataclasses.dataclass
                 class D:
-                    product_id: Productid
+                    product_id: ProductId
                     other: str
                 
                 
                 def do():
-                    D(Productid(123), "a")
-                    D(Productid(456), "b")
+                    D(ProductId(123), "a")
+                    D(ProductId(456), "b")
             """.trimIndent()
         )
     }
@@ -232,7 +232,7 @@ class CustomTypeAdditionalContextsTest : TestBase() {
             import dataclasses
 
 
-            class Productid(int):
+            class ProductId(int):
                 pass
 
 
@@ -242,7 +242,7 @@ class CustomTypeAdditionalContextsTest : TestBase() {
 
 
             def do():
-                D(product_id=Productid(12<caret>3))
+                D(product_id=ProductId(12<caret>3))
             """.trimIndent()
         )
 
@@ -259,7 +259,7 @@ class CustomTypeAdditionalContextsTest : TestBase() {
                     pass
                 
                 
-                class Productid(int):
+                class ProductId(int):
                     pass
                 
                 
@@ -269,7 +269,7 @@ class CustomTypeAdditionalContextsTest : TestBase() {
                 
                 
                 def do():
-                    D(product_id=Productid(Customint(123)))
+                    D(product_id=ProductId(Customint(123)))
             """.trimIndent()
         )
     }
@@ -292,20 +292,19 @@ class CustomTypeAdditionalContextsTest : TestBase() {
         myFixture.launchAction(intention)
 
         val result = myFixture.file.text
-        println("[DEBUG_LOG] Resulting file (dataclass field):\n$result")
 
         myFixture.checkResult(
             """
             import dataclasses
             
             
-            class Productid(int):
+            class ProductId(int):
                 pass
             
             
             @dataclasses.dataclass
             class D:
-                product_id: Productid
+                product_id: ProductId
                 """.trimIndent()
         )
     }
@@ -397,16 +396,13 @@ class CustomTypeAdditionalContextsTest : TestBase() {
         val intention = myFixture.findSingleIntention("Introduce custom type from int")
         myFixture.launchAction(intention)
 
-        val result = myFixture.file.text
-        println("[DEBUG_LOG] Resulting file (int assignment):\n$result")
-
         myFixture.checkResult(
             """
-            class Productid(int):
+            class ProductId(int):
                 pass
 
 
-            product_id = Productid(1234)
+            product_id = ProductId(1234)
             """.trimIndent()
         )
     }
@@ -428,19 +424,18 @@ class CustomTypeAdditionalContextsTest : TestBase() {
         myFixture.launchAction(intention)
 
         val result = myFixture.file.text
-        println("[DEBUG_LOG] Resulting file (keyword arg):\n$result")
 
         myFixture.checkResult(
             """
-            class Myarg(int):
+            class MyArg(int):
                 pass
 
 
-            def do(my_arg: Myarg) -> None:
+            def do(my_arg: MyArg) -> None:
                 ...
 
             def test_():
-                do(my_arg=Myarg(1234))
+                do(my_arg=MyArg(1234))
             """.trimIndent()
         )
     }
@@ -471,17 +466,17 @@ class CustomTypeAdditionalContextsTest : TestBase() {
             import pydantic
 
 
-            class Productid(int):
+            class ProductId(int):
                 pass
             
             
             class D(pydantic.BaseModel):
-                product_id: Productid
+                product_id: ProductId
             
             
             def do():
-                D(product_id=Productid(123))
-                D(product_id=Productid(456))
+                D(product_id=ProductId(123))
+                D(product_id=ProductId(456))
             """.trimIndent()
         )
     }
@@ -512,17 +507,17 @@ class CustomTypeAdditionalContextsTest : TestBase() {
             from pydantic import BaseModel
 
 
-            class Productid(int):
+            class ProductId(int):
                 pass
             
             
             class D(BaseModel):
-                product_id: Productid
+                product_id: ProductId
             
             
             def do():
-                D(product_id=Productid(123))
-                D(product_id=Productid(456))
+                D(product_id=ProductId(123))
+                D(product_id=ProductId(456))
             """.trimIndent()
         )
     }
@@ -554,18 +549,18 @@ class CustomTypeAdditionalContextsTest : TestBase() {
             from pydantic import BaseModel
 
 
-            class Productid(int):
+            class ProductId(int):
                 pass
             
             
             class D(BaseModel):
-                product_id: Productid
+                product_id: ProductId
                 other: str
             
             
             def do():
-                D(Productid(123), "a")
-                D(Productid(456), "b")
+                D(ProductId(123), "a")
+                D(ProductId(456), "b")
             """.trimIndent()
         )
     }
@@ -611,15 +606,15 @@ class CustomTypeAdditionalContextsTest : TestBase() {
         val usageText = String(usage.contentsToByteArray())
 
         // Custom type should be introduced alongside the dataclass declaration.
-        assertTrue(modelText.contains("class Productid(int):"))
-        assertTrue(modelText.contains("product_id: Productid"))
+        assertTrue(modelText.contains("class ProductId(int):"))
+        assertTrue(modelText.contains("product_id: ProductId"))
 
         // Usage site should import the new custom type and use it at the call-site.
         assertTrue(
-            usageText.contains("from model import D, Productid") ||
-                    (usageText.contains("from model import D") && usageText.contains("from model import Productid"))
+            usageText.contains("from model import D, ProductId") ||
+                    (usageText.contains("from model import D") && usageText.contains("from model import ProductId"))
         )
-        assertTrue(usageText.contains("D(product_id=Productid(123))"))
+        assertTrue(usageText.contains("D(product_id=ProductId(123))"))
     }
 
     /**
@@ -666,7 +661,7 @@ class CustomTypeAdditionalContextsTest : TestBase() {
         // usage module. We keep the assertion intentionally minimal here: the
         // core requirement is that the new type lives alongside the dataclass
         // declaration when declaration and usage are in different modules.
-        assertTrue(modelText.contains("class Productid(int):"))
-        assertFalse(usageText.contains("class Productid(int):"))
+        assertTrue(modelText.contains("class ProductId(int):"))
+        assertFalse(usageText.contains("class ProductId(int):"))
     }
 }
