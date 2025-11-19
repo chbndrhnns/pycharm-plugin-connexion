@@ -29,9 +29,24 @@ class CustomTypeAdditionalContextsTest : TestBase() {
         val intention = myFixture.findSingleIntention("Introduce custom type from int")
         myFixture.launchAction(intention)
 
-        val result = myFixture.file.text
-        assertTrue(result.contains("class Customint(int):"))
-        assertTrue(result.contains("Data(val=Customint(1))"))
+        myFixture.checkResult(
+            """
+            import dataclasses
+
+
+            class Customint(int):
+                pass
+
+
+            @dataclasses.dataclass
+            class Data:
+                val: Customint
+                
+            def test_():
+                Data(val=Customint(1))
+
+            """.trimIndent()
+        )
     }
 
     fun testDataclassField_WrapsKeywordArgumentUsages() {
@@ -56,11 +71,25 @@ class CustomTypeAdditionalContextsTest : TestBase() {
         val intention = myFixture.findSingleIntention("Introduce custom type from int")
         myFixture.launchAction(intention)
 
-        val result = myFixture.file.text
-        assertTrue(result.contains("class Productid(int):"))
-        assertTrue(result.contains("product_id: Productid"))
-        assertTrue(result.contains("D(product_id=Productid(123))"))
-        assertTrue(result.contains("D(product_id=Productid(456))"))
+        myFixture.checkResult(
+            """
+            import dataclasses
+            
+            
+            class Productid(int):
+                pass
+            
+            
+            @dataclasses.dataclass
+            class D:
+                product_id: Productid
+            
+            
+            def do():
+                D(product_id=Productid(123))
+                D(product_id=Productid(456))
+            """.trimIndent()
+        )
     }
 
     fun testDataclassField_WrapsPositionalArgumentUsages() {
@@ -86,11 +115,26 @@ class CustomTypeAdditionalContextsTest : TestBase() {
         val intention = myFixture.findSingleIntention("Introduce custom type from int")
         myFixture.launchAction(intention)
 
-        val result = myFixture.file.text
-        assertTrue(result.contains("class Productid(int):"))
-        assertTrue(result.contains("product_id: Productid"))
-        assertTrue(result.contains("D(Productid(123), \"x\")"))
-        assertTrue(result.contains("D(Productid(456), other=\"y\")"))
+        myFixture.checkResult(
+            """
+            import dataclasses
+            
+            
+            class Productid(int):
+                pass
+            
+            
+            @dataclasses.dataclass
+            class D:
+                product_id: Productid
+                other: str
+            
+            
+            def do():
+                D(Productid(123), "x")
+                D(Productid(456), other="y")
+            """.trimIndent()
+        )
     }
 
     fun testDataclassCall_IntroduceFromKeywordValue_UpdatesFieldAndAllUsages() {
@@ -115,11 +159,25 @@ class CustomTypeAdditionalContextsTest : TestBase() {
         val intention = myFixture.findSingleIntention("Introduce custom type from int")
         myFixture.launchAction(intention)
 
-        val result = myFixture.file.text
-        assertTrue(result.contains("class Productid(int):"))
-        assertTrue(result.contains("product_id: Productid"))
-        assertTrue(result.contains("D(product_id=Productid(123))"))
-        assertTrue(result.contains("D(product_id=Productid(456))"))
+        myFixture.checkResult(
+            """
+            import dataclasses
+            
+            
+            class Productid(int):
+                pass
+            
+            
+            @dataclasses.dataclass
+            class D:
+                product_id: Productid
+            
+            
+            def do():
+                D(product_id=Productid(123))
+                D(product_id=Productid(456))
+            """.trimIndent()
+        )
     }
 
     fun testDataclassCall_IntroduceFromPositionalValue_UpdatesFieldAndUsages() {
@@ -145,11 +203,26 @@ class CustomTypeAdditionalContextsTest : TestBase() {
         val intention = myFixture.findSingleIntention("Introduce custom type from int")
         myFixture.launchAction(intention)
 
-        val result = myFixture.file.text
-        assertTrue(result.contains("class Productid(int):"))
-        assertTrue(result.contains("product_id: Productid"))
-        assertTrue(result.contains("D(Productid(123), \"a\")"))
-        assertTrue(result.contains("D(Productid(456), \"b\")"))
+        myFixture.checkResult(
+            """
+                import dataclasses
+
+                
+                class Productid(int):
+                    pass
+                
+                
+                @dataclasses.dataclass
+                class D:
+                    product_id: Productid
+                    other: str
+                
+                
+                def do():
+                    D(Productid(123), "a")
+                    D(Productid(456), "b")
+            """.trimIndent()
+        )
     }
 
     fun testDataclassCall_DoesNotDoubleWrapIfAlreadyCustom() {
@@ -177,9 +250,28 @@ class CustomTypeAdditionalContextsTest : TestBase() {
         val intention = myFixture.findSingleIntention("Introduce custom type from int")
         myFixture.launchAction(intention)
 
-        val result = myFixture.file.text
-        // Depending on future behaviour, we at least avoid double-wrapping.
-        assertFalse(result.contains("Productid(Productid(123))"))
+        myFixture.checkResult(
+            """
+                import dataclasses
+
+
+                class Customint(int):
+                    pass
+                
+                
+                class Productid(int):
+                    pass
+                
+                
+                @dataclasses.dataclass
+                class D:
+                    product_id: int
+                
+                
+                def do():
+                    D(product_id=Productid(Customint(123)))
+            """.trimIndent()
+        )
     }
 
     fun testDataclassField_WithSnakeCaseName_UsesFieldNameForClass() {
@@ -201,8 +293,21 @@ class CustomTypeAdditionalContextsTest : TestBase() {
 
         val result = myFixture.file.text
         println("[DEBUG_LOG] Resulting file (dataclass field):\n$result")
-        assertTrue(result.contains("class Productid(int):"))
-        assertTrue(result.contains("product_id: Productid"))
+
+        myFixture.checkResult(
+            """
+            import dataclasses
+            
+            
+            class Productid(int):
+                pass
+            
+            
+            @dataclasses.dataclass
+            class D:
+                product_id: Productid
+                """.trimIndent()
+        )
     }
 
     fun testStringLiteral_NoAnnotation_WrapsWithCustomStr() {
@@ -220,9 +325,18 @@ class CustomTypeAdditionalContextsTest : TestBase() {
         val intention = myFixture.findSingleIntention("Introduce custom type from str")
         myFixture.launchAction(intention)
 
-        val result = myFixture.file.text
-        assertTrue(result.contains("class Customstr(str):"))
-        assertTrue(result.contains("expect_str(Customstr(\"abc\"))"))
+        myFixture.checkResult(
+            """
+            class Customstr(str):
+                pass
+
+
+            def expect_str(s: Customstr) -> None:
+                ...
+
+            expect_str(Customstr("abc"))
+            """.trimIndent()
+        )
     }
 
     fun testStringLiteralAssignment_NoAnnotation_WrapsWithCustomStr() {
@@ -237,9 +351,15 @@ class CustomTypeAdditionalContextsTest : TestBase() {
         val intention = myFixture.findSingleIntention("Introduce custom type from str")
         myFixture.launchAction(intention)
 
-        val result = myFixture.file.text
-        assertTrue(result.contains("class Customstr(str):"))
-        assertTrue(result.contains("val = Customstr(\"str\")"))
+        myFixture.checkResult(
+            """
+            class Customstr(str):
+                pass
+
+
+            val = Customstr("str")
+            """.trimIndent()
+        )
     }
 
     fun testFloatLiteralAssignment_UsesFloatAndWrapsValue() {
@@ -254,9 +374,15 @@ class CustomTypeAdditionalContextsTest : TestBase() {
         val intention = myFixture.findSingleIntention("Introduce custom type from float")
         myFixture.launchAction(intention)
 
-        val result = myFixture.file.text
-        assertTrue(result.contains("class Customfloat(float):"))
-        assertTrue(result.contains("val = Customfloat(4567.6)"))
+        myFixture.checkResult(
+            """
+            class Customfloat(float):
+                pass
+            
+            
+            val = Customfloat(4567.6)
+            """.trimIndent()
+        )
     }
 
     fun testIntAssignment_WithSnakeCaseName_UsesTargetNameForClass() {
@@ -273,8 +399,16 @@ class CustomTypeAdditionalContextsTest : TestBase() {
 
         val result = myFixture.file.text
         println("[DEBUG_LOG] Resulting file (int assignment):\n$result")
-        assertTrue(result.contains("class Productid(int):"))
-        assertTrue(result.contains("product_id = Productid(1234)"))
+
+        myFixture.checkResult(
+            """
+            class Productid(int):
+                pass
+
+
+            product_id = Productid(1234)
+            """.trimIndent()
+        )
     }
 
     fun testKeywordArgument_WithSnakeCaseName_UsesKeywordForClass() {
@@ -295,8 +429,20 @@ class CustomTypeAdditionalContextsTest : TestBase() {
 
         val result = myFixture.file.text
         println("[DEBUG_LOG] Resulting file (keyword arg):\n$result")
-        assertTrue(result.contains("class Myarg(int):"))
-        assertTrue(result.contains("do(my_arg=Myarg(1234))"))
+
+        myFixture.checkResult(
+            """
+            class Myarg(int):
+                pass
+
+
+            def do(my_arg: Myarg) -> None:
+                ...
+
+            def test_():
+                do(my_arg=Myarg(1234))
+            """.trimIndent()
+        )
     }
 
     fun testPydanticModelField_WrapsKeywordArgumentUsages() {
@@ -320,11 +466,24 @@ class CustomTypeAdditionalContextsTest : TestBase() {
         val intention = myFixture.findSingleIntention("Introduce custom type from int")
         myFixture.launchAction(intention)
 
-        val result = myFixture.file.text
-        assertTrue(result.contains("class Productid(int):"))
-        assertTrue(result.contains("product_id: Productid"))
-        assertTrue(result.contains("D(product_id=Productid(123))"))
-        assertTrue(result.contains("D(product_id=Productid(456))"))
+        myFixture.checkResult(
+            """
+            import pydantic
+
+
+            class Productid(int):
+                pass
+            
+            
+            class D(pydantic.BaseModel):
+                product_id: Productid
+            
+            
+            def do():
+                D(product_id=Productid(123))
+                D(product_id=Productid(456))
+            """.trimIndent()
+        )
     }
 
     fun testPydanticModelCall_IntroduceFromKeywordValue_UpdatesFieldAndUsages() {
@@ -348,11 +507,24 @@ class CustomTypeAdditionalContextsTest : TestBase() {
         val intention = myFixture.findSingleIntention("Introduce custom type from int")
         myFixture.launchAction(intention)
 
-        val result = myFixture.file.text
-        assertTrue(result.contains("class Productid(int):"))
-        assertTrue(result.contains("product_id: Productid"))
-        assertTrue(result.contains("D(product_id=Productid(123))"))
-        assertTrue(result.contains("D(product_id=Productid(456))"))
+        myFixture.checkResult(
+            """
+            from pydantic import BaseModel
+
+
+            class Productid(int):
+                pass
+            
+            
+            class D(BaseModel):
+                product_id: Productid
+            
+            
+            def do():
+                D(product_id=Productid(123))
+                D(product_id=Productid(456))
+            """.trimIndent()
+        )
     }
 
     fun testPydanticModelCall_IntroduceFromPositionalValue_UpdatesFieldAndUsages() {
@@ -377,11 +549,25 @@ class CustomTypeAdditionalContextsTest : TestBase() {
         val intention = myFixture.findSingleIntention("Introduce custom type from int")
         myFixture.launchAction(intention)
 
-        val result = myFixture.file.text
-        assertTrue(result.contains("class Productid(int):"))
-        assertTrue(result.contains("product_id: Productid"))
-        assertTrue(result.contains("D(Productid(123), \"a\")"))
-        assertTrue(result.contains("D(Productid(456), \"b\")"))
+        myFixture.checkResult(
+            """
+            from pydantic import BaseModel
+
+
+            class Productid(int):
+                pass
+            
+            
+            class D(BaseModel):
+                product_id: Productid
+                other: str
+            
+            
+            def do():
+                D(Productid(123), "a")
+                D(Productid(456), "b")
+            """.trimIndent()
+        )
     }
 
     /**

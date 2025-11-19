@@ -13,6 +13,7 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Iconable
 import com.intellij.psi.PsiDocumentManager
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.refactoring.rename.RenameHandler
@@ -115,8 +116,17 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         val classText = "class $newTypeName($builtinName):\n    pass"
         val newClass = generator.createFromText(LanguageLevel.getLatest(), PyClass::class.java, classText)
 
-        val anchor = targetFileForNewClass.firstChild
-        val inserted = targetFileForNewClass.addBefore(newClass, anchor) as? PyClass ?: return
+        // Ensure that all import statements remain at the top of the file.
+        // If the target module already has imports, we insert the new class
+        // *after* the last import statement; otherwise we fall back to the
+        // previous behaviour of inserting at the very beginning.
+        val importAnchor: PsiElement? = targetFileForNewClass.importBlock.lastOrNull() as? PsiElement
+        val inserted = if (importAnchor != null) {
+            targetFileForNewClass.addAfter(newClass, importAnchor) as? PyClass
+        } else {
+            val firstChild = targetFileForNewClass.firstChild
+            targetFileForNewClass.addBefore(newClass, firstChild) as? PyClass
+        } ?: return
 
         // When the custom type is introduced in a different module than the
         // current file (e.g. dataclass declaration vs usage site), make sure
