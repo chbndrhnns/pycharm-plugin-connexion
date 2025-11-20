@@ -15,6 +15,8 @@ import com.intellij.openapi.util.Iconable
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.refactoring.rename.RenameHandler
 import com.intellij.refactoring.rename.RenameHandlerRegistry
@@ -199,6 +201,10 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
             // while the custom type itself lives with the dataclass
             // declaration.
             wrapDataclassConstructorUsages(pyFile, field, newTypeName, generator)
+
+            // Project-wide update: find all references to the dataclass across
+            // the project and wrap constructor arguments at those call sites.
+            wrapDataclassConstructorUsagesProjectWide(project, field, newTypeName, inserted, generator)
         }
 
         // Only trigger inline rename when the new class was inserted into the
@@ -538,6 +544,39 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
             "$wrapperTypeName(${expr.text})",
         )
         expr.replace(wrapped)
+    }
+
+    /**
+     * Project-wide wrapper: locate all files in the project that reference the
+     * dataclass owning [field] and apply the same constructor usage wrapping as
+     * we do for a single file. Also ensures the newly introduced type is
+     * importable in those files.
+     */
+    private fun wrapDataclassConstructorUsagesProjectWide(
+        project: Project,
+        field: PyTargetExpression,
+        wrapperTypeName: String,
+        introducedClass: PyClass,
+        generator: PyElementGenerator,
+    ) {
+        val pyClass = PsiTreeUtil.getParentOfType(field, PyClass::class.java) ?: return
+        val searchScope = GlobalSearchScope.projectScope(project)
+        val refs = ReferencesSearch.search(pyClass, searchScope).findAll()
+
+        // Process each distinct Python file that contains a reference to the class.
+        refs.mapNotNull { it.element.containingFile as? PyFile }
+            .distinct()
+            .forEach { refFile ->
+                // Update all constructor usages in that file.
+                wrapDataclassConstructorUsages(refFile, field, wrapperTypeName, generator)
+
+                // Ensure the new type is imported where needed.
+                val anchor = PsiTreeUtil.findChildOfType(refFile, PyTypedElement::class.java)
+                    ?: refFile.firstChild as? PyTypedElement
+                if (anchor != null) {
+                    imports.ensureImportedIfNeeded(refFile, anchor, introducedClass)
+                }
+            }
     }
 
     /**

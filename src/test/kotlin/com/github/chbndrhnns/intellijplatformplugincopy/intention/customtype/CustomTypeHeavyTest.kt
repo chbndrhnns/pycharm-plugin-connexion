@@ -12,7 +12,7 @@ import com.github.chbndrhnns.intellijplatformplugincopy.HeavyTestBase
  */
 class CustomTypeHeavyTest : HeavyTestBase() {
 
-    fun testDataclassCrossModule_AddsImportAtUsageSite() {
+    fun testDataclassCrossModule_CreateTypeAtUsageSite_AddsImportAtUsageSite() {
         myFixture.configureByText("mod/__init__.py", "")
         myFixture.configureByText(
             "mod/model.py",
@@ -26,7 +26,7 @@ class CustomTypeHeavyTest : HeavyTestBase() {
             """.trimIndent(),
         )
 
-        myFixture.configureByText(
+        val usagePsi1 = myFixture.configureByText(
             "mod/usage.py",
             """
             from .model import D
@@ -41,6 +41,53 @@ class CustomTypeHeavyTest : HeavyTestBase() {
         waitForSmartModeAndHighlight()
         val intention = myFixture.findSingleIntention("Introduce custom type from int")
         myFixture.launchAction(intention)
+
+        myFixture.openFileInEditor(usagePsi1.virtualFile)
+        myFixture.doHighlighting()
+
+        myFixture.checkResult(
+            """
+            from .model import D, ProductId
+
+
+            def do():
+                D(product_id=ProductId(123))
+            """.trimIndent()
+        )
+    }
+
+    fun testDataclassCrossModule_CreateTypeAtDeclarationSite_AddsImportAtUsageSite() {
+        myFixture.configureByText("mod/__init__.py", "")
+        val usagePsi2 = myFixture.configureByText(
+            "mod/usage.py",
+            """
+            from .model import D
+
+
+            def do():
+                D(product_id=123)
+            """.trimIndent(),
+        )
+
+        myFixture.configureByText(
+            "mod/model.py",
+            """
+            import dataclasses
+
+
+            @dataclasses.dataclass
+            class D:
+                product_id: in<caret>t
+            """.trimIndent(),
+        )
+
+        configureTempDirAsContentAndSourceRoot()
+        waitForSmartModeAndHighlight()
+        val intention = myFixture.findSingleIntention("Introduce custom type from int")
+        myFixture.launchAction(intention)
+
+        myFixture.openFileInEditor(usagePsi2.virtualFile)
+        myFixture.doHighlighting()
 
         myFixture.checkResult(
             """
