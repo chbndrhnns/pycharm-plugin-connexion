@@ -338,6 +338,36 @@ class CustomTypeAdditionalContextsTest : TestBase() {
         )
     }
 
+    fun testStringLiteral_Annotation_UpdatesAnnotationAfterWrap() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            def expect_str(s: str) -> None:
+                ...
+
+            expect_str("ab<caret>c")
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Introduce custom type from str")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            class Customstr(str):
+                pass
+
+
+            def expect_str(s: Customstr) -> None:
+                ...
+
+            expect_str(Customstr("abc"))
+            """.trimIndent()
+        )
+    }
+
+
     fun testStringLiteralAssignment_NoAnnotation_WrapsWithCustomStr() {
         myFixture.configureByText(
             "a.py",

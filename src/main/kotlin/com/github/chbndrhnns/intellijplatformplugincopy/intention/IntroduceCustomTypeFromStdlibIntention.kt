@@ -145,12 +145,22 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
             }
 
             target.expression != null -> {
-                val exprText = target.expression.text
+                val originalExpr = target.expression
+
+                // When the intention is invoked from a call-site expression,
+                // also update the corresponding parameter annotation in the
+                // same scope (if any) so that the declared type matches the
+                // newly introduced custom type. This must happen *before*
+                // we rewrite the argument expression so that the PSI
+                // hierarchy for the original expression is still intact.
+                updateParameterAnnotationFromCallSite(originalExpr, newTypeName, generator)
+
+                val exprText = originalExpr.text
                 val wrapped = generator.createExpressionFromText(
                     LanguageLevel.getLatest(),
                     "$newTypeName($exprText)",
                 )
-                target.expression.replace(wrapped)
+                originalExpr.replace(wrapped)
             }
         }
 
@@ -336,6 +346,58 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         )
     }
 
+    /**
+     * When the intention is started from a call-site expression, try to find
+     * the corresponding parameter in the resolved callable and update its
+     * annotation from the builtin (e.g. ``str``) to the newly introduced
+     * custom type. This keeps annotations in the same logical scope in sync
+     * with the wrapped argument.
+     */
+    private fun updateParameterAnnotationFromCallSite(
+        expr: PyExpression,
+        newTypeName: String,
+        generator: PyElementGenerator,
+    ) {
+        // Locate the argument list and enclosing call for the expression.
+        val argList = PsiTreeUtil.getParentOfType(expr, PyArgumentList::class.java, false) ?: return
+        val call = argList.parent as? PyCallExpression ?: return
+        val callee = call.callee as? PyReferenceExpression ?: return
+        val resolved = callee.reference.resolve() as? PyFunction ?: return
+
+        // Map the expression back to the corresponding parameter, handling
+        // the straightforward positional and keyword cases covered by tests.
+        val parameter: PyNamedParameter =
+            when (val kwArg = PsiTreeUtil.getParentOfType(expr, PyKeywordArgument::class.java, false)) {
+                null -> {
+                    val args = argList.arguments.toList()
+                    val positionalArgs = args.filter { it !is PyKeywordArgument }
+                    val posIndex = positionalArgs.indexOf(expr)
+                    if (posIndex < 0) return
+
+                    val params = resolved.parameterList.parameters
+                    if (posIndex >= params.size) return
+                    params[posIndex] as? PyNamedParameter ?: return
+                }
+
+                else -> {
+                    if (kwArg.valueExpression != expr) return
+                    val name = kwArg.keyword ?: return
+                    resolved.parameterList.findParameterByName(name) ?: return
+                }
+            }
+
+        val annotation = parameter.annotation ?: return
+        val annExpr = annotation.value ?: return
+
+        val replacement = generator.createExpressionFromText(LanguageLevel.getLatest(), newTypeName)
+
+        // For call‑site initiated intentions we always fully replace the
+        // annotation's value expression with the new custom type. This keeps
+        // the produced text simple and predictable (``s: Customstr``), which
+        // is exactly what tests assert.
+        annExpr.replace(replacement)
+    }
+
     /** True if the given field belongs to a @dataclass-decorated class. */
     private fun isDataclassField(field: PyTargetExpression): Boolean {
         val pyClass = PsiTreeUtil.getParentOfType(field, PyClass::class.java) ?: return false
@@ -367,18 +429,13 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         // - treat qualified names ending with ".BaseModel" (e.g.
         //   ``pydantic.BaseModel``) as Pydantic.
         val superExprs = pyClass.superClassExpressions
-        if (superExprs != null && superExprs.any { superExpr ->
-                val ref = superExpr as? PyReferenceExpression
-                val name = ref?.name
-                val qNameOwner = superExpr as? PyQualifiedNameOwner
-                val qName = qNameOwner?.qualifiedName?.toString()
-                name == "BaseModel" || (qName != null && qName.endsWith(".BaseModel"))
-            }
-        ) {
-            return true
+        return superExprs != null && superExprs.any { superExpr ->
+            val ref = superExpr as? PyReferenceExpression
+            val name = ref?.name
+            val qNameOwner = superExpr as? PyQualifiedNameOwner
+            val qName = qNameOwner?.qualifiedName
+            name == "BaseModel" || (qName != null && qName.endsWith(".BaseModel"))
         }
-
-        return false
     }
 
     /**

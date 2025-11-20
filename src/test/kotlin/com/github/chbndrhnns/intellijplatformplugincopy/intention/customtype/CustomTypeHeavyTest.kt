@@ -16,8 +16,9 @@ import com.github.chbndrhnns.intellijplatformplugincopy.HeavyTestBase
 class CustomTypeHeavyTest : HeavyTestBase() {
 
     fun testDataclassCrossModule_AddsImportAtUsageSite() {
+        myFixture.configureByText("mod/__init__.py", "")
         myFixture.configureByText(
-            "model.py",
+            "mod/model.py",
             """
             import dataclasses
 
@@ -29,7 +30,7 @@ class CustomTypeHeavyTest : HeavyTestBase() {
         )
 
         myFixture.configureByText(
-            "usage.py",
+            "mod/usage.py",
             """
             from model import D
 
