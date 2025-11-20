@@ -9,9 +9,6 @@ import com.github.chbndrhnns.intellijplatformplugincopy.HeavyTestBase
  * NOTE: This class now uses [HeavyTestBase], which in turn relies on
  * IdeaTestFixtureFactory to create a **heavy** project. The current
  * implementation still exercises cross-file behaviour within a single module.
- * If we ever need *true* cross-module resolution, this is the natural place to
- * add additional real modules and module dependencies as described in
- * `docs/heavy-fixture.md`.
  */
 class CustomTypeHeavyTest : HeavyTestBase() {
 
@@ -32,7 +29,7 @@ class CustomTypeHeavyTest : HeavyTestBase() {
         myFixture.configureByText(
             "mod/usage.py",
             """
-            from model import D
+            from .model import D
 
 
             def do():
@@ -47,7 +44,7 @@ class CustomTypeHeavyTest : HeavyTestBase() {
 
         myFixture.checkResult(
             """
-            from model import D, ProductId
+            from .model import D, ProductId
 
 
             def do():

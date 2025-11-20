@@ -49,7 +49,82 @@ class PyImportService {
         // Check if already imported using any import style (absolute and relative)
         if (isImported(file, name)) return
 
-        // Use the platform's import helper to add the import
+        val pyFile = file as? PyFile
+
+        // If there is already a "from ... import ..." that targets the same
+        // module as [element] (including relative imports such as
+        // ``from .model import D``), prefer to *reuse* that import statement
+        // by appending the new name instead of introducing a new absolute
+        // import. This preserves relative imports as used at the call site.
+        if (pyFile != null) {
+            val elementFile = element.containingFile
+
+            val existingFromImport = pyFile.importBlock
+                .filterIsInstance<PyFromImportStatement>()
+                .firstOrNull { fromStmt ->
+                    // We consider a "from" import suitable if at least one of
+                    // its imported names resolves to the same file as the
+                    // element we want to import.
+                    fromStmt.importElements.any { imported ->
+                        imported.multiResolve()
+                            .mapNotNull { it.element as? PsiNamedElement }
+                            .any { it.containingFile == elementFile }
+                    }
+                }
+
+            if (existingFromImport != null) {
+                // If the name is already present, we don't need to modify the
+                // import at all.
+                if (existingFromImport.importElements.any { it.visibleName == name }) return
+
+                // Reconstruct the "from" import from its PSI parts instead
+                // of concatenating the whole statement text. This lets us
+                // preserve the written module reference, including any
+                // relative level (e.g. leading dots like ".model"), while
+                // still building the updated statement in a structured way.
+                val relativeLevel = existingFromImport.relativeLevel ?: 0
+                val importSourceText = existingFromImport.importSource?.text
+
+                // PyFromImportStatement represents relative imports using a
+                // separate relativeLevel (number of leading dots) plus the
+                // importSource text without those dots. Reconstruct the full
+                // module part as it should appear in the statement.
+                val modulePart = when {
+                    importSourceText != null && relativeLevel > 0 ->
+                        ".".repeat(relativeLevel) + importSourceText
+
+                    importSourceText != null ->
+                        importSourceText
+
+                    relativeLevel > 0 ->
+                        ".".repeat(relativeLevel)
+
+                    else -> return
+                }
+                val existingNames = existingFromImport.importElements
+                    .mapNotNull { it.visibleName }
+                    .joinToString(", ")
+
+                val newImportText = if (existingNames.isNotEmpty()) {
+                    "from $modulePart import $existingNames, $name"
+                } else {
+                    "from $modulePart import $name"
+                }
+
+                val generator = com.jetbrains.python.psi.PyElementGenerator.getInstance(file.project)
+                val newFromImport = generator.createFromText(
+                    com.jetbrains.python.psi.LanguageLevel.getLatest(),
+                    PyFromImportStatement::class.java,
+                    newImportText,
+                )
+
+                existingFromImport.replace(newFromImport)
+                return
+            }
+        }
+
+        // Fall back to the platform's general helper, which will decide
+        // between module vs "from" import according to user settings.
         AddImportHelper.addImport(element, file, anchor)
     }
 
