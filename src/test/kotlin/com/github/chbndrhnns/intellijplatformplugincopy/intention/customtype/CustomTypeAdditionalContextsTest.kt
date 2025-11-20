@@ -313,7 +313,7 @@ class CustomTypeAdditionalContextsTest : TestBase() {
         myFixture.configureByText(
             "a.py",
             """
-            def expect_str(s: str) -> None:
+            def expect_str(s) -> None:
                 ...
 
             expect_str("ab<caret>c")
@@ -330,7 +330,7 @@ class CustomTypeAdditionalContextsTest : TestBase() {
                 pass
 
 
-            def expect_str(s: Customstr) -> None:
+            def expect_str(s) -> None:
                 ...
 
             expect_str(Customstr("abc"))
@@ -411,7 +411,7 @@ class CustomTypeAdditionalContextsTest : TestBase() {
         myFixture.configureByText(
             "a.py",
             """
-            def do(my_arg: int) -> None:
+            def do(my_arg) -> None:
                 ...
 
             def test_():
@@ -423,15 +423,13 @@ class CustomTypeAdditionalContextsTest : TestBase() {
         val intention = myFixture.findSingleIntention("Introduce custom type from int")
         myFixture.launchAction(intention)
 
-        val result = myFixture.file.text
-
         myFixture.checkResult(
             """
             class MyArg(int):
                 pass
 
 
-            def do(my_arg: MyArg) -> None:
+            def do(my_arg) -> None:
                 ...
 
             def test_():
