@@ -3,8 +3,12 @@ package com.github.chbndrhnns.intellijplatformplugincopy
 import PythonMockSdk
 import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.module.Module
+import com.intellij.openapi.module.ModuleManager
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.util.Disposer
+import com.intellij.testFramework.PsiTestUtil
 import com.intellij.testFramework.UsefulTestCase
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
@@ -37,6 +41,10 @@ abstract class HeavyTestBase : UsefulTestCase() {
 
         val fixtureFactory = IdeaTestFixtureFactory.getFixtureFactory()
 
+        // Use the default heavy project fixture builder; in this setup the
+        // underlying implementation already creates a module, so
+        // myFixture.module will be non-null once the CodeInsight fixture is
+        // created.
         @Suppress("UNCHECKED_CAST")
         val fixtureBuilder = fixtureFactory.createFixtureBuilder(name)
         projectFixture = fixtureBuilder.fixture
@@ -46,6 +54,10 @@ abstract class HeavyTestBase : UsefulTestCase() {
 
         myFixture.setUp()
 
+        // At this point a real project is created and opened. Configure a
+        // Python SDK and ensure there is a module with proper content/source
+        // roots so that heavy tests see the same indexing behaviour as the
+        // IDE.
         setUpPython()
     }
 
@@ -55,15 +67,55 @@ abstract class HeavyTestBase : UsefulTestCase() {
             Paths.get(PathManager.getHomePath(), "plugins", "python-ce", "helpers").toString(),
         )
 
-        val sdk = PythonMockSdk.create(LanguageLevel.PYTHON311, myFixture.tempDirFixture.getFile("/")!!)
+        val root = myFixture.tempDirFixture.getFile("/")!!
 
-        Disposer.register(myFixture.testRootDisposable) {
-            runWriteAction {
-                ProjectJdkTable.getInstance().removeJdk(sdk)
+        runWriteAction {
+            val sdk = PythonMockSdk.create(LanguageLevel.PYTHON311, root)
+
+            // 1. Register SDK in the global JDK table so the project sees it.
+            ProjectJdkTable.getInstance().addJdk(sdk)
+            // 2. Let tests decide which directories become content/source
+            // roots (see docs/heavy2.md). Here we only prepare the SDK and
+            // attach it to the project-wide JDK table.
+
+            Disposer.register(myFixture.testRootDisposable) {
+                runWriteAction {
+                    ProjectJdkTable.getInstance().removeJdk(sdk)
+                }
             }
         }
 
+        // Enable the Python type checker so heavy tests can assert on
+        // inspections that rely on indices and the configured SDK.
         myFixture.enableInspections(PyTypeCheckerInspection::class.java)
+    }
+
+    /**
+     * Make the temp directory used by [myFixture] a content and source root of
+     * the single module provided by the heavy project fixture. This follows the
+     * pattern described in `docs/heavy2.md` and is useful for cross-file
+     * indexing and resolution tests.
+     */
+    protected fun configureTempDirAsContentAndSourceRoot() {
+        val root = myFixture.tempDirFixture.getFile("/") ?: return
+        val project = myFixture.project
+
+        runWriteAction {
+            val module: Module = myFixture.module
+                ?: ModuleManager.getInstance(project).newModule(root.path + "/heavy_test.iml", "JAVA_MODULE")
+            PsiTestUtil.addContentRoot(module, root)
+            PsiTestUtil.addSourceRoot(module, root)
+        }
+    }
+
+    /**
+     * Waits for indices (smart mode) and then runs highlighting in the current
+     * file. Heavy tests can use this to ensure that all indices are ready
+     * before performing PSI-based assertions.
+     */
+    protected fun waitForSmartModeAndHighlight() {
+        DumbService.getInstance(myFixture.project).waitForSmartMode()
+        myFixture.doHighlighting()
     }
 
     override fun tearDown() {

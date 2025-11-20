@@ -39,21 +39,18 @@ class CustomTypeHeavyTest : HeavyTestBase() {
             """.trimIndent(),
         )
 
-        myFixture.doHighlighting()
+        configureTempDirAsContentAndSourceRoot()
+        waitForSmartModeAndHighlight()
         val intention = myFixture.findSingleIntention("Introduce custom type from int")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(
             """
-            from model import D, Productid
-
-
-            class Productid(int):
-                pass
+            from model import D, ProductId
 
 
             def do():
-                D(product_id=Productid(123))
+                D(product_id=ProductId(123))
             """.trimIndent()
         )
     }
@@ -82,22 +79,25 @@ class CustomTypeHeavyTest : HeavyTestBase() {
             """.trimIndent(),
         )
 
-        myFixture.doHighlighting()
+        configureTempDirAsContentAndSourceRoot()
+        waitForSmartModeAndHighlight()
         val intention = myFixture.findSingleIntention("Introduce custom type from int")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(
+            "model.py",
             """
-            from model import D
+            import dataclasses
 
-
-            class Productid(int):
+            
+            class ProductId(int):
                 pass
-
-
-            def do():
-                D(product_id=Productid(123))
-            """.trimIndent()
+            
+            
+            @dataclasses.dataclass
+            class D:
+                product_id: ProductId
+            """.trimIndent(), true
         )
     }
 }
