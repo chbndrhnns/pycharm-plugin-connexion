@@ -147,4 +147,20 @@ class CustomTypeBasicTest : TestBase() {
             """.trimIndent()
         )
     }
+
+    fun testIntentionNotAvailable_WhenAlreadyCustomTypeInheritingStr() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            class CustomStr(str):
+                pass
+
+            def do():
+                val: CustomStr = "a<caret>bc"
+            """.trimIndent()
+        )
+
+        val intentions = myFixture.filterAvailableIntentions("Introduce custom type")
+        assertEmpty("Intention should not be available when type is already a custom subclass of str", intentions)
+    }
 }

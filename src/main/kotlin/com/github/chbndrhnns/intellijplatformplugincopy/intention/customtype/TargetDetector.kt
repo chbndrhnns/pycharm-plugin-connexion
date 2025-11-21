@@ -64,6 +64,15 @@ class TargetDetector {
 
         val ctx = TypeEvalContext.codeAnalysis(file.project, file)
         val typeNames = PyTypeIntentions.computeDisplayTypeNames(expr, ctx)
+
+        val expectedClass = typeNames.expectedElement as? PyClass
+        if (expectedClass != null && expectedClass.name !in SUPPORTED_BUILTINS) {
+            val supers = expectedClass.getSuperClasses(ctx)
+            if (supers.any { it.name in SUPPORTED_BUILTINS }) {
+                return null
+            }
+        }
+
         var candidate: String? = typeNames.expected ?: typeNames.actual
 
         if (candidate == null || candidate !in SUPPORTED_BUILTINS) {
