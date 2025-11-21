@@ -23,6 +23,7 @@ data class AnnotationTarget(
 data class ExpressionTarget(
     override val builtinName: String,
     val expression: PyExpression,
+    val annotationRef: PyReferenceExpression?,
     val keywordName: String?,
     val assignmentName: String?,
     val dataclassField: PyTargetExpression?,

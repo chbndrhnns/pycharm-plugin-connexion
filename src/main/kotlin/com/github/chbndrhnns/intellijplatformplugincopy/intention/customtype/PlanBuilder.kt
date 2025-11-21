@@ -37,6 +37,7 @@ class PlanBuilder(
 
                 CustomTypePlan(
                     builtinName = detected.builtinName,
+                    annotationRef = detected.annotationRef,
                     expression = detected.expression,
                     preferredClassName = preferredName,
                     field = detected.dataclassField,

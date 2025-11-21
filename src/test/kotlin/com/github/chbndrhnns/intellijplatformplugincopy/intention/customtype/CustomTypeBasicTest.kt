@@ -14,6 +14,31 @@ import com.github.chbndrhnns.intellijplatformplugincopy.TestBase
  */
 class CustomTypeBasicTest : TestBase() {
 
+    fun testSimpleAnnotatedAssignment_Int_RewritesAnnotation() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            def test_():
+                val: int = 1<caret>234
+            """.trimIndent()
+        )
+
+        val intention = myFixture.findSingleIntention("Introduce custom type from int")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            class Customint(int):
+                pass
+
+
+            def test_():
+                val: Customint = Customint(1234)
+            """.trimIndent()
+        )
+    }
+
+
     fun testSimpleAnnotatedParam_Int_RewritesAnnotation() {
         myFixture.configureByText(
             "a.py",

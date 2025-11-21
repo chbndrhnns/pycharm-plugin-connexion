@@ -83,12 +83,20 @@ class TargetDetector {
             ?.takeIf { it.valueExpression == expr }
             ?.keyword
 
+        var annotationRef: PyReferenceExpression? = null
         val preferredNameFromAssignment = if (preferredNameFromKeyword == null) {
             val assignment = PsiTreeUtil.getParentOfType(expr, PyAssignmentStatement::class.java, false)
             if (assignment != null) {
                 val firstTarget = assignment.targets.firstOrNull() as? PyTargetExpression
+                val annotation = firstTarget?.annotation
+                val annotationValue = annotation?.value as? PyReferenceExpression
+                if (annotationValue?.name == candidate) {
+                    annotationRef = annotationValue
+                }
                 firstTarget?.name
-            } else null
+            } else {
+                null
+            }
         } else null
 
         val dataclassFieldFromExpr = findDataclassFieldForExpression(expr)
@@ -107,6 +115,7 @@ class TargetDetector {
         return ExpressionTarget(
             builtinName = candidate,
             expression = expr,
+            annotationRef = annotationRef,
             keywordName = preferredNameFromKeyword,
             assignmentName = preferredNameFromAssignment,
             dataclassField = dataclassFieldFromExpr,

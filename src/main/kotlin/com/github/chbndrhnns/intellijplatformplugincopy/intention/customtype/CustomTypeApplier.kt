@@ -57,23 +57,22 @@ class CustomTypeApplier(
 
         // Replace the annotation reference or expression usage with the new type.
         val newRef = pyGenerator.createExpressionFromText(LanguageLevel.getLatest(), newTypeName)
-        when {
-            plan.annotationRef != null -> {
-                rewriter.rewriteAnnotation(plan.annotationRef, newRef)
-            }
 
-            plan.expression != null -> {
-                val originalExpr = plan.expression
+        if (plan.annotationRef != null) {
+            rewriter.rewriteAnnotation(plan.annotationRef, newRef)
+        }
 
-                // When the intention is invoked from a call-site expression,
-                // also update the corresponding parameter annotation in the
-                // same scope (if any) so that the declared type matches the
-                // newly introduced custom type. This must happen *before*
-                // we rewrite the argument expression so that the PSI
-                // hierarchy for the original expression is still intact.
-                rewriter.updateParameterAnnotationFromCallSite(originalExpr, newTypeName, pyGenerator)
-                rewriter.wrapExpression(originalExpr, newTypeName, pyGenerator)
-            }
+        if (plan.expression != null) {
+            val originalExpr = plan.expression
+
+            // When the intention is invoked from a call-site expression,
+            // also update the corresponding parameter annotation in the
+            // same scope (if any) so that the declared type matches the
+            // newly introduced custom type. This must happen *before*
+            // we rewrite the argument expression so that the PSI
+            // hierarchy for the original expression is still intact.
+            rewriter.updateParameterAnnotationFromCallSite(originalExpr, newTypeName, pyGenerator)
+            rewriter.wrapExpression(originalExpr, newTypeName, pyGenerator)
         }
 
         // When the builtin comes from a dataclass field (either directly from
