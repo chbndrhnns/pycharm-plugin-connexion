@@ -1,9 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention
 
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.*
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.AnnotationTarget
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.ExpressionTarget
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.NameSuggester
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.TargetDetector
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util.PyImportService
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
@@ -41,6 +39,7 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
     private val imports = PyImportService()
     private val naming = NameSuggester()
     private val detector = TargetDetector()
+    private val insertionPointFinder = InsertionPointFinder()
 
     private data class Target(
         val builtinName: String,
@@ -88,24 +87,8 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
 
         val generator = PyElementGenerator.getInstance(project)
 
-        // Decide which file should host the newly introduced custom type. When
-        // we are working with a dataclass field, we want the custom type to
-        // live alongside the dataclass *declaration* (which may be in a
-        // different module than the current usage site). If we are invoked on
-        // a call-site expression referencing a dataclass but could not
-        // resolve the specific field, still prefer the dataclass declaration
-        // file. Otherwise, fall back to the current file as before.
-        val sourceFileFromField = (target.field?.containingFile as? PyFile)
-        val sourceFileFromCall = if (target.field == null && target.expression != null) {
-            val call = PsiTreeUtil.getParentOfType(target.expression, PyCallExpression::class.java, false)
-            val callee = call?.callee as? PyReferenceExpression
-            val resolvedClass = callee?.reference?.resolve() as? PyClass
-            if (resolvedClass != null) {
-                resolvedClass.containingFile as? PyFile
-            } else null
-        } else null
-
-        val targetFileForNewClass = sourceFileFromField ?: sourceFileFromCall ?: pyFile
+        // Decide which file should host the newly introduced custom type.
+        val targetFileForNewClass = insertionPointFinder.chooseFile(target.field, target.expression, pyFile)
 
         // Generate the new class definition in the chosen module.
         val newTypeName = naming.ensureUnique(targetFileForNewClass, baseTypeName)
