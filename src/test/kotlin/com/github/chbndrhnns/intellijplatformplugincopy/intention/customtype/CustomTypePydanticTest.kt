@@ -1,0 +1,131 @@
+package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
+
+import com.github.chbndrhnns.intellijplatformplugincopy.TestBase
+
+class CustomTypePydanticTest : TestBase() {
+
+    fun testField_WrapsKeywordArgumentUsages() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            import pydantic
+
+
+            class D(pydantic.BaseModel):
+                product_id: i<caret>nt
+
+
+            def do():
+                D(product_id=123)
+                D(product_id=456)
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Introduce custom type from int")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            import pydantic
+
+
+            class ProductId(int):
+                pass
+            
+            
+            class D(pydantic.BaseModel):
+                product_id: ProductId
+            
+            
+            def do():
+                D(product_id=ProductId(123))
+                D(product_id=ProductId(456))
+            """.trimIndent()
+        )
+    }
+
+    fun testCall_IntroduceFromKeywordValue_UpdatesFieldAndUsages() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            from pydantic import BaseModel
+
+
+            class D(BaseModel):
+                product_id: int
+
+
+            def do():
+                D(product_id=12<caret>3)
+                D(product_id=456)
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Introduce custom type from int")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            from pydantic import BaseModel
+
+
+            class ProductId(int):
+                pass
+            
+            
+            class D(BaseModel):
+                product_id: ProductId
+            
+            
+            def do():
+                D(product_id=ProductId(123))
+                D(product_id=ProductId(456))
+            """.trimIndent()
+        )
+    }
+
+    fun testCall_IntroduceFromPositionalValue_UpdatesFieldAndUsages() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            from pydantic import BaseModel
+
+
+            class D(BaseModel):
+                product_id: int
+                other: str
+
+
+            def do():
+                D(12<caret>3, "a")
+                D(456, "b")
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Introduce custom type from int")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            from pydantic import BaseModel
+
+
+            class ProductId(int):
+                pass
+            
+            
+            class D(BaseModel):
+                product_id: ProductId
+                other: str
+            
+            
+            def do():
+                D(ProductId(123), "a")
+                D(ProductId(456), "b")
+            """.trimIndent()
+        )
+    }
+}

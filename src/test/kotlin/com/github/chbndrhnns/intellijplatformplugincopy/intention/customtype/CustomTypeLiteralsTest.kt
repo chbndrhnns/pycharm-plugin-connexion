@@ -1,0 +1,164 @@
+package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
+
+import com.github.chbndrhnns.intellijplatformplugincopy.TestBase
+
+class CustomTypeLiteralsTest : TestBase() {
+
+    fun testString_NoAnnotation_WrapsWithCustomStr() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            def expect_str(s) -> None:
+                ...
+
+            expect_str("ab<caret>c")
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Introduce custom type from str")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            class Customstr(str):
+                pass
+
+
+            def expect_str(s) -> None:
+                ...
+
+            expect_str(Customstr("abc"))
+            """.trimIndent()
+        )
+    }
+
+    fun testString_Annotation_UpdatesAnnotationAfterWrap() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            def expect_str(s: str) -> None:
+                ...
+
+            expect_str("ab<caret>c")
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Introduce custom type from str")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            class Customstr(str):
+                pass
+
+
+            def expect_str(s: Customstr) -> None:
+                ...
+
+            expect_str(Customstr("abc"))
+            """.trimIndent()
+        )
+    }
+
+    fun testStringAssignment_NoAnnotation_WrapsWithCustomStr() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            val = "s<caret>tr"
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Introduce custom type from str")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            class Customstr(str):
+                pass
+
+
+            val = Customstr("str")
+            """.trimIndent()
+        )
+    }
+
+    fun testFloatAssignment_UsesFloatAndWrapsValue() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            val = 4567.<caret>6
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Introduce custom type from float")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            class Customfloat(float):
+                pass
+            
+            
+            val = Customfloat(4567.6)
+            """.trimIndent()
+        )
+    }
+
+    fun testIntAssignment_WithSnakeCaseName_UsesTargetNameForClass() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            product_id = 12<caret>34
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Introduce custom type from int")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            class ProductId(int):
+                pass
+
+
+            product_id = ProductId(1234)
+            """.trimIndent()
+        )
+    }
+
+    fun testKeywordArgument_WithSnakeCaseName_UsesKeywordForClass() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            def do(my_arg) -> None:
+                ...
+
+            def test_():
+                do(my_arg=12<caret>34)
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Introduce custom type from int")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            class MyArg(int):
+                pass
+
+
+            def do(my_arg) -> None:
+                ...
+
+            def test_():
+                do(my_arg=MyArg(1234))
+            """.trimIndent()
+        )
+    }
+}
