@@ -40,6 +40,7 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
     private val detector = TargetDetector()
     private val insertionPointFinder = InsertionPointFinder()
     private val generator = CustomTypeGenerator()
+    private val rewriter = UsageRewriter()
 
     private data class Target(
         val builtinName: String,
@@ -110,7 +111,7 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         val newRef = pyGenerator.createExpressionFromText(LanguageLevel.getLatest(), newTypeName)
         when {
             target.annotationRef != null -> {
-                target.annotationRef.replace(newRef)
+                rewriter.rewriteAnnotation(target.annotationRef, newRef)
             }
 
             target.expression != null -> {
@@ -122,14 +123,8 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
                 // newly introduced custom type. This must happen *before*
                 // we rewrite the argument expression so that the PSI
                 // hierarchy for the original expression is still intact.
-                updateParameterAnnotationFromCallSite(originalExpr, newTypeName, pyGenerator)
-
-                val exprText = originalExpr.text
-                val wrapped = pyGenerator.createExpressionFromText(
-                    LanguageLevel.getLatest(),
-                    "$newTypeName($exprText)",
-                )
-                originalExpr.replace(wrapped)
+                rewriter.updateParameterAnnotationFromCallSite(originalExpr, newTypeName, pyGenerator)
+                rewriter.wrapExpression(originalExpr, newTypeName, pyGenerator)
             }
         }
 
@@ -143,23 +138,7 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
             // no annotationRef to rewrite above. In that case, synchronise the
             // dataclass field annotation now.
             if (target.annotationRef == null) {
-                val typeDecl = PsiTreeUtil.getParentOfType(field, PyTypeDeclarationStatement::class.java, false)
-                val annExpr = typeDecl?.annotation?.value
-                if (annExpr != null) {
-                    // Replace the builtin reference inside the annotation with
-                    // the new type reference, falling back to a plain
-                    // replacement when the annotation is just the builtin
-                    // name.
-                    val builtinRefInAnn = PsiTreeUtil.findChildOfType(annExpr, PyReferenceExpression::class.java)
-                    val replacement = newRef.copy() as PyExpression
-                    when {
-                        builtinRefInAnn != null && builtinRefInAnn.name == builtinName ->
-                            builtinRefInAnn.replace(replacement)
-
-                        annExpr.text == builtinName ->
-                            annExpr.replace(replacement)
-                    }
-                }
+                rewriter.syncDataclassFieldAnnotation(field, builtinName, newRef)
             }
 
             // Wrap usages in the *current* file where we invoked the
@@ -167,7 +146,7 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
             // enhancements; for now we only guarantee intra-file wrapping,
             // while the custom type itself lives with the dataclass
             // declaration.
-            wrapDataclassConstructorUsages(pyFile, field, newTypeName, pyGenerator)
+            rewriter.wrapDataclassConstructorUsages(pyFile, field, newTypeName, pyGenerator)
 
             // Project-wide update: find all references to the dataclass across
             // the project and wrap constructor arguments at those call sites.
@@ -229,118 +208,6 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
      * custom type. This keeps annotations in the same logical scope in sync
      * with the wrapped argument.
      */
-    private fun updateParameterAnnotationFromCallSite(
-        expr: PyExpression,
-        newTypeName: String,
-        generator: PyElementGenerator,
-    ) {
-        // Locate the argument list and enclosing call for the expression.
-        val argList = PsiTreeUtil.getParentOfType(expr, PyArgumentList::class.java, false) ?: return
-        val call = argList.parent as? PyCallExpression ?: return
-        val callee = call.callee as? PyReferenceExpression ?: return
-        val resolved = callee.reference.resolve() as? PyFunction ?: return
-
-        // Map the expression back to the corresponding parameter, handling
-        // the straightforward positional and keyword cases covered by tests.
-        val parameter: PyNamedParameter =
-            when (val kwArg = PsiTreeUtil.getParentOfType(expr, PyKeywordArgument::class.java, false)) {
-                null -> {
-                    val args = argList.arguments.toList()
-                    val positionalArgs = args.filter { it !is PyKeywordArgument }
-                    val posIndex = positionalArgs.indexOf(expr)
-                    if (posIndex < 0) return
-
-                    val params = resolved.parameterList.parameters
-                    if (posIndex >= params.size) return
-                    params[posIndex] as? PyNamedParameter ?: return
-                }
-
-                else -> {
-                    if (kwArg.valueExpression != expr) return
-                    val name = kwArg.keyword ?: return
-                    resolved.parameterList.findParameterByName(name) ?: return
-                }
-            }
-
-        val annotation = parameter.annotation ?: return
-        val annExpr = annotation.value ?: return
-
-        val replacement = generator.createExpressionFromText(LanguageLevel.getLatest(), newTypeName)
-
-        // For call‑site initiated intentions we always fully replace the
-        // annotation's value expression with the new custom type. This keeps
-        // the produced text simple and predictable (``s: Customstr``), which
-        // is exactly what tests assert.
-        annExpr.replace(replacement)
-    }
-
-
-    /**
-     * Wrap all constructor usages of the given dataclass field with the
-     * provided wrapper type. This is intentionally conservative and only
-     * handles straightforward keyword and positional arguments, matching the
-     * scenarios covered by tests.
-     */
-    private fun wrapDataclassConstructorUsages(
-        file: PyFile,
-        field: PyTargetExpression,
-        wrapperTypeName: String,
-        generator: PyElementGenerator,
-    ) {
-        val pyClass = PsiTreeUtil.getParentOfType(field, PyClass::class.java) ?: return
-        val fieldName = field.name ?: return
-
-        val calls = PsiTreeUtil.collectElementsOfType(file, PyCallExpression::class.java)
-        for (call in calls) {
-            val callee = call.callee as? PyReferenceExpression ?: continue
-            val resolved = callee.reference.resolve()
-            if (resolved != pyClass) continue
-
-            val argList = call.argumentList ?: continue
-
-            // 1) Prefer keyword arguments matching the field name.
-            val keywordArg = argList.arguments
-                .filterIsInstance<PyKeywordArgument>()
-                .firstOrNull { it.keyword == fieldName }
-            if (keywordArg != null) {
-                val valueExpr = keywordArg.valueExpression ?: continue
-                wrapArgumentExpressionIfNeeded(valueExpr, wrapperTypeName, generator)
-                continue
-            }
-
-            // 2) Fallback: positional arguments mapped by field index.
-            val fields = pyClass.classAttributes
-            val fieldIndex = fields.indexOfFirst { it.name == fieldName }
-            if (fieldIndex < 0) continue
-
-            val allArgs = argList.arguments.toList()
-            val positionalArgs = allArgs.filter { it !is PyKeywordArgument }
-            if (fieldIndex >= positionalArgs.size) continue
-
-            val valueExpr = positionalArgs[fieldIndex] ?: continue
-            wrapArgumentExpressionIfNeeded(valueExpr, wrapperTypeName, generator)
-        }
-    }
-
-    private fun wrapArgumentExpressionIfNeeded(
-        expr: PyExpression,
-        wrapperTypeName: String,
-        generator: PyElementGenerator,
-    ) {
-        // Avoid double-wrapping when the argument is already wrapped with the
-        // custom type, e.g. Productid(Productid(123)).
-        val existingCall = expr as? PyCallExpression
-        if (existingCall != null) {
-            val calleeText = existingCall.callee?.text
-            if (calleeText == wrapperTypeName) return
-        }
-
-        val wrapped = generator.createExpressionFromText(
-            LanguageLevel.getLatest(),
-            "$wrapperTypeName(${expr.text})",
-        )
-        expr.replace(wrapped)
-    }
 
     /**
      * Project-wide wrapper: locate all files in the project that reference the
@@ -364,7 +231,7 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
             .distinct()
             .forEach { refFile ->
                 // Update all constructor usages in that file.
-                wrapDataclassConstructorUsages(refFile, field, wrapperTypeName, generator)
+                rewriter.wrapDataclassConstructorUsages(refFile, field, wrapperTypeName, generator)
 
                 // Ensure the new type is imported where needed.
                 val anchor = PsiTreeUtil.findChildOfType(refFile, PyTypedElement::class.java)
