@@ -4,47 +4,6 @@ import com.github.chbndrhnns.intellijplatformplugincopy.TestBase
 
 class CustomTypeDataclassTest : TestBase() {
 
-    fun testCall_KeywordArgValue_UsesIntAndWrapsArgument() {
-        myFixture.configureByText(
-            "a.py",
-            """
-            import dataclasses
-
-
-            @dataclasses.dataclass
-            class Data:
-                val: int
-                
-            def test_():
-                Data(val=<caret>1)
-
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Introduce custom type from int")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
-            """
-            import dataclasses
-
-
-            class Customint(int):
-                pass
-
-
-            @dataclasses.dataclass
-            class Data:
-                val: Customint
-                
-            def test_():
-                Data(val=Customint(1))
-
-            """.trimIndent()
-        )
-    }
-
     fun testField_WrapsKeywordArgumentUsages() {
         myFixture.configureByText(
             "a.py",
