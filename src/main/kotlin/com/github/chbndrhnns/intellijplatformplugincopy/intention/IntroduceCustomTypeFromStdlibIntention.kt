@@ -2,7 +2,6 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention
 
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.*
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.AnnotationTarget
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util.PyImportService
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.icons.AllIcons
@@ -35,7 +34,7 @@ import javax.swing.Icon
 class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityAction, DumbAware, Iconable {
 
     private var lastText: String = "Introduce custom type from stdlib type"
-    private val imports = PyImportService()
+    private val imports = ImportManager()
     private val naming = NameSuggester()
     private val detector = TargetDetector()
     private val insertionPointFinder = InsertionPointFinder()
@@ -196,8 +195,6 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
                     field = detected.dataclassField,
                 )
             }
-
-            else -> null
         }
     }
 
@@ -262,9 +259,5 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         if (handler.isAvailableOnDataContext(dataContext)) {
             handler.invoke(project, editor, pyFile, dataContext)
         }
-    }
-
-    companion object {
-        private val SUPPORTED_BUILTINS = setOf("int", "str", "float", "bool", "bytes")
     }
 }
