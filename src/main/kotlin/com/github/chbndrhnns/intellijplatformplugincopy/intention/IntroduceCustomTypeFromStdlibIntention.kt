@@ -14,7 +14,6 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Iconable
 import com.intellij.psi.PsiDocumentManager
-import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.searches.ReferencesSearch
@@ -40,6 +39,7 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
     private val naming = NameSuggester()
     private val detector = TargetDetector()
     private val insertionPointFinder = InsertionPointFinder()
+    private val generator = CustomTypeGenerator()
 
     private data class Target(
         val builtinName: String,
@@ -85,27 +85,17 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         val builtinName = target.builtinName
         val baseTypeName = naming.suggestTypeName(builtinName, target.preferredClassName)
 
-        val generator = PyElementGenerator.getInstance(project)
+        val pyGenerator = PyElementGenerator.getInstance(project)
 
         // Decide which file should host the newly introduced custom type.
         val targetFileForNewClass = insertionPointFinder.chooseFile(target.field, target.expression, pyFile)
 
         // Generate the new class definition in the chosen module.
         val newTypeName = naming.ensureUnique(targetFileForNewClass, baseTypeName)
-        val classText = "class $newTypeName($builtinName):\n    pass"
-        val newClass = generator.createFromText(LanguageLevel.getLatest(), PyClass::class.java, classText)
-
-        // Ensure that all import statements remain at the top of the file.
-        // If the target module already has imports, we insert the new class
-        // *after* the last import statement; otherwise we fall back to the
-        // previous behaviour of inserting at the very beginning.
-        val importAnchor: PsiElement? = targetFileForNewClass.importBlock.lastOrNull() as? PsiElement
-        val inserted = if (importAnchor != null) {
-            targetFileForNewClass.addAfter(newClass, importAnchor) as? PyClass
-        } else {
-            val firstChild = targetFileForNewClass.firstChild
-            targetFileForNewClass.addBefore(newClass, firstChild) as? PyClass
-        } ?: return
+        val newClass = generator.insertClass(
+            targetFileForNewClass,
+            generator.createClass(project, newTypeName, builtinName),
+        )
 
         // When the custom type is introduced in a different module than the
         // current file (e.g. dataclass declaration vs usage site), make sure
@@ -113,11 +103,11 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         // correctly and no circular import is introduced.
         if (targetFileForNewClass != pyFile) {
             val anchorElement = target.expression ?: target.annotationRef ?: return
-            imports.ensureImportedIfNeeded(pyFile, anchorElement, inserted)
+            imports.ensureImportedIfNeeded(pyFile, anchorElement, newClass)
         }
 
         // Replace the annotation reference or expression usage with the new type.
-        val newRef = generator.createExpressionFromText(LanguageLevel.getLatest(), newTypeName)
+        val newRef = pyGenerator.createExpressionFromText(LanguageLevel.getLatest(), newTypeName)
         when {
             target.annotationRef != null -> {
                 target.annotationRef.replace(newRef)
@@ -132,10 +122,10 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
                 // newly introduced custom type. This must happen *before*
                 // we rewrite the argument expression so that the PSI
                 // hierarchy for the original expression is still intact.
-                updateParameterAnnotationFromCallSite(originalExpr, newTypeName, generator)
+                updateParameterAnnotationFromCallSite(originalExpr, newTypeName, pyGenerator)
 
                 val exprText = originalExpr.text
-                val wrapped = generator.createExpressionFromText(
+                val wrapped = pyGenerator.createExpressionFromText(
                     LanguageLevel.getLatest(),
                     "$newTypeName($exprText)",
                 )
@@ -177,11 +167,11 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
             // enhancements; for now we only guarantee intra-file wrapping,
             // while the custom type itself lives with the dataclass
             // declaration.
-            wrapDataclassConstructorUsages(pyFile, field, newTypeName, generator)
+            wrapDataclassConstructorUsages(pyFile, field, newTypeName, pyGenerator)
 
             // Project-wide update: find all references to the dataclass across
             // the project and wrap constructor arguments at those call sites.
-            wrapDataclassConstructorUsagesProjectWide(project, field, newTypeName, inserted, generator)
+            wrapDataclassConstructorUsagesProjectWide(project, field, newTypeName, newClass, pyGenerator)
         }
 
         // Only trigger inline rename when the new class was inserted into the
@@ -193,7 +183,7 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         // normalise it to ``Productid``). Inline rename remains available for
         // generic names like ``CustomInt``.
         if (targetFileForNewClass == pyFile && target.preferredClassName == null) {
-            startInlineRename(project, editor, inserted, pyFile)
+            startInlineRename(project, editor, newClass, pyFile)
         }
     }
 

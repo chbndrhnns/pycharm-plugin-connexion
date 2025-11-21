@@ -3,7 +3,7 @@
 ## Pending Tasks
 
 - Refactor:
-    - [ ] CustomTypeGenerator
+    - [x] CustomTypeGenerator
     - [ ] UsageRewriter
     - [ ] ImportManager
     - [ ] slimming the intention
