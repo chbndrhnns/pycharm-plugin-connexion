@@ -1,6 +1,9 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention
 
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.AnnotationTarget
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.ExpressionTarget
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.NameSuggester
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.TargetDetector
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util.PyImportService
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
@@ -21,7 +24,6 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.refactoring.rename.RenameHandler
 import com.intellij.refactoring.rename.RenameHandlerRegistry
 import com.jetbrains.python.psi.*
-import com.jetbrains.python.psi.types.TypeEvalContext
 import javax.swing.Icon
 
 /**
@@ -37,6 +39,8 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
 
     private var lastText: String = "Introduce custom type from stdlib type"
     private val imports = PyImportService()
+    private val naming = NameSuggester()
+    private val detector = TargetDetector()
 
     private data class Target(
         val builtinName: String,
@@ -80,17 +84,7 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         val target = findTarget(editor, pyFile) ?: return
 
         val builtinName = target.builtinName
-        val baseTypeName = target.preferredClassName ?: run {
-            val capitalizedBuiltin = when (builtinName) {
-                "int" -> "Int"
-                "str" -> "Str"
-                "float" -> "Float"
-                "bool" -> "Bool"
-                "bytes" -> "Bytes"
-                else -> builtinName.replaceFirstChar { it.uppercaseChar() }
-            }
-            "Custom" + capitalizedBuiltin
-        }
+        val baseTypeName = naming.suggestTypeName(builtinName, target.preferredClassName)
 
         val generator = PyElementGenerator.getInstance(project)
 
@@ -106,7 +100,7 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
             val call = PsiTreeUtil.getParentOfType(target.expression, PyCallExpression::class.java, false)
             val callee = call?.callee as? PyReferenceExpression
             val resolvedClass = callee?.reference?.resolve() as? PyClass
-            if (resolvedClass != null && isDataclassClass(resolvedClass)) {
+            if (resolvedClass != null) {
                 resolvedClass.containingFile as? PyFile
             } else null
         } else null
@@ -114,7 +108,7 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         val targetFileForNewClass = sourceFileFromField ?: sourceFileFromCall ?: pyFile
 
         // Generate the new class definition in the chosen module.
-        val newTypeName = suggestUniqueClassName(targetFileForNewClass, baseTypeName)
+        val newTypeName = naming.ensureUnique(targetFileForNewClass, baseTypeName)
         val classText = "class $newTypeName($builtinName):\n    pass"
         val newClass = generator.createFromText(LanguageLevel.getLatest(), PyClass::class.java, classText)
 
@@ -223,158 +217,36 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
     override fun startInWriteAction(): Boolean = true
 
     private fun findTarget(editor: Editor, file: PyFile): Target? {
-        val offset = editor.caretModel.offset
-        val leaf = file.findElementAt(offset) ?: return null
+        val detected = detector.find(editor, file) ?: return null
 
-        // 1) Prefer the original behavior: caret on a builtin name inside an annotation.
-        val ref = PsiTreeUtil.getParentOfType(leaf, PyReferenceExpression::class.java, false)
-        if (ref != null) {
-            val name = ref.name
-            if (name != null && name in SUPPORTED_BUILTINS) {
-                val annotation = PsiTreeUtil.getParentOfType(ref, PyAnnotation::class.java, false)
-                if (annotation != null) {
-                    val owner = PsiTreeUtil.getParentOfType(ref, PyAnnotationOwner::class.java, true)
-
-                    var dataclassField: PyTargetExpression? = null
-                    val identifier = when (owner) {
-                        is PyTargetExpression -> {
-                            // Parameter / assignment-style annotation; may be a
-                            // dataclass field as well.
-                            dataclassField = owner.takeIf { isDataclassField(it) }
-                            owner.name
-                        }
-
-                        is PyNamedParameter -> owner.name
-                        is PyTypeDeclarationStatement -> {
-                            // For type declarations like ``product_id: int`` inside
-                            // classes (e.g. dataclass fields), the annotation owner
-                            // is a PyTypeDeclarationStatement. Its children include
-                            // the target expression for the field; use that name.
-                            val firstTarget = PsiTreeUtil.getChildOfType(owner, PyTargetExpression::class.java)
-                            dataclassField = firstTarget?.takeIf { isDataclassField(it) }
-                            firstTarget?.name
-                        }
-
-                        else -> null
-                    }
-
-                    val preferredName = identifier?.let { id -> deriveClassNameFromIdentifier(id) }
-
-                    return Target(
-                        builtinName = name,
-                        annotationRef = ref,
-                        preferredClassName = preferredName,
-                        field = dataclassField,
-                    )
-                }
+        return when (detected) {
+            is AnnotationTarget -> {
+                val preferredName = detected.ownerName?.let { id -> naming.deriveBaseName(id) }
+                Target(
+                    builtinName = detected.builtinName,
+                    annotationRef = detected.annotationRef,
+                    preferredClassName = preferredName,
+                    field = detected.dataclassField,
+                )
             }
-        }
 
-        // 2) New behavior: caret on an expression whose (actual or expected) type is
-        // a supported builtin. This covers cases like arguments and literals where
-        // the stdlib type is implied rather than written explicitly.
-        val exprFromCaret = PyTypeIntentions.findExpressionAtCaret(editor, file)
-        val expr = exprFromCaret
-            ?: PsiTreeUtil.getParentOfType(leaf, PyStringLiteralExpression::class.java, false)
-            ?: PsiTreeUtil.getParentOfType(leaf, PyNumericLiteralExpression::class.java, false)
-            ?: return null
+            is ExpressionTarget -> {
+                val preferredFromKeyword = detected.keywordName?.let { naming.deriveBaseName(it) }
+                val preferredFromAssignment = detected.assignmentName?.let { naming.deriveBaseName(it) }
+                val preferredName = preferredFromKeyword
+                    ?: preferredFromAssignment
+                    ?: detected.dataclassField?.name?.let { naming.deriveBaseName(it) }
 
-        val ctx = TypeEvalContext.codeAnalysis(file.project, file)
-        val typeNames = PyTypeIntentions.computeDisplayTypeNames(expr, ctx)
-        var candidate: String? = typeNames.expected ?: typeNames.actual
-
-        // When type inference doesn't give us a usable builtin name (e.g. bare
-        // literals with no annotation, or literal-specific names like
-        // ``Literal['str']``), fall back to simple literal kinds.
-        if (candidate == null || candidate !in SUPPORTED_BUILTINS) {
-            candidate = when (expr) {
-                is PyStringLiteralExpression -> "str"
-                is PyNumericLiteralExpression ->
-                    // Respect float vs int literals so that e.g. `4567.6` is
-                    // treated as ``float`` rather than ``int``.
-                    if (expr.isIntegerLiteral) "int" else "float"
-
-                else -> candidate
+                Target(
+                    builtinName = detected.builtinName,
+                    expression = detected.expression,
+                    preferredClassName = preferredName,
+                    field = detected.dataclassField,
+                )
             }
+
+            else -> null
         }
-
-        candidate ?: return null
-        if (candidate !in SUPPORTED_BUILTINS) return null
-
-        // If the caret expression is already wrapped in a non-stdlib call
-        // (e.g. ProductId(123)), do not offer introducing another custom
-        // type from the builtin literal.
-        if (isAlreadyWrappedInCustomType(expr)) return null
-
-        val preferredNameFromKeyword = PsiTreeUtil.getParentOfType(expr, PyKeywordArgument::class.java, false)
-            ?.takeIf { it.valueExpression == expr }
-            ?.keyword
-            ?.let { deriveClassNameFromIdentifier(it) }
-
-        val preferredNameFromAssignment = if (preferredNameFromKeyword == null) {
-            val assignment = PsiTreeUtil.getParentOfType(expr, PyAssignmentStatement::class.java, false)
-            if (assignment != null) {
-                // Prefer deriving the class name from the assignment target
-                // whenever the caret expression participates in an
-                // assignment like ``product_id = 1234``. We intentionally do
-                // not require that the caret expression is *exactly* the
-                // assigned value expression because helper utilities may
-                // return sub‑expressions; using the target name is still the
-                // right behaviour in all such cases.
-                val firstTarget = assignment.targets.firstOrNull() as? PyTargetExpression
-                val id = firstTarget?.name
-                id?.let { deriveClassNameFromIdentifier(it) }
-            } else null
-        } else null
-
-        val dataclassFieldFromExpr = findDataclassFieldForExpression(expr)
-
-        // If we are in a dataclass context but the field is already annotated
-        // with a non-stdlib type (e.g. ``ProductId(int)``), we should not offer
-        // to introduce yet another custom type from the builtin used at the
-        // call site. This avoids suggesting "Introduce custom type from int"
-        // when the declaration already uses a domain type.
-        if (dataclassFieldFromExpr != null) {
-            val typeDecl =
-                PsiTreeUtil.getParentOfType(dataclassFieldFromExpr, PyTypeDeclarationStatement::class.java, false)
-            val annExpr = typeDecl?.annotation?.value as? PyExpression
-            val annRef = annExpr as? PyReferenceExpression
-            val annName = annRef?.name
-            if (annName != null && annName !in SUPPORTED_BUILTINS) {
-                return null
-            }
-        }
-
-        val preferredName = preferredNameFromKeyword
-            ?: preferredNameFromAssignment
-            ?: dataclassFieldFromExpr?.name?.let { deriveClassNameFromIdentifier(it) }
-
-        return Target(
-            builtinName = candidate,
-            expression = expr,
-            preferredClassName = preferredName,
-            field = dataclassFieldFromExpr,
-        )
-    }
-
-    /** True if [expr] appears directly as an argument to a call whose callee resolves to a non-builtin class. */
-    private fun isAlreadyWrappedInCustomType(expr: PyExpression): Boolean {
-        val kwArg = PsiTreeUtil.getParentOfType(expr, PyKeywordArgument::class.java, false)
-        val argExpr: PyExpression = when {
-            kwArg != null && kwArg.valueExpression == expr -> kwArg
-            else -> expr
-        }
-
-        val argList = PsiTreeUtil.getParentOfType(argExpr, PyArgumentList::class.java, false) ?: return false
-        val call = argList.parent as? PyCallExpression ?: return false
-        val calleeRef = call.callee as? PyReferenceExpression ?: return false
-        val resolved = calleeRef.reference.resolve()
-        val resolvedClass = resolved as? PyClass ?: return false
-        // Treat record-like constructors (dataclass / pydantic models) as containers
-        // that we want to transform — they are not considered "already wrapped".
-        if (isDataclassClass(resolvedClass)) return false
-        val className = resolvedClass.name ?: return false
-        return className !in SUPPORTED_BUILTINS
     }
 
     /**
@@ -429,80 +301,6 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         annExpr.replace(replacement)
     }
 
-    /** True if the given field belongs to a @dataclass-decorated class. */
-    private fun isDataclassField(field: PyTargetExpression): Boolean {
-        val pyClass = PsiTreeUtil.getParentOfType(field, PyClass::class.java) ?: return false
-        return isDataclassClass(pyClass)
-    }
-
-    /**
-     * True if the given class is treated as a "record-like" container that we
-     * support for field-based wrapping. For now this includes:
-     * - dataclasses (via @dataclass / @dataclasses.dataclass), and
-     * - Pydantic models (subclasses of BaseModel).
-     */
-    private fun isDataclassClass(pyClass: PyClass): Boolean {
-        // 1) Dataclass via decorator (@dataclass or @dataclasses.dataclass)
-        val decorators = pyClass.decoratorList?.decorators
-        if (decorators != null && decorators.any { decorator ->
-                val name = decorator.name
-                val qName = decorator.qualifiedName?.toString()
-                name == "dataclass" || qName == "dataclasses.dataclass" || (qName != null && qName.endsWith(".dataclass"))
-            }
-        ) {
-            return true
-        }
-
-        // 2) Pydantic BaseModel subclass via inheritance. We deliberately keep
-        // this simple and conservative:
-        // - treat any direct base named "BaseModel" as a Pydantic model
-        //   (common pattern: ``from pydantic import BaseModel``), and
-        // - treat qualified names ending with ".BaseModel" (e.g.
-        //   ``pydantic.BaseModel``) as Pydantic.
-        val superExprs = pyClass.superClassExpressions
-        return superExprs != null && superExprs.any { superExpr ->
-            val ref = superExpr as? PyReferenceExpression
-            val name = ref?.name
-            val qNameOwner = superExpr as? PyQualifiedNameOwner
-            val qName = qNameOwner?.qualifiedName
-            name == "BaseModel" || (qName != null && qName.endsWith(".BaseModel"))
-        }
-    }
-
-    /**
-     * If the caret expression is part of a dataclass constructor call, resolve
-     * the corresponding dataclass field. Supports both keyword and positional
-     * arguments for simple dataclass signatures.
-     */
-    private fun findDataclassFieldForExpression(expr: PyExpression): PyTargetExpression? {
-        // Keyword argument: Data(field=expr)
-        val kwArg = PsiTreeUtil.getParentOfType(expr, PyKeywordArgument::class.java, false)
-        if (kwArg != null && kwArg.valueExpression == expr) {
-            val call = PsiTreeUtil.getParentOfType(kwArg, PyCallExpression::class.java, true) ?: return null
-            val callee = call.callee as? PyReferenceExpression ?: return null
-            val resolved = callee.reference.resolve() as? PyClass ?: return null
-            if (!isDataclassClass(resolved)) return null
-            val fieldName = kwArg.keyword ?: return null
-            val field = resolved.classAttributes.firstOrNull { it.name == fieldName } ?: return null
-            return field
-        }
-
-        // Positional argument: Data(expr, ...)
-        val argList = PsiTreeUtil.getParentOfType(expr, PyArgumentList::class.java, false) ?: return null
-        val call = argList.parent as? PyCallExpression ?: return null
-        val callee = call.callee as? PyReferenceExpression ?: return null
-        val resolved = callee.reference.resolve() as? PyClass ?: return null
-        if (!isDataclassClass(resolved)) return null
-
-        val args = argList.arguments.toList()
-        val positionalArgs = args.filter { it !is PyKeywordArgument }
-        val posIndex = positionalArgs.indexOf(expr)
-        if (posIndex < 0) return null
-
-        val fields = resolved.classAttributes
-        if (posIndex >= fields.size) return null
-        return fields[posIndex]
-    }
 
     /**
      * Wrap all constructor usages of the given dataclass field with the
@@ -604,42 +402,6 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
             }
     }
 
-    /**
-     * Derive a PascalCase class name from an identifier such as ``product_id``
-     * or ``my_arg``. To keep changes minimal, we currently only derive a name
-     * when the identifier contains an underscore so that simple names like
-     * ``val`` continue to use the existing builtin-based naming.
-     */
-    private fun deriveClassNameFromIdentifier(identifier: String): String? {
-        if (!identifier.contains('_')) return null
-
-        // Convert snake_case to PascalCase, e.g. ``product_id`` -> ``ProductId``.
-        val parts = identifier.split('_').filter { it.isNotEmpty() }
-        if (parts.isEmpty()) return null
-
-        return parts.joinToString(separator = "") { part ->
-            part.replaceFirstChar { it.uppercaseChar() }
-        }
-    }
-
-    /**
-     * Ensure that the initial custom type name does not clash with an existing
-     * top-level class in the target file. This mirrors the logic described in
-     * docs/inline-rename.md.
-     */
-    private fun suggestUniqueClassName(file: PyFile, baseName: String): String {
-        val usedNames = file.topLevelClasses.mapNotNull { it.name }.toMutableSet()
-
-        if (!usedNames.contains(baseName)) return baseName
-
-        var index = 1
-        var candidate = "$baseName$index"
-        while (usedNames.contains(candidate)) {
-            index++
-            candidate = "$baseName$index"
-        }
-        return candidate
-    }
 
     /**
      * Position the caret on the newly created class name and invoke the
