@@ -225,7 +225,7 @@ class CustomTypeAdditionalContextsTest : TestBase() {
         )
     }
 
-    fun testDataclassCall_DoesNotDoubleWrapIfAlreadyCustom() {
+    fun testDataclassCall_DoesNotOfferCustomTypeIfAlreadyCustom() {
         myFixture.configureByText(
             "a.py",
             """
@@ -238,40 +238,17 @@ class CustomTypeAdditionalContextsTest : TestBase() {
 
             @dataclasses.dataclass
             class D:
-                product_id: int
+                product_id: ProductId
 
 
             def do():
-                D(product_id=ProductId(12<caret>3))
+                D(product_id=12<caret>3)
             """.trimIndent()
         )
 
         myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Introduce custom type from int")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
-            """
-                import dataclasses
-
-
-                class Customint(int):
-                    pass
-                
-                
-                class ProductId(int):
-                    pass
-                
-                
-                @dataclasses.dataclass
-                class D:
-                    product_id: int
-                
-                
-                def do():
-                    D(product_id=ProductId(Customint(123)))
-            """.trimIndent()
-        )
+        val intentions = myFixture.filterAvailableIntentions("Introduce custom type from int")
+        assertEmpty("Should not offer introducing a custom type when one already exists", intentions)
     }
 
     fun testDataclassField_WithSnakeCaseName_UsesFieldNameForClass() {
@@ -390,6 +367,8 @@ class CustomTypeAdditionalContextsTest : TestBase() {
             """.trimIndent()
         )
     }
+
+    // Note: module-level presence of a custom subclass should not suppress the intention.
 
     fun testFloatLiteralAssignment_UsesFloatAndWrapsValue() {
         myFixture.configureByText(

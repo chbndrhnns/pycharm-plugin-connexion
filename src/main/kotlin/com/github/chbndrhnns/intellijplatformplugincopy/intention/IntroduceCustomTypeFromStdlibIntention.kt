@@ -301,6 +301,11 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         candidate ?: return null
         if (candidate !in SUPPORTED_BUILTINS) return null
 
+        // If the caret expression is already wrapped in a non-stdlib call
+        // (e.g. ProductId(123)), do not offer introducing another custom
+        // type from the builtin literal.
+        if (isAlreadyWrappedInCustomType(expr)) return null
+
         val preferredNameFromKeyword = PsiTreeUtil.getParentOfType(expr, PyKeywordArgument::class.java, false)
             ?.takeIf { it.valueExpression == expr }
             ?.keyword
@@ -350,6 +355,26 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
             preferredClassName = preferredName,
             field = dataclassFieldFromExpr,
         )
+    }
+
+    /** True if [expr] appears directly as an argument to a call whose callee resolves to a non-builtin class. */
+    private fun isAlreadyWrappedInCustomType(expr: PyExpression): Boolean {
+        val kwArg = PsiTreeUtil.getParentOfType(expr, PyKeywordArgument::class.java, false)
+        val argExpr: PyExpression = when {
+            kwArg != null && kwArg.valueExpression == expr -> kwArg
+            else -> expr
+        }
+
+        val argList = PsiTreeUtil.getParentOfType(argExpr, PyArgumentList::class.java, false) ?: return false
+        val call = argList.parent as? PyCallExpression ?: return false
+        val calleeRef = call.callee as? PyReferenceExpression ?: return false
+        val resolved = calleeRef.reference.resolve()
+        val resolvedClass = resolved as? PyClass ?: return false
+        // Treat record-like constructors (dataclass / pydantic models) as containers
+        // that we want to transform — they are not considered "already wrapped".
+        if (isDataclassClass(resolvedClass)) return false
+        val className = resolvedClass.name ?: return false
+        return className !in SUPPORTED_BUILTINS
     }
 
     /**
