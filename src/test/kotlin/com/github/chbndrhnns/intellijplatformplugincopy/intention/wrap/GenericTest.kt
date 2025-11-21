@@ -173,6 +173,21 @@ class GenericTest : TestBase() {
         )
     }
 
+    fun testIsAvailableForAssignments_WithAnnotatedExpectedType() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            from typing import Annotated
+
+            from pathlib import Path
+            a: Annotated[str, "meta"] = Path(<caret>"val")
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        myFixture.findSingleIntention("Wrap with str()")
+    }
+
     fun testWrapWithOptionalPicksInnerTypeNotNone() {
         myFixture.configureByText(
             "a.py",

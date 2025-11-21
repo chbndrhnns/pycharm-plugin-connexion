@@ -284,7 +284,9 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
         ) return null
 
         val names = PyTypeIntentions.computeDisplayTypeNames(elementAtCaret, context)
-        if (names.actual == null || names.expected == null || names.actual == names.expected) return null
+        if (names.actual == null || names.expected == null) return null
+        // Allow wrapping if both types are Unknown (unresolved), provided we can find a valid constructor name later.
+        if (names.actual == names.expected && names.actual != "Unknown") return null
 
         val ctor = PyTypeIntentions.expectedCtorName(elementAtCaret, context)
         val annElement = names.expectedAnnotationElement

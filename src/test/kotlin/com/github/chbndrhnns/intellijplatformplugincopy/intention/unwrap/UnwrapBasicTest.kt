@@ -167,4 +167,31 @@ class UnwrapBasicTest : BasePlatformTestCase() {
         val intention = myFixture.availableIntentions.find { it.text == "Unwrap list()" }
         assertNull("Unwrap intention should not be offered for container constructors", intention)
     }
+
+    fun testAnnotatedAssignment_Int_RespectsAnnotatedExpectedType() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            from typing import Annotated, NewType
+
+            UserId = NewType("UserId", int)
+
+            x: Annotated[int, "meta"] = <caret>UserId(42)
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Unwrap UserId()")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            from typing import Annotated, NewType
+
+            UserId = NewType("UserId", int)
+
+            x: Annotated[int, "meta"] = 42
+            """.trimIndent()
+        )
+    }
 }

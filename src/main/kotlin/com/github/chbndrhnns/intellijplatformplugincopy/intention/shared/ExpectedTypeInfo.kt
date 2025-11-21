@@ -21,14 +21,14 @@ internal object ExpectedTypeInfo {
 
     // ---- Public API used by facade and other modules ----
     fun computeDisplayTypeNames(expr: PyExpression, ctx: TypeEvalContext): TypeNames {
-        val actual = TypeNameRenderer.render(ctx.getType(expr))
+        val actualType = TypeNameRenderer.getAnnotatedType(expr, ctx) ?: ctx.getType(expr)
+        val actual = TypeNameRenderer.render(actualType)
+
         val expectedInfo = getExpectedTypeInfo(expr, ctx)
-        var expected = TypeNameRenderer.render(expectedInfo?.type)
-        if (expected == "Unknown") {
-            // Fall back to annotation text (e.g., forward ref strings) when evaluator can’t render
-            val ann = expectedInfo?.annotationExpr
-            if (ann != null) canonicalCtorName(ann, ctx)?.let { expected = it }
-        }
+
+        val expectedType =
+            expectedInfo?.annotationExpr?.let { TypeNameRenderer.getAnnotatedType(it, ctx) } ?: expectedInfo?.type
+        val expected = TypeNameRenderer.render(expectedType)
         return TypeNames(
             actual = actual,
             expected = expected,
@@ -55,14 +55,11 @@ internal object ExpectedTypeInfo {
     }
 
     fun canonicalCtorName(element: PyTypedElement, ctx: TypeEvalContext): String? {
-        // If the typed element is a string literal annotation (forward ref), use its textual name
-        (element as? PyStringLiteralExpression)?.let { str ->
-            val raw = str.stringValue
-            val name = raw?.substringAfterLast('.')
-            if (!name.isNullOrBlank() && !isNonCtorName(name)) return name
+        if (element is PyStringLiteralExpression) {
+            return element.stringValue
         }
 
-        val t = ctx.getType(element)
+        val t = TypeNameRenderer.getAnnotatedType(element, ctx) ?: ctx.getType(element)
         if (t != null) {
             val base = firstNonNoneMember(t) ?: return null
             if (base is PyClassType) {
@@ -75,10 +72,6 @@ internal object ExpectedTypeInfo {
         return null
     }
 
-    fun isElementAlreadyOfCtor(element: PyExpression, expectedCtorName: String, ctx: TypeEvalContext): Boolean {
-        val actualName = TypeNameRenderer.render(ctx.getType(element)).lowercase()
-        return actualName == expectedCtorName.lowercase()
-    }
 
     fun elementDisplaysAsCtor(element: PyExpression, expectedCtorName: String, ctx: TypeEvalContext): CtorMatch {
         val actualName = TypeNameRenderer.render(ctx.getType(element)).lowercase()
