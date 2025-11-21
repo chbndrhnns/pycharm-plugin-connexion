@@ -98,7 +98,15 @@ internal object ExpectedTypeInfo {
         if (parent is PyAssignmentStatement) {
             parent.targets.forEach { t ->
                 if (t is PyTargetExpression) {
-                    val annExpr = t.annotation?.value
+                    var annExpr = t.annotation?.value
+                    if (annExpr == null) {
+                        val targetName = t.name
+                        if (targetName != null) {
+                            val decl = findTypeDeclaration(parent, targetName)
+                            annExpr = decl?.annotation?.value
+                        }
+                    }
+
                     if (annExpr is PyExpression) {
                         val named = (annExpr as? PyReferenceExpression)?.reference?.resolve() as? PsiNamedElement
                         val targetType = ctx.getType(t)
@@ -119,6 +127,20 @@ internal object ExpectedTypeInfo {
         }
 
         return resolveParamTypeInfo(expr, ctx)
+    }
+
+    private fun findTypeDeclaration(start: PsiElement, targetName: String): PyTypeDeclarationStatement? {
+        var element = start.prevSibling
+        while (element != null) {
+            if (element is PyTypeDeclarationStatement) {
+                val target = element.target
+                if (target is PyTargetExpression && target.name == targetName) {
+                    return element
+                }
+            }
+            element = element.prevSibling
+        }
+        return null
     }
 
     private fun resolveParamTypeInfo(expr: PyExpression, ctx: TypeEvalContext): TypeInfo? {

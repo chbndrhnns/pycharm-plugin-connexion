@@ -5,6 +5,23 @@ import com.github.chbndrhnns.intellijplatformplugincopy.TestBase
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.WrapWithExpectedTypeIntentionHooks
 
 class GenericTest : TestBase() {
+    fun testDeclarationAssignmentSplit() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            class ProductId(int):
+                pass
+
+            def test_():
+                val: ProductId
+                val = 12<caret>34
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        myFixture.findSingleIntention("Wrap with ProductId()")
+    }
+
     fun testIsAvailableForAssignments() {
         myFixture.configureByText(
             "a.py",
