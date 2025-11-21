@@ -1,7 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention
 
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.*
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.AnnotationTarget
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.icons.AllIcons
@@ -36,29 +35,10 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
     private var lastText: String = "Introduce custom type from stdlib type"
     private val imports = ImportManager()
     private val naming = NameSuggester()
-    private val detector = TargetDetector()
+    private val planBuilder = PlanBuilder()
     private val insertionPointFinder = InsertionPointFinder()
     private val generator = CustomTypeGenerator()
     private val rewriter = UsageRewriter()
-
-    private data class Target(
-        val builtinName: String,
-        val annotationRef: PyReferenceExpression? = null,
-        val expression: PyExpression? = null,
-        /**
-         * Optional preferred base class name derived from surrounding context,
-         * e.g. an assignment target or keyword argument name.
-         */
-        val preferredClassName: String? = null,
-        /**
-         * When the builtin appears as a dataclass field (either via its
-         * annotation or via a constructor argument at a call site), this holds
-         * the corresponding dataclass field target expression. It is used to
-         * locate and update all constructor usages so that their arguments are
-         * wrapped in the newly introduced custom type.
-         */
-        val field: PyTargetExpression? = null,
-    )
 
     override fun getText(): String = lastText
 
@@ -69,26 +49,26 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
     override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
         val pyFile = file as? PyFile ?: return false
 
-        val target = findTarget(editor, pyFile) ?: run {
+        val plan = planBuilder.build(editor, pyFile) ?: run {
             lastText = "Introduce custom type from stdlib type"
             return false
         }
 
-        lastText = "Introduce custom type from ${target.builtinName}"
+        lastText = "Introduce custom type from ${plan.builtinName}"
         return true
     }
 
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
         val pyFile = file as? PyFile ?: return
-        val target = findTarget(editor, pyFile) ?: return
+        val plan = planBuilder.build(editor, pyFile) ?: return
 
-        val builtinName = target.builtinName
-        val baseTypeName = naming.suggestTypeName(builtinName, target.preferredClassName)
+        val builtinName = plan.builtinName
+        val baseTypeName = naming.suggestTypeName(builtinName, plan.preferredClassName)
 
         val pyGenerator = PyElementGenerator.getInstance(project)
 
         // Decide which file should host the newly introduced custom type.
-        val targetFileForNewClass = insertionPointFinder.chooseFile(target.field, target.expression, pyFile)
+        val targetFileForNewClass = insertionPointFinder.chooseFile(plan.field, plan.expression, pyFile)
 
         // Generate the new class definition in the chosen module.
         val newTypeName = naming.ensureUnique(targetFileForNewClass, baseTypeName)
@@ -102,19 +82,19 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         // the usage file imports the new type so that wrapped calls resolve
         // correctly and no circular import is introduced.
         if (targetFileForNewClass != pyFile) {
-            val anchorElement = target.expression ?: target.annotationRef ?: return
+            val anchorElement = plan.expression ?: plan.annotationRef ?: return
             imports.ensureImportedIfNeeded(pyFile, anchorElement, newClass)
         }
 
         // Replace the annotation reference or expression usage with the new type.
         val newRef = pyGenerator.createExpressionFromText(LanguageLevel.getLatest(), newTypeName)
         when {
-            target.annotationRef != null -> {
-                rewriter.rewriteAnnotation(target.annotationRef, newRef)
+            plan.annotationRef != null -> {
+                rewriter.rewriteAnnotation(plan.annotationRef, newRef)
             }
 
-            target.expression != null -> {
-                val originalExpr = target.expression
+            plan.expression != null -> {
+                val originalExpr = plan.expression
 
                 // When the intention is invoked from a call-site expression,
                 // also update the corresponding parameter annotation in the
@@ -131,12 +111,12 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         // its annotation or from a constructor call-site argument), make sure
         // we also align the field's annotation and wrap all constructor
         // usages so that arguments are passed as the new custom type.
-        val field = target.field
+        val field = plan.field
         if (field != null) {
             // If we introduced the type from a call-site expression, there was
             // no annotationRef to rewrite above. In that case, synchronise the
             // dataclass field annotation now.
-            if (target.annotationRef == null) {
+            if (plan.annotationRef == null) {
                 rewriter.syncDataclassFieldAnnotation(field, builtinName, newRef)
             }
 
@@ -160,43 +140,12 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         // the rename infrastructure adjust it (which may, for example,
         // normalise it to ``Productid``). Inline rename remains available for
         // generic names like ``CustomInt``.
-        if (targetFileForNewClass == pyFile && target.preferredClassName == null) {
+        if (targetFileForNewClass == pyFile && plan.preferredClassName == null) {
             startInlineRename(project, editor, newClass, pyFile)
         }
     }
 
     override fun startInWriteAction(): Boolean = true
-
-    private fun findTarget(editor: Editor, file: PyFile): Target? {
-        val detected = detector.find(editor, file) ?: return null
-
-        return when (detected) {
-            is AnnotationTarget -> {
-                val preferredName = detected.ownerName?.let { id -> naming.deriveBaseName(id) }
-                Target(
-                    builtinName = detected.builtinName,
-                    annotationRef = detected.annotationRef,
-                    preferredClassName = preferredName,
-                    field = detected.dataclassField,
-                )
-            }
-
-            is ExpressionTarget -> {
-                val preferredFromKeyword = detected.keywordName?.let { naming.deriveBaseName(it) }
-                val preferredFromAssignment = detected.assignmentName?.let { naming.deriveBaseName(it) }
-                val preferredName = preferredFromKeyword
-                    ?: preferredFromAssignment
-                    ?: detected.dataclassField?.name?.let { naming.deriveBaseName(it) }
-
-                Target(
-                    builtinName = detected.builtinName,
-                    expression = detected.expression,
-                    preferredClassName = preferredName,
-                    field = detected.dataclassField,
-                )
-            }
-        }
-    }
 
     /**
      * When the intention is started from a call-site expression, try to find
