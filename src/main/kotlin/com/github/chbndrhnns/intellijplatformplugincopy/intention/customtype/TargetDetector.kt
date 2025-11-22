@@ -204,7 +204,8 @@ class TargetDetector {
     companion object {
         val SUPPORTED_BUILTINS: Set<String> = setOf(
             "int", "str", "float", "bool", "bytes",
-            "datetime", "date", "time", "timedelta", "UUID", "Decimal"
+            "datetime", "date", "time", "timedelta", "UUID", "Decimal",
+            "list", "set", "dict", "tuple", "frozenset"
         )
     }
 }

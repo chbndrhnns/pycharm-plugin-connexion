@@ -37,6 +37,11 @@ class NameSuggester {
             "float" -> "Float"
             "bool" -> "Bool"
             "bytes" -> "Bytes"
+            "list" -> "List"
+            "set" -> "Set"
+            "dict" -> "Dict"
+            "tuple" -> "Tuple"
+            "frozenset" -> "FrozenSet"
             else -> builtin.replaceFirstChar { it.uppercaseChar() }
         }
         return "Custom" + capitalizedBuiltin
