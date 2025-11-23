@@ -182,6 +182,9 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
                 else -> false
             }
             if (!isContainerLiteral) {
+                // Fix: dicts are not supported for item wrapping
+                if (outerCtor.name == "dict") return null
+
                 val match = PyTypeIntentions.elementDisplaysAsCtor(elementAtCaret, outerCtor.name, context)
                 val names = PyTypeIntentions.computeDisplayTypeNames(elementAtCaret, context)
                 val actualUsesSameOuter = names.actual?.lowercase()?.startsWith(outerCtor.name.lowercase()) == true
@@ -237,6 +240,8 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
                         // but only when the caret-targeted item is NOT inside a literal container.
                         val outer = expectedOuterContainerCtor(elementAtCaret, context)
                         if (outer != null) {
+                            if (outer.name == "dict") return null
+
                             val p = containerItemTarget.parent
                             val isLiteral =
                                 p is PyListLiteralExpression || p is PySetLiteralExpression || p is PyTupleExpression || p is PyDictLiteralExpression

@@ -146,6 +146,9 @@ class WrapItemsWithExpectedTypeIntention : IntentionAction, HighPriorityAction, 
         val expectedOuterContainerCtor = expectedOuterContainerCtor(containerExpr, context)
 
         if (expectedOuterContainerCtor != null) {
+            // Dicts are not supported for item wrapping yet (ambiguous whether to wrap keys or values, and requires dict comprehension)
+            if (expectedOuterContainerCtor.name == "dict") return null
+
             PyTypeIntentions.tryContainerItemCtor(containerItemTarget, context)?.let { ctor ->
                 val suppressedContainers = setOf("list", "set", "tuple", "dict")
                 if (!suppressedContainers.contains(ctor.name.lowercase())) {
