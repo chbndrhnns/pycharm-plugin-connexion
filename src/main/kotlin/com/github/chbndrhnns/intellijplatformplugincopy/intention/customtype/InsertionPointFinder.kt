@@ -40,7 +40,7 @@ class InsertionPointFinder {
             val call = PsiTreeUtil.getParentOfType(expression, PyCallExpression::class.java, false)
             val callee = call?.callee as? PyReferenceExpression
             val resolvedClass = callee?.reference?.resolve() as? PyClass
-            if (resolvedClass != null) {
+            if (resolvedClass != null && isDataclassClass(resolvedClass)) {
                 resolvedClass.containingFile as? PyFile
             } else null
         } else null

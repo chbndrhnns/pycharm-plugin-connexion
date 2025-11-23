@@ -59,7 +59,13 @@ class TargetDetector {
 
     private fun tryFromExpression(editor: Editor, file: PyFile, leaf: PsiElement): ExpressionTarget? {
         val exprFromCaret = PyTypeIntentions.findExpressionAtCaret(editor, file)
-        val expr = exprFromCaret
+        // Refine target if the caret selected a container (like dict/list in a function call)
+        // but we actually want the item inside it.
+        val refinedExpr = exprFromCaret?.let {
+            PyTypeIntentions.findContainerItemAtCaret(editor, it)
+        } ?: exprFromCaret
+
+        val expr = refinedExpr
             ?: PsiTreeUtil.getParentOfType(leaf, PyStringLiteralExpression::class.java, false)
             ?: PsiTreeUtil.getParentOfType(leaf, PyNumericLiteralExpression::class.java, false)
             ?: return null
@@ -70,7 +76,11 @@ class TargetDetector {
         val expectedTypeInfo = ExpectedTypeInfo.getExpectedTypeInfo(expr, ctx)
         if (expectedTypeInfo?.type != null) {
             val actualType = ctx.getType(expr)
-            if (actualType != null && !PyTypeChecker.match(expectedTypeInfo.type, actualType, ctx)) {
+            // If expected type is strictly None (e.g. from a default value =None), ignore it
+            // because we are likely in a valid context (passed arg) where None was just a default.
+            val isExpectedNone = expectedTypeInfo.type.name == "NoneType" || expectedTypeInfo.type.name == "None"
+
+            if (!isExpectedNone && actualType != null && !PyTypeChecker.match(expectedTypeInfo.type, actualType, ctx)) {
                 return null
             }
         }
@@ -163,26 +173,6 @@ class TargetDetector {
         return isDataclassClass(pyClass)
     }
 
-    private fun isDataclassClass(pyClass: PyClass): Boolean {
-        val decorators = pyClass.decoratorList?.decorators
-        if (decorators != null && decorators.any { decorator ->
-                val name = decorator.name
-                val qName = decorator.qualifiedName?.toString()
-                name == "dataclass" || qName == "dataclasses.dataclass" || (qName != null && qName.endsWith(".dataclass"))
-            }
-        ) {
-            return true
-        }
-
-        val superExprs = pyClass.superClassExpressions
-        return superExprs != null && superExprs.any { superExpr ->
-            val ref = superExpr as? PyReferenceExpression
-            val name = ref?.name
-            val qNameOwner = superExpr as? PyQualifiedNameOwner
-            val qName = qNameOwner?.qualifiedName
-            name == "BaseModel" || (qName != null && qName.endsWith(".BaseModel"))
-        }
-    }
 
     private fun findDataclassFieldForExpression(expr: PyExpression): PyTargetExpression? {
         val kwArg = PsiTreeUtil.getParentOfType(expr, PyKeywordArgument::class.java, false)

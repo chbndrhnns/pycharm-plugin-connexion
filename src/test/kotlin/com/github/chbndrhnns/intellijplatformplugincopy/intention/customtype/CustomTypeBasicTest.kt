@@ -179,4 +179,26 @@ class CustomTypeBasicTest : TestBase() {
         val intentions = myFixture.filterAvailableIntentions("Introduce custom type")
         assertEmpty("Intention should not be available when type error is present", intentions)
     }
+
+    fun testIntentionAvailableForInFunctionCall() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            val = dict({"<caret>a": 1, "b": 2, "c": 3})
+            """.trimIndent()
+        )
+
+        val intention = myFixture.findSingleIntention("Introduce custom type from str")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            class Customstr(str):
+                pass
+            
+            
+            val = dict({Customstr("a"): 1, "b": 2, "c": 3})
+            """.trimIndent()
+        )
+    }
 }
