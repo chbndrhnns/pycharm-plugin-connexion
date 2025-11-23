@@ -1,0 +1,20 @@
+<html>
+<body>
+Unwraps all items in a container (list, set, tuple) that are wrapped with the specific wrapper,
+restoring them to match the expected item type of the container.
+<p>Example:</p>
+<pre>
+val: list[int] = [
+    CustomInt(1),
+    CustomInt(2)
+]
+</pre>
+becomes:
+<pre>
+val: list[int] = [
+    1,
+    2
+]
+</pre>
+</body>
+</html>

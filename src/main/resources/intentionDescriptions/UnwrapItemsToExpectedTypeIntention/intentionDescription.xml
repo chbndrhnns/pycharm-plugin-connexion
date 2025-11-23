@@ -1,0 +1,4 @@
+<intentionDescription>
+    <descriptionDirectoryName>UnwrapItemsToExpectedTypeIntention</descriptionDirectoryName>
+    <instance>com.github.chbndrhnns.intellijplatformplugincopy.intention.UnwrapItemsToExpectedTypeIntention</instance>
+</intentionDescription>

@@ -149,12 +149,15 @@ class UnwrapToExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
         // Only non-container wrappers.
         if (wrapperName.lowercase() in CONTAINERS) return null
 
-        // Expected type at this usage site (assignment target, argument, return, etc.).
-        // Mirror WrapWithExpectedTypeIntention: rely on display type names instead of
-        // calling ExpectedTypeInfo.getExpectedTypeInfo directly, as that may return null
-        // in some NewType scenarios even when an expected type name is available.
-        val outerNames = PyTypeIntentions.computeDisplayTypeNames(call, context)
-        val expected = outerNames.expected ?: return null
+        // Expected type at this usage site.
+        // First check if we are an item in a container (list/set/tuple literal)
+        val containerItemCtor = PyTypeIntentions.tryContainerItemCtor(call, context)
+        val expected = if (containerItemCtor != null) {
+            containerItemCtor.name
+        } else {
+            val outerNames = PyTypeIntentions.computeDisplayTypeNames(call, context)
+            outerNames.expected
+        } ?: return null
 
         // Type of the inner expression when used here.
         val innerNames = PyTypeIntentions.computeDisplayTypeNames(innerExpr, context)

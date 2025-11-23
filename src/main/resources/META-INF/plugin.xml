@@ -32,6 +32,12 @@
         </intentionAction>
 
         <intentionAction>
+            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.UnwrapItemsToExpectedTypeIntention
+            </className>
+            <category>Type mismatch</category>
+        </intentionAction>
+
+        <intentionAction>
             <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.IntroduceCustomTypeFromStdlibIntention
             </className>
             <category>Custom types</category>
