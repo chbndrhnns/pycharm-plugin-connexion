@@ -188,6 +188,9 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
         val context = TypeEvalContext.codeAnalysis(project, file)
         val elementAtCaret = PyTypeIntentions.findExpressionAtCaret(editor, file) ?: return null
 
+        // Do not offer wrapping on the variable name being defined/assigned to
+        if (elementAtCaret is PyTargetExpression) return null
+
         // fix outer-most container mismatch first (list/set/tuple/dict + common aliases).
         // Guard: do NOT trigger when the caret sits inside an already-correct container literal/comprehension.
         expectedOuterContainerCtor(elementAtCaret, context)?.let { outerCtor ->
