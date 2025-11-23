@@ -29,7 +29,7 @@ class CustomTypeApplier(
     private val imports: ImportManager = ImportManager(),
 ) {
 
-    fun apply(project: Project, editor: Editor, plan: CustomTypePlan) {
+    fun apply(project: Project, editor: Editor, plan: CustomTypePlan, isPreview: Boolean = false) {
         val pyFile = plan.sourceFile
         val builtinName = plan.builtinName
 
@@ -134,7 +134,9 @@ class CustomTypeApplier(
 
             // Project-wide update: find all references to the dataclass across
             // the project and wrap constructor arguments at those call sites.
-            wrapDataclassConstructorUsagesProjectWide(project, field, newTypeName, newClass, pyGenerator)
+            if (!isPreview) {
+                wrapDataclassConstructorUsagesProjectWide(project, field, newTypeName, newClass, pyGenerator)
+            }
         }
 
         // Only trigger inline rename when the new class was inserted into the
@@ -145,7 +147,7 @@ class CustomTypeApplier(
         // the rename infrastructure adjust it (which may, for example,
         // normalise it to ``Productid``). Inline rename remains available for
         // generic names like ``CustomInt``.
-        if (targetFileForNewClass == pyFile && plan.preferredClassName == null) {
+        if (!isPreview && targetFileForNewClass == pyFile && plan.preferredClassName == null) {
             startInlineRename(project, editor, newClass, pyFile)
         }
     }

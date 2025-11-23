@@ -4,6 +4,7 @@ import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.Cus
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.PlanBuilder
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
+import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.DumbAware
@@ -50,6 +51,13 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         val pyFile = file as? PyFile ?: return
         val plan = planBuilder.build(editor, pyFile) ?: return
         applier.apply(project, editor, plan)
+    }
+
+    override fun generatePreview(project: Project, editor: Editor, file: PsiFile): IntentionPreviewInfo {
+        val pyFile = file as? PyFile ?: return IntentionPreviewInfo.EMPTY
+        val plan = planBuilder.build(editor, pyFile) ?: return IntentionPreviewInfo.EMPTY
+        applier.apply(project, editor, plan, isPreview = true)
+        return IntentionPreviewInfo.DIFF
     }
 
     override fun startInWriteAction(): Boolean = true
