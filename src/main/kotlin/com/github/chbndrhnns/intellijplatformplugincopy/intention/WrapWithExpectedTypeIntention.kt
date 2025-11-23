@@ -21,7 +21,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Iconable
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiNamedElement
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.types.TypeEvalContext
 import javax.swing.Icon
@@ -33,35 +32,6 @@ import javax.swing.Icon
 class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbAware, Iconable {
     // Minimal retained state: dynamic text shown by the IDE, updated in isAvailable().
     private var lastText: String = "Wrap with expected type"
-
-    private sealed interface WrapPlan {
-        val element: PyExpression
-    }
-
-    private data class Single(
-        override val element: PyExpression,
-        val ctorName: String,
-        val ctorElement: PsiNamedElement?
-    ) : WrapPlan
-
-    private data class UnionChoice(
-        override val element: PyExpression,
-        val candidates: List<ExpectedCtor>
-    ) : WrapPlan
-
-    private data class ElementwiseUnionChoice(
-        override val element: PyExpression,
-        val container: String,
-        val candidates: List<ExpectedCtor>
-    ) : WrapPlan
-
-    // Element-wise wrapping plan (e.g., list[Item] expected, wrap as [Item(v) for v in src])
-    private data class Elementwise(
-        override val element: PyExpression,
-        val container: String, // e.g., "list"
-        val itemCtorName: String,
-        val itemCtorElement: PsiNamedElement?
-    ) : WrapPlan
 
     private companion object {
         val PLAN_KEY: Key<WrapPlan> = Key.create("wrap.with.expected.plan")

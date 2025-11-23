@@ -5,8 +5,7 @@ import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util.PyWr
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNamedElement
-import com.jetbrains.python.psi.PyExpression
-import com.jetbrains.python.psi.PyNumericLiteralExpression
+import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.impl.PyBuiltinCache
 import com.jetbrains.python.psi.impl.PyPsiUtils
 import com.jetbrains.python.psi.resolve.QualifiedNameFinder
@@ -50,6 +49,54 @@ class WrapPreview(
             else -> "[${itemCtorName}($v) for $v in $src]"
         }
         return buildDiffWithOptionalImport(file, element, text, itemCtorElement)
+    }
+
+    fun buildWrapAllItemsInLiteral(
+        file: PsiFile,
+        container: PyExpression,
+        itemCtorName: String,
+        itemCtorElement: PsiNamedElement?
+    ): IntentionPreviewInfo {
+        val elements = when (container) {
+            is PySequenceExpression -> container.elements
+            is PySetLiteralExpression -> container.elements
+            else -> emptyArray()
+        }
+
+        // We need to construct the new text for the container by wrapping each element
+        // This is tricky because we need to preserve formatting/comments if possible, 
+        // but for preview we can just reconstruct the string roughly or use text replacement.
+        // Since preview is a diff, exact whitespace preservation isn't strictly required but nice.
+        // However, we don't have a generator here easily without project.
+        // We can simulate the text change.
+
+        // Simple approach: iterate and build string.
+        // Assumes standard formatting [a, b] -> [C(a), C(b)]
+
+        val sb = StringBuilder()
+        val containerText = container.text
+        // If we just replace elements in the text... 
+        // It's hard to do robustly on string level without parsing.
+        // But maybe for preview it's enough to show "Wrap items..." result on a simplified view?
+        // Or we can use the same approach as Applier if we had a copy of file?
+        // IntentionPreviewInfo.CustomDiff allows providing new text.
+
+        // Let's try to reconstruct:
+        val prefix =
+            if (container is PySetLiteralExpression) "{" else if (container is PyListLiteralExpression) "[" else if (container is PyTupleExpression) "(" else ""
+        val suffix =
+            if (container is PySetLiteralExpression) "}" else if (container is PyListLiteralExpression) "]" else if (container is PyTupleExpression) ")" else ""
+
+        val joined = elements.joinToString(", ") { el ->
+            if (!PyWrapHeuristics.isAlreadyWrappedWith(el, itemCtorName, itemCtorElement)) {
+                "$itemCtorName(${el.text})"
+            } else {
+                el.text
+            }
+        }
+
+        val newText = "$prefix$joined$suffix"
+        return buildDiffWithOptionalImport(file, container, newText, itemCtorElement)
     }
 
     /**

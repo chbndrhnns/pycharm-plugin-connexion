@@ -76,4 +76,34 @@ class WrapApplier(
             }
         }
     }
+
+    /**
+     * Apply wrapping to all items in a literal container (list, set, tuple).
+     */
+    fun applyWrapAllItemsInLiteral(
+        project: Project,
+        file: PsiFile,
+        container: PyExpression,
+        itemCtorName: String,
+        itemCtorElement: PsiNamedElement?
+    ) {
+        WriteCommandAction.runWriteCommandAction(project) {
+            imports.ensureImportedIfNeeded(file, container as PyTypedElement, itemCtorElement)
+            val generator = PyElementGenerator.getInstance(project)
+
+            val elements = when (container) {
+                is PySequenceExpression -> container.elements
+                is PySetLiteralExpression -> container.elements
+                else -> emptyArray()
+            }
+
+            for (el in elements) {
+                if (!PyWrapHeuristics.isAlreadyWrappedWith(el, itemCtorName, itemCtorElement)) {
+                    val wrappedText = "$itemCtorName(${el.text})"
+                    val wrapped = generator.createExpressionFromText(LanguageLevel.getLatest(), wrappedText)
+                    el.replace(wrapped)
+                }
+            }
+        }
+    }
 }
