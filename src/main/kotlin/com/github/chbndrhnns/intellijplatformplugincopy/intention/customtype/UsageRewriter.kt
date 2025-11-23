@@ -27,9 +27,12 @@ class UsageRewriter {
     fun rewriteAnnotation(annotationRef: PyReferenceExpression, newTypeRef: PyExpression) {
         val parentSub = annotationRef.parent as? PySubscriptionExpression
         if (parentSub != null && parentSub.operand == annotationRef) {
-            // ``annotationRef`` is the callee part of a subscription; replace
-            // just that part and leave the index-expression intact.
-            parentSub.operand.replace(newTypeRef)
+            // ``annotationRef`` is the callee part of a subscription; we want
+            // to replace the whole subscription expression (e.g. ``list[int]``)
+            // with the new custom type (e.g. ``CustomList``), because the
+            // custom type definition already captures the generic arguments
+            // (e.g. ``class CustomList(list[int]): ...``).
+            parentSub.replace(newTypeRef)
         } else {
             annotationRef.replace(newTypeRef)
         }

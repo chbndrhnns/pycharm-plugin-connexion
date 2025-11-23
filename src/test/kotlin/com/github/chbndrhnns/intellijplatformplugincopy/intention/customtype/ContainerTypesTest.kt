@@ -61,7 +61,7 @@ class ContainerTypesTest : TestBase() {
                 pass
 
 
-            def do(arg: Customdict[str, list[int]]) -> None:
+            def do(arg: Customdict) -> None:
                 ...
             """.trimIndent()
         )
@@ -85,7 +85,7 @@ class ContainerTypesTest : TestBase() {
                     pass
                 
                 
-                def f(x: Customlist[int]):
+                def f(x: Customlist):
                     pass
             """.trimIndent()
         )
