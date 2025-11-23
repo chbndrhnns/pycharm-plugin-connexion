@@ -32,6 +32,19 @@ class CustomTypeApplier(
     fun apply(project: Project, editor: Editor, plan: CustomTypePlan) {
         val pyFile = plan.sourceFile
         val builtinName = plan.builtinName
+
+        // If the builtin comes from a subscripted container annotation like
+        // ``dict[str, list[int]]``, carry over the full annotation text –
+        // including its generic arguments – into the base part of the
+        // generated class. This keeps container type parameters intact on the
+        // new custom container class instead of downgrading it to a plain
+        // ``dict`` / ``list`` / ``set``.
+        val builtinForClass: String = run {
+            val annRef = plan.annotationRef
+            val sub = annRef?.parent as? PySubscriptionExpression
+            if (sub != null && sub.operand == annRef) sub.text else builtinName
+        }
+
         val baseTypeName = naming.suggestTypeName(builtinName, plan.preferredClassName)
 
         val pyGenerator = PyElementGenerator.getInstance(project)
@@ -43,7 +56,7 @@ class CustomTypeApplier(
         val newTypeName = naming.ensureUnique(targetFileForNewClass, baseTypeName)
         val newClass = generator.insertClass(
             targetFileForNewClass,
-            generator.createClass(project, newTypeName, builtinName),
+            generator.createClass(project, newTypeName, builtinForClass),
         )
 
         // When the custom type is introduced in a different module than the
@@ -56,10 +69,34 @@ class CustomTypeApplier(
         }
 
         // Replace the annotation reference or expression usage with the new type.
-        val newRef = pyGenerator.createExpressionFromText(LanguageLevel.getLatest(), newTypeName)
+        val newRefBase = pyGenerator.createExpressionFromText(LanguageLevel.getLatest(), newTypeName)
 
         if (plan.annotationRef != null) {
-            rewriter.rewriteAnnotation(plan.annotationRef, newRef)
+            val annRef = plan.annotationRef
+
+            val assignedExpr = plan.assignedExpression
+            if (assignedExpr != null) {
+                // For annotated assignments (where we also have a right-hand
+                // side expression), we mirror the behaviour of simple
+                // ``int`` annotated assignments: the declared type on the
+                // variable becomes just the custom type name (without
+                // re-attaching container type arguments), while the assigned
+                // value is wrapped in a call to the new custom type.
+                val annotation = PsiTreeUtil.getParentOfType(annRef, PyAnnotation::class.java, false)
+                val annValue = annotation?.value
+                if (annValue != null) {
+                    annValue.replace(newRefBase)
+                } else {
+                    annRef.replace(newRefBase)
+                }
+
+                rewriter.wrapExpression(assignedExpr, newTypeName, pyGenerator)
+            } else {
+                // Non-assignment annotations (parameters, returns, dataclass
+                // fields, etc.) keep their existing container type arguments
+                // and only swap out the builtin name.
+                rewriter.rewriteAnnotation(annRef, newRefBase)
+            }
         }
 
         if (plan.expression != null) {
@@ -85,7 +122,7 @@ class CustomTypeApplier(
             // no annotationRef to rewrite above. In that case, synchronise the
             // dataclass field annotation now.
             if (plan.annotationRef == null) {
-                rewriter.syncDataclassFieldAnnotation(field, builtinName, newRef)
+                rewriter.syncDataclassFieldAnnotation(field, builtinName, newRefBase)
             }
 
             // Wrap usages in the *current* file where we invoked the

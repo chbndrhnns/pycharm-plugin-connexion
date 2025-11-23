@@ -43,6 +43,30 @@ class ContainerTypesTest : TestBase() {
         assertNotEmpty(intentions)
     }
 
+    fun testDict_GeneratesGenericCustomTypeAndKeepsArguments() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            def do(arg: di<caret>ct[str, list[int]]) -> None:
+                ...
+            """.trimIndent()
+        )
+
+        val intention = myFixture.findSingleIntention("Introduce custom type from dict")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            class Customdict(dict[str, list[int]]):
+                pass
+
+
+            def do(arg: Customdict[str, list[int]]) -> None:
+                ...
+            """.trimIndent()
+        )
+    }
+
     fun testList_GeneratesCustomType() {
         myFixture.configureByText(
             "a.py",
@@ -55,14 +79,47 @@ class ContainerTypesTest : TestBase() {
         val intention = myFixture.findSingleIntention("Introduce custom type from list")
         myFixture.launchAction(intention)
 
-        val text = myFixture.file.text
-        // We check for CustomList (PascalCase) or Customlist (fallback if mapping fails, though it shouldn't)
-        // just to be robust against environmental weirdness in test runner.
-        // But strictly it should be CustomList.
-        assertTrue(
-            "Should contain generated class name",
-            text.contains("class CustomList") || text.contains("class Customlist")
+        myFixture.checkResult(
+            """
+                class Customlist(list[int]):
+                    pass
+                
+                
+                def f(x: Customlist[int]):
+                    pass
+            """.trimIndent()
         )
-        assertTrue("Should update annotation", text.contains("x: CustomList") || text.contains("x: Customlist"))
+    }
+
+    fun testDict_AnnotatedAssignment_WrapsValueAndKeepsArguments() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            def do():
+                val: di<caret>ct[str, int] = {
+                    "a": 1,
+                    "b": 2,
+                    "c": 3,
+                }
+            """.trimIndent(),
+        )
+
+        val intention = myFixture.findSingleIntention("Introduce custom type from dict")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            class Customdict(dict[str, int]):
+                pass
+            
+            
+            def do():
+                val: Customdict = Customdict({
+                    "a": 1,
+                    "b": 2,
+                    "c": 3,
+                })
+                """.trimIndent(),
+        )
     }
 }

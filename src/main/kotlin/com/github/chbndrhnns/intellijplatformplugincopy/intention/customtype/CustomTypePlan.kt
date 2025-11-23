@@ -18,6 +18,7 @@ data class CustomTypePlan(
     val builtinName: String,
     val annotationRef: PyReferenceExpression? = null,
     val expression: PyExpression? = null,
+    val assignedExpression: PyExpression? = null,
     val preferredClassName: String? = null,
     val field: PyTargetExpression? = null,
     val sourceFile: PyFile,

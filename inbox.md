@@ -2,7 +2,10 @@
 
 ## Pending Tasks
 
-- [ ] Move heavy test base out of wrap
+- [ ] Bug: Offers wrap with int: `va<caret>l: dict[str, int] = dict(a=1, b=2, c=3)`
+- [x] Assert on complete text: testDict_GeneratesGenericCustomTypeAndKeepsArguments
+- [x] Assert on complete text: testList_GeneratesCustomType
+- [x] Move heavy test base out of wrap
 - [ ] Unwrap if inner type is expected type
 - Container types: list items
 

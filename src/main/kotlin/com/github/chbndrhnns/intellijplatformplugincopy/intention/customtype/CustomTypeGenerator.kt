@@ -13,10 +13,31 @@ import com.jetbrains.python.psi.PyFile
  */
 class CustomTypeGenerator {
 
-    /** Create a simple custom type definition: `class <name>(<builtin>): pass`. */
+    /**
+     * Create a simple custom type definition: `class <name>(<builtin>): pass`.
+     *
+     * When the builtin originates from a subscripted container annotation
+     * (e.g. ``dict[str, list[int]]``) the full text – including its type
+     * arguments – should be passed in via [builtin]. This ensures that
+     * existing type arguments are carried over to the base class of the
+     * generated container wrapper. For example, starting from
+     *
+     * ```python
+     * def do(arg: dict[str, list[int]]) -> None: ...
+     * ```
+     *
+     * we generate:
+     *
+     * ```python
+     * class CustomDict(dict[str, list[int]]):
+     *     pass
+     *
+     * def do(arg: CustomDict[str, list[int]]) -> None: ...
+     * ```
+     */
     fun createClass(project: Project, name: String, builtin: String): PyClass {
         val generator = PyElementGenerator.getInstance(project)
-        val classText = "class $name($builtin):\n    pass"
+        val classText = buildClassText(name, builtin)
         return generator.createFromText(
             LanguageLevel.getLatest(),
             PyClass::class.java,
@@ -40,5 +61,17 @@ class CustomTypeGenerator {
         }
 
         return inserted as PyClass
+    }
+
+    private fun buildClassText(name: String, builtin: String): String {
+        // [builtin] may already include concrete type arguments (for example
+        // ``dict[str, list[int]]``). We simply embed it as the base class so
+        // the generated definition is always of the form
+        //
+        //   class Name(<builtin>):
+        //       pass
+        //
+        // without adding extra generic parameters on the custom class.
+        return "class $name($builtin):\n    pass"
     }
 }

@@ -16,9 +16,23 @@ import com.jetbrains.python.psi.*
  */
 class UsageRewriter {
 
-    /** Replace the referenced builtin in an annotation with [newTypeRef]. */
+    /**
+     * Replace the referenced builtin in an annotation with [newTypeRef].
+     *
+     * For subscripted container annotations (e.g. ``dict[str, list[int]]``),
+     * we keep the existing index expression and only swap out the operand so
+     * that ``dict`` becomes ``CustomDict`` but the concrete type arguments are
+     * preserved, yielding ``CustomDict[str, list[int]]``.
+     */
     fun rewriteAnnotation(annotationRef: PyReferenceExpression, newTypeRef: PyExpression) {
-        annotationRef.replace(newTypeRef)
+        val parentSub = annotationRef.parent as? PySubscriptionExpression
+        if (parentSub != null && parentSub.operand == annotationRef) {
+            // ``annotationRef`` is the callee part of a subscription; replace
+            // just that part and leave the index-expression intact.
+            parentSub.operand.replace(newTypeRef)
+        } else {
+            annotationRef.replace(newTypeRef)
+        }
     }
 
     /**
