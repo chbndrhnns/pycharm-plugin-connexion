@@ -163,4 +163,20 @@ class CustomTypeBasicTest : TestBase() {
         val intentions = myFixture.filterAvailableIntentions("Introduce custom type")
         assertEmpty("Intention should not be available when type is already a custom subclass of str", intentions)
     }
+
+    fun testIntentionNotAvailable_WhenTypeErrorPresent() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            from typing import NewType
+            
+            One = NewType("One", str)
+            
+            val: One = "a<caret>bc"
+            """.trimIndent()
+        )
+
+        val intentions = myFixture.filterAvailableIntentions("Introduce custom type")
+        assertEmpty("Intention should not be available when type error is present", intentions)
+    }
 }
