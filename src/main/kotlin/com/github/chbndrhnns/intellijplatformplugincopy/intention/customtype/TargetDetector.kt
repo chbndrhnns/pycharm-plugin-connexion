@@ -1,12 +1,10 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedTypeInfo
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions
 import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.*
-import com.jetbrains.python.psi.types.PyTypeChecker
 import com.jetbrains.python.psi.types.TypeEvalContext
 
 /**
@@ -100,17 +98,6 @@ class TargetDetector {
         val ctx = TypeEvalContext.codeAnalysis(file.project, file)
         val typeNames = PyTypeIntentions.computeDisplayTypeNames(expr, ctx)
 
-        val expectedTypeInfo = ExpectedTypeInfo.getExpectedTypeInfo(expr, ctx)
-        if (expectedTypeInfo?.type != null) {
-            val actualType = ctx.getType(expr)
-            // If expected type is strictly None (e.g. from a default value =None), ignore it
-            // because we are likely in a valid context (passed arg) where None was just a default.
-            val isExpectedNone = expectedTypeInfo.type.name == "NoneType" || expectedTypeInfo.type.name == "None"
-
-            if (!isExpectedNone && actualType != null && !PyTypeChecker.match(expectedTypeInfo.type, actualType, ctx)) {
-                return null
-            }
-        }
 
         val expectedClass = typeNames.expectedElement as? PyClass
         val isTypingAlias = expectedClass != null &&
