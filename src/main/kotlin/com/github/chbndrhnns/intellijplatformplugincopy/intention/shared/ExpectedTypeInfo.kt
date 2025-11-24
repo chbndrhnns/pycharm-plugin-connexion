@@ -93,6 +93,63 @@ internal object ExpectedTypeInfo {
     private fun doGetExpectedTypeInfo(expr: PyExpression, ctx: TypeEvalContext): TypeInfo? {
         val parent = expr.parent
 
+        // Support default values in function parameters
+        if (parent is PyParameter && parent.defaultValue == expr) {
+            val annExpr = (parent as? PyNamedParameter)?.annotation?.value
+            if (annExpr is PyExpression) {
+                val named = (annExpr as? PyReferenceExpression)?.reference?.resolve() as? PsiNamedElement
+                val type = ctx.getType(annExpr)
+                return TypeInfo(type, annExpr, named)
+            }
+        }
+
+        // Support lambda bodies
+        if (parent is PyLambdaExpression && parent.body == expr) {
+            // Recursively determine the expected type of the lambda expression itself
+            val lambdaInfo = doGetExpectedTypeInfo(parent, ctx)
+            val lambdaType = lambdaInfo?.type
+            if (lambdaType is PyCallableType) {
+                val retType = lambdaType.getReturnType(ctx)
+                if (retType != null) {
+                    return TypeInfo(retType, null, null)
+                }
+            }
+        }
+
+        // Support yield expressions
+        if (parent is PyYieldExpression && parent.expression == expr) {
+            val fn = PsiTreeUtil.getParentOfType(parent, PyFunction::class.java)
+            val retAnn = fn?.annotation?.value
+
+            if (parent.isDelegating) {
+                if (retAnn is PyExpression) {
+                    val named = (retAnn as? PyReferenceExpression)?.reference?.resolve() as? PsiNamedElement
+                    val type = ctx.getType(retAnn)
+                    return TypeInfo(type, retAnn, named)
+                }
+            }
+
+            if (retAnn is PySubscriptionExpression) {
+                // Generator[Yield, Send, Return] or Iterator[Yield] or Iterable[Yield]
+                val qName = (retAnn.operand as? PyReferenceExpression)?.reference?.resolve()
+                val name =
+                    (qName as? PyQualifiedNameOwner)?.qualifiedName ?: (retAnn.operand as? PyReferenceExpression)?.name
+
+                // Simple heuristic: first type argument is the yield type for Generator/Iterator
+                val index = 0
+                val yieldTypeExpr = retAnn.indexExpression.let {
+                    // indexExpression might be a TupleExpression if multiple args
+                    (it as? PyTupleExpression)?.elements?.getOrNull(index) ?: if (index == 0) it else null
+                }
+
+                if (yieldTypeExpr != null) {
+                    val named = (yieldTypeExpr as? PyReferenceExpression)?.reference?.resolve() as? PsiNamedElement
+                    val type = ctx.getType(yieldTypeExpr)
+                    return TypeInfo(type, yieldTypeExpr, named)
+                }
+            }
+        }
+
         if (parent is PyKeyValueExpression) {
             val dict = PsiTreeUtil.getParentOfType(parent, PyDictLiteralExpression::class.java)
             if (dict != null) {

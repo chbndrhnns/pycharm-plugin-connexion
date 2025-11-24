@@ -191,7 +191,7 @@ class ExpectedTypeAnalyzer(private val project: Project) {
         } ?: return null
 
         fun mapToConcrete(name: String): String? = when (name) {
-            "list", "sequence", "collection", "iterable", "mutablesequence" -> "list"
+            "list", "sequence", "collection", "iterable", "mutablesequence", "generator", "iterator" -> "list"
             "set" -> "set"
             "tuple" -> "tuple"
             "dict", "mapping", "mutablemapping" -> "dict"

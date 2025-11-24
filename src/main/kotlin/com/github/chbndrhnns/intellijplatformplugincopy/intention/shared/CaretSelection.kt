@@ -149,6 +149,7 @@ internal object CaretSelection {
         val arg = args.firstOrNull { it == leaf || PsiTreeUtil.isAncestor(it, leaf, false) }
         return when (arg) {
             is PyKeywordArgument -> arg.valueExpression
+            is PyStarArgument -> PsiTreeUtil.getChildOfType(arg, PyExpression::class.java)
             is PyExpression -> arg
             else -> null
         }
