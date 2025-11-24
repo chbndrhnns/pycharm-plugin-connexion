@@ -1,10 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import com.intellij.openapi.project.Project
-import com.jetbrains.python.psi.LanguageLevel
-import com.jetbrains.python.psi.PyClass
-import com.jetbrains.python.psi.PyElementGenerator
-import com.jetbrains.python.psi.PyFile
+import com.jetbrains.python.psi.*
 
 /**
  * Responsible for creating and inserting the newly introduced custom type
@@ -12,6 +9,22 @@ import com.jetbrains.python.psi.PyFile
  * IntroduceCustomTypeFromStdlibIntention.
  */
 class CustomTypeGenerator {
+
+    /**
+     * Determine the text to use for the base class of the custom type.
+     *
+     * If the builtin comes from a subscripted container annotation like
+     * ``dict[str, list[int]]``, this returns the full annotation text –
+     * including its generic arguments. Otherwise, it returns [builtinName].
+     */
+    fun determineBaseClassText(builtinName: String, annotationRef: PyReferenceExpression?): String {
+        val sub = annotationRef?.parent as? PySubscriptionExpression
+        return if (sub != null && sub.operand == annotationRef) {
+            sub.text
+        } else {
+            builtinName
+        }
+    }
 
     /**
      * Create a simple custom type definition: `class <name>(<builtin>): pass`.

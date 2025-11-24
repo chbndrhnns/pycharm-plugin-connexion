@@ -39,11 +39,7 @@ class CustomTypeApplier(
         // generated class. This keeps container type parameters intact on the
         // new custom container class instead of downgrading it to a plain
         // ``dict`` / ``list`` / ``set``.
-        val builtinForClass: String = run {
-            val annRef = plan.annotationRef
-            val sub = annRef?.parent as? PySubscriptionExpression
-            if (sub != null && sub.operand == annRef) sub.text else builtinName
-        }
+        val builtinForClass = generator.determineBaseClassText(builtinName, plan.annotationRef)
 
         val baseTypeName = naming.suggestTypeName(builtinName, plan.preferredClassName)
 
