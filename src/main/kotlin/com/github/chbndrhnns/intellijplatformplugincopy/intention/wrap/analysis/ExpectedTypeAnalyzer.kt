@@ -1,10 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.analysis
 
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.*
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.CtorMatch
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedCtor
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedTypeInfo
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.*
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util.PyWrapHeuristics
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util.UnionCandidates
 import com.intellij.openapi.editor.Editor
@@ -12,6 +9,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.types.PyClassType
+import com.jetbrains.python.psi.types.PyUnionType
 import com.jetbrains.python.psi.types.TypeEvalContext
 
 class ExpectedTypeAnalyzer(private val project: Project) {
@@ -132,6 +130,23 @@ class ExpectedTypeAnalyzer(private val project: Project) {
         if (names.actual == names.expected && names.actual != "Unknown") return null
 
         if (unwrapDoesTheJob(elementAtCaret, names.expected, context)) return null
+
+        // If the expected type is a union and the element matches ANY of the union members,
+        // do not offer wrapping. This prevents cases like val: int | str = 2 offering "Wrap with int()".
+        val info = ExpectedTypeInfo.getExpectedTypeInfo(elementAtCaret, context)
+        val expectedType = info?.type
+        if (expectedType is PyUnionType) {
+            val anyMatches = expectedType.members.any { member ->
+                val memberName = TypeNameRenderer.render(member)
+                if (PyTypeIntentions.elementDisplaysAsCtor(elementAtCaret, memberName, context) == CtorMatch.MATCHES) {
+                    return@any true
+                }
+                // Fallback: check underlying class name (e.g. handles "Literal[1]" vs "int")
+                val type = context.getType(elementAtCaret)
+                type is PyClassType && type.pyClass.name == memberName
+            }
+            if (anyMatches) return null
+        }
 
         val ctor = PyTypeIntentions.expectedCtorName(elementAtCaret, context)
         val annElement = names.expectedAnnotationElement

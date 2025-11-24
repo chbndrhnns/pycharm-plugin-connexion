@@ -3,6 +3,20 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 import com.github.chbndrhnns.intellijplatformplugincopy.TestBase
 
 class WrapAvailabilityTest : TestBase() {
+    fun testUnion_ValueMatchesOneType_NoWrapOffered() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            val: int | str | None
+            val = <caret>2
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.availableIntentions.find { it.text.startsWith("Wrap with") }
+        assertNull("Wrap intention should not be offered when value type matches one of the union types", intention)
+    }
+
 
     fun testAssignmentTarget_IntentionNotAvailable() {
         myFixture.configureByText(

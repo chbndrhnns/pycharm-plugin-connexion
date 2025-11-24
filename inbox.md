@@ -2,31 +2,11 @@
 
 ## Pending Tasks
 
-
-- Container types: list items
-
-```python
-from typing import NewType
-
-CloudId = NewType("CloudId", str)
-
-val: list[CloudId] = [ < caret > "abc"]
-```
-
-- Container types: list function argument
-
-```python
-from typing import NewType
-
-CloudId = NewType("CloudId", str)
-
-
-def do(arg: list[CloudId]) -> None:
-    print(arg)
-
-
-do(["abc"])
-```
+- [ ] FP: Offers wrap with uniontype: `val = (1 + <caret>2)`
+- [ ] FN: Offers no custom type: `val = (1 + <caret>2)`
+- [ ] Introduce wrap hierachies for unions: builtin, stdlib, custom -> do not offer if from same group
+- [ ] How to handle library code? Disable introduce type for library code?
+- [ ] Wrap: on type inspection error OR on union type with different groups
 
 ## In Progress Tasks
 
