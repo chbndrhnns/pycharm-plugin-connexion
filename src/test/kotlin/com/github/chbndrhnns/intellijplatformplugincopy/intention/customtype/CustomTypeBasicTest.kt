@@ -217,4 +217,28 @@ class CustomTypeBasicTest : TestBase() {
         assertTrue(text.contains("abc: Customstr = Customstr(\"text\")"))
         assertFalse(text.contains("Customstr(abc)"))
     }
+
+    fun testFString_UpgradesReferencedVariable_InsteadOfWrappingContent() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            abc: str = "text"
+            s = f"{a<caret>bc}"
+            """.trimIndent()
+        )
+
+        val intention = myFixture.findSingleIntention("Introduce custom type from str")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            class Customstr(str):
+                pass
+            
+            
+            abc: Customstr = Customstr("text")
+            s = f"{abc}"
+            """.trimIndent()
+        )
+    }
 }

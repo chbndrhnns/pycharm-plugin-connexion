@@ -21,11 +21,28 @@ class TargetDetector {
 
         tryFromAnnotation(leaf)?.let { return it }
         tryFromVariableDefinition(leaf)?.let { return it }
+        tryFromFStringReference(leaf)?.let { return it }
         return tryFromExpression(editor, file, leaf)
     }
 
     private fun tryFromVariableDefinition(leaf: PsiElement): AnnotationTarget? {
         val target = PsiTreeUtil.getParentOfType(leaf, PyTargetExpression::class.java, false) ?: return null
+        return createTargetFromDefinition(target)
+    }
+
+    private fun tryFromFStringReference(leaf: PsiElement): AnnotationTarget? {
+        val ref = PsiTreeUtil.getParentOfType(leaf, PyReferenceExpression::class.java, false) ?: return null
+
+        // Verify we are inside a string literal (implies f-string interpolation for references)
+        PsiTreeUtil.getParentOfType(ref, PyStringLiteralExpression::class.java) ?: return null
+
+        val resolved = ref.reference.resolve()
+        val target = resolved as? PyTargetExpression ?: return null
+
+        return createTargetFromDefinition(target)
+    }
+
+    private fun createTargetFromDefinition(target: PyTargetExpression): AnnotationTarget? {
         val annotation = target.annotation ?: return null
         val annotationExpr = annotation.value as? PyReferenceExpression ?: return null
 
