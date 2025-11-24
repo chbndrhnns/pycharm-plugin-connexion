@@ -111,27 +111,6 @@ class WrapContextBreadthTest : TestBase() {
         )
     }
 
-    // ... walrus ...
-
-    fun testStarredArg_IntToStr_WrapsWithStrConstructor() {
-        myFixture.configureByText(
-            "a.py",
-            """
-            def foo(x: str): pass
-            foo(*<caret>1)
-            """.trimIndent()
-        )
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Wrap with str()")
-        myFixture.launchAction(intention)
-        myFixture.checkResult(
-            """
-            def foo(x: str): pass
-            foo(*"1")
-            """.trimIndent()
-        )
-    }
-
     fun testWalrusOperator_IntToStr_WrapsWithStrConstructor() {
         myFixture.configureByText(
             "a.py",

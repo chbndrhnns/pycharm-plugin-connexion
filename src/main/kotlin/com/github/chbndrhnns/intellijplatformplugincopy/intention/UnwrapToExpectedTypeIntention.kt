@@ -64,14 +64,14 @@ class UnwrapToExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
 
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
         val plan = editor.getUserData(PLAN_KEY) ?: analyzeAtCaret(project, editor, file) ?: return
-        applyUnwrap(project, plan)
+        applyUnwrap(plan)
     }
 
     override fun startInWriteAction(): Boolean = true
 
     private fun analyzeAtCaret(project: Project, editor: Editor, file: PsiFile): UnwrapContext? {
         val context = TypeEvalContext.codeAnalysis(project, file)
-        val original = PyTypeIntentions.findExpressionAtCaret(editor, file) as? PyExpression ?: return null
+        val original = PyTypeIntentions.findExpressionAtCaret(editor, file) ?: return null
 
         val wrapperInfo = resolveTargetWrapper(editor, original) ?: return null
 
@@ -108,7 +108,7 @@ class UnwrapToExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
         // caret sits on the literal or on parentheses inside the argument. This mirrors how
         // WrapWithExpectedTypeIntention first finds the expression at caret and then may move
         // to its parent when deciding what to transform.
-        val flattened = PyPsiUtils.flattenParens(original) as? PyExpression ?: original
+        val flattened = PyPsiUtils.flattenParens(original) ?: original
 
         // If the caret is actually inside the sole argument of a call expression, prefer to
         // treat that argument as the caret expression. This allows us to unwrap the inner
@@ -158,8 +158,8 @@ class UnwrapToExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
         }
     }
 
-    private fun applyUnwrap(project: Project, plan: UnwrapContext) {
-        val inner = PyPsiUtils.flattenParens(plan.inner) as? PyExpression ?: plan.inner
+    private fun applyUnwrap(plan: UnwrapContext) {
+        val inner = PyPsiUtils.flattenParens(plan.inner) ?: plan.inner
         plan.call.replace(inner)
     }
 }

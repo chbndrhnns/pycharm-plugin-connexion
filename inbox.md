@@ -2,6 +2,29 @@
 
 ## Pending Tasks
 
+- [ ] introduce type should not remove function call
+
+```
+def foo(x: str):
+    pass
+
+foo(*[1])
+```
+
+- [ ] Should not wrap content in f-string
+
+```
+abc: str = "abc"
+s = f"{abc}"
+```
+
+- [ ] Should wrap INSIDE of f-string
+
+```
+def do(a: str):
+    return f"{a}"
+```
+
 - [ ] Do not offer wrap if unwrap does the job:
     ```
     class CustomInt(int):
@@ -9,10 +32,8 @@
 
     val: list[int] = [
     CustomInt(1),
-    ]
+    ] 
   ```
-- [ ] Refactor custom type:
-  - [ ]]
 - [x] Bug: Offers wrap with int: `va<caret>l: dict[str, int] = dict(a=1, b=2, c=3)`
 - [x] Assert on complete text: testDict_GeneratesGenericCustomTypeAndKeepsArguments
 - [x] Assert on complete text: testList_GeneratesCustomType

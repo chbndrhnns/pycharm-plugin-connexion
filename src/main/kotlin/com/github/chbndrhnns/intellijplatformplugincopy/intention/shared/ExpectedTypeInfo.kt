@@ -71,6 +71,7 @@ internal object ExpectedTypeInfo {
 
 
     fun elementDisplaysAsCtor(element: PyExpression, expectedCtorName: String, ctx: TypeEvalContext): CtorMatch {
+        if (expectedCtorName.equals("object", ignoreCase = true)) return CtorMatch.MATCHES
         val actualName = TypeNameRenderer.render(ctx.getType(element)).lowercase()
         return if (actualName == expectedCtorName.lowercase()) CtorMatch.MATCHES else CtorMatch.DIFFERS
     }
@@ -92,6 +93,28 @@ internal object ExpectedTypeInfo {
 
     private fun doGetExpectedTypeInfo(expr: PyExpression, ctx: TypeEvalContext): TypeInfo? {
         val parent = expr.parent
+
+        if (parent is PyParenthesizedExpression) {
+            return doGetExpectedTypeInfo(parent, ctx)
+        }
+
+        // Support walrus operator
+        if (parent is PyAssignmentExpression && parent.assignedValue == expr) {
+            return doGetExpectedTypeInfo(parent, ctx)
+        }
+
+        // Support *args
+        if (parent is PyStarArgument) {
+            val facade = PyPsiFacade.getInstance(parent.project)
+            val iterableClass = facade.createClassByQName("typing.Iterable", parent)
+                ?: facade.createClassByQName("collections.abc.Iterable", parent)
+                ?: facade.createClassByQName("list", parent)
+
+            if (iterableClass != null) {
+                return TypeInfo(ctx.getType(iterableClass), null, iterableClass)
+            }
+            return null
+        }
 
         // Support default values in function parameters
         if (parent is PyParameter && parent.defaultValue == expr) {
@@ -122,10 +145,12 @@ internal object ExpectedTypeInfo {
             val retAnn = fn?.annotation?.value
 
             if (parent.isDelegating) {
-                if (retAnn is PyExpression) {
-                    val named = (retAnn as? PyReferenceExpression)?.reference?.resolve() as? PsiNamedElement
-                    val type = ctx.getType(retAnn)
-                    return TypeInfo(type, retAnn, named)
+                val facade = PyPsiFacade.getInstance(parent.project)
+                val iterableClass = facade.createClassByQName("typing.Iterable", parent)
+                    ?: facade.createClassByQName("collections.abc.Iterable", parent)
+                    ?: facade.createClassByQName("list", parent)
+                if (iterableClass != null) {
+                    return TypeInfo(ctx.getType(iterableClass), null, iterableClass)
                 }
             }
 
@@ -197,6 +222,17 @@ internal object ExpectedTypeInfo {
                 val named = (retAnnExpr as? PyReferenceExpression)?.reference?.resolve() as? PsiNamedElement
                 val returnType = fn.let { ctx.getReturnType(it) }
                 return TypeInfo(returnType, retAnnExpr, named)
+            }
+        }
+
+        if ((parent is PyIfPart && parent.condition == expr) ||
+            (parent is PyWhilePart && parent.condition == expr) ||
+            (parent is PyConditionalExpression && parent.condition == expr)
+        ) {
+            val builtinCache = com.jetbrains.python.psi.impl.PyBuiltinCache.getInstance(parent)
+            val objectType = builtinCache.objectType
+            if (objectType != null) {
+                return TypeInfo(objectType, null, builtinCache.getClass("object"))
             }
         }
 
