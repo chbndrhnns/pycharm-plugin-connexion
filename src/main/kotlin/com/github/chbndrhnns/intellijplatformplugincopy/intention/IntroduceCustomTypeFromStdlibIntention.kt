@@ -3,6 +3,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.CustomTypeApplier
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.PlanBuilder
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
+import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerImpl
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
@@ -42,6 +43,23 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         }
 
         val pyFile = file as? PyFile ?: return false
+
+        val caretOffset = editor.caretModel.offset
+        val highlights = DaemonCodeAnalyzerImpl.getHighlights(editor.document, null, project)
+        if (highlights != null) {
+            for (info in highlights) {
+                if (info.description != null &&
+                    info.startOffset <= caretOffset &&
+                    info.endOffset >= caretOffset
+                ) {
+                    if ("PyTypeCheckerInspection" == info.inspectionToolId ||
+                        "PyArgumentListInspection" == info.inspectionToolId
+                    ) {
+                        return false
+                    }
+                }
+            }
+        }
 
         val plan = planBuilder.build(editor, pyFile) ?: run {
             lastText = "Introduce custom type from stdlib type"
