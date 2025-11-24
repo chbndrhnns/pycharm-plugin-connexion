@@ -27,7 +27,8 @@ class TargetDetector {
     private fun tryFromAnnotation(leaf: PsiElement): AnnotationTarget? {
         val ref = PsiTreeUtil.getParentOfType(leaf, PyReferenceExpression::class.java, false) ?: return null
         val name = ref.name ?: return null
-        if (name !in SUPPORTED_BUILTINS) return null
+
+        val normalizedName = normalizeName(name, ref) ?: return null
 
         val annotation = PsiTreeUtil.getParentOfType(ref, PyAnnotation::class.java, false) ?: return null
         val owner = PsiTreeUtil.getParentOfType(ref, PyAnnotationOwner::class.java, true)
@@ -50,11 +51,37 @@ class TargetDetector {
         }
 
         return AnnotationTarget(
-            builtinName = name,
+            builtinName = normalizedName,
             annotationRef = ref,
             ownerName = identifier,
             dataclassField = dataclassField,
         )
+    }
+
+    private fun normalizeName(name: String, ref: PsiElement? = null): String? {
+        if (name in SUPPORTED_BUILTINS) return name
+
+        // Check simple mapping first (e.g. typing.Dict -> dict)
+        TYPING_ALIASES[name]?.let { return it }
+
+        // If we have a reference, try to resolve it to check if it comes from typing
+        if (ref is PyReferenceExpression && name in TYPING_SHORT_NAMES) {
+            val context = TypeEvalContext.codeAnalysis(ref.project, ref.containingFile)
+            val resolved = ref.reference.resolve()
+            if (isTypingSymbol(resolved)) {
+                return TYPING_ALIASES[name]
+            }
+        }
+
+        return null
+    }
+
+    private fun isTypingSymbol(element: PsiElement?): Boolean {
+        if (element == null) return false
+        // Simple check: is it in a file named "typing.py" or "typing.pyi"?
+        // This is a heuristic but standard enough for PyCharm plugin logic often
+        val file = element.containingFile
+        return file is PyFile && (file.name == "typing.py" || file.name == "typing.pyi")
     }
 
     private fun tryFromExpression(editor: Editor, file: PyFile, leaf: PsiElement): ExpressionTarget? {
@@ -86,7 +113,10 @@ class TargetDetector {
         }
 
         val expectedClass = typeNames.expectedElement as? PyClass
-        if (expectedClass != null && expectedClass.name !in SUPPORTED_BUILTINS) {
+        val isTypingAlias = expectedClass != null &&
+                (expectedClass.name in TYPING_SHORT_NAMES && isTypingSymbol(expectedClass))
+
+        if (expectedClass != null && expectedClass.name !in SUPPORTED_BUILTINS && !isTypingAlias) {
             val supers = expectedClass.getSuperClasses(ctx)
             if (supers.any { it.name in SUPPORTED_BUILTINS }) {
                 return null
@@ -94,17 +124,21 @@ class TargetDetector {
         }
 
         var candidate: String? = typeNames.expected ?: typeNames.actual
+        var normalizedCandidate = candidate?.let { normalizeName(it) }
 
-        if (candidate == null || candidate !in SUPPORTED_BUILTINS) {
-            candidate = when (expr) {
+        if (normalizedCandidate == null) {
+            normalizedCandidate = when (expr) {
                 is PyStringLiteralExpression -> "str"
                 is PyNumericLiteralExpression -> if (expr.isIntegerLiteral) "int" else "float"
-                else -> candidate
+                else -> null
             }
         }
 
-        candidate ?: return null
-        if (candidate !in SUPPORTED_BUILTINS) return null
+        normalizedCandidate ?: return null
+
+        // Logic check: if we normalized it, it is supported.
+        // But strictly check if it is in supported builtins now (normalized name should be)
+        if (normalizedCandidate !in SUPPORTED_BUILTINS) return null
 
         if (isAlreadyWrappedInCustomType(expr)) return null
 
@@ -119,7 +153,12 @@ class TargetDetector {
                 val firstTarget = assignment.targets.firstOrNull() as? PyTargetExpression
                 val annotation = firstTarget?.annotation
                 val annotationValue = annotation?.value as? PyReferenceExpression
-                if (annotationValue?.name == candidate) {
+                val annName = annotationValue?.name
+                if (annName != null && (annName == candidate || normalizeName(
+                        annName,
+                        annotationValue
+                    ) == normalizedCandidate)
+                ) {
                     annotationRef = annotationValue
                 }
                 firstTarget?.name
@@ -133,16 +172,18 @@ class TargetDetector {
         if (dataclassFieldFromExpr != null) {
             val typeDecl =
                 PsiTreeUtil.getParentOfType(dataclassFieldFromExpr, PyTypeDeclarationStatement::class.java, false)
-            val annExpr = typeDecl?.annotation?.value as? PyExpression
+            val annExpr = typeDecl?.annotation?.value
             val annRef = annExpr as? PyReferenceExpression
             val annName = annRef?.name
-            if (annName != null && annName !in SUPPORTED_BUILTINS) {
+            val normalizedAnn = annName?.let { normalizeName(it, annRef) }
+
+            if (normalizedAnn != null && normalizedAnn !in SUPPORTED_BUILTINS) {
                 return null
             }
         }
 
         return ExpressionTarget(
-            builtinName = candidate,
+            builtinName = normalizedCandidate,
             expression = expr,
             annotationRef = annotationRef,
             keywordName = preferredNameFromKeyword,
@@ -206,6 +247,23 @@ class TargetDetector {
             "int", "str", "float", "bool", "bytes",
             "datetime", "date", "time", "timedelta", "UUID", "Decimal",
             "list", "set", "dict", "tuple", "frozenset"
+        )
+
+        val TYPING_ALIASES: Map<String, String> = mapOf(
+            "Dict" to "dict",
+            "List" to "list",
+            "Set" to "set",
+            "Tuple" to "tuple",
+            "FrozenSet" to "frozenset",
+            "typing.Dict" to "dict",
+            "typing.List" to "list",
+            "typing.Set" to "set",
+            "typing.Tuple" to "tuple",
+            "typing.FrozenSet" to "frozenset"
+        )
+
+        val TYPING_SHORT_NAMES: Set<String> = setOf(
+            "Dict", "List", "Set", "Tuple", "FrozenSet"
         )
     }
 }
