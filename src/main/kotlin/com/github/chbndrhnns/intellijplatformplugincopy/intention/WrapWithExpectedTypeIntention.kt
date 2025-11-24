@@ -49,6 +49,18 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
             lastText = "Wrap with expected type"
             return false
         }
+
+        val elementAtCaret =
+            com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions.findExpressionAtCaret(
+                editor,
+                file
+            )
+        if (elementAtCaret?.parent is com.jetbrains.python.psi.PyStarArgument) {
+            editor.putUserData(PLAN_KEY, null)
+            lastText = "Wrap with expected type"
+            return false
+        }
+
         val analyzer = ExpectedTypeAnalyzer(project)
         val plan = analyzer.analyzeAtCaret(editor, file) ?: run {
             editor.putUserData(PLAN_KEY, null)

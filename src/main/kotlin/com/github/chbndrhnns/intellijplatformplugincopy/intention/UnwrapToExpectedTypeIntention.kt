@@ -52,6 +52,12 @@ class UnwrapToExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
             return false
         }
 
+        val elementAtCaret = PyTypeIntentions.findExpressionAtCaret(editor, file)
+        if (elementAtCaret?.parent is com.jetbrains.python.psi.PyStarArgument) {
+            editor.putUserData(PLAN_KEY, null)
+            return false
+        }
+
         val plan = analyzeAtCaret(project, editor, file) ?: run {
             editor.putUserData(PLAN_KEY, null)
             return false

@@ -44,6 +44,16 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
             return false
         }
 
+        val elementAtCaret =
+            com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions.findExpressionAtCaret(
+                editor,
+                file
+            )
+        if (elementAtCaret?.parent is com.jetbrains.python.psi.PyStarArgument) {
+            editor.putUserData(PLAN_KEY, null)
+            return false
+        }
+
         val pyFile = file as? PyFile ?: return false
 
         // Quick cheap checks first (inspections, etc.)

@@ -2,15 +2,6 @@
 
 ## Pending Tasks
 
-- [ ] introduce type should not remove function call
-
-```
-def foo(x: str):
-    pass
-
-foo(*[1])
-```
-
 - [ ] Should not wrap content in f-string
 
 ```
@@ -72,3 +63,11 @@ do(["abc"])
 - [x] Use actual values in preview
 - [x] Perform imports
 - [x] Wrap correctly if function argument has unnecessary parentheses
+- [x] introduce type should not remove function call
+
+```
+def foo(x: str):
+    pass
+
+foo(*[1])
+```
