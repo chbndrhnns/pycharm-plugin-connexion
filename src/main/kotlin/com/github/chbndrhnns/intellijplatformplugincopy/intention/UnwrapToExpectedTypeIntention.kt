@@ -1,6 +1,8 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention
 
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.CtorMatch
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.WrapperInfo
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
@@ -14,7 +16,6 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.PyCallExpression
 import com.jetbrains.python.psi.PyExpression
-import com.jetbrains.python.psi.PyReferenceExpression
 import com.jetbrains.python.psi.impl.PyPsiUtils
 import com.jetbrains.python.psi.types.TypeEvalContext
 import javax.swing.Icon
@@ -29,21 +30,14 @@ class UnwrapToExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
 
     private var lastText: String = "Unwrap to expected type"
 
-    private sealed interface UnwrapPlan {
-        val call: PyCallExpression
-        val inner: PyExpression
-        val wrapperName: String
-    }
-
-    private data class SingleUnwrap(
-        override val call: PyCallExpression,
-        override val inner: PyExpression,
-        override val wrapperName: String,
-    ) : UnwrapPlan
+    private data class UnwrapContext(
+        val call: PyCallExpression,
+        val inner: PyExpression,
+        val wrapperName: String,
+    )
 
     private companion object {
-        val PLAN_KEY: Key<UnwrapPlan> = Key.create("unwrap.to.expected.plan")
-        private val CONTAINERS = setOf("list", "set", "tuple", "dict")
+        val PLAN_KEY: Key<UnwrapContext> = Key.create("unwrap.to.expected.plan")
     }
 
     override fun getText(): String = lastText
@@ -55,36 +49,61 @@ class UnwrapToExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
     override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
         if (!PluginSettingsState.instance().state.enableUnwrapToExpectedTypeIntention) {
             editor.putUserData(PLAN_KEY, null)
-            lastText = "Unwrap to expected type"
             return false
         }
 
         val plan = analyzeAtCaret(project, editor, file) ?: run {
             editor.putUserData(PLAN_KEY, null)
-            lastText = "Unwrap to expected type"
             return false
         }
 
         editor.putUserData(PLAN_KEY, plan)
-        lastText = when (plan) {
-            is SingleUnwrap -> "Unwrap ${plan.wrapperName}()"
-        }
+        lastText = "Unwrap ${plan.wrapperName}()"
         return true
     }
 
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
         val plan = editor.getUserData(PLAN_KEY) ?: analyzeAtCaret(project, editor, file) ?: return
-        when (plan) {
-            is SingleUnwrap -> applyUnwrap(project, plan)
-        }
+        applyUnwrap(project, plan)
     }
 
     override fun startInWriteAction(): Boolean = true
 
-    private fun analyzeAtCaret(project: Project, editor: Editor, file: PsiFile): UnwrapPlan? {
+    private fun analyzeAtCaret(project: Project, editor: Editor, file: PsiFile): UnwrapContext? {
         val context = TypeEvalContext.codeAnalysis(project, file)
         val original = PyTypeIntentions.findExpressionAtCaret(editor, file) as? PyExpression ?: return null
 
+        val wrapperInfo = resolveTargetWrapper(editor, original) ?: return null
+
+        val call = wrapperInfo.call
+        val innerExpr = wrapperInfo.inner
+        val wrapperName = wrapperInfo.name
+
+        // Only non-container wrappers.
+        if (wrapperName.lowercase() in PyTypeIntentions.CONTAINERS) return null
+
+        // Expected type at this usage site.
+        // First check if we are an item in a container (list/set/tuple literal)
+        val containerItemCtor = PyTypeIntentions.tryContainerItemCtor(call, context)
+        val expected = if (containerItemCtor != null) {
+            containerItemCtor.name
+        } else {
+            val outerNames = PyTypeIntentions.computeDisplayTypeNames(call, context)
+            outerNames.expected
+        } ?: return null
+
+        // Only unwrap when the inner expression already satisfies the expected type.
+        // Unlike the wrapping intention, we do NOT require the wrapper call's own
+        // displayed type to differ from the expected type, because in some environments
+        // (notably NewType) the call expression may already be reported as the
+        // underlying type even though it is conceptually a value-object wrapper.
+        val match = PyTypeIntentions.elementDisplaysAsCtor(innerExpr, expected, context)
+        if (match != CtorMatch.MATCHES) return null
+
+        return UnwrapContext(call, innerExpr, wrapperName)
+    }
+
+    private fun resolveTargetWrapper(editor: Editor, original: PyExpression): WrapperInfo? {
         // Support caret both on the call itself and on its single argument, including when the
         // caret sits on the literal or on parentheses inside the argument. This mirrors how
         // WrapWithExpectedTypeIntention first finds the expression at caret and then may move
@@ -113,67 +132,33 @@ class UnwrapToExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
 
             else -> flattened
         }
-        val call: PyCallExpression
-        val innerExpr: PyExpression
 
-        when (caretTarget) {
-            is PyCallExpression -> {
-                call = caretTarget
-                val args = call.arguments
-                if (args.size != 1) return null
-                innerExpr = args[0] as? PyExpression ?: return null
-            }
-
+        return when (caretTarget) {
+            is PyCallExpression -> PyTypeIntentions.getWrapperCallInfo(caretTarget)
             else -> {
                 // When the caret is on the inner literal or parentheses, the parent of the
                 // expression-at-caret is often a PyArgumentList rather than the call itself.
                 // Walk up to the nearest enclosing PyCallExpression and ensure the caret
                 // expression is (or belongs to) its single argument.
                 val parentCall = PsiTreeUtil.getParentOfType(caretTarget, PyCallExpression::class.java)
-                    ?: return null
-                val args = parentCall.arguments
-                if (args.size != 1) return null
+                val info = if (parentCall != null) PyTypeIntentions.getWrapperCallInfo(parentCall) else null
 
-                val soleArg = args[0]
-                // Only unwrap when the caret is on that single argument or inside it.
-                if (soleArg != caretTarget && !PsiTreeUtil.isAncestor(soleArg, caretTarget, false)) return null
-
-                call = parentCall
-                innerExpr = soleArg as? PyExpression ?: return null
+                if (info != null) {
+                    val soleArg = info.inner
+                    // Only unwrap when the caret is on that single argument or inside it.
+                    if (soleArg != caretTarget && !PsiTreeUtil.isAncestor(soleArg, caretTarget, false)) {
+                        null
+                    } else {
+                        info
+                    }
+                } else {
+                    null
+                }
             }
         }
-
-        val calleeRef = call.callee as? PyReferenceExpression ?: return null
-        val wrapperName = calleeRef.name ?: return null
-
-        // Only non-container wrappers.
-        if (wrapperName.lowercase() in CONTAINERS) return null
-
-        // Expected type at this usage site.
-        // First check if we are an item in a container (list/set/tuple literal)
-        val containerItemCtor = PyTypeIntentions.tryContainerItemCtor(call, context)
-        val expected = if (containerItemCtor != null) {
-            containerItemCtor.name
-        } else {
-            val outerNames = PyTypeIntentions.computeDisplayTypeNames(call, context)
-            outerNames.expected
-        } ?: return null
-
-        // Type of the inner expression when used here.
-        val innerNames = PyTypeIntentions.computeDisplayTypeNames(innerExpr, context)
-        val innerActual = innerNames.actual ?: return null
-
-        // Only unwrap when the inner expression already satisfies the expected type.
-        // Unlike the wrapping intention, we do NOT require the wrapper call's own
-        // displayed type to differ from the expected type, because in some environments
-        // (notably NewType) the call expression may already be reported as the
-        // underlying type even though it is conceptually a value-object wrapper.
-        if (innerActual != expected) return null
-
-        return SingleUnwrap(call, innerExpr, wrapperName)
     }
 
-    private fun applyUnwrap(project: Project, plan: SingleUnwrap) {
+    private fun applyUnwrap(project: Project, plan: UnwrapContext) {
         val inner = PyPsiUtils.flattenParens(plan.inner) as? PyExpression ?: plan.inner
         plan.call.replace(inner)
     }

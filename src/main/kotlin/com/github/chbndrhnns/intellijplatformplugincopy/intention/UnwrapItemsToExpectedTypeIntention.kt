@@ -15,7 +15,6 @@ import com.intellij.openapi.util.Iconable
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiFile
 import com.jetbrains.python.psi.*
-import com.jetbrains.python.psi.impl.PyPsiUtils
 import com.jetbrains.python.psi.types.TypeEvalContext
 import javax.swing.Icon
 
@@ -64,11 +63,9 @@ class UnwrapItemsToExpectedTypeIntention : IntentionAction, HighPriorityAction, 
             }
 
             for (el in elements) {
-                val call = PyPsiUtils.flattenParens(el) as? PyCallExpression ?: continue
-                val callee = call.callee as? PyReferenceExpression ?: continue
-                if (callee.name == plan.wrapperName && call.arguments.size == 1) {
-                    val inner = call.arguments[0]
-                    el.replace(inner)
+                val info = PyTypeIntentions.getWrapperCallInfo(el) ?: continue
+                if (info.name == plan.wrapperName) {
+                    el.replace(info.inner)
                 }
             }
         }
@@ -94,11 +91,9 @@ class UnwrapItemsToExpectedTypeIntention : IntentionAction, HighPriorityAction, 
         val containerExpr = parent as PyExpression
 
         // 1. Identify wrapper
-        val call = PyPsiUtils.flattenParens(containerItemTarget) as? PyCallExpression ?: return null
-        val callee = call.callee as? PyReferenceExpression ?: return null
-        val wrapperName = callee.name ?: return null
-        if (call.arguments.size != 1) return null
-        val innerExpr = call.arguments[0]
+        val wrapperInfo = PyTypeIntentions.getWrapperCallInfo(containerItemTarget) ?: return null
+        val wrapperName = wrapperInfo.name
+        val innerExpr = wrapperInfo.inner
 
         // 2. Expected item type of the container
         val expectedItemCtor = PyTypeIntentions.tryContainerItemCtor(containerItemTarget, context) ?: return null

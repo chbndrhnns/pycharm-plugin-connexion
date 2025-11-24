@@ -4,8 +4,11 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNamedElement
+import com.jetbrains.python.psi.PyCallExpression
 import com.jetbrains.python.psi.PyExpression
+import com.jetbrains.python.psi.PyReferenceExpression
 import com.jetbrains.python.psi.PyTypedElement
+import com.jetbrains.python.psi.impl.PyPsiUtils
 import com.jetbrains.python.psi.types.TypeEvalContext
 
 /**
@@ -46,6 +49,21 @@ object PyTypeIntentions {
 
     fun elementDisplaysAsCtor(element: PyExpression, expectedCtorName: String, ctx: TypeEvalContext): CtorMatch =
         ExpectedTypeInfo.elementDisplaysAsCtor(element, expectedCtorName, ctx)
+
+    // ---- Wrapper identification ----
+    val CONTAINERS = setOf("list", "set", "tuple", "dict")
+
+    fun getWrapperCallInfo(element: PyExpression): WrapperInfo? {
+        val call = PyPsiUtils.flattenParens(element) as? PyCallExpression ?: return null
+        val args = call.arguments
+        if (args.size != 1) return null
+
+        val callee = call.callee as? PyReferenceExpression ?: return null
+        val name = callee.name ?: return null
+        val inner = args[0] as? PyExpression ?: return null
+
+        return WrapperInfo(call, name, inner)
+    }
 }
 
 // Lightweight DTOs shared across the split modules stay at package level to avoid import churn.
@@ -63,3 +81,9 @@ data class ExpectedCtor(
 )
 
 enum class CtorMatch { MATCHES, DIFFERS }
+
+data class WrapperInfo(
+    val call: PyCallExpression,
+    val name: String,
+    val inner: PyExpression
+)
