@@ -21,49 +21,52 @@ class PlanBuilder(
         val detected = detector.find(editor, file) ?: return null
 
         return when (detected) {
-            is AnnotationTarget -> {
-                val preferredName = detected.ownerName?.let { id -> naming.deriveBaseName(id) }
-
-                val assignedExpression = run {
-                    val ref = detected.annotationRef
-                    val owner = PsiTreeUtil.getParentOfType(ref, PyAnnotationOwner::class.java, false)
-
-                    if (owner is PyAssignmentStatement) {
-                        return@run owner.assignedValue
-                    }
-
-                    val target = owner as? PyTargetExpression
-                    val assignment = target?.let {
-                        PsiTreeUtil.getParentOfType(it, PyAssignmentStatement::class.java, false)
-                    }
-                    assignment?.assignedValue
-                }
-                CustomTypePlan(
-                    builtinName = detected.builtinName,
-                    annotationRef = detected.annotationRef,
-                    assignedExpression = assignedExpression,
-                    preferredClassName = preferredName,
-                    field = detected.dataclassField,
-                    sourceFile = file,
-                )
-            }
-
-            is ExpressionTarget -> {
-                val preferredFromKeyword = detected.keywordName?.let { naming.deriveBaseName(it) }
-                val preferredFromAssignment = detected.assignmentName?.let { naming.deriveBaseName(it) }
-                val preferredName = preferredFromKeyword
-                    ?: preferredFromAssignment
-                    ?: detected.dataclassField?.name?.let { naming.deriveBaseName(it) }
-
-                CustomTypePlan(
-                    builtinName = detected.builtinName,
-                    annotationRef = detected.annotationRef,
-                    expression = detected.expression,
-                    preferredClassName = preferredName,
-                    field = detected.dataclassField,
-                    sourceFile = file,
-                )
-            }
+            is AnnotationTarget -> buildFromAnnotation(detected, file)
+            is ExpressionTarget -> buildFromExpression(detected, file)
         }
+    }
+
+    private fun buildFromAnnotation(target: AnnotationTarget, file: PyFile): CustomTypePlan {
+        val preferredName = target.ownerName?.let { id -> naming.deriveBaseName(id) }
+
+        val assignedExpression = run {
+            val ref = target.annotationRef
+            val owner = PsiTreeUtil.getParentOfType(ref, PyAnnotationOwner::class.java, false)
+
+            if (owner is PyAssignmentStatement) {
+                return@run owner.assignedValue
+            }
+
+            val targetExpr = owner as? PyTargetExpression
+            val assignment = targetExpr?.let {
+                PsiTreeUtil.getParentOfType(it, PyAssignmentStatement::class.java, false)
+            }
+            assignment?.assignedValue
+        }
+        return CustomTypePlan(
+            builtinName = target.builtinName,
+            annotationRef = target.annotationRef,
+            assignedExpression = assignedExpression,
+            preferredClassName = preferredName,
+            field = target.dataclassField,
+            sourceFile = file,
+        )
+    }
+
+    private fun buildFromExpression(target: ExpressionTarget, file: PyFile): CustomTypePlan {
+        val preferredFromKeyword = target.keywordName?.let { naming.deriveBaseName(it) }
+        val preferredFromAssignment = target.assignmentName?.let { naming.deriveBaseName(it) }
+        val preferredName = preferredFromKeyword
+            ?: preferredFromAssignment
+            ?: target.dataclassField?.name?.let { naming.deriveBaseName(it) }
+
+        return CustomTypePlan(
+            builtinName = target.builtinName,
+            annotationRef = target.annotationRef,
+            expression = target.expression,
+            preferredClassName = preferredName,
+            field = target.dataclassField,
+            sourceFile = file,
+        )
     }
 }
