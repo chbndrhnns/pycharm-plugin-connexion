@@ -16,7 +16,6 @@ def do(a: str):
     return f"{a}"
 ```
 
-- [ ] Unwrap if inner type is expected type
 - Container types: list items
 
 ```python

@@ -201,4 +201,20 @@ class CustomTypeBasicTest : TestBase() {
             """.trimIndent()
         )
     }
+
+    fun testAssignmentVariableRewrite_WhenCaretOnVariable() {
+        myFixture.configureByText(
+            "a.py", """
+            a<caret>bc: str = "text"
+        """.trimIndent()
+        )
+
+        val intention = myFixture.findSingleIntention("Introduce custom type from str")
+        myFixture.launchAction(intention)
+
+        val text = myFixture.editor.document.text
+        assertTrue(text.contains("class Customstr(str):"))
+        assertTrue(text.contains("abc: Customstr = Customstr(\"text\")"))
+        assertFalse(text.contains("Customstr(abc)"))
+    }
 }

@@ -20,7 +20,26 @@ class TargetDetector {
         val leaf = file.findElementAt(offset) ?: return null
 
         tryFromAnnotation(leaf)?.let { return it }
+        tryFromVariableDefinition(leaf)?.let { return it }
         return tryFromExpression(editor, file, leaf)
+    }
+
+    private fun tryFromVariableDefinition(leaf: PsiElement): AnnotationTarget? {
+        val target = PsiTreeUtil.getParentOfType(leaf, PyTargetExpression::class.java, false) ?: return null
+        val annotation = target.annotation ?: return null
+        val annotationExpr = annotation.value as? PyReferenceExpression ?: return null
+
+        val name = annotationExpr.name ?: return null
+        val normalizedName = normalizeName(name, annotationExpr) ?: return null
+
+        val dataclassField = target.takeIf { isDataclassField(it) }
+
+        return AnnotationTarget(
+            builtinName = normalizedName,
+            annotationRef = annotationExpr,
+            ownerName = target.name,
+            dataclassField = dataclassField,
+        )
     }
 
     private fun tryFromAnnotation(leaf: PsiElement): AnnotationTarget? {
