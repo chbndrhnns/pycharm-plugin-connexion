@@ -161,4 +161,42 @@ class CustomTypeLiteralsTest : TestBase() {
             """.trimIndent()
         )
     }
+
+    fun testDictValue_WhenExpectedTypeIsAlreadyCustom_DoesNotOfferIntention() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            class CustomInt(int):
+                pass
+
+
+            val: dict[str, CustomInt] = {"a": <caret>1, "b": 2, "c": 3}
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+
+        // We expect NO "Introduce custom type..." intention here
+        val intentions = myFixture.filterAvailableIntentions("Introduce custom type from int")
+        assertEmpty("Should not offer to introduce custom type when expected type is already custom", intentions)
+    }
+
+    fun testDictKey_WhenExpectedTypeIsAlreadyCustom_DoesNotOfferIntention() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            class CustomStr(str):
+                pass
+
+
+            val: dict[CustomStr, int] = {<caret>"a": 1, "b": 2}
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+
+        // We expect NO "Introduce custom type..." intention here
+        val intentions = myFixture.filterAvailableIntentions("Introduce custom type from str")
+        assertEmpty("Should not offer to introduce custom type when expected type is already custom", intentions)
+    }
 }

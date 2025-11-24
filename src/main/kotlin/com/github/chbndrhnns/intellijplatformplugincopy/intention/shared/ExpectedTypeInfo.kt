@@ -4,10 +4,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.*
-import com.jetbrains.python.psi.types.PyClassType
-import com.jetbrains.python.psi.types.PyType
-import com.jetbrains.python.psi.types.PyUnionType
-import com.jetbrains.python.psi.types.TypeEvalContext
+import com.jetbrains.python.psi.types.*
 
 // Exposed to sibling module ContainerTyping within the same source set.
 internal data class TypeInfo(
@@ -95,6 +92,26 @@ internal object ExpectedTypeInfo {
 
     private fun doGetExpectedTypeInfo(expr: PyExpression, ctx: TypeEvalContext): TypeInfo? {
         val parent = expr.parent
+
+        if (parent is PyKeyValueExpression) {
+            val dict = PsiTreeUtil.getParentOfType(parent, PyDictLiteralExpression::class.java)
+            if (dict != null) {
+                val dictInfo = doGetExpectedTypeInfo(dict, ctx)
+                val dictType = dictInfo?.type
+                if (dictType is PyCollectionType && (dictType.name == "dict" || dictType.name == "Dict")) {
+                    val type = when (expr) {
+                        parent.key -> dictType.elementTypes.getOrNull(0)
+                        parent.value -> dictType.elementTypes.getOrNull(1)
+                        else -> null
+                    }
+                    if (type != null) {
+                        val resolved = (type as? PyClassType)?.pyClass
+                        return TypeInfo(type, null, resolved)
+                    }
+                }
+            }
+        }
+
         if (parent is PyAssignmentStatement) {
             parent.targets.forEach { t ->
                 if (t is PyTargetExpression) {
