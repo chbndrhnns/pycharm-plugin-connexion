@@ -2,19 +2,6 @@
 
 ## Pending Tasks
 
-- [ ] Should not wrap content in f-string
-
-```
-abc: str = "abc"
-s = f"{abc}"
-```
-
-- [ ] Should wrap INSIDE of f-string
-
-```
-def do(a: str):
-    return f"{a}"
-```
 
 - Container types: list items
 
@@ -71,3 +58,16 @@ foo(*[1])
 - [x] Assert on complete text: testDict_GeneratesGenericCustomTypeAndKeepsArguments
 - [x] Assert on complete text: testList_GeneratesCustomType
 - [x] Move heavy test base out of wrap
+- [x] Should not wrap content in f-string
+
+```
+abc: str = "abc"
+s = f"{abc}"
+```
+
+- [x] Should wrap INSIDE of f-string
+
+```
+def do(a: str):
+    return f"{a}"
+```

@@ -37,9 +37,30 @@ class TargetDetector {
         PsiTreeUtil.getParentOfType(ref, PyStringLiteralExpression::class.java) ?: return null
 
         val resolved = ref.reference.resolve()
-        val target = resolved as? PyTargetExpression ?: return null
 
-        return createTargetFromDefinition(target)
+        if (resolved is PyTargetExpression) {
+            return createTargetFromDefinition(resolved)
+        }
+        if (resolved is PyNamedParameter) {
+            return createTargetFromParameter(resolved)
+        }
+
+        return null
+    }
+
+    private fun createTargetFromParameter(target: PyNamedParameter): AnnotationTarget? {
+        val annotation = target.annotation ?: return null
+        val annotationExpr = annotation.value as? PyReferenceExpression ?: return null
+
+        val name = annotationExpr.name ?: return null
+        val normalizedName = normalizeName(name, annotationExpr) ?: return null
+
+        return AnnotationTarget(
+            builtinName = normalizedName,
+            annotationRef = annotationExpr,
+            ownerName = target.name,
+            dataclassField = null,
+        )
     }
 
     private fun createTargetFromDefinition(target: PyTargetExpression): AnnotationTarget? {

@@ -241,4 +241,28 @@ class CustomTypeBasicTest : TestBase() {
             """.trimIndent()
         )
     }
+
+    fun testFString_UpgradesReferencedParameter_InsteadOfWrappingContent() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            def do(a: str):
+                return f"{<caret>a}"
+            """.trimIndent()
+        )
+
+        val intention = myFixture.findSingleIntention("Introduce custom type from str")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            class Customstr(str):
+                pass
+
+
+            def do(a: Customstr):
+                return f"{a}"
+            """.trimIndent()
+        )
+    }
 }
