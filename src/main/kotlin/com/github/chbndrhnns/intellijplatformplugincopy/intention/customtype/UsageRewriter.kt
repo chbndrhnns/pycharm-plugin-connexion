@@ -69,7 +69,7 @@ class UsageRewriter {
 
         // Map the expression back to the corresponding parameter, handling
         // the straightforward positional and keyword cases covered by tests.
-        val parameter: PyNamedParameter =
+        val resolvedParam: PyNamedParameter =
             when (val kwArg = PsiTreeUtil.getParentOfType(expr, PyKeywordArgument::class.java, false)) {
                 null -> {
                     val args = argList.arguments.toList()
@@ -87,6 +87,15 @@ class UsageRewriter {
                     val name = kwArg.keyword ?: return
                     resolved.parameterList.findParameterByName(name) ?: return
                 }
+            }
+
+        val parameter =
+            if (resolvedParam.containingFile != expr.containingFile && expr.containingFile.originalFile == resolvedParam.containingFile) {
+                PsiTreeUtil.findSameElementInCopy(resolvedParam, expr.containingFile)
+            } else if (!expr.isPhysical && resolvedParam.containingFile != expr.containingFile) {
+                return
+            } else {
+                resolvedParam
             }
 
         val annotation = parameter.annotation ?: return
