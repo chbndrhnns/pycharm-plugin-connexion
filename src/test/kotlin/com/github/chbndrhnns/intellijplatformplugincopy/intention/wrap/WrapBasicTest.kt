@@ -29,6 +29,23 @@ class WrapBasicTest : TestBase() {
         )
     }
 
+    fun testCustomInt_UnwrapAvailable_WrapNotOffered() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            class CustomInt(int):
+                pass
+
+            val: list[int] = [
+            CustomInt(<caret>1),
+            ] 
+            """.trimIndent()
+        )
+        myFixture.doHighlighting()
+        val wrapIntention = myFixture.availableIntentions.find { it.text.startsWith("Wrap with") }
+        assertNull("Wrap intention should not be offered", wrapIntention)
+    }
+
     fun testAssignment_StrToPath_WrapsWithPathConstructor() {
         myFixture.configureByText(
             "a.py",

@@ -19,6 +19,8 @@ import com.intellij.openapi.util.Iconable
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiFile
 import com.jetbrains.python.psi.*
+import com.jetbrains.python.psi.types.PyClassTypeImpl
+import com.jetbrains.python.psi.types.PyTypeChecker
 import com.jetbrains.python.psi.types.TypeEvalContext
 import javax.swing.Icon
 
@@ -161,6 +163,16 @@ class WrapItemsWithExpectedTypeIntention : IntentionAction, HighPriorityAction, 
                 if (!suppressedContainers.contains(ctor.name.lowercase())) {
                     // Check if ALREADY wrapped.
                     if (!PyWrapHeuristics.isAlreadyWrappedWith(containerItemTarget, ctor.name, ctor.symbol)) {
+                        // Check if ALREADY compatible (subtype)
+                        val itemType = context.getType(containerItemTarget)
+                        val ctorClass = ctor.symbol as? PyClass
+                        if (itemType != null && ctorClass != null) {
+                            val expectedType = PyClassTypeImpl(ctorClass, false)
+                            if (PyTypeChecker.match(expectedType, itemType, context)) {
+                                return@let
+                            }
+                        }
+
                         // Return Elementwise pointing to containerExpr
                         return Elementwise(containerExpr, expectedOuterContainerCtor.name, ctor.name, ctor.symbol)
                     }

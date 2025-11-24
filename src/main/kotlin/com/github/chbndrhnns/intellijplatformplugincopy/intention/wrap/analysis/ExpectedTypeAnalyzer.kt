@@ -11,6 +11,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.jetbrains.python.psi.*
+import com.jetbrains.python.psi.types.PyClassType
 import com.jetbrains.python.psi.types.TypeEvalContext
 
 class ExpectedTypeAnalyzer(private val project: Project) {
@@ -71,6 +72,7 @@ class ExpectedTypeAnalyzer(private val project: Project) {
                     PyWrapHeuristics.isAlreadyWrappedWith(elementAtCaret, outerCtor.name, outerCtor.symbol)
                 if (differs && !alreadyWrapped) {
                     val target: PyExpression = (elementAtCaret.parent as? PyExpression) ?: elementAtCaret
+                    if (unwrapDoesTheJob(target, outerCtor.name, context)) return null
                     return Single(target, outerCtor.name, outerCtor.symbol)
                 }
             }
@@ -107,9 +109,11 @@ class ExpectedTypeAnalyzer(private val project: Project) {
                             val isLiteral =
                                 p is PyListLiteralExpression || p is PySetLiteralExpression || p is PyTupleExpression || p is PyDictLiteralExpression
                             if (!isLiteral) {
+                                if (unwrapDoesTheJob(containerItemTarget, ctor.name, context)) return null
                                 return Elementwise(containerItemTarget, outer.name, ctor.name, ctor.symbol)
                             }
                         }
+                        if (unwrapDoesTheJob(containerItemTarget, ctor.name, context)) return null
                         return Single(containerItemTarget, ctor.name, ctor.symbol)
                     }
                 }
@@ -126,6 +130,8 @@ class ExpectedTypeAnalyzer(private val project: Project) {
         if (names.actual == null || names.expected == null) return null
         // Allow wrapping if both types are Unknown (unresolved), provided we can find a valid constructor name later.
         if (names.actual == names.expected && names.actual != "Unknown") return null
+
+        if (unwrapDoesTheJob(elementAtCaret, names.expected, context)) return null
 
         val ctor = PyTypeIntentions.expectedCtorName(elementAtCaret, context)
         val annElement = names.expectedAnnotationElement
@@ -212,5 +218,22 @@ class ExpectedTypeAnalyzer(private val project: Project) {
             "dict" -> p is PyDictLiteralExpression || p is PyDictCompExpression
             else -> false
         }
+    }
+
+    private fun unwrapDoesTheJob(element: PyExpression, expectedCtorName: String, context: TypeEvalContext): Boolean {
+        val wrapperInfo = PyTypeIntentions.getWrapperCallInfo(element) ?: return false
+        if (wrapperInfo.name.lowercase() in PyTypeIntentions.CONTAINERS) return false
+        val match = PyTypeIntentions.elementDisplaysAsCtor(wrapperInfo.inner, expectedCtorName, context)
+        if (match != CtorMatch.MATCHES) return false
+
+        val type = context.getType(element)
+        if (type is PyClassType) {
+            val cls = type.pyClass
+            if (cls.name == expectedCtorName) return true
+            val ancestors = cls.getAncestorClasses(context)
+            if (ancestors.any { it.name == expectedCtorName }) return true
+        }
+
+        return false
     }
 }

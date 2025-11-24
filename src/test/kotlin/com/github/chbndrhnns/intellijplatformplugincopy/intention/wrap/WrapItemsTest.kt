@@ -99,4 +99,24 @@ class WrapItemsTest : TestBase() {
             """.trimIndent()
         )
     }
+
+    fun testCustomInt_UnwrapAvailable_WrapNotOffered() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            class CustomInt(int):
+                pass
+
+            val: list[int] = [
+            Custom<caret>Int(1),
+            ] 
+            """.trimIndent()
+        )
+        myFixture.doHighlighting()
+        val wrapIntention = myFixture.availableIntentions.find { it.text.startsWith("Wrap items with") }
+        assertNull("Wrap intention should not be offered", wrapIntention)
+    }
+
+
+
 }
