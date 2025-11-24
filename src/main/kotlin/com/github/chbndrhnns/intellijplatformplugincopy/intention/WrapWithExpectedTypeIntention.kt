@@ -49,7 +49,7 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
 
     override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
         // Feature switch: hide intention entirely when disabled via settings
-        if (!PluginSettingsState.instance().state.enableWrapIntention) {
+        if (!PluginSettingsState.instance().state.enableWrapWithExpectedTypeIntention) {
             editor.putUserData(PLAN_KEY, null)
             lastText = "Wrap with expected type"
             return false
@@ -130,7 +130,7 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
     }
 
     override fun generatePreview(project: Project, editor: Editor, file: PsiFile): IntentionPreviewInfo {
-        if (!PluginSettingsState.instance().state.enableWrapIntention) {
+        if (!PluginSettingsState.instance().state.enableWrapWithExpectedTypeIntention) {
             return IntentionPreviewInfo.EMPTY
         }
         val plan =

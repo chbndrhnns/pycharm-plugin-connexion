@@ -2,6 +2,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention
 
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.CustomTypeApplier
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.PlanBuilder
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
@@ -36,6 +37,10 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
     override fun getIcon(@Iconable.IconFlags flags: Int): Icon = AllIcons.Actions.IntentionBulb
 
     override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
+        if (!PluginSettingsState.instance().state.enableIntroduceCustomTypeFromStdlibIntention) {
+            return false
+        }
+
         val pyFile = file as? PyFile ?: return false
 
         val plan = planBuilder.build(editor, pyFile) ?: run {
@@ -54,6 +59,9 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
     }
 
     override fun generatePreview(project: Project, editor: Editor, file: PsiFile): IntentionPreviewInfo {
+        if (!PluginSettingsState.instance().state.enableIntroduceCustomTypeFromStdlibIntention) {
+            return IntentionPreviewInfo.EMPTY
+        }
         val pyFile = file as? PyFile ?: return IntentionPreviewInfo.EMPTY
         val plan = planBuilder.build(editor, pyFile) ?: return IntentionPreviewInfo.EMPTY
         applier.apply(project, editor, plan, isPreview = true)

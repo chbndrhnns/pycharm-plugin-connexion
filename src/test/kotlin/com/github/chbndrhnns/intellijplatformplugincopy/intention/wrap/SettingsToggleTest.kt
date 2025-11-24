@@ -10,10 +10,7 @@ class SettingsToggleTest : TestBase() {
         val old = svc.state
         try {
             svc.loadState(
-                PluginSettingsState.State(
-                    enableWrapIntention = false,
-                    enableUnwrapIntention = old.enableUnwrapIntention,
-                )
+                old.copy(enableWrapWithExpectedTypeIntention = false)
             )
 
             myFixture.configureByText(
@@ -38,10 +35,7 @@ class SettingsToggleTest : TestBase() {
         val old = svc.state
         try {
             svc.loadState(
-                PluginSettingsState.State(
-                    enableWrapIntention = true,
-                    enableUnwrapIntention = old.enableUnwrapIntention,
-                )
+                old.copy(enableWrapWithExpectedTypeIntention = true)
             )
 
             myFixture.configureByText(

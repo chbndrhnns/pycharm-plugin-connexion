@@ -40,7 +40,7 @@ class WrapItemsWithExpectedTypeIntention : IntentionAction, HighPriorityAction, 
     override fun getFamilyName(): String = "Type mismatch wrapper (items)"
 
     override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
-        if (!PluginSettingsState.instance().state.enableWrapIntention) {
+        if (!PluginSettingsState.instance().state.enableWrapItemsWithExpectedTypeIntention) {
             editor.putUserData(PLAN_KEY, null)
             return false
         }

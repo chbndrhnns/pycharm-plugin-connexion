@@ -40,7 +40,7 @@ class UnwrapItemsToExpectedTypeIntention : IntentionAction, HighPriorityAction, 
     override fun startInWriteAction(): Boolean = true
 
     override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
-        if (!PluginSettingsState.instance().state.enableUnwrapIntention) {
+        if (!PluginSettingsState.instance().state.enableUnwrapItemsToExpectedTypeIntention) {
             editor.putUserData(PLAN_KEY, null)
             return false
         }

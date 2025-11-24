@@ -10,7 +10,10 @@ import javax.swing.JPanel
 class PluginSettingsConfigurable : SearchableConfigurable {
     private var panel: JPanel? = null
     private lateinit var enableWrapCb: JBCheckBox
+    private lateinit var enableWrapItemsCb: JBCheckBox
     private lateinit var enableUnwrapCb: JBCheckBox
+    private lateinit var enableUnwrapItemsCb: JBCheckBox
+    private lateinit var enableIntroduceCustomTypeCb: JBCheckBox
 
     override fun getId(): String = "com.github.chbndrhnns.intellijplatformplugincopy.settings"
     override fun getDisplayName(): String = "DDD Toolkit"
@@ -20,9 +23,15 @@ class PluginSettingsConfigurable : SearchableConfigurable {
         val inner = JPanel()
         inner.layout = BoxLayout(inner, BoxLayout.Y_AXIS)
         enableWrapCb = JBCheckBox("Enable ‘Wrap with expected type’ intention")
+        enableWrapItemsCb = JBCheckBox("Enable ‘Wrap items with expected type’ intention")
         enableUnwrapCb = JBCheckBox("Enable ‘Unwrap to expected type’ intention")
+        enableUnwrapItemsCb = JBCheckBox("Enable ‘Unwrap items to expected type’ intention")
+        enableIntroduceCustomTypeCb = JBCheckBox("Enable ‘Introduce custom type from stdlib’ intention")
         inner.add(enableWrapCb)
+        inner.add(enableWrapItemsCb)
         inner.add(enableUnwrapCb)
+        inner.add(enableUnwrapItemsCb)
+        inner.add(enableIntroduceCustomTypeCb)
         p.add(inner, BorderLayout.NORTH)
         panel = p
         return p
@@ -30,23 +39,35 @@ class PluginSettingsConfigurable : SearchableConfigurable {
 
     override fun isModified(): Boolean {
         val state = PluginSettingsState.instance().state
-        return (::enableWrapCb.isInitialized && enableWrapCb.isSelected != state.enableWrapIntention) ||
-                (::enableUnwrapCb.isInitialized && enableUnwrapCb.isSelected != state.enableUnwrapIntention)
+        return (::enableWrapCb.isInitialized && enableWrapCb.isSelected != state.enableWrapWithExpectedTypeIntention) ||
+                (::enableWrapItemsCb.isInitialized && enableWrapItemsCb.isSelected != state.enableWrapItemsWithExpectedTypeIntention) ||
+                (::enableUnwrapCb.isInitialized && enableUnwrapCb.isSelected != state.enableUnwrapToExpectedTypeIntention) ||
+                (::enableUnwrapItemsCb.isInitialized && enableUnwrapItemsCb.isSelected != state.enableUnwrapItemsToExpectedTypeIntention) ||
+                (::enableIntroduceCustomTypeCb.isInitialized && enableIntroduceCustomTypeCb.isSelected != state.enableIntroduceCustomTypeFromStdlibIntention)
     }
 
     override fun apply() {
         val svc = PluginSettingsState.instance()
         val s = svc.state.copy(
-            enableWrapIntention = enableWrapCb.isSelected,
-            enableUnwrapIntention = enableUnwrapCb.isSelected,
+            enableWrapWithExpectedTypeIntention = enableWrapCb.isSelected,
+            enableWrapItemsWithExpectedTypeIntention = enableWrapItemsCb.isSelected,
+            enableUnwrapToExpectedTypeIntention = enableUnwrapCb.isSelected,
+            enableUnwrapItemsToExpectedTypeIntention = enableUnwrapItemsCb.isSelected,
+            enableIntroduceCustomTypeFromStdlibIntention = enableIntroduceCustomTypeCb.isSelected,
         )
         svc.loadState(s)
     }
 
     override fun reset() {
         val st = PluginSettingsState.instance().state
-        if (::enableWrapCb.isInitialized) enableWrapCb.isSelected = st.enableWrapIntention
-        if (::enableUnwrapCb.isInitialized) enableUnwrapCb.isSelected = st.enableUnwrapIntention
+        if (::enableWrapCb.isInitialized) enableWrapCb.isSelected = st.enableWrapWithExpectedTypeIntention
+        if (::enableWrapItemsCb.isInitialized) enableWrapItemsCb.isSelected =
+            st.enableWrapItemsWithExpectedTypeIntention
+        if (::enableUnwrapCb.isInitialized) enableUnwrapCb.isSelected = st.enableUnwrapToExpectedTypeIntention
+        if (::enableUnwrapItemsCb.isInitialized) enableUnwrapItemsCb.isSelected =
+            st.enableUnwrapItemsToExpectedTypeIntention
+        if (::enableIntroduceCustomTypeCb.isInitialized) enableIntroduceCustomTypeCb.isSelected =
+            st.enableIntroduceCustomTypeFromStdlibIntention
     }
 
     override fun disposeUIResources() {

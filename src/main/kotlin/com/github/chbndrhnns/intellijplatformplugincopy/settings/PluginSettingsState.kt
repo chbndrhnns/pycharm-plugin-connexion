@@ -8,8 +8,11 @@ import com.intellij.openapi.components.service
 @State(name = "PycharmDddToolkitSettings", storages = [Storage("pycharm-ddd-toolkit.xml")])
 class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> {
     data class State(
-        var enableWrapIntention: Boolean = true,
-        var enableUnwrapIntention: Boolean = true,
+        var enableWrapWithExpectedTypeIntention: Boolean = true,
+        var enableWrapItemsWithExpectedTypeIntention: Boolean = true,
+        var enableUnwrapToExpectedTypeIntention: Boolean = true,
+        var enableUnwrapItemsToExpectedTypeIntention: Boolean = true,
+        var enableIntroduceCustomTypeFromStdlibIntention: Boolean = true,
     )
 
     private var myState = State()

@@ -9,7 +9,7 @@ class UnwrapSettingsToggleTest : TestBase() {
         val svc = PluginSettingsState.instance()
         val old = svc.state
         try {
-            svc.loadState(old.copy(enableUnwrapIntention = false))
+            svc.loadState(old.copy(enableUnwrapToExpectedTypeIntention = false))
 
             myFixture.configureByText(
                 "a.py",
@@ -34,7 +34,7 @@ class UnwrapSettingsToggleTest : TestBase() {
         val svc = PluginSettingsState.instance()
         val old = svc.state
         try {
-            svc.loadState(old.copy(enableUnwrapIntention = true))
+            svc.loadState(old.copy(enableUnwrapToExpectedTypeIntention = true))
 
             myFixture.configureByText(
                 "a.py",
