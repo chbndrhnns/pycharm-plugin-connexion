@@ -11,13 +11,6 @@
     CustomInt(1),
     ]
   ```
-- [x] Refactor unwrap:
-    - Refactor `analyzeAtCaret` in `UnwrapToExpectedTypeIntention`
-    - Unify Type Checking Mechanisms
-    - Consolidate `CONTAINERS` exclusion
-    - Standardize `isAvailable` Boilerplate
-- [ ] Refactor wrap:
-  - 
 - [ ] Refactor custom type:
   - [ ]]
 - [x] Bug: Offers wrap with int: `va<caret>l: dict[str, int] = dict(a=1, b=2, c=3)`

@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention
 
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.CustomTypeApplier
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.CustomTypePlan
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.PlanBuilder
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerImpl
@@ -12,6 +13,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Iconable
+import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiFile
 import com.jetbrains.python.psi.PyFile
 import javax.swing.Icon
@@ -44,24 +46,14 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
 
         val pyFile = file as? PyFile ?: return false
 
-        val caretOffset = editor.caretModel.offset
-        val highlights = DaemonCodeAnalyzerImpl.getHighlights(editor.document, null, project)
-        if (highlights != null) {
-            for (info in highlights) {
-                if (info.description != null &&
-                    info.startOffset <= caretOffset &&
-                    info.endOffset >= caretOffset
-                ) {
-                    if ("PyTypeCheckerInspection" == info.inspectionToolId ||
-                        "PyArgumentListInspection" == info.inspectionToolId
-                    ) {
-                        return false
-                    }
-                }
-            }
-        }
+        // Quick cheap checks first (inspections, etc.)
+        if (hasBlockingInspections(project, editor)) return false
 
-        val plan = planBuilder.build(editor, pyFile) ?: run {
+        // Build and cache the plan
+        val plan = planBuilder.build(editor, pyFile)
+        editor.putUserData(PLAN_KEY, plan)
+
+        if (plan == null) {
             lastText = "Introduce custom type from stdlib type"
             return false
         }
@@ -71,8 +63,7 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
     }
 
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
-        val pyFile = file as? PyFile ?: return
-        val plan = planBuilder.build(editor, pyFile) ?: return
+        val plan = getPlan(editor, file) ?: return
         applier.apply(project, editor, plan)
     }
 
@@ -80,12 +71,35 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         if (!PluginSettingsState.instance().state.enableIntroduceCustomTypeFromStdlibIntention) {
             return IntentionPreviewInfo.EMPTY
         }
-        val pyFile = file as? PyFile ?: return IntentionPreviewInfo.EMPTY
-        val plan = planBuilder.build(editor, pyFile) ?: return IntentionPreviewInfo.EMPTY
+        val plan = getPlan(editor, file) ?: return IntentionPreviewInfo.EMPTY
         applier.apply(project, editor, plan, isPreview = true)
         return IntentionPreviewInfo.DIFF
     }
 
     override fun startInWriteAction(): Boolean = true
 
+    private fun getPlan(editor: Editor, file: PsiFile): CustomTypePlan? {
+        return editor.getUserData(PLAN_KEY) ?: run {
+            // Fallback if invoke is called without isAvailable (rare but possible in tests/scripts)
+            val pyFile = file as? PyFile ?: return null
+            planBuilder.build(editor, pyFile)
+        }
+    }
+
+    private fun hasBlockingInspections(project: Project, editor: Editor): Boolean {
+        val caretOffset = editor.caretModel.offset
+        val highlights = DaemonCodeAnalyzerImpl.getHighlights(editor.document, null, project) ?: return false
+
+        return highlights.any { info ->
+            info.description != null &&
+                    info.startOffset <= caretOffset &&
+                    info.endOffset >= caretOffset &&
+                    (info.inspectionToolId == "PyTypeCheckerInspection" ||
+                            info.inspectionToolId == "PyArgumentListInspection")
+        }
+    }
+
+    companion object {
+        private val PLAN_KEY = Key.create<CustomTypePlan>("introduce.custom.type.plan")
+    }
 }
