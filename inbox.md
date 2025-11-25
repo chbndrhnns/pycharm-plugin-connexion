@@ -2,7 +2,7 @@
 
 ## Pending Tasks
 
-
+- [ ] Wrap: Do not wrap ellipsis
 - [ ] Introduce wrap hierachies for unions: builtin, stdlib, custom -> do not offer if from same group
 - [ ] How to handle library code? Disable introduce type for library code?
 - [ ] Wrap: on type inspection error OR on union type with different groups
