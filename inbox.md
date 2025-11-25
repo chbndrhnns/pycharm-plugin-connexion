@@ -2,6 +2,9 @@
 
 ## Pending Tasks
 
+- [ ] How to deal with this: `print("a<caret>bc")`. It suggests to wrap with object()
+- [ ] Generate name correctly if caret is on default value:
+  `def extract_saved_reels(self, output_dir: str = "saved_ree<caret>ls"):`
 - [ ] FP: Offers wrap with uniontype: `val = (1 + <caret>2)`
 - [ ] FN: Offers no custom type: `val = (1 + <caret>2)`
 - [ ] Introduce wrap hierachies for unions: builtin, stdlib, custom -> do not offer if from same group

@@ -13,6 +13,7 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.Iconable
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiFile
@@ -43,6 +44,11 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
 
     override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
         if (!PluginSettingsState.instance().state.enableIntroduceCustomTypeFromStdlibIntention) {
+            return false
+        }
+
+        val vFile = file.virtualFile ?: return false
+        if (!ProjectFileIndex.getInstance(project).isInContent(vFile)) {
             return false
         }
 

@@ -5,6 +5,7 @@ import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.Cus
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.CustomTypeConstants.TYPING_SHORT_NAMES
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.*
@@ -152,6 +153,7 @@ class TargetDetector {
             ?: PsiTreeUtil.getParentOfType(leaf, PyNumericLiteralExpression::class.java, false)
             ?: return null
 
+        if (isArgumentOfLibraryFunction(expr)) return null
         val ctx = TypeEvalContext.codeAnalysis(file.project, file)
 
         // 1. Determine the builtin type name (candidate)
@@ -304,4 +306,19 @@ class TargetDetector {
         return fields[posIndex]
     }
 
+
+    private fun isArgumentOfLibraryFunction(expr: PyExpression): Boolean {
+        val parent = expr.parent
+        val argList = when {
+            parent is PyArgumentList -> parent
+            parent is PyKeywordArgument && parent.parent is PyArgumentList -> parent.parent as PyArgumentList
+            else -> return false
+        }
+
+        val call = argList.parent as? PyCallExpression ?: return false
+        val callee = call.callee as? PyReferenceExpression ?: return false
+        val resolved = callee.reference.resolve() ?: return false
+        val vFile = resolved.containingFile?.virtualFile ?: return false
+        return !ProjectFileIndex.getInstance(expr.project).isInContent(vFile)
+    }
 }
