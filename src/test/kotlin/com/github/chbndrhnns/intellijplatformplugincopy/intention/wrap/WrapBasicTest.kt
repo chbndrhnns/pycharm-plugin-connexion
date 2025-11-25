@@ -175,4 +175,35 @@ class WrapBasicTest : TestBase() {
         val intention = myFixture.availableIntentions.find { it.text.startsWith("Wrap with") }
         assertNull("Wrap intention should not be offered when types match, but got: ${intention?.text}", intention)
     }
+
+    fun testPrint_StrArgument_NoObjectWrapSuggestion() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            print("a<caret>bc")
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.availableIntentions.find { it.text == "Wrap with object()" }
+        assertNull("Wrap with object() intention should not be offered", intention)
+    }
+
+    fun testArgument_AnyExpected_NoAnyWrapSuggestion() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            from typing import Any
+            
+            def foo(x: Any):
+                pass
+            
+            foo("s<caret>tr")
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.availableIntentions.find { it.text == "Wrap with Any()" }
+        assertNull("Wrap with Any() intention should not be offered", intention)
+    }
 }

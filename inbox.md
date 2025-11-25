@@ -3,7 +3,6 @@
 ## Pending Tasks
 
 - [ ] FP: Suggests to wrap with `Literal['r+']'`: `open('reels_raw.json', 'w')`
-- [ ] How to deal with this: `print("a<caret>bc")`. It suggests to wrap with object()
 - [ ] Generate name correctly if caret is on default value:
   `def extract_saved_reels(self, output_dir: str = "saved_ree<caret>ls"):`
 - [ ] FP: Offers wrap with uniontype: `val = (1 + <caret>2)`
@@ -68,3 +67,5 @@ class Client:
 
 Client(val="abc")
 ```
+
+- [x] How to deal with this: `print("a<caret>bc")`. It suggests to wrap with object()

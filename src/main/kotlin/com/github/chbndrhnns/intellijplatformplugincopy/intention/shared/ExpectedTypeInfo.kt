@@ -83,7 +83,7 @@ internal object ExpectedTypeInfo {
     // ---- Internal implementation ----
 
     private fun isNonCtorName(name: String?): Boolean =
-        name.isNullOrBlank() || name.equalsAnyIgnoreCase("Union", "UnionType", "None")
+        name.isNullOrBlank() || name.equalsAnyIgnoreCase("Union", "UnionType", "None", "object", "Any")
 
     private fun String.equalsAnyIgnoreCase(vararg options: String): Boolean =
         options.any { this.equals(it, ignoreCase = true) }
