@@ -2,6 +2,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 
 import com.github.chbndrhnns.intellijplatformplugincopy.FakePopupHost
 import com.github.chbndrhnns.intellijplatformplugincopy.TestBase
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.WrapWithExpectedTypeIntentionHooks
 
 /**
  * Dataclass-related wrap tests.
@@ -178,7 +179,7 @@ class WrapDataclassesTest : TestBase() {
 
     fun testWrapDataclassListOfUnionNewType_showsChooserAndAppliesChoice() {
         val fake = FakePopupHost().apply { selectedIndex = 0 }
-        com.github.chbndrhnns.intellijplatformplugincopy.intention.WrapWithExpectedTypeIntentionHooks.popupHost = fake
+        WrapWithExpectedTypeIntentionHooks.popupHost = fake
         try {
             myFixture.configureByText(
                 "a.py", """
@@ -220,7 +221,7 @@ class WrapDataclassesTest : TestBase() {
             """.trimIndent()
             )
         } finally {
-            com.github.chbndrhnns.intellijplatformplugincopy.intention.WrapWithExpectedTypeIntentionHooks.popupHost =
+            WrapWithExpectedTypeIntentionHooks.popupHost =
                 null
         }
     }

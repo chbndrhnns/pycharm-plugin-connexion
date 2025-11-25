@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention
 
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedCtor
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.analysis.ExpectedTypeAnalyzer
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.apply.WrapApplier
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.preview.WrapPreview
@@ -18,6 +19,7 @@ import com.intellij.openapi.util.Iconable
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiFile
 import com.jetbrains.python.psi.PyQualifiedNameOwner
+import com.jetbrains.python.psi.PyStarArgument
 import javax.swing.Icon
 
 /**
@@ -51,11 +53,11 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
         }
 
         val elementAtCaret =
-            com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions.findExpressionAtCaret(
+            PyTypeIntentions.findExpressionAtCaret(
                 editor,
                 file
             )
-        if (elementAtCaret?.parent is com.jetbrains.python.psi.PyStarArgument) {
+        if (elementAtCaret?.parent is PyStarArgument) {
             editor.putUserData(PLAN_KEY, null)
             lastText = "Wrap with expected type"
             return false

@@ -48,7 +48,7 @@ class WrapItemsWithExpectedTypeIntention : IntentionAction, HighPriorityAction, 
         }
 
         val elementAtCaret = PyTypeIntentions.findExpressionAtCaret(editor, file)
-        if (elementAtCaret?.parent is com.jetbrains.python.psi.PyStarArgument) {
+        if (elementAtCaret?.parent is PyStarArgument) {
             editor.putUserData(PLAN_KEY, null)
             return false
         }

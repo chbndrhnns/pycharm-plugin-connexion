@@ -16,6 +16,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.PyCallExpression
 import com.jetbrains.python.psi.PyExpression
+import com.jetbrains.python.psi.PyStarArgument
 import com.jetbrains.python.psi.impl.PyPsiUtils
 import com.jetbrains.python.psi.types.TypeEvalContext
 import javax.swing.Icon
@@ -53,7 +54,7 @@ class UnwrapToExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
         }
 
         val elementAtCaret = PyTypeIntentions.findExpressionAtCaret(editor, file)
-        if (elementAtCaret?.parent is com.jetbrains.python.psi.PyStarArgument) {
+        if (elementAtCaret?.parent is PyStarArgument) {
             editor.putUserData(PLAN_KEY, null)
             return false
         }

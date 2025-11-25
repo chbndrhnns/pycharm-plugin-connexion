@@ -2,6 +2,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 
 import com.github.chbndrhnns.intellijplatformplugincopy.FakePopupHost
 import com.github.chbndrhnns.intellijplatformplugincopy.TestBase
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.WrapWithExpectedTypeIntentionHooks
 
 /**
  * Wrap intention behavior when the expected type is a union (without forward refs).
@@ -65,7 +66,7 @@ class WrapUnionChoiceTest : TestBase() {
             """.trimIndent()
             )
         } finally {
-            com.github.chbndrhnns.intellijplatformplugincopy.intention.WrapWithExpectedTypeIntentionHooks.popupHost =
+            WrapWithExpectedTypeIntentionHooks.popupHost =
                 null
         }
     }
