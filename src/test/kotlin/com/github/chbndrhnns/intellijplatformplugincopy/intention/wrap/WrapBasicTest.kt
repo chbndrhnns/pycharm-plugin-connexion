@@ -154,4 +154,25 @@ class WrapBasicTest : TestBase() {
             """.trimIndent()
         )
     }
+
+    fun testClassInit_ParseKwArg_NoWrapSuggestion() {
+        // This tests that we do not fall back on class variables when suggesting wraps
+        myFixture.configureByText(
+            "a.py",
+            """
+            class Client:
+                version: int
+            
+                def __init__(self, val: str) -> None:
+                    self.val = val
+            
+            
+            Client(val="a<caret>bc")
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.availableIntentions.find { it.text.startsWith("Wrap with") }
+        assertNull("Wrap intention should not be offered when types match, but got: ${intention?.text}", intention)
+    }
 }

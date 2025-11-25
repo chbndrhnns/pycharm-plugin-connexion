@@ -266,8 +266,23 @@ internal object ExpectedTypeInfo {
         return when (callee) {
             is PyClass -> {
                 val kw = keywordNameAt(args, argIndex, expr)
-                kw?.let { classFieldTypeInfo(callee, it, ctx) }
-                    ?: positionalFieldTypeInfo(callee, argIndex, ctx)
+
+                // Try class fields (TypedDict, etc.)
+                val fieldInfo = kw?.let { classFieldTypeInfo(callee, it, ctx) }
+                if (fieldInfo != null) return fieldInfo
+
+                // For class constructors (Client(val=...)), prefer __init__ parameter info if available.
+                val init = callee.findInitOrNew(true, ctx)
+                if (init is PyFunction) {
+                    // Only handle keyword arguments for now as positional mapping needs
+                    // implicit 'self' adjustment which functionParamTypeInfo doesn't support yet.
+                    if (kw != null) {
+                        val fromInit = functionParamTypeInfo(init, argList, argIndex, kw, ctx)
+                        if (fromInit != null) return fromInit
+                    }
+                }
+
+                null
             }
 
             is PyFunction -> {
@@ -335,7 +350,8 @@ internal object ExpectedTypeInfo {
         argList: PyArgumentList,
         argIndex: Int,
         kwName: String?,
-        ctx: TypeEvalContext
+        ctx: TypeEvalContext,
+        offset: Int = 0
     ): TypeInfo? {
         val params = pyFunc.parameterList.parameters
         val args = argList.arguments
@@ -345,7 +361,7 @@ internal object ExpectedTypeInfo {
         } else {
             val positionalArgs = args.filter { it !is PyKeywordArgument }
             val posIndex = positionalArgs.indexOf(args.getOrNull(argIndex))
-            if (posIndex >= 0) params.getOrNull(posIndex) else null
+            if (posIndex >= 0) params.getOrNull(posIndex + offset) else null
         }
 
         val annValue = (targetParam as? PyNamedParameter)?.annotation?.value

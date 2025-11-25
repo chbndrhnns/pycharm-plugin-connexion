@@ -2,6 +2,7 @@
 
 ## Pending Tasks
 
+- [ ] FP: Suggests to wrap with `Literal['r+']'`: `open('reels_raw.json', 'w')`
 - [ ] How to deal with this: `print("a<caret>bc")`. It suggests to wrap with object()
 - [ ] Generate name correctly if caret is on default value:
   `def extract_saved_reels(self, output_dir: str = "saved_ree<caret>ls"):`
@@ -53,4 +54,17 @@ s = f"{abc}"
 ```
 def do(a: str):
     return f"{a}"
+```
+
+- [x] FP: Suggests type of class variable instead of parameter name
+
+```python
+class Client:
+    version: int
+
+    def __init__(self, val: str) -> None:
+        self.val = val
+
+
+Client(val="abc")
 ```
