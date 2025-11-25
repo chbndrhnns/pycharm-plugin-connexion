@@ -1,0 +1,11 @@
+from dataclasses import dataclass
+
+
+@dataclass
+class A:
+    x: int
+    y: int
+    z: int = 1
+
+
+A(x=..., y=...)

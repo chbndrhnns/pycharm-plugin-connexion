@@ -43,6 +43,18 @@
             <category>Custom types</category>
         </intentionAction>
 
+        <intentionAction>
+            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.PopulateKwOnlyArgumentsIntention
+            </className>
+            <category>Arguments</category>
+        </intentionAction>
+
+        <intentionAction>
+            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.PopulateRequiredArgumentsIntention
+            </className>
+            <category>Arguments</category>
+        </intentionAction>
+
         <applicationConfigurable
                 displayName="DDD Toolkit"
                 id="com.github.chbndrhnns.intellijplatformplugincopy.settings"

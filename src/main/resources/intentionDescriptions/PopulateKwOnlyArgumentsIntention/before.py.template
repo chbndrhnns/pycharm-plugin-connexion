@@ -1,0 +1,10 @@
+from dataclasses import dataclass
+
+
+@dataclass
+class A:
+    x: int
+    y: int
+
+
+A(<caret>)

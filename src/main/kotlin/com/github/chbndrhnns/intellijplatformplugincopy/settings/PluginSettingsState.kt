@@ -13,6 +13,8 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enableUnwrapToExpectedTypeIntention: Boolean = true,
         var enableUnwrapItemsToExpectedTypeIntention: Boolean = true,
         var enableIntroduceCustomTypeFromStdlibIntention: Boolean = true,
+        var enablePopulateKwOnlyArgumentsIntention: Boolean = true,
+        var enablePopulateRequiredArgumentsIntention: Boolean = true,
     )
 
     private var myState = State()
