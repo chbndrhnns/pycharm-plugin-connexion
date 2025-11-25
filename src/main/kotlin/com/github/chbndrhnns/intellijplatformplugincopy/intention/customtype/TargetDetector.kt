@@ -199,7 +199,7 @@ class TargetDetector {
             }
         }
 
-        val candidate: String? = typeNames.expected ?: typeNames.actual
+        val candidate: String? = typeNames.actual ?: typeNames.expected
         var normalizedCandidate = candidate?.let { normalizeName(it) }
 
         if (normalizedCandidate == null) {
@@ -225,28 +225,41 @@ class TargetDetector {
     private fun detectParameterDefaultInfo(
         expr: PyExpression,
         builtinName: String
-    ): Pair<String, PyReferenceExpression?>? {
+    ): Pair<String, PyExpression?>? {
         val param = PsiTreeUtil.getParentOfType(expr, PyNamedParameter::class.java, false)
         if (param != null && param.defaultValue == expr) {
             val annotationValue = param.annotation?.value
-            val ref = findRefMatchingBuiltin(annotationValue, builtinName)
+            val ref = findExpressionMatchingBuiltin(annotationValue, builtinName)
             return Pair(param.name ?: "", ref)
         }
         return null
     }
 
-    private fun findRefMatchingBuiltin(annotationValue: PyExpression?, builtinName: String): PyReferenceExpression? {
+    private fun findExpressionMatchingBuiltin(annotationValue: PyExpression?, builtinName: String): PyExpression? {
         if (annotationValue == null) return null
 
+        // 1. Check references
         val refs = mutableListOf<PyReferenceExpression>()
         if (annotationValue is PyReferenceExpression) {
             refs.add(annotationValue)
         }
         refs.addAll(PsiTreeUtil.findChildrenOfType(annotationValue, PyReferenceExpression::class.java))
 
-        return refs.firstOrNull { ref ->
+        val matchRef = refs.firstOrNull { ref ->
             val normalized = normalizeName(ref.name ?: "", ref)
             normalized == builtinName
+        }
+        if (matchRef != null) return matchRef
+
+        // 2. Check strings (forward refs)
+        val strings = mutableListOf<PyStringLiteralExpression>()
+        if (annotationValue is PyStringLiteralExpression) {
+            strings.add(annotationValue)
+        }
+        strings.addAll(PsiTreeUtil.findChildrenOfType(annotationValue, PyStringLiteralExpression::class.java))
+
+        return strings.firstOrNull { str ->
+            str.stringValue.contains(Regex("\\b$builtinName\\b"))
         }
     }
 
@@ -256,14 +269,14 @@ class TargetDetector {
             ?.keyword
     }
 
-    private fun detectAssignmentName(expr: PyExpression, builtinName: String): Pair<String?, PyReferenceExpression?>? {
+    private fun detectAssignmentName(expr: PyExpression, builtinName: String): Pair<String?, PyExpression?>? {
         val assignment = PsiTreeUtil.getParentOfType(expr, PyAssignmentStatement::class.java, false) ?: return null
 
         val firstTarget = assignment.targets.firstOrNull() as? PyTargetExpression
         val annotation = firstTarget?.annotation
         val annotationValue = annotation?.value
 
-        val annotationRef = findRefMatchingBuiltin(annotationValue, builtinName)
+        val annotationRef = findExpressionMatchingBuiltin(annotationValue, builtinName)
 
         return Pair(firstTarget?.name, annotationRef)
     }

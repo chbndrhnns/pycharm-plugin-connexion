@@ -2,7 +2,6 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import com.jetbrains.python.psi.PyExpression
 import com.jetbrains.python.psi.PyFile
-import com.jetbrains.python.psi.PyReferenceExpression
 import com.jetbrains.python.psi.PyTargetExpression
 
 /**
@@ -16,7 +15,7 @@ import com.jetbrains.python.psi.PyTargetExpression
  */
 data class CustomTypePlan(
     val builtinName: String,
-    val annotationRef: PyReferenceExpression? = null,
+    val annotationRef: PyExpression? = null,
     val expression: PyExpression? = null,
     val assignedExpression: PyExpression? = null,
     val preferredClassName: String? = null,

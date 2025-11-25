@@ -17,7 +17,7 @@ class CustomTypeGenerator {
      * ``dict[str, list[int]]``, this returns the full annotation text –
      * including its generic arguments. Otherwise, it returns [builtinName].
      */
-    fun determineBaseClassText(builtinName: String, annotationRef: PyReferenceExpression?): String {
+    fun determineBaseClassText(builtinName: String, annotationRef: PyExpression?): String {
         val sub = annotationRef?.parent as? PySubscriptionExpression
         return if (sub != null && sub.operand == annotationRef) {
             sub.text

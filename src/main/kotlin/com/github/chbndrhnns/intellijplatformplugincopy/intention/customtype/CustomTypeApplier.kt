@@ -78,13 +78,13 @@ class CustomTypeApplier(
                 // is updated to the custom type. We use rewriteAnnotation
                 // to handle both simple types, containers (stripping args),
                 // and unions (preserving other branches).
-                rewriter.rewriteAnnotation(annRef, newRefBase)
+                rewriter.rewriteAnnotation(annRef, newRefBase, builtinName)
                 rewriter.wrapExpression(assignedExpr, newTypeName, pyGenerator)
             } else {
                 // Non-assignment annotations (parameters, returns, dataclass
                 // fields, etc.) keep their existing container type arguments
                 // and only swap out the builtin name.
-                rewriter.rewriteAnnotation(annRef, newRefBase)
+                rewriter.rewriteAnnotation(annRef, newRefBase, builtinName)
             }
         }
 

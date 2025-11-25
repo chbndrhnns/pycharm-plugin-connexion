@@ -1,7 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import com.jetbrains.python.psi.PyExpression
-import com.jetbrains.python.psi.PyReferenceExpression
 import com.jetbrains.python.psi.PyTargetExpression
 
 /**
@@ -15,7 +14,7 @@ sealed interface Target {
 
 data class AnnotationTarget(
     override val builtinName: String,
-    val annotationRef: PyReferenceExpression,
+    val annotationRef: PyExpression,
     val ownerName: String?,
     val dataclassField: PyTargetExpression?,
 ) : Target
@@ -23,7 +22,7 @@ data class AnnotationTarget(
 data class ExpressionTarget(
     override val builtinName: String,
     val expression: PyExpression,
-    val annotationRef: PyReferenceExpression?,
+    val annotationRef: PyExpression?,
     val keywordName: String?,
     val assignmentName: String?,
     val parameterName: String?,

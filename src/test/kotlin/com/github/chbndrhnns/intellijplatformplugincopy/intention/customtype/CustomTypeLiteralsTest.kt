@@ -213,11 +213,15 @@ class CustomTypeLiteralsTest : TestBase() {
         val intention = myFixture.findSingleIntention("Introduce custom type from str")
         myFixture.launchAction(intention)
 
-        val text = myFixture.editor.document.text
-        assertTrue("Should generate OutputDir class", text.contains("class OutputDir(str):"))
-        assertTrue(
-            "Should usage OutputDir in parameter default",
-            text.contains("output_dir: str = OutputDir(\"saved_reels\")")
+        myFixture.checkResult(
+            """
+            class OutputDir(str):
+                pass
+
+
+            def extract_saved_reels(self, output_dir: OutputDir = OutputDir("saved_reels")):
+                pass
+            """.trimIndent()
         )
     }
 }

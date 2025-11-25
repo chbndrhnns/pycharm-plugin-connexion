@@ -162,6 +162,12 @@ class ExpectedTypeAnalyzer(private val project: Project) {
         val unionCtors = annElement?.let { UnionCandidates.collect(it, elementAtCaret) } ?: emptyList()
 
         if (unionCtors.size >= 2) {
+            // If any candidate matches, the element is already valid for the union -> no wrapping needed.
+            val anyMatches = unionCtors.any {
+                PyTypeIntentions.elementDisplaysAsCtor(elementAtCaret, it.name, context) == CtorMatch.MATCHES
+            }
+            if (anyMatches) return null
+
             // Filter out candidates that already match the element's actual displayed type
             val differing = unionCtors.filter {
                 PyTypeIntentions.elementDisplaysAsCtor(elementAtCaret, it.name, context) == CtorMatch.DIFFERS

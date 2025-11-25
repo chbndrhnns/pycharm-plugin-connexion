@@ -23,10 +23,22 @@ class UsageRewriter {
      * we keep the existing index expression and only swap out the operand so
      * that ``dict`` becomes ``CustomDict`` but the concrete type arguments are
      * preserved, yielding ``CustomDict[str, list[int]]``.
+     *
+     * Supports forward references (string literals) by replacing the type name
+     * inside the string.
      */
-    fun rewriteAnnotation(annotationRef: PyReferenceExpression, newTypeRef: PyExpression) {
-        val parentSub = annotationRef.parent as? PySubscriptionExpression
-        if (parentSub != null && parentSub.operand == annotationRef) {
+    fun rewriteAnnotation(annotationElement: PyExpression, newTypeRef: PyExpression, oldTypeName: String) {
+        if (annotationElement is PyStringLiteralExpression) {
+            val oldContent = annotationElement.stringValue
+            val newContent = oldContent.replace(Regex("\\b$oldTypeName\\b"), newTypeRef.text)
+            val generator = PyElementGenerator.getInstance(annotationElement.project)
+            val newExpr = generator.createStringLiteral(annotationElement, newContent)
+            annotationElement.replace(newExpr)
+            return
+        }
+
+        val parentSub = annotationElement.parent as? PySubscriptionExpression
+        if (parentSub != null && parentSub.operand == annotationElement) {
             // ``annotationRef`` is the callee part of a subscription; we want
             // to replace the whole subscription expression (e.g. ``list[int]``)
             // with the new custom type (e.g. ``CustomList``), because the
@@ -34,7 +46,7 @@ class UsageRewriter {
             // (e.g. ``class CustomList(list[int]): ...``).
             parentSub.replace(newTypeRef)
         } else {
-            annotationRef.replace(newTypeRef)
+            annotationElement.replace(newTypeRef)
         }
     }
 
