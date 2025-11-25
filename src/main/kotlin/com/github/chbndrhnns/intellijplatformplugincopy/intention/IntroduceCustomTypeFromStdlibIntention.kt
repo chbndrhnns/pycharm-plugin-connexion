@@ -16,6 +16,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.Iconable
 import com.intellij.openapi.util.Key
+import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiFile
 import com.jetbrains.python.psi.PyFile
 import com.jetbrains.python.psi.PyStarArgument
@@ -64,15 +65,20 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
 
         val pyFile = file as? PyFile ?: return false
 
-        // Quick cheap checks first (inspections, etc.)
-        if (hasBlockingInspections(project, editor)) return false
-
-        // Build and cache the plan
+        // Build and cache the plan first so we know the logical PSI target
         val plan = planBuilder.build(editor, pyFile)
         editor.putUserData(PLAN_KEY, plan)
 
         if (plan == null) {
             lastText = "Introduce custom type from stdlib type"
+            return false
+        }
+
+        // Block when there are type checker / argument list errors anywhere in the
+        // logical construct we are about to operate on (annotation, parameter,
+        // assignment, dataclass field, etc.), not just exactly at the caret.
+        val targetRange = plan.targetElement?.textRange
+        if (targetRange != null && hasBlockingInspections(project, editor, targetRange)) {
             return false
         }
 
@@ -104,16 +110,14 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         }
     }
 
-    private fun hasBlockingInspections(project: Project, editor: Editor): Boolean {
-        val caretOffset = editor.caretModel.offset
+    private fun hasBlockingInspections(project: Project, editor: Editor, range: TextRange): Boolean {
         val highlights = DaemonCodeAnalyzerImpl.getHighlights(editor.document, null, project) ?: return false
 
         return highlights.any { info ->
             info.description != null &&
-                    info.startOffset <= caretOffset &&
-                    info.endOffset >= caretOffset &&
                     (info.inspectionToolId == "PyTypeCheckerInspection" ||
-                            info.inspectionToolId == "PyArgumentListInspection")
+                            info.inspectionToolId == "PyArgumentListInspection") &&
+                    TextRange(info.startOffset, info.endOffset).intersects(range)
         }
     }
 

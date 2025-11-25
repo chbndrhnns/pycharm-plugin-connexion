@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
+import com.intellij.psi.PsiElement
 import com.jetbrains.python.psi.PyExpression
 import com.jetbrains.python.psi.PyFile
 import com.jetbrains.python.psi.PyTargetExpression
@@ -20,5 +21,12 @@ data class CustomTypePlan(
     val assignedExpression: PyExpression? = null,
     val preferredClassName: String? = null,
     val field: PyTargetExpression? = null,
+    /**
+     * PSI element representing the logical declaration/usage this plan operates on.
+     *
+     * Used e.g. for checking blocking inspections across the whole construct rather
+     * than just at the caret offset.
+     */
+    val targetElement: PsiElement? = null,
     val sourceFile: PyFile,
 )

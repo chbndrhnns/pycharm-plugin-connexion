@@ -180,6 +180,28 @@ class CustomTypeBasicTest : TestBase() {
         assertEmpty("Intention should not be available when type error is present", intentions)
     }
 
+    fun testIntentionNotAvailable_WhenTypeErrorOnRhsOfAnnotatedAssignment() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            def do():
+                return {}
+
+
+            val: i<caret>nt = do()
+            """.trimIndent(),
+        )
+
+        // Ensure type checker inspections are computed so we can see the error on the RHS
+        myFixture.doHighlighting()
+
+        val intentions = myFixture.filterAvailableIntentions("Introduce custom type")
+        assertEmpty(
+            "Intention should not be available when RHS of annotated assignment has a type checker error",
+            intentions,
+        )
+    }
+
     fun testIntentionNotAvailable_OnFunctionCallResult() {
         myFixture.configureByText(
             "a.py",

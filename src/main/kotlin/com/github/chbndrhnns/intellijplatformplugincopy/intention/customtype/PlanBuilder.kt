@@ -29,10 +29,9 @@ class PlanBuilder(
     private fun buildFromAnnotation(target: AnnotationTarget, file: PyFile): CustomTypePlan {
         val preferredName = target.ownerName?.let { id -> naming.deriveBaseName(id) }
 
-        val assignedExpression = run {
-            val ref = target.annotationRef
-            val owner = PsiTreeUtil.getParentOfType(ref, PyAnnotationOwner::class.java, false)
+        val owner = PsiTreeUtil.getParentOfType(target.annotationRef, PyAnnotationOwner::class.java, false)
 
+        val assignedExpression = run {
             if (owner is PyAssignmentStatement) {
                 return@run owner.assignedValue
             }
@@ -49,6 +48,7 @@ class PlanBuilder(
             assignedExpression = assignedExpression,
             preferredClassName = preferredName,
             field = target.dataclassField,
+            targetElement = owner ?: target.dataclassField ?: target.annotationRef,
             sourceFile = file,
         )
     }
@@ -68,6 +68,7 @@ class PlanBuilder(
             expression = target.expression,
             preferredClassName = preferredName,
             field = target.dataclassField,
+            targetElement = target.dataclassField ?: target.annotationRef ?: target.expression,
             sourceFile = file,
         )
     }
