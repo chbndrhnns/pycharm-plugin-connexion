@@ -16,6 +16,7 @@ class PluginSettingsConfigurable : SearchableConfigurable {
     private lateinit var enableIntroduceCustomTypeCb: JBCheckBox
     private lateinit var enablePopulateKwOnlyArgsCb: JBCheckBox
     private lateinit var enablePopulateRequiredArgsCb: JBCheckBox
+    private lateinit var enablePopulateRecursiveArgsCb: JBCheckBox
 
     override fun getId(): String = "com.github.chbndrhnns.intellijplatformplugincopy.settings"
     override fun getDisplayName(): String = "DDD Toolkit"
@@ -31,6 +32,7 @@ class PluginSettingsConfigurable : SearchableConfigurable {
         enableIntroduceCustomTypeCb = JBCheckBox("Enable ‘Introduce custom type from stdlib’ intention")
         enablePopulateKwOnlyArgsCb = JBCheckBox("Enable ‘Populate missing call arguments’ intention")
         enablePopulateRequiredArgsCb = JBCheckBox("Enable ‘Populate missing required call arguments’ intention")
+        enablePopulateRecursiveArgsCb = JBCheckBox("Enable ‘Populate missing arguments recursively’ intention")
         inner.add(enableWrapCb)
         inner.add(enableWrapItemsCb)
         inner.add(enableUnwrapCb)
@@ -38,6 +40,7 @@ class PluginSettingsConfigurable : SearchableConfigurable {
         inner.add(enableIntroduceCustomTypeCb)
         inner.add(enablePopulateKwOnlyArgsCb)
         inner.add(enablePopulateRequiredArgsCb)
+        inner.add(enablePopulateRecursiveArgsCb)
         p.add(inner, BorderLayout.NORTH)
         panel = p
         return p
@@ -51,7 +54,8 @@ class PluginSettingsConfigurable : SearchableConfigurable {
                 (::enableUnwrapItemsCb.isInitialized && enableUnwrapItemsCb.isSelected != state.enableUnwrapItemsToExpectedTypeIntention) ||
                 (::enableIntroduceCustomTypeCb.isInitialized && enableIntroduceCustomTypeCb.isSelected != state.enableIntroduceCustomTypeFromStdlibIntention) ||
                 (::enablePopulateKwOnlyArgsCb.isInitialized && enablePopulateKwOnlyArgsCb.isSelected != state.enablePopulateKwOnlyArgumentsIntention) ||
-                (::enablePopulateRequiredArgsCb.isInitialized && enablePopulateRequiredArgsCb.isSelected != state.enablePopulateRequiredArgumentsIntention)
+                (::enablePopulateRequiredArgsCb.isInitialized && enablePopulateRequiredArgsCb.isSelected != state.enablePopulateRequiredArgumentsIntention) ||
+                (::enablePopulateRecursiveArgsCb.isInitialized && enablePopulateRecursiveArgsCb.isSelected != state.enablePopulateRecursiveArgumentsIntention)
     }
 
     override fun apply() {
@@ -64,6 +68,7 @@ class PluginSettingsConfigurable : SearchableConfigurable {
             enableIntroduceCustomTypeFromStdlibIntention = enableIntroduceCustomTypeCb.isSelected,
             enablePopulateKwOnlyArgumentsIntention = enablePopulateKwOnlyArgsCb.isSelected,
             enablePopulateRequiredArgumentsIntention = enablePopulateRequiredArgsCb.isSelected,
+            enablePopulateRecursiveArgumentsIntention = enablePopulateRecursiveArgsCb.isSelected,
         )
         svc.loadState(s)
     }
@@ -82,6 +87,8 @@ class PluginSettingsConfigurable : SearchableConfigurable {
             st.enablePopulateKwOnlyArgumentsIntention
         if (::enablePopulateRequiredArgsCb.isInitialized) enablePopulateRequiredArgsCb.isSelected =
             st.enablePopulateRequiredArgumentsIntention
+        if (::enablePopulateRecursiveArgsCb.isInitialized) enablePopulateRecursiveArgsCb.isSelected =
+            st.enablePopulateRecursiveArgumentsIntention
     }
 
     override fun disposeUIResources() {

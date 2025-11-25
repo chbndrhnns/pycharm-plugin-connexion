@@ -15,6 +15,7 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enableIntroduceCustomTypeFromStdlibIntention: Boolean = true,
         var enablePopulateKwOnlyArgumentsIntention: Boolean = true,
         var enablePopulateRequiredArgumentsIntention: Boolean = true,
+        var enablePopulateRecursiveArgumentsIntention: Boolean = true,
     )
 
     private var myState = State()

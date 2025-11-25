@@ -55,6 +55,12 @@
             <category>Arguments</category>
         </intentionAction>
 
+        <intentionAction>
+            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.PopulateRecursiveArgumentsIntention
+            </className>
+            <category>Arguments</category>
+        </intentionAction>
+
         <applicationConfigurable
                 displayName="DDD Toolkit"
                 id="com.github.chbndrhnns.intellijplatformplugincopy.settings"

@@ -1,0 +1,9 @@
+@dataclass
+class B:
+    c: int
+
+@dataclass
+class A:
+    b: B
+
+A(<caret>)
