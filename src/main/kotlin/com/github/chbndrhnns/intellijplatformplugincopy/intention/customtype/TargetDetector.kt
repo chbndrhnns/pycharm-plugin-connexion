@@ -165,8 +165,8 @@ class TargetDetector {
         // 3. Detect metadata (assignment, keyword arg, dataclass field, parameter default)
         val keywordName = detectKeywordArgumentName(expr)
         val assignmentInfo = if (keywordName == null) detectAssignmentName(expr, builtinName) else null
-        val parameterName =
-            if (keywordName == null && assignmentInfo == null) detectParameterDefaultName(expr) else null
+        val parameterInfo =
+            if (keywordName == null && assignmentInfo == null) detectParameterDefaultInfo(expr, builtinName) else null
         val dataclassField = findDataclassFieldForExpression(expr)
 
         // Check dataclass field type conflict
@@ -177,10 +177,10 @@ class TargetDetector {
         return ExpressionTarget(
             builtinName = builtinName,
             expression = expr,
-            annotationRef = assignmentInfo?.second,
+            annotationRef = assignmentInfo?.second ?: parameterInfo?.second,
             keywordName = keywordName,
             assignmentName = assignmentInfo?.first,
-            parameterName = parameterName,
+            parameterName = parameterInfo?.first,
             dataclassField = dataclassField,
         )
     }
@@ -222,9 +222,32 @@ class TargetDetector {
         }
     }
 
-    private fun detectParameterDefaultName(expr: PyExpression): String? {
+    private fun detectParameterDefaultInfo(
+        expr: PyExpression,
+        builtinName: String
+    ): Pair<String, PyReferenceExpression?>? {
         val param = PsiTreeUtil.getParentOfType(expr, PyNamedParameter::class.java, false)
-        return if (param?.defaultValue == expr) param.name else null
+        if (param != null && param.defaultValue == expr) {
+            val annotationValue = param.annotation?.value
+            val ref = findRefMatchingBuiltin(annotationValue, builtinName)
+            return Pair(param.name ?: "", ref)
+        }
+        return null
+    }
+
+    private fun findRefMatchingBuiltin(annotationValue: PyExpression?, builtinName: String): PyReferenceExpression? {
+        if (annotationValue == null) return null
+
+        val refs = mutableListOf<PyReferenceExpression>()
+        if (annotationValue is PyReferenceExpression) {
+            refs.add(annotationValue)
+        }
+        refs.addAll(PsiTreeUtil.findChildrenOfType(annotationValue, PyReferenceExpression::class.java))
+
+        return refs.firstOrNull { ref ->
+            val normalized = normalizeName(ref.name ?: "", ref)
+            normalized == builtinName
+        }
     }
 
     private fun detectKeywordArgumentName(expr: PyExpression): String? {
@@ -240,23 +263,7 @@ class TargetDetector {
         val annotation = firstTarget?.annotation
         val annotationValue = annotation?.value
 
-        var annotationRef: PyReferenceExpression? = null
-
-        if (annotationValue != null) {
-            val refs = mutableListOf<PyReferenceExpression>()
-            if (annotationValue is PyReferenceExpression) {
-                refs.add(annotationValue)
-            }
-            refs.addAll(PsiTreeUtil.findChildrenOfType(annotationValue, PyReferenceExpression::class.java))
-
-            val match = refs.firstOrNull { ref ->
-                val normalized = normalizeName(ref.name ?: "", ref)
-                normalized == builtinName
-            }
-            if (match != null) {
-                annotationRef = match
-            }
-        }
+        val annotationRef = findRefMatchingBuiltin(annotationValue, builtinName)
 
         return Pair(firstTarget?.name, annotationRef)
     }
