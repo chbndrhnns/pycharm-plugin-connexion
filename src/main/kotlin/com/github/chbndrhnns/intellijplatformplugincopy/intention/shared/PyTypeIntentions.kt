@@ -31,26 +31,15 @@ object PyTypeIntentions {
     fun expectedCtorName(expr: PyExpression, ctx: TypeEvalContext): String? =
         ExpectedTypeInfo.expectedCtorName(expr, ctx)
 
-    fun canonicalCtorName(element: PyTypedElement, ctx: TypeEvalContext): String? =
-        ExpectedTypeInfo.canonicalCtorName(element, ctx)
-
-    // ---- Container element typing helpers ----
-    @Suppress("KDocUnresolvedReference")
     fun tryContainerItemCtor(element: PyExpression, ctx: TypeEvalContext): ExpectedCtor? =
         ContainerTyping.tryContainerItemCtor(element, ctx)
 
-    // New: expected item ctor for a container-typed expression even when not inside the container
-    fun expectedItemCtorForContainer(expr: PyExpression, ctx: TypeEvalContext): ExpectedCtor? =
-        ContainerTyping.expectedItemCtorForContainer(expr, ctx)
-
-    // New: all candidate item ctors for container-typed expression (union-aware)
     fun expectedItemCtorsForContainer(expr: PyExpression, ctx: TypeEvalContext): List<ExpectedCtor> =
         ContainerTyping.expectedItemCtorsForContainer(expr, ctx)
 
     fun elementDisplaysAsCtor(element: PyExpression, expectedCtorName: String, ctx: TypeEvalContext): CtorMatch =
         ExpectedTypeInfo.elementDisplaysAsCtor(element, expectedCtorName, ctx)
 
-    // ---- Wrapper identification ----
     val CONTAINERS = setOf("list", "set", "tuple", "dict")
 
     fun getWrapperCallInfo(element: PyExpression): WrapperInfo? {
@@ -60,7 +49,7 @@ object PyTypeIntentions {
 
         val callee = call.callee as? PyReferenceExpression ?: return null
         val name = callee.name ?: return null
-        val inner = args[0] as? PyExpression ?: return null
+        val inner = args[0] ?: return null
 
         return WrapperInfo(call, name, inner)
     }
