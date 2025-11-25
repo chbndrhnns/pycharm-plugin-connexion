@@ -2,15 +2,6 @@
 
 ## Pending Tasks
 
-- [ ] Introduce type puts it on LHS
-
-```py
-def do():
-    return 1
-
-
-v < caret > al = do()
-```
 
 - [ ] Introduce wrap hierachies for unions: builtin, stdlib, custom -> do not offer if from same group
 - [ ] How to handle library code? Disable introduce type for library code?
@@ -84,4 +75,14 @@ def do():
 
 
 val = d < caret > o()
+```
+
+- [x] Introduce type puts it on LHS
+
+```py
+def do():
+    return 1
+
+
+v < caret > al = do()
 ```

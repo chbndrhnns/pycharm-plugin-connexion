@@ -200,6 +200,26 @@ class CustomTypeBasicTest : TestBase() {
         )
     }
 
+    fun testIntentionNotAvailable_OnAssignmentTargetOfFunctionCallResult() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            def do():
+                return 1
+
+
+            def usage():
+                va<caret>l = do()
+            """.trimIndent(),
+        )
+
+        val intentions = myFixture.filterAvailableIntentions("Introduce custom type")
+        assertEmpty(
+            "Intention should not be available on assignment target when RHS is an implicit function call result",
+            intentions,
+        )
+    }
+
     fun testIntentionAvailableForInFunctionCall() {
         myFixture.configureByText(
             "a.py",

@@ -163,6 +163,25 @@ class TargetDetector {
         return resolved is PyFunction
     }
 
+    /**
+     * Returns true when [target] is the left-hand side of an assignment whose
+     * right-hand side is an implicit function call result (e.g. ``va<caret>l = do()``).
+     *
+     * This mirrors [isImplicitReturnOfFunctionCall] so that we also suppress the
+     * "Introduce custom type" intention when the caret is on the assignment
+     * target rather than on the call expression itself.
+     */
+    private fun isAssignmentTargetOfImplicitFunctionCall(target: PyExpression): Boolean {
+        val assignment = PsiTreeUtil.getParentOfType(target, PyAssignmentStatement::class.java, false)
+            ?: return false
+
+        val call = assignment.assignedValue as? PyCallExpression ?: return false
+        val callee = call.callee as? PyReferenceExpression ?: return false
+        val resolved = callee.reference.resolve()
+
+        return resolved is PyFunction && assignment.targets.any { it == target }
+    }
+
     private fun tryFromExpression(editor: Editor, file: PyFile, leaf: PsiElement): ExpressionTarget? {
         val exprFromCaret = PyTypeIntentions.findExpressionAtCaret(editor, file)
         // Refine target if the caret selected a container (like dict/list in a function call)
@@ -182,6 +201,12 @@ class TargetDetector {
         // assignments (e.g. ``val = do()``). In such cases users should adjust the
         // function's return type or the variable annotation instead.
         if (isImplicitReturnOfFunctionCall(expr)) return null
+
+        // Likewise, suppress when the caret is on the assignment target of such a
+        // function call result (e.g. ``va<caret>l = do()``). Offering the intention
+        // here leads to confusing "LHS wraps"; users should edit the annotation
+        // or return type explicitly instead.
+        if (isAssignmentTargetOfImplicitFunctionCall(expr)) return null
 
         val ctx = TypeEvalContext.codeAnalysis(file.project, file)
 
