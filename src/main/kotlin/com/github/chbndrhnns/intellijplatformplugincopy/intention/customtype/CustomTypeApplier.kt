@@ -74,18 +74,11 @@ class CustomTypeApplier(
             if (assignedExpr != null) {
                 // For annotated assignments (where we also have a right-hand
                 // side expression), we mirror the behaviour of simple
-                // ``int`` annotated assignments: the declared type on the
-                // variable becomes just the custom type name (without
-                // re-attaching container type arguments), while the assigned
-                // value is wrapped in a call to the new custom type.
-                val annotation = PsiTreeUtil.getParentOfType(annRef, PyAnnotation::class.java, false)
-                val annValue = annotation?.value
-                if (annValue != null) {
-                    annValue.replace(newRefBase)
-                } else {
-                    annRef.replace(newRefBase)
-                }
-
+                // annotated assignments: the declared type on the variable
+                // is updated to the custom type. We use rewriteAnnotation
+                // to handle both simple types, containers (stripping args),
+                // and unions (preserving other branches).
+                rewriter.rewriteAnnotation(annRef, newRefBase)
                 rewriter.wrapExpression(assignedExpr, newTypeName, pyGenerator)
             } else {
                 // Non-assignment annotations (parameters, returns, dataclass

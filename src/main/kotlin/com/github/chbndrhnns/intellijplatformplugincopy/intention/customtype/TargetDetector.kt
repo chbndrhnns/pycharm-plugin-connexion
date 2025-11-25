@@ -238,15 +238,23 @@ class TargetDetector {
 
         val firstTarget = assignment.targets.firstOrNull() as? PyTargetExpression
         val annotation = firstTarget?.annotation
-        val annotationValue = annotation?.value as? PyReferenceExpression
-        val annName = annotationValue?.name
+        val annotationValue = annotation?.value
 
         var annotationRef: PyReferenceExpression? = null
 
-        if (annName != null) {
-            val normalizedAnn = normalizeName(annName, annotationValue)
-            if (normalizedAnn == builtinName) {
-                annotationRef = annotationValue
+        if (annotationValue != null) {
+            val refs = mutableListOf<PyReferenceExpression>()
+            if (annotationValue is PyReferenceExpression) {
+                refs.add(annotationValue)
+            }
+            refs.addAll(PsiTreeUtil.findChildrenOfType(annotationValue, PyReferenceExpression::class.java))
+
+            val match = refs.firstOrNull { ref ->
+                val normalized = normalizeName(ref.name ?: "", ref)
+                normalized == builtinName
+            }
+            if (match != null) {
+                annotationRef = match
             }
         }
 
