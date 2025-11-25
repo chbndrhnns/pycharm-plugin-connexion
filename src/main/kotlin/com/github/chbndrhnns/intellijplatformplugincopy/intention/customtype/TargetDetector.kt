@@ -140,6 +140,29 @@ class TargetDetector {
         return file is PyFile && (file.name == "typing.py" || file.name == "typing.pyi")
     }
 
+    /**
+     * Returns true when [expr] is used as the implicit result of a function call on the
+     * right-hand side of an assignment, e.g. in ``val = do()``. In that situation we do
+     * not want to offer the "Introduce custom type from …" intention on the call result
+     * itself – the more appropriate place is usually the function's return annotation or
+     * the variable annotation.
+     *
+     * Note that we deliberately only suppress *function* calls here; constructor calls
+     * such as ``D(product_id=123)`` should still be eligible targets.
+     */
+    private fun isImplicitReturnOfFunctionCall(expr: PyExpression): Boolean {
+        val assignment = PsiTreeUtil.getParentOfType(expr, PyAssignmentStatement::class.java, false)
+            ?: return false
+
+        if (assignment.assignedValue != expr) return false
+
+        val call = expr as? PyCallExpression ?: return false
+        val callee = call.callee as? PyReferenceExpression ?: return false
+        val resolved = callee.reference.resolve()
+
+        return resolved is PyFunction
+    }
+
     private fun tryFromExpression(editor: Editor, file: PyFile, leaf: PsiElement): ExpressionTarget? {
         val exprFromCaret = PyTypeIntentions.findExpressionAtCaret(editor, file)
         // Refine target if the caret selected a container (like dict/list in a function call)
@@ -154,6 +177,12 @@ class TargetDetector {
             ?: return null
 
         if (isArgumentOfLibraryFunction(expr)) return null
+
+        // Suppress the intention on implicit function-call results on the RHS of
+        // assignments (e.g. ``val = do()``). In such cases users should adjust the
+        // function's return type or the variable annotation instead.
+        if (isImplicitReturnOfFunctionCall(expr)) return null
+
         val ctx = TypeEvalContext.codeAnalysis(file.project, file)
 
         // 1. Determine the builtin type name (candidate)

@@ -180,6 +180,26 @@ class CustomTypeBasicTest : TestBase() {
         assertEmpty("Intention should not be available when type error is present", intentions)
     }
 
+    fun testIntentionNotAvailable_OnFunctionCallResult() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            def do():
+                return 1
+
+
+            def usage():
+                val = <caret>do()
+            """.trimIndent(),
+        )
+
+        val intentions = myFixture.filterAvailableIntentions("Introduce custom type")
+        assertEmpty(
+            "Intention should not be available on implicit function call result on RHS of annotated assignment",
+            intentions,
+        )
+    }
+
     fun testIntentionAvailableForInFunctionCall() {
         myFixture.configureByText(
             "a.py",

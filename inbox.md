@@ -12,17 +12,6 @@ def do():
 v < caret > al = do()
 ```
 
--
-- [ ] Disable introduce type intention at function call result
-
-```py
-def do():
-    return 1
-
-
-val = d < caret > o()
-```
-
 - [ ] Introduce wrap hierachies for unions: builtin, stdlib, custom -> do not offer if from same group
 - [ ] How to handle library code? Disable introduce type for library code?
 - [ ] Wrap: on type inspection error OR on union type with different groups
@@ -87,3 +76,12 @@ Client(val="abc")
 - [x] How to deal with this: `print("a<caret>bc")`. It suggests to wrap with object()
 - [x] Generate name correctly if caret is on default value:
   `def extract_saved_reels(self, output_dir: str = "saved_ree<caret>ls"):`
+- [x] Disable introduce type intention at function call result
+
+```py
+def do():
+    return 1
+
+
+val = d < caret > o()
+```
