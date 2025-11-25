@@ -206,4 +206,31 @@ class WrapBasicTest : TestBase() {
         val intention = myFixture.availableIntentions.find { it.text == "Wrap with Any()" }
         assertNull("Wrap with Any() intention should not be offered", intention)
     }
+
+    fun testExistingMatch_NoWrapOffered() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            from typing import TypeVar, Generic, Union
+            
+            T = TypeVar("T")
+            class PathLike(Generic[T]): ...
+            
+            class Path(PathLike[str]): ...
+            
+            def open(file: Union[str, bytes, PathLike[str], PathLike[bytes], int]): ...
+            
+            val = Path()
+            open(v<caret>al)
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intentions = myFixture.availableIntentions.map { it.text }
+        val wrapIntentions = intentions.filter { it.startsWith("Wrap with") }
+        assertEmpty(
+            "No 'Wrap with ...' intention should be available because val is already compatible with PathLike",
+            wrapIntentions
+        )
+    }
 }

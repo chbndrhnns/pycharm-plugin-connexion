@@ -9,6 +9,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.types.PyClassType
+import com.jetbrains.python.psi.types.PyTypeChecker
 import com.jetbrains.python.psi.types.PyUnionType
 import com.jetbrains.python.psi.types.TypeEvalContext
 
@@ -135,6 +136,14 @@ class ExpectedTypeAnalyzer(private val project: Project) {
         // do not offer wrapping. This prevents cases like val: int | str = 2 offering "Wrap with int()".
         val info = ExpectedTypeInfo.getExpectedTypeInfo(elementAtCaret, context)
         val expectedType = info?.type
+
+        if (expectedType != null) {
+            val actualType = context.getType(elementAtCaret)
+            if (actualType != null && PyTypeChecker.match(expectedType, actualType, context)) {
+                return null
+            }
+        }
+
         if (expectedType is PyUnionType) {
             val anyMatches = expectedType.members.any { member ->
                 val memberName = TypeNameRenderer.render(member)
