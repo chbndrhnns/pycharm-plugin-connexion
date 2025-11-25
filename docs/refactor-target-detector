@@ -1,0 +1,131 @@
+Here are targeted refactorings to improve clarity, cohesion,  │
+and correctness, while making it easier to extend.                                                                   │
+                                                                                                                     │
+High-impact structural refactors                                                                                     │
+                                                                                                                     │
+ • Separate “what to propose” from “how to detect”                                                                   │
+    • Extract a detection pipeline with small strategy classes and keep ExpectedTypeAnalyzer as an orchestrator.     │
+      Suggested split:                                                                                               │
+       • OuterContainerStrategy                                                                                      │
+          • Detects when outer container constructor (list/set/tuple/dict) should be applied vs elementwise.         │
+          • Owns expectedOuterContainerCtor and isInsideMatchingContainer.                                           │
+       • ContainerItemStrategy                                                                                       │
+          • Handles detection for items inside container literals/comprehensions.                                    │
+          • Owns the “tryContainerItemCtor” path and elementwise vs single wrapping decision.                        │
+       • UnionStrategy                                                                                               │
+          • Handles union-specific candidate collection and filtering (currently lines 159–190).                     │
+       • GenericCtorStrategy                                                                                         │
+          • Handles the generic ctor path when not in unions or containers (lines 192–213).                          │
+       • UnwrapStrategy                                                                                              │
+          • Encapsulate unwrapDoesTheJob and related checks.                                                         │
+ • Extract data/value objects (avoid ad-hoc tuples and raw strings)                                                  │
+    • ExpectedCtor(name: String, symbol: PsiElement?)                                                                │
+    • Names(actual: String?, expected: String?, expectedElement: PsiElement?, expectedAnnotationElement:             │
+      PsiElement?) — you already have Names-like data via computeDisplayTypeNames return; make it explicit and move  │
+      definition to a shared location.                                                                               │
+    • StrategyResult: sealed class to explain why a path is accepted or skipped:                                     │
+       • Found(plan: WrapPlan)                                                                                       │
+       • Skip(reason: String)                                                                                        │
+ • Move heuristics out                                                                                               │
+    • Many checks belong in PyWrapHeuristics or a new WrapAnalysisUtils to centralize logic:                         │
+       • isAlreadyWrappedWith                                                                                        │
+       • elementDisplaysAsCtor                                                                                       │
+       • getWrapperCallInfo                                                                                          │
+       • expectedCtorName                                                                                            │
+       • expectedItemCtorsForContainer                                                                               │
+    • ExpectedTypeAnalyzer should depend on these abstractions, not implement behavior.                              │
+                                                                                                                     │
+API shaping and cohesion                                                                                             │
+                                                                                                                     │
+ • Make analyzeAtCaret a thin shell                                                                                  │
+    • Build Context and pass to strategy pipeline:                                                                   │
+       • data class AnalysisContext(val editor: Editor, val file: PsiFile, val element: PyExpression, val typeEval:  │
+         TypeEvalContext)                                                                                            │
+    • Internals should use AnalysisContext instead of passing editor/file/ctx separately.                            │
+ • Isolate dict-specific policy                                                                                      │
+    • You special-case dicts in multiple places (early returns for elementwise). Centralize this policy (e.g., in    │
+      OuterContainerStrategy) with a clear explanation and a toggle, so future support for dict-item wrapping is     │
+      easier.                                                                                                        │
+ • Clarify and unify container checks                                                                                │
+    • The code has container suppression checks in several places (lines 122–126, 193–209). Consolidate into one     │
+      decision function:                                                                                             │
+       • fun shouldSuppressContainerCtor(element: PyExpression, ctorName: String): Boolean                           │
+    • It should consider “is inside literal/comprehension” and funnel through a single place.                        │
+                                                                                                                     │
+Duplication/ordering improvements                                                                                    │
+                                                                                                                     │
+ • Normalize constructor/literal checks                                                                              │
+    • Literal and comprehension checks (for list/set/dict/tuple) appear multiple times. Create helpers:              │
+       • isContainerLiteral(expr: PsiElement): Boolean                                                               │
+       • isInsideContainerLiteralOrComprehension(expr: PyExpression): Boolean                                        │
+ • Simplify the outer container branch (lines 24–77)                                                                 │
+    • The branch is doing:                                                                                           │
+       • Find outerCtor                                                                                              │
+       • If target is not a literal, prefer elementwise if actual’s outer matches                                    │
+       • Else fallback to wrapping outer                                                                             │
+    • Extract into:                                                                                                  │
+       • fun tryOuterContainerFix(ctx): StrategyResult                                                               │
+          • internally: try preferElementwiseWhenOuterMatches(), else tryOuterCtor()                                 │
+ • Union flow is doing multiple passes over candidates and matches                                                   │
+    • Extract into UnionStrategy with a single responsibility:                                                       │
+       • collect candidates                                                                                          │
+       • if any candidate matches -> Skip(reason)                                                                    │
+       • filter differing candidates                                                                                 │
+       • if none -> Skip                                                                                             │
+       • if one -> Found(Single)                                                                                     │
+       • else -> Found(UnionChoice)                                                                                  │
+    • Improves testability and removes clutter in analyzeAtCaret.                                                    │
+                                                                                                                     │
+Correctness and heuristics hardening                                                                                 │
+                                                                                                                     │
+ • unwrapDoesTheJob should be in UnwrapStrategy and more robust                                                      │
+    • Today it checks wrapper name, elementDisplaysAsCtor on inner, and then tries class/ancestor names (lines       │
+      252–267).                                                                                                      │
+    • Improvements:                                                                                                  │
+       • Use PyTypeChecker.match against the expected type for the inner expression directly (if available), not     │
+         just display strings.                                                                                       │
+       • Share call-resolution of the wrapper with isAlreadyWrappedWith to avoid duplicate resolve work and edge     │
+         cases.                                                                                                      │
+ • Prevent misleading union matches                                                                                  │
+    • After ExpectedTypeInfo, you check PyTypeChecker.match between expected and actual (lines 139–144). That will   │
+      already catch unions when the actual matches any member. You can remove the later anyMatches block for         │
+      PyUnionType (lines 146–157) or justify the fallback with a comment and put it behind a guard to avoid          │
+      redundant work.                                                                                                │
+ • Expected container mapping                                                                                        │
+    • expectedOuterContainerCtor maps a bunch of typing aliases to concrete constructors. Move the mapping table and │
+      casing to a centralized map with Regex.escape where needed and document why terms like “sequence” map to list. │
+    • Consider supporting common collections.abc types (e.g., Iterable) consistently; currently those are mapped to  │
+      list implicitly.                                                                                               │
+                                                                                                                     │
+Performance and readability                                                                                          │
+                                                                                                                     │
+ • Minimize context and type evaluation calls                                                                        │
+    • TypeEvalContext is created once. Continue to pass it down. Also:                                               │
+       • Cache computeDisplayTypeNames(elementAtCaret, ctx) once and pass its parts. Right now it’s called multiple  │
+         times via different helpers.                                                                                │
+       • Short-circuit cheap checks (literal detection, container-literal suppression) before calling into           │
+         heuristics that do type resolution.                                                                         │
+ • Replace string-case cascades with sets/maps                                                                       │
+    • For container names, use a normalized lowercase set. E.g., val containers =                                    │
+      setOf("list","set","tuple","dict").                                                                            │
+    • Replace when-blocks checking literals/comprehensions with simple boolean helpers.                              │
+                                                                                                                     │
+Naming and structure cleanups                                                                                        │
+                                                                                                                     │
+ • Better method names                                                                                               │
+    • expectedOuterContainerCtor -> resolveExpectedOuterContainerCtor                                                │
+    • isInsideMatchingContainer -> parentMatchesExpectedContainer                                                    │
+    • unwrapDoesTheJob -> unwrapYieldsExpectedCtor                                                                   │
+ • Consolidate returns                                                                                               │
+    • Currently analyzeAtCaret has many early returns. With StrategyResult, you can:                                 │
+       • Pipeline until the first Found, or finish when strategies return Skip.                                      │
+    • This reduces churn and makes the orchestration linear and predictable.                                         │
+                                                                                                                     │
+Extendability hooks                                                                                                  │
+                                                                                                                     │
+ • Make container policy pluggable                                                                                   │
+    • The decision of preferring elementwise vs wrapping outer container can be a strategy or config flag, so future │
+      heuristics can be swapped without touching core logic.                                                         │
+ • Add debug tracing                                                                                                 │
+    • Optional debug logs like “OuterContainerStrategy: skip due to inside literal” or “UnionStrategy: 3 candidates, │
+      1 differing” can be gated by a registry key or test flag. This helps diagnose test flakes and user reports.
