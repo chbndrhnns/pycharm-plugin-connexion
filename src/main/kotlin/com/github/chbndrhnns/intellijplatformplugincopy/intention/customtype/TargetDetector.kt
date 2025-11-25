@@ -162,9 +162,11 @@ class TargetDetector {
         // 2. Check if already wrapped
         if (isAlreadyWrappedInCustomType(expr)) return null
 
-        // 3. Detect metadata (assignment, keyword arg, dataclass field)
+        // 3. Detect metadata (assignment, keyword arg, dataclass field, parameter default)
         val keywordName = detectKeywordArgumentName(expr)
         val assignmentInfo = if (keywordName == null) detectAssignmentName(expr, builtinName) else null
+        val parameterName =
+            if (keywordName == null && assignmentInfo == null) detectParameterDefaultName(expr) else null
         val dataclassField = findDataclassFieldForExpression(expr)
 
         // Check dataclass field type conflict
@@ -178,6 +180,7 @@ class TargetDetector {
             annotationRef = assignmentInfo?.second,
             keywordName = keywordName,
             assignmentName = assignmentInfo?.first,
+            parameterName = parameterName,
             dataclassField = dataclassField,
         )
     }
@@ -217,6 +220,11 @@ class TargetDetector {
             is PyNumericLiteralExpression -> if (expr.isIntegerLiteral) "int" else "float"
             else -> null
         }
+    }
+
+    private fun detectParameterDefaultName(expr: PyExpression): String? {
+        val param = PsiTreeUtil.getParentOfType(expr, PyNamedParameter::class.java, false)
+        return if (param?.defaultValue == expr) param.name else null
     }
 
     private fun detectKeywordArgumentName(expr: PyExpression): String? {

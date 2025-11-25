@@ -199,4 +199,25 @@ class CustomTypeLiteralsTest : TestBase() {
         val intentions = myFixture.filterAvailableIntentions("Introduce custom type from str")
         assertEmpty("Should not offer to introduce custom type when expected type is already custom", intentions)
     }
+
+    fun testParameterDefaultValue_WithSnakeCaseName_UsesParameterNameForClass() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            def extract_saved_reels(self, output_dir: str = "saved_ree<caret>ls"):
+                pass
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Introduce custom type from str")
+        myFixture.launchAction(intention)
+
+        val text = myFixture.editor.document.text
+        assertTrue("Should generate OutputDir class", text.contains("class OutputDir(str):"))
+        assertTrue(
+            "Should usage OutputDir in parameter default",
+            text.contains("output_dir: str = OutputDir(\"saved_reels\")")
+        )
+    }
 }

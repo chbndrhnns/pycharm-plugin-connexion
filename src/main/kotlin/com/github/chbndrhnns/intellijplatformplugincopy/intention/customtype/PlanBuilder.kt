@@ -56,8 +56,10 @@ class PlanBuilder(
     private fun buildFromExpression(target: ExpressionTarget, file: PyFile): CustomTypePlan {
         val preferredFromKeyword = target.keywordName?.let { naming.deriveBaseName(it) }
         val preferredFromAssignment = target.assignmentName?.let { naming.deriveBaseName(it) }
+        val preferredFromParameter = target.parameterName?.let { naming.deriveBaseName(it) }
         val preferredName = preferredFromKeyword
             ?: preferredFromAssignment
+            ?: preferredFromParameter
             ?: target.dataclassField?.name?.let { naming.deriveBaseName(it) }
 
         return CustomTypePlan(

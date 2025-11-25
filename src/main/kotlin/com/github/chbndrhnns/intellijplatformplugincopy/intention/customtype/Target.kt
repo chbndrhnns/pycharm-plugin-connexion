@@ -26,5 +26,6 @@ data class ExpressionTarget(
     val annotationRef: PyReferenceExpression?,
     val keywordName: String?,
     val assignmentName: String?,
+    val parameterName: String?,
     val dataclassField: PyTargetExpression?,
 ) : Target
