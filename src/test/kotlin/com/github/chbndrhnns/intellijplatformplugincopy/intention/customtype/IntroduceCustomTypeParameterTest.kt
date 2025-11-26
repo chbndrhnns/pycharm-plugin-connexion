@@ -16,9 +16,16 @@ class IntroduceCustomTypeParameterTest : TestBase() {
         val intention = myFixture.findSingleIntention("Introduce custom type from str")
         myFixture.launchAction(intention)
 
-        val text = myFixture.file.text
-        assertTrue(text.contains("class Customstr(str):"))
-        assertTrue(text.contains("def do(val: int | Customstr | None = Customstr(\"2\")):"))
+        myFixture.checkResult(
+            """
+            class Customstr(str):
+                pass
+            
+            
+            def do(val: int | Customstr | None = Customstr("2")): 
+                pass
+            """.trimIndent()
+        )
     }
 
     fun testParameterDefaultValue_SimpleType_UpdatesAnnotationAndWrapsValue() {
@@ -33,8 +40,15 @@ class IntroduceCustomTypeParameterTest : TestBase() {
         val intention = myFixture.findSingleIntention("Introduce custom type from int")
         myFixture.launchAction(intention)
 
-        val text = myFixture.file.text
-        assertTrue(text.contains("class Customint(int):"))
-        assertTrue(text.contains("def do(val: Customint = Customint(1)):"))
+        myFixture.checkResult(
+            """
+            class Customint(int):
+                pass
+            
+            
+            def do(val: Customint = Customint(1)): 
+                pass
+        """.trimIndent()
+        )
     }
 }

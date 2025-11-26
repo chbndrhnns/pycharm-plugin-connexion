@@ -40,7 +40,7 @@ class WrapUnionChoiceTest : TestBase() {
 
     fun testUnionChooser_WithTypingUnionContainingOr() {
         val fake = FakePopupHost().apply { selectedIndex = 0 }
-        com.github.chbndrhnns.intellijplatformplugincopy.intention.WrapWithExpectedTypeIntentionHooks.popupHost = fake
+        WrapWithExpectedTypeIntentionHooks.popupHost = fake
         try {
             myFixture.configureByText(
                 "a.py",

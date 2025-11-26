@@ -18,8 +18,6 @@ class WrapLiteralTest : TestBase() {
         )
 
         myFixture.doHighlighting()
-        // It might suggest "Wrap with Literal['r']" or something similar if the bug is present.
-        // We want to ensure no "Wrap with Literal..." intention is present.
         val wrapIntention = myFixture.availableIntentions.find { it.text.startsWith("Wrap with Literal") }
         assertNull("Wrap intention with Literal should not be offered", wrapIntention)
     }

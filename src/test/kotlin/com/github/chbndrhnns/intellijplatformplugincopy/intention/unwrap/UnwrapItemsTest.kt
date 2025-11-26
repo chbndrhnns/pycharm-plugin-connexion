@@ -25,8 +25,6 @@ class UnwrapItemsTest : TestBase() {
 
         println("Available intentions: \$names")
 
-        // We expect "Unwrap CustomInt()" (for single element)
-        // And "Unwrap items CustomInt()" (for all items)
         assertContainsElements(names, "Unwrap CustomInt()")
         assertContainsElements(names, "Unwrap items CustomInt()")
     }
@@ -47,7 +45,6 @@ class UnwrapItemsTest : TestBase() {
         )
 
         myFixture.doHighlighting()
-        // Assuming the intention name will be "Unwrap items CustomInt()"
         val intention = myFixture.findSingleIntention("Unwrap items CustomInt()")
         myFixture.launchAction(intention)
 

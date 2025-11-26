@@ -67,7 +67,6 @@ class WrapPresentationTest : TestBase() {
         val intentions = myFixture.availableIntentions
         val wrapIntention = intentions.find { it.text.startsWith("Wrap with") }
 
-        // Verify that the intention text shows the actual expected type
         assertNotNull("Wrap intention should be available", wrapIntention)
         assertEquals("Intention text should show actual expected type", "Wrap with str()", wrapIntention?.text)
     }
@@ -98,7 +97,6 @@ class WrapPresentationTest : TestBase() {
             val intention = myFixture.findSingleIntention("Wrap with expected union type…")
             myFixture.launchAction(intention)
 
-            // Verify chooser labels include fully qualified names for classes
             assertEquals(listOf("User (a.User)", "Token (a.Token)"), fake.lastLabels)
         } finally {
             WrapWithExpectedTypeIntentionHooks.popupHost = null

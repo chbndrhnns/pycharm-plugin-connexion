@@ -17,7 +17,6 @@ class CustomTypeArgumentListTest : TestBase() {
             """.trimIndent()
         )
 
-        // Trigger highlighting to ensure inspections run and populate DaemonCodeAnalyzer
         myFixture.doHighlighting()
 
         val intentions = myFixture.filterAvailableIntentions("Introduce custom type")

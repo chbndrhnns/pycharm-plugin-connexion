@@ -49,7 +49,6 @@ class CustomTypeLibraryTest : TestBase() {
     }
 
     fun testIntentionAvailable_WhenInDictPassedToLibrary() {
-        // Nested expression should still work
         myFixture.configureByText(
             "a.py",
             """

@@ -23,13 +23,6 @@ class WrapItemsTest : TestBase() {
         val intentions = myFixture.filterAvailableIntentions("Wrap")
         val names = intentions.map { it.text }
 
-        // Log available intentions for debugging
-        println("Available intentions: $names")
-
-        // We expect "Wrap with CustomInt()" (for single element)
-        // And maybe "Wrap items with CustomInt()" (for all items)?
-        // The issue says "Here we want both: wrap items and wrap the single element."
-
         assertContainsElements(names, "Wrap with CustomInt()")
         assertContainsElements(names, "Wrap items with CustomInt()")
     }

@@ -192,7 +192,6 @@ class CustomTypeBasicTest : TestBase() {
             """.trimIndent(),
         )
 
-        // Ensure type checker inspections are computed so we can see the error on the RHS
         myFixture.doHighlighting()
 
         val intentions = myFixture.filterAvailableIntentions("Introduce custom type")
@@ -274,10 +273,15 @@ class CustomTypeBasicTest : TestBase() {
         val intention = myFixture.findSingleIntention("Introduce custom type from str")
         myFixture.launchAction(intention)
 
-        val text = myFixture.editor.document.text
-        assertTrue(text.contains("class Customstr(str):"))
-        assertTrue(text.contains("abc: Customstr = Customstr(\"text\")"))
-        assertFalse(text.contains("Customstr(abc)"))
+        myFixture.checkResult(
+            """
+            class Customstr(str):
+                pass
+            
+            
+            abc: Customstr = Customstr("text")
+        """.trimIndent()
+        )
     }
 
     fun testFString_UpgradesReferencedVariable_InsteadOfWrappingContent() {

@@ -31,8 +31,6 @@ class PopulateRecursiveArgumentsIntentionTest : TestBase() {
         val intention = myFixture.findSingleIntention("Populate missing arguments recursively")
         myFixture.launchAction(intention)
 
-        println("DEBUG_RESULT_1:\n" + myFixture.file.text)
-
         myFixture.checkResult(
             """
             from dataclasses import dataclass
@@ -162,10 +160,18 @@ class PopulateRecursiveArgumentsIntentionTest : TestBase() {
         val intention = myFixture.findSingleIntention("Populate missing arguments recursively")
         myFixture.launchAction(intention)
 
-        val text = myFixture.file.text
-        println("DEBUG_RESULT_4:\n" + text)
+        myFixture.checkResult(
+            """
+            from dataclasses import dataclass
+            
+            @dataclass
+            class Rec:
+                r: 'Rec'
+            
+            a = Rec(r=Rec(r=Rec(r=Rec(r=Rec(r=Rec(r=Rec(r=...)))))))
 
-        assert(text.contains("Rec(r=Rec("))
+        """.trimIndent()
+        )
     }
 
     fun testPositionalOnlyFunctionCall_NoPopulateOffered() {

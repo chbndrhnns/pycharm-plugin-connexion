@@ -67,8 +67,14 @@ class IntroduceCustomTypeAnnotationTest : TestBase() {
         val intention = myFixture.findSingleIntention("Introduce custom type from str")
         myFixture.launchAction(intention)
 
-        val text = myFixture.file.text
-        assertTrue(text.contains("class Customstr(str):"))
-        assertTrue(text.contains("val: int | Customstr | None = Customstr(\"hello\")"))
+        myFixture.checkResult(
+            """
+            class Customstr(str):
+                pass
+            
+            
+            val: int | Customstr | None = Customstr("hello")
+        """.trimIndent()
+        )
     }
 }

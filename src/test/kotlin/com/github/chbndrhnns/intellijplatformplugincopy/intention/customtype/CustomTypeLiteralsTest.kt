@@ -176,7 +176,6 @@ class CustomTypeLiteralsTest : TestBase() {
 
         myFixture.doHighlighting()
 
-        // We expect NO "Introduce custom type..." intention here
         val intentions = myFixture.filterAvailableIntentions("Introduce custom type from int")
         assertEmpty("Should not offer to introduce custom type when expected type is already custom", intentions)
     }

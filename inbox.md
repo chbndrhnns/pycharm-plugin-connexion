@@ -2,20 +2,8 @@
 
 ## Pending Tasks
 
-- [ ] Update tests to match complete document
+- [ ] Configure default base classes
 - [ ] Block list: Do not allow names from typing or collections.abc.
-- [ ] Loses annotation:
-
-```python
-class CustomWrapper(str): ...
-
-
-def f(x: CustomWrapper | str) -> None:
-    pass
-
-
-f("abc")
-```
 
 ## In Progress Tasks
 
@@ -108,3 +96,16 @@ v < caret > al = do()
 - [x] Introduce wrap hierachies for unions: builtin, stdlib, custom -> do not offer if from same group
 - [x] How to handle library code? Disable introduce type for library code?
 - [x] Wrap: on type inspection error OR on union type with different groups
+- [x] Update tests to match complete document
+- [x] Loses annotation:
+
+```python
+class CustomWrapper(str): ...
+
+
+def f(x: CustomWrapper | str) -> None:
+    pass
+
+
+f("abc")
+```

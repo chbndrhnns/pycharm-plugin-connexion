@@ -158,6 +158,4 @@ class WrapForwardRefsTest : TestBase() {
             """.trimIndent()
         )
     }
-
-    // UI / label-related tests for forward refs live in WrapForwardRefsPresentationTest.
 }
