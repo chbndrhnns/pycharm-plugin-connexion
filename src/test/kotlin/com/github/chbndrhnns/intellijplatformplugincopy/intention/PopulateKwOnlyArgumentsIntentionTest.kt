@@ -123,4 +123,20 @@ class PopulateKwOnlyArgumentsIntentionTest : TestBase() {
             """.trimIndent()
         )
     }
+
+    fun testPositionalOnlyFunctionCall_NoPopulateOffered() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            def sleep(__secs, /):
+                pass
+
+            sleep(1<caret>)
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.availableIntentions.find { it.text == "Populate missing arguments with '...'" }
+        assertNull("Populate intention should NOT be available for positional-only calls", intention)
+    }
 }

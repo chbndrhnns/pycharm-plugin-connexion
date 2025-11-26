@@ -167,4 +167,20 @@ class PopulateRecursiveArgumentsIntentionTest : TestBase() {
 
         assert(text.contains("Rec(r=Rec("))
     }
+
+    fun testPositionalOnlyFunctionCall_NoPopulateOffered() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            def sleep(__secs, /):
+                pass
+
+            sleep(1<caret>)
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.availableIntentions.find { it.text == "Populate missing arguments recursively" }
+        assertNull("Populate recursive intention should NOT be available for positional-only calls", intention)
+    }
 }

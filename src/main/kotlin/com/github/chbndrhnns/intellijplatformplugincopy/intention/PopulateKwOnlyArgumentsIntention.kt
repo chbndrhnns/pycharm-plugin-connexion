@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention
 
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.isPositionalOnlyCallable
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
@@ -43,6 +44,10 @@ class PopulateKwOnlyArgumentsIntention : IntentionAction, HighPriorityAction, Du
         val call = findCallExpression(editor, file) ?: return false
 
         val ctx = TypeEvalContext.codeAnalysis(project, file)
+
+        // Do not offer for positional-only function calls
+        if (isPositionalOnlyCallable(call)) return false
+
         val missing = getMissingParameters(call, ctx)
         if (missing.isEmpty()) return false
 

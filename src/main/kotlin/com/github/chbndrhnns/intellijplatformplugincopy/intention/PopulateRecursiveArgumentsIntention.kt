@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention
 
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.isDataclassClass
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.isPositionalOnlyCallable
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util.PyImportService
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.HighPriorityAction
@@ -47,6 +48,10 @@ class PopulateRecursiveArgumentsIntention : IntentionAction, HighPriorityAction,
         val call = findCallExpression(editor, file) ?: return false
 
         val ctx = TypeEvalContext.codeAnalysis(project, file)
+
+        // Do not offer for positional-only function calls
+        if (isPositionalOnlyCallable(call)) return false
+
         val missing = getMissingParameters(call, ctx)
         return missing.isNotEmpty()
     }
