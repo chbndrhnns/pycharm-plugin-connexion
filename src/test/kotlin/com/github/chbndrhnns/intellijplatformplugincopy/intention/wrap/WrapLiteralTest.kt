@@ -42,24 +42,4 @@ class WrapLiteralTest : TestBase() {
         val wrapIntention = myFixture.availableIntentions.find { it.text.startsWith("Wrap with Literal") }
         assertNull("Wrap intention with Literal should not be offered", wrapIntention)
     }
-
-    fun testLiteral_CustomClassNamedLiteral_NoWrapOffered() {
-        myFixture.configureByText(
-            "a.py",
-            """
-            class Literal:
-                def __init__(self, val):
-                    pass
-
-            def foo(mode: Literal):
-                pass
-
-            foo(<caret>'w')
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val wrapIntention = myFixture.availableIntentions.find { it.text.startsWith("Wrap with Literal") }
-        assertNull("Wrap intention with Literal should not be offered even if it is a class", wrapIntention)
-    }
 }

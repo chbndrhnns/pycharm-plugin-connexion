@@ -4,9 +4,12 @@ import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.Expecte
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedTypeInfo
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.psi.PsiNamedElement
+import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.PyTokenTypes
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.impl.PyBuiltinCache
+import com.jetbrains.python.psi.stubs.PyClassNameIndex
 import com.jetbrains.python.psi.types.PyClassType
 import com.jetbrains.python.psi.types.PyTypeUtil
 import com.jetbrains.python.psi.types.TypeEvalContext
@@ -28,10 +31,9 @@ private fun String.equalsAnyIgnoreCase(vararg options: String): Boolean =
 
 private fun isSupportedCtor(name: String?, symbol: PsiNamedElement?, builtins: PyBuiltinCache): Boolean {
     val n = name ?: return false
-    if (n.equals("None", ignoreCase = true)) return false
     // Keep builtins so that union bucket selection can prefer higher-value
     // candidates (stdlib/thirdparty/own) over them.
-    return true
+    return !ExpectedTypeInfo.isTooGenericCtorName(n)
 }
 
 /**
@@ -47,7 +49,7 @@ private class StringAnnotationResolver(private val anchor: PyExpression) {
 
     /** Lazily collected from-import statements in the current file. */
     private val fromImports: Collection<PyFromImportStatement> by lazy {
-        com.intellij.psi.util.PsiTreeUtil.findChildrenOfType(
+        PsiTreeUtil.findChildrenOfType(
             anchor.containingFile,
             PyFromImportStatement::class.java
         )
@@ -83,9 +85,9 @@ private class StringAnnotationResolver(private val anchor: PyExpression) {
         if (parts.isEmpty()) return null
         val name = parts.last()
         val modulePath = parts.dropLast(1).joinToString("/")
-        val scope = com.intellij.psi.search.GlobalSearchScope.projectScope(anchor.project)
+        val scope = GlobalSearchScope.projectScope(anchor.project)
         return try {
-            val candidates = com.jetbrains.python.psi.stubs.PyClassNameIndex.find(name, anchor.project, scope)
+            val candidates = PyClassNameIndex.find(name, anchor.project, scope)
             candidates.firstOrNull { cls ->
                 val path = cls.containingFile?.virtualFile?.path ?: return@firstOrNull false
                 // Match end of path so it works on different OS path prefixes
@@ -125,21 +127,21 @@ private data class SameFileSymbols(
 private fun collectSameFileSymbols(anchor: PyExpression): SameFileSymbols {
     val file = anchor.containingFile
 
-    val classes = com.intellij.psi.util.PsiTreeUtil.findChildrenOfType(file, PyClass::class.java)
+    val classes = PsiTreeUtil.findChildrenOfType(file, PyClass::class.java)
         .mapNotNull { cls ->
             val name = cls.name ?: return@mapNotNull null
             name to cls
         }
         .toMap()
 
-    val functions = com.intellij.psi.util.PsiTreeUtil.findChildrenOfType(file, PyFunction::class.java)
+    val functions = PsiTreeUtil.findChildrenOfType(file, PyFunction::class.java)
         .mapNotNull { fn ->
             val name = fn.name ?: return@mapNotNull null
             name to fn
         }
         .toMap()
 
-    val targets = com.intellij.psi.util.PsiTreeUtil.findChildrenOfType(file, PyTargetExpression::class.java)
+    val targets = PsiTreeUtil.findChildrenOfType(file, PyTargetExpression::class.java)
         .mapNotNull { target ->
             val name = target.name ?: return@mapNotNull null
             name to target
@@ -203,7 +205,7 @@ object UnionCandidates {
         }
 
         fun addString(str: PyStringLiteralExpression) {
-            val raw = str.stringValue ?: return
+            val raw = str.stringValue
 
             fun addToken(token: String) {
                 val (name, resolved) = resolver.resolveToken(token) ?: return

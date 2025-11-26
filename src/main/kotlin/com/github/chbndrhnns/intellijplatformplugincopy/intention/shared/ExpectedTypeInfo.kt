@@ -88,8 +88,8 @@ internal object ExpectedTypeInfo {
 
     private fun isNonCtorName(name: String?): Boolean =
         name.isNullOrBlank() ||
-                name.equalsAnyIgnoreCase("Union", "UnionType", "None", "object", "Any", "Literal") ||
-                (name != null && name.startsWith("Literal["))
+                name.equalsAnyIgnoreCase("Union", "UnionType", "None", "NoneType", "object", "Any") ||
+                (name.startsWith("Literal["))
 
     private fun String.equalsAnyIgnoreCase(vararg options: String): Boolean =
         options.any { this.equals(it, ignoreCase = true) }
@@ -371,7 +371,19 @@ internal object ExpectedTypeInfo {
         }
 
         val annValue = (targetParam as? PyNamedParameter)?.annotation?.value
-        val paramType = (targetParam as? PyTypedElement)?.let { ctx.getType(it) }
+        var paramType = (targetParam as? PyTypedElement)?.let { ctx.getType(it) }
+
+        if (targetParam is PyNamedParameter) {
+            if (targetParam.isPositionalContainer) {
+                if (paramType is PyCollectionType) {
+                    paramType = paramType.iteratedItemType
+                }
+            } else if (targetParam.isKeywordContainer) {
+                if (paramType is PyCollectionType) {
+                    paramType = paramType.elementTypes.getOrNull(1)
+                }
+            }
+        }
 
         val resolvedNamed: PsiNamedElement? = when (annValue) {
             is PyReferenceExpression -> annValue.reference.resolve() as? PsiNamedElement

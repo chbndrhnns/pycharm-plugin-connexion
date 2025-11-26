@@ -153,12 +153,6 @@ class UnionStrategy : WrapStrategy {
             return StrategyResult.Continue
         }
 
-        // If the element already matches any union member, there is no mismatch
-        // to fix and we should not offer wrapping.
-        val anyMatches = unionCtors.any {
-            PyWrapHeuristics.elementMatchesCtor(element, it, context.typeEval)
-        }
-        if (anyMatches) return StrategyResult.Skip("Already matches one union member")
 
         // Bucketize candidates to prefer OWN > THIRDPARTY > STDLIB > BUILTIN.
         data class BucketedCtor(val bucket: TypeBucket, val ctor: ExpectedCtor)
@@ -167,7 +161,13 @@ class UnionStrategy : WrapStrategy {
             val bucket = TypeBucketClassifier.bucketFor(ctor.symbol, element) ?: return@mapNotNull null
             BucketedCtor(bucket, ctor)
         }
-        if (bucketed.isEmpty()) return StrategyResult.Continue
+        if (bucketed.isEmpty()) {
+            val anyMatches = unionCtors.any {
+                PyWrapHeuristics.elementMatchesCtor(element, it, context.typeEval)
+            }
+            if (anyMatches) return StrategyResult.Skip("Matches unresolved union member")
+            return StrategyResult.Continue
+        }
 
         val byBucket = bucketed.groupBy { it.bucket }
         val bestBucket = byBucket.keys.maxByOrNull { it.priority } ?: return StrategyResult.Continue
