@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util
 
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedCtor
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedTypeInfo
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.psi.PsiNamedElement
 import com.jetbrains.python.PyTokenTypes
@@ -176,6 +177,11 @@ object UnionCandidates {
 
             // Mirror legacy filters: drop explicit None and builtins.
             if (!isSupportedCtor(name, cls, builtins)) return@forEach
+
+            // Additional heuristic: avoid super-generic ctor names (e.g. ``object``, ``Any``) which
+            // typically come from very broad typing in stubs like ``print(*values: object, ...)``.
+            // Suggesting "Wrap with object()" or variants like "Wrap with (object, ...)()" is not helpful.
+            if (ExpectedTypeInfo.isTooGenericCtorName(name)) return@forEach
 
             byName.putIfAbsent(name, ExpectedCtor(name, cls))
         }

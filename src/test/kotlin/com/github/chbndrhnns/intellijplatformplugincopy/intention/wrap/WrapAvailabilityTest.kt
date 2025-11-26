@@ -32,6 +32,21 @@ class WrapAvailabilityTest : TestBase() {
         assertEmpty("Intention 'Wrap items with ...' should NOT be available on variable name", intentions)
     }
 
+
+    fun testBuiltinFunctionName_IntentionNotAvailable() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            print("a<caret>bc")
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+
+        val intentions = myFixture.availableIntentions.filter { it.text.startsWith("Wrap with") }
+        assertEmpty("Wrap intention should not be offered on builtin function name", intentions)
+    }
+
     fun testDictConstructor_IntentionNotAvailable() {
         myFixture.configureByText(
             "a.py",

@@ -39,16 +39,17 @@ internal object ExpectedTypeInfo {
         val info = getExpectedTypeInfo(expr, ctx) ?: return null
         info.annotationExpr?.let { ann ->
             val fromPsi = canonicalCtorName(ann, ctx)
-            if (!isNonCtorName(fromPsi)) return fromPsi
+            if (!isTooGenericCtorName(fromPsi)) return fromPsi
         }
 
         val base = info.type?.let { firstNonNoneMember(it) }
+
         if (base is PyClassType) {
             val name = base.shortOrQualifiedTail()
-            return if (isNonCtorName(name)) null else name
+            return if (isTooGenericCtorName(name)) null else name
         }
         val name = base?.name
-        return if (isNonCtorName(name)) null else name
+        return if (isTooGenericCtorName(name)) null else name
     }
 
     fun canonicalCtorName(element: PyTypedElement, ctx: TypeEvalContext): String? {
@@ -71,7 +72,7 @@ internal object ExpectedTypeInfo {
 
 
     fun elementDisplaysAsCtor(element: PyExpression, expectedCtorName: String, ctx: TypeEvalContext): CtorMatch {
-        if (expectedCtorName.equals("object", ignoreCase = true)) return CtorMatch.MATCHES
+        if (isTooGenericCtorName(expectedCtorName)) return CtorMatch.MATCHES
         val actualName = TypeNameRenderer.render(ctx.getType(element)).lowercase()
         return if (actualName == expectedCtorName.lowercase()) CtorMatch.MATCHES else CtorMatch.DIFFERS
     }
@@ -79,6 +80,9 @@ internal object ExpectedTypeInfo {
     // ---- Exposed for ContainerTyping ----
     fun getExpectedTypeInfo(expr: PyExpression, ctx: TypeEvalContext): TypeInfo? =
         doGetExpectedTypeInfo(expr, ctx)
+
+    fun isTooGenericCtorName(name: String?): Boolean =
+        isNonCtorName(name)
 
     // ---- Internal implementation ----
 

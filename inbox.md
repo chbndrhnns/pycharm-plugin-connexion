@@ -2,7 +2,6 @@
 
 ## Pending Tasks
 
-- [ ] FP: Wrap `print("abc")` with object...
 - [ ] FP: Populate missing: `time.sleep(1)`
 - [ ] Wrap: Do not wrap ellipsis
 - [ ] Introduce wrap hierachies for unions: builtin, stdlib, custom -> do not offer if from same group
@@ -88,3 +87,5 @@ def do():
 
 v < caret > al = do()
 ```
+
+- [ ] FP: Wrap `print("abc")` with object...
