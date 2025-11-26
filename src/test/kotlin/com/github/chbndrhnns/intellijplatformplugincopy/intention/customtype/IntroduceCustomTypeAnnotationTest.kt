@@ -20,6 +20,42 @@ class IntroduceCustomTypeAnnotationTest : TestBase() {
         assertTrue(text.contains("val: Customint | str | None = Customint(2)"))
     }
 
+    fun testAnnotatedParameter_UnionType_UpdatesOnlyMatchingPart() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            class CustomWrapper: ...
+
+
+            def f(x: CustomWrapper | str) -> None:
+                pass
+            
+            
+            f("a<caret>bc")
+            """.trimIndent()
+        )
+
+        val intention = myFixture.findSingleIntention("Introduce custom type from str")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            class Customstr(str):
+                pass
+
+
+            class CustomWrapper: ...
+
+
+            def f(x: CustomWrapper | Customstr) -> None:
+                pass
+
+
+            f(Customstr("abc"))
+        """.trimIndent()
+        )
+    }
+
     fun testAnnotatedAssignment_UnionType_String_UpdatesOnlyMatchingPart() {
         myFixture.configureByText(
             "a.py",

@@ -2,6 +2,7 @@
 
 ## Pending Tasks
 
+- [ ] Update tests to match complete document
 - [ ] Block list: Do not allow names from typing or collections.abc.
 - [ ] Loses annotation:
 

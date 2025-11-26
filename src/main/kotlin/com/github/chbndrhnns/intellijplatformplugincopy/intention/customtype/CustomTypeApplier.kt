@@ -97,14 +97,10 @@ class CustomTypeApplier(
             // newly introduced custom type. This must happen *before*
             // we rewrite the argument expression so that the PSI
             // hierarchy for the original expression is still intact.
-            rewriter.updateParameterAnnotationFromCallSite(originalExpr, newTypeName, pyGenerator)
+            rewriter.updateParameterAnnotationFromCallSite(originalExpr, builtinName, newTypeName, pyGenerator)
             rewriter.wrapExpression(originalExpr, newTypeName, pyGenerator)
         }
 
-        // When the builtin comes from a dataclass field (either directly from
-        // its annotation or from a constructor call-site argument), make sure
-        // we also align the field's annotation and wrap all constructor
-        // usages so that arguments are passed as the new custom type.
         val field = plan.field
         if (field != null) {
             // If we introduced the type from a call-site expression, there was

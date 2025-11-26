@@ -70,6 +70,7 @@ class UsageRewriter {
      */
     fun updateParameterAnnotationFromCallSite(
         expr: PyExpression,
+        builtinName: String,
         newTypeName: String,
         generator: PyElementGenerator,
     ) {
@@ -113,13 +114,28 @@ class UsageRewriter {
         val annotation = parameter.annotation ?: return
         val annExpr = annotation.value ?: return
 
-        val replacement = generator.createExpressionFromText(LanguageLevel.getLatest(), newTypeName)
+        val newTypeRef = generator.createExpressionFromText(LanguageLevel.getLatest(), newTypeName)
 
-        // For call‑site initiated intentions we always fully replace the
-        // annotation's value expression with the new custom type. This keeps
-        // the produced text simple and predictable (e.g. ``s: Customint``),
-        // which is exactly what tests assert.
-        annExpr.replace(replacement)
+        // For call‑site initiated intentions we prefer to only update the
+        // matching part of the annotation (e.g. a single union member) so
+        // that constructs like ``CustomWrapper | str`` become
+        // ``CustomWrapper | Customstr`` instead of collapsing the whole
+        // union to just ``Customstr``. When we cannot reliably locate the
+        // builtin inside the annotation, we fall back to a full replacement
+        // to preserve previous behaviour.
+        val builtinRefInAnn = PsiTreeUtil.collectElementsOfType(annExpr, PyReferenceExpression::class.java)
+            .firstOrNull { it.name == builtinName }
+
+        when {
+            builtinRefInAnn != null ->
+                rewriteAnnotation(builtinRefInAnn, newTypeRef, builtinName)
+
+            annExpr is PyStringLiteralExpression ->
+                rewriteAnnotation(annExpr, newTypeRef, builtinName)
+
+            else ->
+                annExpr.replace(newTypeRef)
+        }
     }
 
     /**
