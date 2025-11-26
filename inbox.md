@@ -2,7 +2,7 @@
 
 ## Pending Tasks
 
-- [ ] FP: Populate missing: `time.sleep(1)`
+- [ ] Custom Type: Use field name from dataclass
 - [ ] Wrap: Do not wrap ellipsis
 - [ ] Introduce wrap hierachies for unions: builtin, stdlib, custom -> do not offer if from same group
 - [ ] How to handle library code? Disable introduce type for library code?
@@ -88,4 +88,5 @@ def do():
 v < caret > al = do()
 ```
 
-- [ ] FP: Wrap `print("abc")` with object...
+- [x] FP: Wrap `print("abc")` with object...
+- [x] FP: Populate missing: `time.sleep(1)`

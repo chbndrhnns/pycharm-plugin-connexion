@@ -216,11 +216,14 @@ class TargetDetector {
         // 2. Check if already wrapped
         if (isAlreadyWrappedInCustomType(expr)) return null
 
-        // 3. Detect metadata (assignment, keyword arg, dataclass field, parameter default)
+        // 3. Detect metadata (assignment, keyword arg, return annotation, dataclass field, parameter default)
         val keywordName = detectKeywordArgumentName(expr)
         val assignmentInfo = if (keywordName == null) detectAssignmentName(expr, builtinName) else null
+        val returnInfo =
+            if (keywordName == null && assignmentInfo == null) detectReturnAnnotationInfo(expr, builtinName) else null
         val parameterInfo =
-            if (keywordName == null && assignmentInfo == null) detectParameterDefaultInfo(expr, builtinName) else null
+            if (keywordName == null && assignmentInfo == null && returnInfo == null)
+                detectParameterDefaultInfo(expr, builtinName) else null
         val dataclassField = findDataclassFieldForExpression(expr)
 
         // Check dataclass field type conflict
@@ -231,12 +234,27 @@ class TargetDetector {
         return ExpressionTarget(
             builtinName = builtinName,
             expression = expr,
-            annotationRef = assignmentInfo?.second ?: parameterInfo?.second,
+            annotationRef = assignmentInfo?.second ?: returnInfo?.second ?: parameterInfo?.second,
             keywordName = keywordName,
             assignmentName = assignmentInfo?.first,
             parameterName = parameterInfo?.first,
             dataclassField = dataclassField,
         )
+    }
+
+    private fun detectReturnAnnotationInfo(
+        expr: PyExpression,
+        builtinName: String,
+    ): Pair<String?, PyExpression?>? {
+        val returnStmt = PsiTreeUtil.getParentOfType(expr, PyReturnStatement::class.java, false)
+            ?: return null
+
+        if (returnStmt.expression != expr) return null
+
+        val fn = PsiTreeUtil.getParentOfType(returnStmt, PyFunction::class.java, false) ?: return null
+        val annotationValue = fn.annotation?.value
+        val ref = findExpressionMatchingBuiltin(annotationValue, builtinName)
+        return Pair(fn.name, ref)
     }
 
     private fun determineBuiltinType(expr: PyExpression, ctx: TypeEvalContext): String? {
