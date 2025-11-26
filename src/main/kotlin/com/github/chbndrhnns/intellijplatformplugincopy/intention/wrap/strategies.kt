@@ -1,4 +1,4 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.analysis
+package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.Elementwise
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.ElementwiseUnionChoice
@@ -8,10 +8,6 @@ import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.CtorMat
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedCtor
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedTypeInfo
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util.PyWrapHeuristics
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util.TypeBucket
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util.TypeBucketClassifier
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util.UnionCandidates
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.types.PyClassType
 import com.jetbrains.python.psi.types.TypeEvalContext

@@ -1,14 +1,11 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util
+package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.util.QualifiedName
 import com.jetbrains.python.codeInsight.dataflow.scope.ScopeUtil
 import com.jetbrains.python.codeInsight.imports.AddImportHelper
-import com.jetbrains.python.psi.PyFile
-import com.jetbrains.python.psi.PyFromImportStatement
-import com.jetbrains.python.psi.PyImportStatement
-import com.jetbrains.python.psi.PyTypedElement
+import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.impl.PyBuiltinCache
 import com.jetbrains.python.psi.resolve.PyResolveUtil
 import com.jetbrains.python.psi.types.TypeEvalContext
@@ -111,9 +108,9 @@ class PyImportService {
                     "from $modulePart import $name"
                 }
 
-                val generator = com.jetbrains.python.psi.PyElementGenerator.getInstance(file.project)
+                val generator = PyElementGenerator.getInstance(file.project)
                 val newFromImport = generator.createFromText(
-                    com.jetbrains.python.psi.LanguageLevel.getLatest(),
+                    LanguageLevel.getLatest(),
                     PyFromImportStatement::class.java,
                     newImportText,
                 )

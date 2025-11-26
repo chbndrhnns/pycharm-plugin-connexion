@@ -1,6 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util.PyImportService
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.PyImportService
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNamedElement
 import com.jetbrains.python.psi.PyFile

@@ -1,4 +1,4 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.analysis
+package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.WrapPlan
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions

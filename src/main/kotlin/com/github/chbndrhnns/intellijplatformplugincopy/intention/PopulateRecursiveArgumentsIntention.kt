@@ -2,7 +2,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention
 
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.isDataclassClass
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.isPositionalOnlyCallable
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util.PyImportService
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.PyImportService
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction

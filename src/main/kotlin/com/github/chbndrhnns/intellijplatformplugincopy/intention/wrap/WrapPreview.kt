@@ -1,7 +1,5 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.preview
+package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util.PyImportService
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util.PyWrapHeuristics
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNamedElement
@@ -64,7 +62,7 @@ class WrapPreview(
         }
 
         // We need to construct the new text for the container by wrapping each element
-        // This is tricky because we need to preserve formatting/comments if possible, 
+        // This is tricky because we need to preserve formatting/comments if possible,
         // but for preview we can just reconstruct the string roughly or use text replacement.
         // Since preview is a diff, exact whitespace preservation isn't strictly required but nice.
         // However, we don't have a generator here easily without project.
@@ -75,7 +73,7 @@ class WrapPreview(
 
         val sb = StringBuilder()
         val containerText = container.text
-        // If we just replace elements in the text... 
+        // If we just replace elements in the text...
         // It's hard to do robustly on string level without parsing.
         // But maybe for preview it's enough to show "Wrap items..." result on a simplified view?
         // Or we can use the same approach as Applier if we had a copy of file?
@@ -133,7 +131,7 @@ class WrapPreview(
         ctorElement ?: return null
 
         // Skip builtins and already-imported names
-        if (PyBuiltinCache.getInstance(anchor).isBuiltin(ctorElement)) return null
+        if (PyBuiltinCache.Companion.getInstance(anchor).isBuiltin(ctorElement)) return null
         if (imports.isImported(file, ctorElement.name ?: return null)) return null
 
         // If name already resolvable in scope, skip import

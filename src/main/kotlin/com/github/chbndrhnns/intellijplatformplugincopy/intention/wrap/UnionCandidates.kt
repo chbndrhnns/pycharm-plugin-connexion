@@ -1,4 +1,4 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util
+package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedCtor
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedTypeInfo

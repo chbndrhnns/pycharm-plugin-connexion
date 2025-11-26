@@ -1,6 +1,6 @@
 package fixtures
 
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.ui.PopupHost
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.PopupHost
 import com.intellij.openapi.editor.Editor
 
 class FakePopupHost : PopupHost {

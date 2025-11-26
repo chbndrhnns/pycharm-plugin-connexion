@@ -3,10 +3,10 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedCtor
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedTypeInfo
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.apply.WrapApplier
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.preview.WrapPreview
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util.PyImportService
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util.PyWrapHeuristics
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.PyImportService
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.PyWrapHeuristics
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.WrapApplier
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.WrapPreview
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction

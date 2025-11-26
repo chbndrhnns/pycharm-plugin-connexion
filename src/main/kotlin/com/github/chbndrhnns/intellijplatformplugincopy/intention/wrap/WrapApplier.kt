@@ -1,7 +1,5 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.apply
+package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util.PyImportService
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util.PyWrapHeuristics
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile

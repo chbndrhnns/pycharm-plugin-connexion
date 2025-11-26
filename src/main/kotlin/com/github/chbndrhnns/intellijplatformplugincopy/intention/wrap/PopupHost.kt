@@ -1,4 +1,4 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.ui
+package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 
 import com.intellij.openapi.editor.Editor
 

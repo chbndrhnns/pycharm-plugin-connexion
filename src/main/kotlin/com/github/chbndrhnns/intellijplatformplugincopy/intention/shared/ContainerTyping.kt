@@ -1,6 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.shared
 
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util.UnionCandidates
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.UnionCandidates
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.util.PsiTreeUtil
