@@ -65,7 +65,6 @@ class UnwrapItemsToExpectedTypeIntention : IntentionAction, HighPriorityAction, 
         WriteCommandAction.runWriteCommandAction(project) {
             val elements = when (val c = plan.container) {
                 is PySequenceExpression -> c.elements
-                is PySetLiteralExpression -> c.elements
                 else -> emptyArray()
             }
 
