@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy
 
 import PythonMockSdk
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.projectRoots.ProjectJdkTable
@@ -16,6 +17,8 @@ abstract class TestBase : MyPlatformTestCase() {
             Paths.get(PathManager.getHomePath(), "plugins", "python-ce", "helpers").toString()
         );
         super.setUp()
+        // Reset plugin settings to a known baseline after the IntelliJ test application is initialized
+        PluginSettingsState.instance().loadState(PluginSettingsState.State())
         val sdk = PythonMockSdk.create(LanguageLevel.PYTHON311, myFixture.tempDirFixture.getFile("/")!!)
         Disposer.register(testRootDisposable) {
             runWriteAction {

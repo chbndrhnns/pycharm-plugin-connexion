@@ -3,6 +3,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention
 import com.github.chbndrhnns.intellijplatformplugincopy.TestBase
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 
+//
 class PopulateRequiredArgumentsSettingsToggleTest : TestBase() {
 
     fun testIntentionHiddenWhenDisabled() {

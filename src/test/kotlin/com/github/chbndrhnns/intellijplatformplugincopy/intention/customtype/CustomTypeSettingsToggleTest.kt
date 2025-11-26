@@ -3,6 +3,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 import com.github.chbndrhnns.intellijplatformplugincopy.TestBase
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 
+//
 class CustomTypeSettingsToggleTest : TestBase() {
 
     fun testIntentionHiddenWhenDisabled() {
