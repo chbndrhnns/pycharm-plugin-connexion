@@ -47,6 +47,7 @@ class PopulateRecursiveArgumentsPydanticTest : TestBase() {
                 name: str = Field(alias="userName")
 
             u = User(userName=...)
+
             """.trimIndent()
         )
     }
@@ -96,6 +97,7 @@ class PopulateRecursiveArgumentsPydanticTest : TestBase() {
                 inner: Inner
 
             o = Outer(inner=Inner(value=...))
+
             """.trimIndent()
         )
     }

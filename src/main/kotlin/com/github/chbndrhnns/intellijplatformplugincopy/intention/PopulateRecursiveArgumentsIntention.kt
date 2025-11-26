@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention
 
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.isDataclassClass
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util.PyImportService
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
@@ -10,6 +11,7 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Iconable
 import com.intellij.psi.PsiFile
+import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.codeInsight.parseDataclassParameters
 import com.jetbrains.python.codeInsight.resolveDataclassFieldParameters
@@ -27,6 +29,7 @@ import javax.swing.Icon
 class PopulateRecursiveArgumentsIntention : IntentionAction, HighPriorityAction, DumbAware, Iconable {
 
     private var text: String = "Populate missing arguments recursively"
+    private val imports: PyImportService = PyImportService()
 
     override fun getText(): String = text
 
@@ -45,9 +48,7 @@ class PopulateRecursiveArgumentsIntention : IntentionAction, HighPriorityAction,
 
         val ctx = TypeEvalContext.codeAnalysis(project, file)
         val missing = getMissingParameters(call, ctx)
-        if (missing.isEmpty()) return false
-
-        return true
+        return missing.isNotEmpty()
     }
 
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
@@ -65,22 +66,34 @@ class PopulateRecursiveArgumentsIntention : IntentionAction, HighPriorityAction,
         val paramData = missing.mapNotNull { param ->
             val name = param.name ?: return@mapNotNull null
             val type = param.getType(ctx)
-            val valueStr = generateValue(type, ctx, 0, generator, languageLevel)
-            name to valueStr
+            val result = generateValue(type, ctx, 0, generator, languageLevel)
+            Triple(param, name, result)
         }
 
-        for ((name, _) in paramData) {
+        // First, create placeholder keyword arguments for all missing params to ensure
+        // we always insert arguments in a stable way, even if valueExpr creation fails.
+        for ((_, name, _) in paramData) {
             val kwArg = generator.createKeywordArgument(languageLevel, name, "None")
             argumentList.addArgument(kwArg)
         }
 
-        for ((name, valueStr) in paramData) {
+        // Then, replace placeholder values and ensure any referenced dataclass types
+        // are imported using the shared PyImportService logic, reusing existing
+        // relative imports like "from .models import Main" where possible.
+        for ((_, name, result) in paramData) {
             val kwArg = argumentList.arguments.filterIsInstance<PyKeywordArgument>().find { it.keyword == name }
             if (kwArg != null) {
-                val valueExpr = generator.createExpressionFromText(languageLevel, valueStr)
-                kwArg.valueExpression?.replace(valueExpr)
+                val valueExpr = generator.createExpressionFromText(languageLevel, result.text)
+                val replaced = kwArg.valueExpression?.replace(valueExpr) as? PyExpression ?: continue
+
+                // Ensure imports for all classes used in generation
+                for (cls in result.imports) {
+                    imports.ensureImportedIfNeeded(pyFile, replaced, cls)
+                }
             }
         }
+
+        CodeStyleManager.getInstance(project).reformat(argumentList)
     }
 
     private fun generateValue(
@@ -89,9 +102,9 @@ class PopulateRecursiveArgumentsIntention : IntentionAction, HighPriorityAction,
         depth: Int,
         generator: PyElementGenerator,
         languageLevel: LanguageLevel
-    ): String {
-        if (depth > MAX_RECURSION_DEPTH) return DEFAULT_FALLBACK_VALUE
-        if (type == null) return DEFAULT_FALLBACK_VALUE
+    ): GenerationResult {
+        if (depth > MAX_RECURSION_DEPTH) return GenerationResult(DEFAULT_FALLBACK_VALUE, emptySet())
+        if (type == null) return GenerationResult(DEFAULT_FALLBACK_VALUE, emptySet())
 
         return when {
             type is PyUnionType -> generateUnionValue(type, context, depth, generator, languageLevel)
@@ -103,7 +116,7 @@ class PopulateRecursiveArgumentsIntention : IntentionAction, HighPriorityAction,
                 languageLevel
             )
 
-            else -> DEFAULT_FALLBACK_VALUE
+            else -> GenerationResult(DEFAULT_FALLBACK_VALUE, emptySet())
         }
     }
 
@@ -113,10 +126,11 @@ class PopulateRecursiveArgumentsIntention : IntentionAction, HighPriorityAction,
         depth: Int,
         generator: PyElementGenerator,
         languageLevel: LanguageLevel
-    ): String {
+    ): GenerationResult {
         return type.members.find { memberType ->
-                (memberType as? PyClassType)?.pyClass?.let { isDataclassClass(it) } == true
-            }?.let { generateValue(it, context, depth, generator, languageLevel) } ?: DEFAULT_FALLBACK_VALUE
+            (memberType as? PyClassType)?.pyClass?.let { isDataclassClass(it) } == true
+        }?.let { generateValue(it, context, depth, generator, languageLevel) }
+            ?: GenerationResult(DEFAULT_FALLBACK_VALUE, emptySet())
     }
 
     private fun generateDataclassValue(
@@ -125,18 +139,27 @@ class PopulateRecursiveArgumentsIntention : IntentionAction, HighPriorityAction,
         depth: Int,
         generator: PyElementGenerator,
         languageLevel: LanguageLevel
-    ): String {
-        val className = pyClass.name ?: return DEFAULT_FALLBACK_VALUE
+    ): GenerationResult {
+        val className = pyClass.name ?: return GenerationResult(DEFAULT_FALLBACK_VALUE, emptySet())
         val callExpr = generator.createExpressionFromText(languageLevel, "$className()") as? PyCallExpression
-        val argumentList = callExpr?.argumentList ?: return DEFAULT_FALLBACK_VALUE
+        val argumentList = callExpr?.argumentList ?: return GenerationResult(DEFAULT_FALLBACK_VALUE, emptySet())
+
+        val requiredImports = mutableSetOf<PyClass>()
+        requiredImports.add(pyClass)
 
         extractDataclassFields(pyClass, context).forEach { (name, fieldType) ->
-            val valStr = generateValue(fieldType, context, depth + 1, generator, languageLevel)
+            val result = generateValue(fieldType, context, depth + 1, generator, languageLevel)
+            val valStr = result.text
+            requiredImports.addAll(result.imports)
+
             val kwArg = generator.createKeywordArgument(languageLevel, name, valStr)
             argumentList.addArgument(kwArg)
         }
 
-        return if (argumentList.arguments.isNotEmpty()) callExpr!!.text else DEFAULT_FALLBACK_VALUE
+        return if (argumentList.arguments.isNotEmpty())
+            GenerationResult(callExpr!!.text, requiredImports)
+        else
+            GenerationResult(DEFAULT_FALLBACK_VALUE, emptySet())
     }
 
     private fun extractDataclassFields(
@@ -150,13 +173,13 @@ class PopulateRecursiveArgumentsIntention : IntentionAction, HighPriorityAction,
             val params = callableType?.getParameters(context)
             if (params != null) {
                 params.filter { !it.isSelf && !it.isPositionalContainer && !it.isKeywordContainer }.forEach { param ->
-                        var name = param.name ?: return@forEach
-                        val field = pyClass.findClassAttribute(name, true, context) as? PyTargetExpression
-                        if (field != null) {
-                            name = resolveFieldAlias(pyClass, field, context, name)
-                        }
-                        fields.add(name to param.getType(context))
+                    var name = param.name ?: return@forEach
+                    val field = pyClass.findClassAttribute(name, true, context) as? PyTargetExpression
+                    if (field != null) {
+                        name = resolveFieldAlias(pyClass, field, context, name)
                     }
+                    fields.add(name to param.getType(context))
+                }
             }
         } else {
             // Fallback for synthetic __init__
@@ -210,4 +233,9 @@ class PopulateRecursiveArgumentsIntention : IntentionAction, HighPriorityAction,
         private const val MAX_RECURSION_DEPTH = 5
         private const val DEFAULT_FALLBACK_VALUE = "..."
     }
+
+    private data class GenerationResult(
+        val text: String,
+        val imports: Set<PyClass>
+    )
 }

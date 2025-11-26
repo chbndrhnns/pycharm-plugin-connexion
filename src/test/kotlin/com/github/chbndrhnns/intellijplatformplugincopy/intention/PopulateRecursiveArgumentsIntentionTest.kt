@@ -51,6 +51,7 @@ class PopulateRecursiveArgumentsIntentionTest : TestBase() {
                 b: B
 
             a = A(b=B(c=C(x=..., z=...)))
+
             """.trimIndent()
         )
     }
@@ -94,6 +95,7 @@ class PopulateRecursiveArgumentsIntentionTest : TestBase() {
                 other: str
 
             a = Node(leaf=Leaf(val=...), other=...)
+
             """.trimIndent()
         )
     }
@@ -137,6 +139,7 @@ class PopulateRecursiveArgumentsIntentionTest : TestBase() {
                 d: Union[D, None]
 
             e = E(d=D(v=...))
+
             """.trimIndent()
         )
     }
