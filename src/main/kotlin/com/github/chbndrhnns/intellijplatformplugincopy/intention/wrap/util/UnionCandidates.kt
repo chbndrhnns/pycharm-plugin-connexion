@@ -17,10 +17,11 @@ import com.jetbrains.python.psi.types.TypeEvalContext
  * Supported forms:
  * - PEP 604 style: `A | B | C`
  * - typing.Union[A, B, C]
- * - typing.Optional[A]  (treated as Union[A, NoneType] but NoneType is ignored as builtin)
+ * - typing.Optional[A]  (treated as Union[A, NoneType] but explicit ``None`` is ignored).
  *
- * Returns a list of distinct (name, resolved element) pairs for non-builtin symbols only,
- * and only when at least two such candidates can be determined.
+ * Returns a list of distinct (name, resolved element) pairs, and only when at
+ * least two such candidates can be determined. Builtins are kept so they can
+ * participate in bucket-based prioritization.
  */
 private fun String.equalsAnyIgnoreCase(vararg options: String): Boolean =
     options.any { this.equals(it, ignoreCase = true) }
@@ -28,7 +29,9 @@ private fun String.equalsAnyIgnoreCase(vararg options: String): Boolean =
 private fun isSupportedCtor(name: String?, symbol: PsiNamedElement?, builtins: PyBuiltinCache): Boolean {
     val n = name ?: return false
     if (n.equals("None", ignoreCase = true)) return false
-    return symbol == null || !builtins.isBuiltin(symbol)
+    // Keep builtins so that union bucket selection can prefer higher-value
+    // candidates (stdlib/thirdparty/own) over them.
+    return true
 }
 
 /**
@@ -268,7 +271,7 @@ object UnionCandidates {
         // Deduplicate by simple name
         val distinct = out.toList().distinctBy { it.name }
 
-        // Filter out explicit None/builtins; allow unresolved textual candidates from forward refs
+        // Filter out explicit ``None``; allow unresolved textual candidates from forward refs
         val builtins = PyBuiltinCache.getInstance(anchor)
         val filtered = distinct.filter { isSupportedCtor(it.name, it.symbol, builtins) }
         return if (filtered.size >= 2) filtered else emptyList()

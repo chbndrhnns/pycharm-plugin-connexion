@@ -25,6 +25,34 @@ class NameSuggester {
     }
 
     /**
+     * Derive a collection-style name from a field/parameter identifier when the
+     * underlying builtin type is a container (e.g. ``list``).
+     *
+     * For the specific case we currently care about, this turns
+     *
+     *   ``files: list[str]``
+     *
+     * into a preferred class name ``Files`` so we generate
+     * ``class Files(list): ...`` instead of a generic ``CustomList``.
+     */
+    fun deriveCollectionBaseName(identifier: String): String? {
+        if (identifier.isEmpty()) return null
+
+        // Keep the heuristic conservative: only accept simple lowercase names
+        // (plus digits/underscores) to avoid surprising behaviour for
+        // existing cases that rely on the generic CustomX naming.
+        val isSimpleLowercase = identifier.all { it.isLowerCase() || it.isDigit() || it == '_' }
+        if (!isSimpleLowercase) return null
+
+        // For now we only special-case obvious plural-ish names that end in
+        // ``s``. This covers the motivating example ``files`` while keeping
+        // other short names like ``val`` or ``x`` on the old path.
+        if (!identifier.endsWith('s')) return null
+
+        return identifier.replaceFirstChar { it.uppercaseChar() }
+    }
+
+    /**
      * Suggest a type name given the builtin and an optional preferred base
      * name derived from context (e.g. `product_id` -> `ProductId`).
      */

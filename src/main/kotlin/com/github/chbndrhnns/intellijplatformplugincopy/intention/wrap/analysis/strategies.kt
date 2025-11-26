@@ -9,10 +9,11 @@ import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.Expecte
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedTypeInfo
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util.PyWrapHeuristics
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util.TypeBucket
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util.TypeBucketClassifier
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.util.UnionCandidates
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.types.PyClassType
-import com.jetbrains.python.psi.types.PyTypeChecker
 import com.jetbrains.python.psi.types.TypeEvalContext
 
 interface WrapStrategy {
@@ -143,47 +144,63 @@ class UnionStrategy : WrapStrategy {
     override fun run(context: AnalysisContext): StrategyResult {
         val element = context.element
 
-        // Quick check: if the expression already matches the expected type (including Unions), do not suggest wrapping.
-        val info = ExpectedTypeInfo.getExpectedTypeInfo(element, context.typeEval)
-        val actualType = context.typeEval.getType(element)
-        if (info?.type != null && actualType != null) {
-            if (PyTypeChecker.match(info.type, actualType, context.typeEval)) {
-                return StrategyResult.Skip("Actual type matches expected type")
-            }
-        }
-
         val names = PyTypeIntentions.computeDisplayTypeNames(element, context.typeEval)
         val annElement = names.expectedAnnotationElement
 
         val unionCtors = annElement?.let { UnionCandidates.collect(it, element) } ?: emptyList()
 
-        if (unionCtors.size >= 2) {
-            val anyMatches = unionCtors.any {
-                PyWrapHeuristics.elementMatchesCtor(element, it, context.typeEval)
-            }
-            if (anyMatches) return StrategyResult.Skip("Already matches one union member")
-
-            val differing = unionCtors.filter {
-                !PyWrapHeuristics.elementMatchesCtor(element, it, context.typeEval)
-            }
-
-            val wrappedWithAny = differing.any {
-                PyWrapHeuristics.isAlreadyWrappedWith(element, it.name, it.symbol)
-            }
-            if (wrappedWithAny) return StrategyResult.Skip("Already wrapped with one union member")
-
-            return when (differing.size) {
-                0 -> StrategyResult.Skip("No differing candidates")
-                1 -> {
-                    val only = differing.first()
-                    StrategyResult.Found(Single(element, only.name, only.symbol))
-                }
-
-                else -> StrategyResult.Found(UnionChoice(element, differing))
-            }
+        if (unionCtors.size < 2) {
+            return StrategyResult.Continue
         }
 
-        return StrategyResult.Continue
+        // If the element already matches any union member, there is no mismatch
+        // to fix and we should not offer wrapping.
+        val anyMatches = unionCtors.any {
+            PyWrapHeuristics.elementMatchesCtor(element, it, context.typeEval)
+        }
+        if (anyMatches) return StrategyResult.Skip("Already matches one union member")
+
+        // Bucketize candidates to prefer OWN > THIRDPARTY > STDLIB > BUILTIN.
+        data class BucketedCtor(val bucket: TypeBucket, val ctor: ExpectedCtor)
+
+        val bucketed = unionCtors.mapNotNull { ctor ->
+            val bucket = TypeBucketClassifier.bucketFor(ctor.symbol, element) ?: return@mapNotNull null
+            BucketedCtor(bucket, ctor)
+        }
+        if (bucketed.isEmpty()) return StrategyResult.Continue
+
+        val byBucket = bucketed.groupBy { it.bucket }
+        val bestBucket = byBucket.keys.maxByOrNull { it.priority } ?: return StrategyResult.Continue
+        val bestBucketCtors = byBucket.getValue(bestBucket).map { it.ctor }
+
+        // If the actual expression is already of the highest available bucket,
+        // do not suggest wrapping.
+        val actualTypeBucket = (context.typeEval.getType(element) as? PyClassType)
+            ?.pyClass
+            ?.let { TypeBucketClassifier.bucketFor(it, element) }
+
+        if (actualTypeBucket != null && actualTypeBucket == bestBucket) {
+            return StrategyResult.Skip("Actual type already in best bucket")
+        }
+
+        val differing = bestBucketCtors.filter {
+            !PyWrapHeuristics.elementMatchesCtor(element, it, context.typeEval)
+        }
+
+        val wrappedWithAny = differing.any {
+            PyWrapHeuristics.isAlreadyWrappedWith(element, it.name, it.symbol)
+        }
+        if (wrappedWithAny) return StrategyResult.Skip("Already wrapped with one union member")
+
+        return when (differing.size) {
+            0 -> StrategyResult.Skip("No differing candidates")
+            1 -> {
+                val only = differing.first()
+                StrategyResult.Found(Single(element, only.name, only.symbol))
+            }
+
+            else -> StrategyResult.Found(UnionChoice(element, differing))
+        }
     }
 }
 

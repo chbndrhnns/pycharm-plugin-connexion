@@ -27,7 +27,15 @@ class PlanBuilder(
     }
 
     private fun buildFromAnnotation(target: AnnotationTarget, file: PyFile): CustomTypePlan {
-        val preferredName = target.ownerName?.let { id -> naming.deriveBaseName(id) }
+        val preferredName = when {
+            target.dataclassField != null && target.builtinName == "list" -> {
+                val fieldName = target.ownerName
+                fieldName?.let { naming.deriveCollectionBaseName(it) }
+                    ?: fieldName?.let { naming.deriveBaseName(it) }
+            }
+
+            else -> target.ownerName?.let { id -> naming.deriveBaseName(id) }
+        }
 
         val owner = PsiTreeUtil.getParentOfType(target.annotationRef, PyAnnotationOwner::class.java, false)
 
@@ -60,7 +68,15 @@ class PlanBuilder(
         val preferredName = preferredFromKeyword
             ?: preferredFromAssignment
             ?: preferredFromParameter
-            ?: target.dataclassField?.name?.let { naming.deriveBaseName(it) }
+            ?: when {
+                target.dataclassField != null && target.builtinName == "list" -> {
+                    val fieldName = target.dataclassField.name
+                    fieldName?.let { naming.deriveCollectionBaseName(it) }
+                        ?: fieldName?.let { naming.deriveBaseName(it) }
+                }
+
+                else -> target.dataclassField?.name?.let { naming.deriveBaseName(it) }
+            }
 
         return CustomTypePlan(
             builtinName = target.builtinName,

@@ -240,4 +240,37 @@ class CustomTypeDataclassTest : TestBase() {
                 """.trimIndent()
         )
     }
+
+    fun testField_ListOfStr_UsesPluralFieldNameForClass() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            import dataclasses
+
+
+            @dataclasses.dataclass
+            class FileUpload:
+                files: li<caret>st[str]
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Introduce custom type from list")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            import dataclasses
+            
+            
+            class Files(list[str]):
+                pass
+            
+            
+            @dataclasses.dataclass
+            class FileUpload:
+                files: Files
+            """.trimIndent()
+        )
+    }
 }

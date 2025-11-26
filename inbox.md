@@ -2,8 +2,6 @@
 
 ## Pending Tasks
 
-- [ ] Custom Type: Use field name from dataclass
-- [ ] Wrap: Do not wrap ellipsis
 - [ ] Introduce wrap hierachies for unions: builtin, stdlib, custom -> do not offer if from same group
 - [ ] How to handle library code? Disable introduce type for library code?
 - [ ] Wrap: on type inspection error OR on union type with different groups
@@ -90,3 +88,5 @@ v < caret > al = do()
 
 - [x] FP: Wrap `print("abc")` with object...
 - [x] FP: Populate missing: `time.sleep(1)`
+- [x] Custom Type: Use field name from dataclass
+- [x] Wrap: Do not wrap ellipsis

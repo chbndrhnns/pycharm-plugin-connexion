@@ -9,15 +9,16 @@ import com.github.chbndrhnns.intellijplatformplugincopy.intention.WrapWithExpect
  */
 class WrapUnionChoiceTest : TestBase() {
 
-    fun ignore_testUnionAutoSelect_PathOverStr() {
-        // We need type buckets to do that
+    fun testUnionAutoSelect_PathOverStr() {
         myFixture.configureByText(
             "a.py",
             """
             from pathlib import Path
-            from typing import Union
 
-            a: Union[Path, str] = <caret>"val"
+            def f(p: int | Path) -> None:
+                pass
+
+            f(<caret>"val")
             """.trimIndent()
         )
 
@@ -28,9 +29,11 @@ class WrapUnionChoiceTest : TestBase() {
         myFixture.checkResult(
             """
             from pathlib import Path
-            from typing import Union
 
-            a: Union[Path, str] = Path("val")
+            def f(p: int | Path) -> None:
+                pass
+
+            f(Path("val"))
             """.trimIndent()
         )
     }

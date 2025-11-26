@@ -237,8 +237,7 @@ class GenericTest : TestBase() {
         )
     }
 
-    fun ignore_testWrapWithUnionCustomFirstPicksCustom() {
-        // We need type buckets to do that
+    fun testWrapWithUnionCustomFirstPicksCustom() {
         myFixture.configureByText(
             "a.py",
             """
