@@ -1,26 +1,21 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.intention
+package com.github.chbndrhnns.intellijplatformplugincopy.intention.populate
 
-import com.github.chbndrhnns.intellijplatformplugincopy.TestBase
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
+import fixtures.TestBase
 
 //
-class PopulateKwOnlyArgumentsSettingsToggleTest : TestBase() {
+class RequiredArgumentsSettingsToggleTest : TestBase() {
 
     fun testIntentionHiddenWhenDisabled() {
         val svc = PluginSettingsState.instance()
         val old = svc.state
         try {
-            svc.loadState(
-                old.copy(
-                    enablePopulateKwOnlyArgumentsIntention = false,
-                    enablePopulateRequiredArgumentsIntention = old.enablePopulateRequiredArgumentsIntention,
-                ),
-            )
+            svc.loadState(old.copy(enablePopulateRequiredArgumentsIntention = false))
 
             myFixture.configureByText(
                 "a.py",
                 """
-                def foo(a, b):
+                def foo(a, b, c=3):
                     pass
 
                 foo(<caret>)
@@ -29,7 +24,7 @@ class PopulateKwOnlyArgumentsSettingsToggleTest : TestBase() {
 
             myFixture.doHighlighting()
             val intentions = myFixture.availableIntentions
-            val hasIntention = intentions.any { it.text == "Populate missing arguments with '...'" }
+            val hasIntention = intentions.any { it.text == "Populate required arguments with '...'" }
             assertFalse("Intention should be hidden when disabled in settings", hasIntention)
         } finally {
             svc.loadState(old)
@@ -40,17 +35,12 @@ class PopulateKwOnlyArgumentsSettingsToggleTest : TestBase() {
         val svc = PluginSettingsState.instance()
         val old = svc.state
         try {
-            svc.loadState(
-                old.copy(
-                    enablePopulateKwOnlyArgumentsIntention = true,
-                    enablePopulateRequiredArgumentsIntention = old.enablePopulateRequiredArgumentsIntention,
-                ),
-            )
+            svc.loadState(old.copy(enablePopulateRequiredArgumentsIntention = true))
 
             myFixture.configureByText(
                 "a.py",
                 """
-                def foo(a, b):
+                def foo(a, b, c=3):
                     pass
 
                 foo(<caret>)
@@ -59,7 +49,7 @@ class PopulateKwOnlyArgumentsSettingsToggleTest : TestBase() {
 
             myFixture.doHighlighting()
             val intentions = myFixture.availableIntentions
-            val hasIntention = intentions.any { it.text == "Populate missing arguments with '...'" }
+            val hasIntention = intentions.any { it.text == "Populate required arguments with '...'" }
             assertTrue("Intention should be visible when enabled in settings", hasIntention)
         } finally {
             svc.loadState(old)

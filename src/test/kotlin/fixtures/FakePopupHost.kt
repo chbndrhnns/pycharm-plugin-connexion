@@ -1,4 +1,4 @@
-package com.github.chbndrhnns.intellijplatformplugincopy
+package fixtures
 
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.ui.PopupHost
 import com.intellij.openapi.editor.Editor

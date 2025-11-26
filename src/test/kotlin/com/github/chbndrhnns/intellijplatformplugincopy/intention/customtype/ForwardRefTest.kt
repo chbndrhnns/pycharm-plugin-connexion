@@ -1,8 +1,8 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
-import com.github.chbndrhnns.intellijplatformplugincopy.TestBase
+import fixtures.TestBase
 
-class IntroduceCustomTypeForwardRefTest : TestBase() {
+class ForwardRefTest : TestBase() {
 
     fun testAssignment_UnionInString_UpdatesTextInsideString() {
         myFixture.configureByText(

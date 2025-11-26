@@ -1,8 +1,8 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
-import com.github.chbndrhnns.intellijplatformplugincopy.TestBase
+import fixtures.TestBase
 
-class CustomTypePydanticTest : TestBase() {
+class PydanticTest : TestBase() {
     fun testCall_IntroduceFromKeywordValue_UpdatesFieldAndUsages() {
         myFixture.configureByText(
             "a.py",

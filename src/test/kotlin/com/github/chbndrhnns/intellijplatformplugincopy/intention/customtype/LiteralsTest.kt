@@ -1,8 +1,8 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
-import com.github.chbndrhnns.intellijplatformplugincopy.TestBase
+import fixtures.TestBase
 
-class CustomTypeLiteralsTest : TestBase() {
+class LiteralsTest : TestBase() {
 
     fun testString_NoAnnotation_WrapsWithCustomStr() {
         myFixture.configureByText(

@@ -1,8 +1,8 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.intention
+package com.github.chbndrhnns.intellijplatformplugincopy.intention.populate
 
-import com.github.chbndrhnns.intellijplatformplugincopy.TestBase
+import fixtures.TestBase
 
-class PopulateRecursiveArgumentsIntentionTest : TestBase() {
+class RecursiveArgumentsIntentionTest : TestBase() {
 
     fun testRecursiveDataclassPopulation() {
         myFixture.configureByText(

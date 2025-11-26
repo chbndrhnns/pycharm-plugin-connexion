@@ -1,18 +1,18 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
-import com.github.chbndrhnns.intellijplatformplugincopy.TestBase
+import fixtures.TestBase
 
 /**
  * Basic smoke tests for introducing a custom type from stdlib types.
  *
  * These are intentionally small, "golden path" scenarios. More nuanced and
  * variant-heavy cases live in the thematic suites:
- * - [CustomTypeDataclassTest]
- * - [CustomTypePydanticTest]
- * - [CustomTypeLiteralsTest]
- * - [CustomTypeHeavyTest]
+ * - [DataclassTest]
+ * - [PydanticTest]
+ * - [LiteralsTest]
+ * - [HeavyTest]
  */
-class CustomTypeBasicTest : TestBase() {
+class BasicTest : TestBase() {
 
     fun testSimpleAnnotatedAssignment_Int_RewritesAnnotation() {
         myFixture.configureByText(

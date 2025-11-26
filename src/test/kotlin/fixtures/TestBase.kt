@@ -1,4 +1,4 @@
-package com.github.chbndrhnns.intellijplatformplugincopy
+package fixtures
 
 import PythonMockSdk
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState

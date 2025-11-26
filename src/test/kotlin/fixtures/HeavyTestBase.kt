@@ -1,4 +1,4 @@
-package com.github.chbndrhnns.intellijplatformplugincopy
+package fixtures
 
 import PythonMockSdk
 import com.intellij.openapi.application.PathManager
@@ -19,12 +19,12 @@ import java.nio.file.Paths
 
 /**
  * Heavy variant of [TestBase] using a real project fixture created via
- * [com.intellij.testFramework.fixtures.IdeaTestFixtureFactory]. This follows the patterns outlined in
+ * [IdeaTestFixtureFactory]. This follows the patterns outlined in
  * `docs/heavy-fixture.md` / `docs/heavy-test.md`:
  *
  * - A real project is created and opened through the normal project-opening
- *   pipeline (via [com.intellij.testFramework.fixtures.IdeaProjectTestFixture]).
- * - [myFixture] is a regular [com.intellij.testFramework.fixtures.CodeInsightTestFixture] backed by that heavy
+ *   pipeline (via [IdeaProjectTestFixture]).
+ * - [myFixture] is a regular [CodeInsightTestFixture] backed by that heavy
  *   project, so cross-file resolution behaves like in the IDE.
  * - Python-specific setup mirrors what [TestBase] does: helpers path, mock SDK
  *   and type checker inspection.

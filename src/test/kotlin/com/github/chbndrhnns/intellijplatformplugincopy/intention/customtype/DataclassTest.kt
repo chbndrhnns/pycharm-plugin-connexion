@@ -1,8 +1,8 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
-import com.github.chbndrhnns.intellijplatformplugincopy.TestBase
+import fixtures.TestBase
 
-class CustomTypeDataclassTest : TestBase() {
+class DataclassTest : TestBase() {
 
     fun testField_WrapsKeywordArgumentUsages() {
         myFixture.configureByText(

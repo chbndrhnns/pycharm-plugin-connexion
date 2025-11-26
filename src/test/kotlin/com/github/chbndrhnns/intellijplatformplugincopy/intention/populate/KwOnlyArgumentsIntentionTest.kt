@@ -1,10 +1,10 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.intention
+package com.github.chbndrhnns.intellijplatformplugincopy.intention.populate
 
-import com.github.chbndrhnns.intellijplatformplugincopy.TestBase
+import fixtures.TestBase
 
-class PopulateRequiredArgumentsIntentionTest : TestBase() {
+class KwOnlyArgumentsIntentionTest : TestBase() {
 
-    fun testDataclassPopulation_OnlyRequiredFields() {
+    fun testDataclassPopulation() {
         myFixture.configureByText(
             "a.py",
             """
@@ -21,7 +21,7 @@ class PopulateRequiredArgumentsIntentionTest : TestBase() {
         )
 
         myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Populate required arguments with '...'")
+        val intention = myFixture.findSingleIntention("Populate missing arguments with '...'")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(
@@ -34,17 +34,17 @@ class PopulateRequiredArgumentsIntentionTest : TestBase() {
                 y: int
                 z: int = 1
 
-            a = A(x=..., y=...)
+            a = A(x=..., y=..., z=...)
             """.trimIndent()
         )
     }
 
-    fun testKwOnlyMethods_RequiredOnly() {
+    fun testKwOnlyMethods() {
         myFixture.configureByText(
             "a.py",
             """
             class C:
-                def foo(self, *, a, b=1):
+                def foo(self, *, a, b):
                     pass
 
             C().foo(<caret>)
@@ -52,21 +52,21 @@ class PopulateRequiredArgumentsIntentionTest : TestBase() {
         )
 
         myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Populate required arguments with '...'")
+        val intention = myFixture.findSingleIntention("Populate missing arguments with '...'")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(
             """
             class C:
-                def foo(self, *, a, b=1):
+                def foo(self, *, a, b):
                     pass
 
-            C().foo(a=...)
+            C().foo(a=..., b=...)
             """.trimIndent()
         )
     }
 
-    fun testNestedClass_RequiredOnly() {
+    fun testNestedClass() {
         myFixture.configureByText(
             "a.py",
             """
@@ -76,14 +76,13 @@ class PopulateRequiredArgumentsIntentionTest : TestBase() {
                 @dataclass
                 class Inner:
                     f: int
-                    g: int | None = None
 
             Outer.Inner(<caret>)
             """.trimIndent()
         )
 
         myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Populate required arguments with '...'")
+        val intention = myFixture.findSingleIntention("Populate missing arguments with '...'")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(
@@ -94,18 +93,17 @@ class PopulateRequiredArgumentsIntentionTest : TestBase() {
                 @dataclass
                 class Inner:
                     f: int
-                    g: int | None = None
 
             Outer.Inner(f=...)
             """.trimIndent()
         )
     }
 
-    fun testPartialArguments_OnlyMissingRequired() {
+    fun testPartialArguments() {
         myFixture.configureByText(
             "a.py",
             """
-            def foo(a, b, c=3):
+            def foo(a, b, c):
                 pass
 
             foo(1, <caret>)
@@ -113,15 +111,15 @@ class PopulateRequiredArgumentsIntentionTest : TestBase() {
         )
 
         myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Populate required arguments with '...'")
+        val intention = myFixture.findSingleIntention("Populate missing arguments with '...'")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(
             """
-            def foo(a, b, c=3):
+            def foo(a, b, c):
                 pass
 
-            foo(1, b=...)
+            foo(1, b=..., c=...)
             """.trimIndent()
         )
     }
@@ -138,7 +136,7 @@ class PopulateRequiredArgumentsIntentionTest : TestBase() {
         )
 
         myFixture.doHighlighting()
-        val intention = myFixture.availableIntentions.find { it.text == "Populate required arguments with '...'" }
+        val intention = myFixture.availableIntentions.find { it.text == "Populate missing arguments with '...'" }
         assertNull("Populate intention should NOT be available for positional-only calls", intention)
     }
 }

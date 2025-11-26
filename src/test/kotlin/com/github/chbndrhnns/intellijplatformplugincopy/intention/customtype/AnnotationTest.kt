@@ -1,8 +1,8 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
-import com.github.chbndrhnns.intellijplatformplugincopy.TestBase
+import fixtures.TestBase
 
-class IntroduceCustomTypeAnnotationTest : TestBase() {
+class AnnotationTest : TestBase() {
 
     fun testAnnotatedAssignment_UnionType_UpdatesOnlyMatchingPart() {
         myFixture.configureByText(

@@ -1,8 +1,8 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
-import com.github.chbndrhnns.intellijplatformplugincopy.TestBase
+import fixtures.TestBase
 
-class IntroduceCustomTypeParameterTest : TestBase() {
+class ParameterTest : TestBase() {
 
     fun testParameterDefaultValue_UnionType_UpdatesAnnotationAndWrapsValue() {
         myFixture.configureByText(

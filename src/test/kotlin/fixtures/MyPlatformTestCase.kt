@@ -1,4 +1,4 @@
-package com.github.chbndrhnns.intellijplatformplugincopy
+package fixtures
 
 import com.intellij.testFramework.LightProjectDescriptor
 import com.intellij.testFramework.fixtures.BasePlatformTestCase

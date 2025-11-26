@@ -1,9 +1,9 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
-import com.github.chbndrhnns.intellijplatformplugincopy.TestBase
 import com.jetbrains.python.inspections.PyArgumentListInspection
+import fixtures.TestBase
 
-class CustomTypeArgumentListTest : TestBase() {
+class ArgumentListTest : TestBase() {
 
     fun testIntentionNotAvailable_WhenArgumentListErrorPresent() {
         myFixture.enableInspections(PyArgumentListInspection::class.java)

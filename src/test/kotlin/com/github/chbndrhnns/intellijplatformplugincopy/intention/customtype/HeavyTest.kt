@@ -1,6 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
-import com.github.chbndrhnns.intellijplatformplugincopy.HeavyTestBase
+import fixtures.HeavyTestBase
 
 /**
  * Placeholder for a future heavy multi-module variant of the cross-module
@@ -10,7 +10,7 @@ import com.github.chbndrhnns.intellijplatformplugincopy.HeavyTestBase
  * IdeaTestFixtureFactory to create a **heavy** project. The current
  * implementation still exercises cross-file behaviour within a single module.
  */
-class CustomTypeHeavyTest : HeavyTestBase() {
+class HeavyTest : HeavyTestBase() {
 
     fun testDataclassCrossModule_CreateTypeAtUsageSite_AddsImportAtUsageSite() {
         myFixture.configureByText("mod/__init__.py", "")

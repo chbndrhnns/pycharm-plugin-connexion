@@ -1,10 +1,10 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
-import com.github.chbndrhnns.intellijplatformplugincopy.TestBase
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
+import fixtures.TestBase
 
 //
-class CustomTypeSettingsToggleTest : TestBase() {
+class SettingsToggleTest : TestBase() {
 
     fun testIntentionHiddenWhenDisabled() {
         val svc = PluginSettingsState.instance()
