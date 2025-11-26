@@ -150,7 +150,7 @@ class WrapItemsWithExpectedTypeIntention : IntentionAction, HighPriorityAction, 
                 parent is PyTupleExpression ||
                 parent is PyDictLiteralExpression
 
-        val containerExpr = if (isLiteral && parent is PyExpression) parent else elementAtCaret
+        val containerExpr = if (isLiteral) parent else elementAtCaret
 
         val expectedOuterContainerCtor = expectedOuterContainerCtor(containerExpr, context)
 

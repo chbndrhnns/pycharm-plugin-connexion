@@ -1,0 +1,5 @@
+from typing import NewType
+
+UserId = NewType("UserId", int)
+
+xs: list[int] = [UserId(<caret>1), UserId(2)]
