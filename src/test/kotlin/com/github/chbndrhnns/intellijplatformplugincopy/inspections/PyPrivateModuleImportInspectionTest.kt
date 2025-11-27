@@ -67,6 +67,90 @@ class PyPrivateModuleImportInspectionTest : TestBase() {
         )
     }
 
+    fun testMakeSymbolPublicAndUseExportedSymbolQuickFix_MultipleSites() {
+        myFixture.configureByFiles(
+            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_MultipleSites/mypackage/__init__.py",
+            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_MultipleSites/mypackage/_lib.py",
+            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_MultipleSites/cli.py",
+            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_MultipleSites/other_consumer.py",
+        )
+
+        val cliFile = myFixture.findFileInTempDir(
+            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_MultipleSites/cli.py",
+        )
+        myFixture.openFileInEditor(cliFile!!)
+
+        myFixture.enableInspections(PyPrivateModuleImportInspection::class.java)
+        myFixture.doHighlighting()
+
+        val fixes = myFixture.getAllQuickFixes()
+        fixes
+            .filter { it.familyName == "Make symbol public and import from package" }
+            .forEach { myFixture.launchAction(it) }
+
+        myFixture.checkResultByFile(
+            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_MultipleSites/cli_after.py",
+        )
+
+        val otherFile = myFixture.findFileInTempDir(
+            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_MultipleSites/other_consumer.py",
+        )
+        myFixture.openFileInEditor(otherFile!!)
+        myFixture.checkResultByFile(
+            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_MultipleSites/other_consumer_after.py",
+        )
+
+        val initFile = myFixture.findFileInTempDir(
+            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_MultipleSites/mypackage/__init__.py",
+        )
+        myFixture.openFileInEditor(initFile!!)
+        myFixture.checkResultByFile(
+            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_MultipleSites/mypackage/__init___after.py",
+        )
+    }
+
+    fun testMakeSymbolPublicAndUseExportedSymbolQuickFix_SkipPackageRefs() {
+        myFixture.configureByFiles(
+            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_SkipPackageRefs/mypackage/__init__.py",
+            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_SkipPackageRefs/mypackage/_lib.py",
+            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_SkipPackageRefs/mypackage/inside.py",
+            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_SkipPackageRefs/cli.py",
+        )
+
+        val cliFile = myFixture.findFileInTempDir(
+            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_SkipPackageRefs/cli.py",
+        )
+        myFixture.openFileInEditor(cliFile!!)
+
+        myFixture.enableInspections(PyPrivateModuleImportInspection::class.java)
+        myFixture.doHighlighting()
+
+        val fixes = myFixture.getAllQuickFixes()
+        fixes
+            .filter { it.familyName == "Make symbol public and import from package" }
+            .forEach { myFixture.launchAction(it) }
+
+        myFixture.checkResultByFile(
+            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_SkipPackageRefs/cli_after.py",
+        )
+
+        val insideFile = myFixture.findFileInTempDir(
+            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_SkipPackageRefs/mypackage/inside.py",
+        )
+        myFixture.openFileInEditor(insideFile!!)
+        myFixture.checkResultByFile(
+            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_SkipPackageRefs/mypackage/inside_after.py",
+        )
+
+        val initFile = myFixture.findFileInTempDir(
+            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_SkipPackageRefs/mypackage/__init__.py",
+        )
+        myFixture.openFileInEditor(initFile!!)
+        myFixture.checkResultByFile(
+            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_SkipPackageRefs/mypackage/__init___after.py",
+        )
+    }
+
     fun testQuickFixNotOfferedInInit() {
         myFixture.configureByFiles(
             "inspections/PyPrivateModuleImportInspection/DoNotOfferInInit/mypackage/__init__.py",
