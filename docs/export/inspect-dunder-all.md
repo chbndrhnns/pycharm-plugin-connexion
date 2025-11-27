@@ -1,13 +1,7 @@
 ### 1. Inspection Implementation
 
-You need to create a new inspection class `PyMissingInDunderAllInspection` that extends `PyInspection`.
-
-This inspection has **two responsibilities**:
-
-1. For any module that defines `__all__`, verify that all public top-level symbols in that module are listed there.
-2. For **private modules** (file name starts with an underscore) that live inside a package which itself defines
-   `__all__`, verify that all public top-level symbols from the private module are exported via the **package’s**
-   `__all__`.
+You need to create a new inspection class `PyMissingInDunderAllInspection` that extends `PyInspection`. This inspection
+will visit the file, check if `__all__` is defined, and then verify if all public top-level symbols are included in it.
 
 ```java
 package com.jetbrains.python.inspections;
@@ -43,44 +37,12 @@ public class PyMissingInDunderAllInspection extends PyInspection {
     @Override
     public void visitPyFile(@NotNull PyFile node) {
       super.visitPyFile(node);
-      // 1) Check the module's own __all__ (if present)
       List<String> dunderAll = node.getDunderAll();
-      if (dunderAll != null) {
-        checkSymbolsExportedIn(node, dunderAll, ExportScope.MODULE, null);
+      if (dunderAll == null) {
+        return;
       }
 
-      // 2) If this is a *private* module inside a package that defines __all__,
-      //    also require that its public symbols are exported from the *package*.
-      if (node.getName() != null && node.getName().startsWith("_") && node instanceof PyFileImpl) {
-        PyFileImpl fileImpl = (PyFileImpl) node;
-        PyFile containingPackage = fileImpl.getContainingPackage();
-        if (containingPackage != null) {
-          List<String> packageAll = containingPackage.getDunderAll();
-          if (packageAll != null) {
-            checkSymbolsExportedIn(node, packageAll, ExportScope.PACKAGE, containingPackage);
-          }
-        }
-      }
-    }
-
-    private enum ExportScope {
-      MODULE,
-      PACKAGE
-    }
-
-    private boolean isExportable(PyElement element) {
-      return element instanceof PyClass ||
-             element instanceof PyFunction ||
-             (element instanceof PyTargetExpression && !PyNames.ALL.equals(element.getName()));
-    }
-
-    private void checkSymbolsExportedIn(@NotNull PyFile sourceFile,
-                                        @NotNull List<String> dunderAll,
-                                        @NotNull ExportScope scope,
-                                        @Nullable PyFile packageFile) {
-      String packageName = packageFile != null ? packageFile.getName() : null;
-
-      for (PyElement element : sourceFile.iterateNames()) {
+      for (PyElement element : node.iterateNames()) {
         if (!isExportable(element)) continue;
 
         String name = element.getName();
@@ -90,27 +52,19 @@ public class PyMissingInDunderAllInspection extends PyInspection {
 
         if (!dunderAll.contains(name)) {
           PsiElement nameIdentifier = getNameIdentifier(element);
-          if (nameIdentifier == null) continue;
-
-          String message;
-          LocalQuickFix[] fixes;
-
-          if (scope == ExportScope.MODULE) {
-            message = "Symbol '" + name + "' is not exported in __all__";
-            fixes = new LocalQuickFix[]{new PyAddSymbolToAllQuickFix(name)};
+          if (nameIdentifier != null) {
+            registerProblem(nameIdentifier,
+                            "Symbol '" + name + "' is not exported in __all__",
+                            new PyAddSymbolToAllQuickFix(name));
           }
-          else {
-            // Package-level check: public symbols defined in a private module must be re-exported
-            // from the package's __all__.
-            String pkg = packageName != null ? packageName : "package";
-            message = "Public symbol '" + name + "' from private module is not exported in __all__ of " + pkg;
-            // For now we only highlight; a package-level quick fix can be added later.
-            fixes = LocalQuickFix.EMPTY_ARRAY;
-          }
-
-          registerProblem(nameIdentifier, message, fixes);
         }
       }
+    }
+
+    private boolean isExportable(PyElement element) {
+      return element instanceof PyClass ||
+             element instanceof PyFunction ||
+             (element instanceof PyTargetExpression && !PyNames.ALL.equals(element.getName()));
     }
 
     private @Nullable PsiElement getNameIdentifier(PyElement element) {
@@ -216,25 +170,9 @@ public class PyMissingInDunderAllInspectionTest extends PyTestCase {
   public void testPrivateSymbol() {
     doTest();
   }
-
-  /**
-   * Private module (file starts with underscore) inside a package with __all__,
-   * where the symbol is NOT exported from the package's __all__.
-   */
-  public void testPrivateModuleNotExportedFromPackage() {
-    doTest();
-  }
-
-  /**
-   * Private module inside a package with __all__, where the symbol *is*
-   * exported from the package's __all__. No warning is expected.
-   */
-  public void testPrivateModuleExportedFromPackage() {
-    doTest();
-  }
   
   public void testAddToAllFix() {
-    doTest(); // Checks quickfix application for module-level __all__.
+    doTest(); // Checks quickfix application
   }
 
   private void doTest() {
@@ -242,9 +180,7 @@ public class PyMissingInDunderAllInspectionTest extends PyTestCase {
     myFixture.enableInspections(PyMissingInDunderAllInspection.class);
     myFixture.checkHighlighting(true, false, false);
     
-    // Apply quickfix if available (heuristic for test name ending in 'Fix').
-    // This only exercises the module-level quick fix; there is currently no
-    // package-level quick fix wired for the private-module / package __all__ case.
+    // Apply quickfix if available (heuristic for test name ending in 'Fix')
     if (getTestName(false).contains("Fix")) {
         myFixture.getAllQuickFixes().forEach(fix -> {
             if (fix.getFamilyName().equals("Add to __all__")) {
@@ -256,24 +192,6 @@ public class PyMissingInDunderAllInspectionTest extends PyTestCase {
   }
 }
 ```
-
-For the two new package-related tests, the test data layout could look like this:
-
-```text
-inspections/PyMissingInDunderAllInspection/
-  pkg/
-    __init__.py                      # defines package-level __all__
-    _private_module_not_exported.py  # defines a public symbol, not mentioned in pkg __all__
-    _private_module_exported.py      # defines a public symbol, re-exported via pkg __all__
-```
-
-- `testPrivateModuleNotExportedFromPackage` uses caret/highlight markers in
-  `_private_module_not_exported.py` to assert that the public symbol defined in
-  the private module is flagged as
-  `Public symbol 'X' from private module is not exported in __all__ of pkg`.
-- `testPrivateModuleExportedFromPackage` uses the same structure but ensures
-  that when the symbol is listed in `pkg.__all__`, the inspection produces no
-  warnings.
 
 ### 4. Edge Cases and Considerations
 
