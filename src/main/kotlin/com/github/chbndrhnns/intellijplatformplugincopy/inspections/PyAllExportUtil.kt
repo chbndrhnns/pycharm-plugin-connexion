@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.inspections
 
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiParserFacade
 import com.jetbrains.python.PyNames
 import com.jetbrains.python.psi.*
 
@@ -146,11 +147,33 @@ object PyAllExportUtil {
             "__all__ = ['$name']",
         )
 
-        val anchor = file.statements.firstOrNull()
-        if (anchor != null) {
-            file.addBefore(assignment, anchor)
-        } else {
+        // If the file has a module-level docstring, keep it at the very top
+        // and insert __all__ *after* it with exactly one blank line in
+        // between, so the layout becomes:
+        //
+        //   """docstring"""
+        //
+        //   __all__ = [...]
+        val docstringExpr = file.docStringExpression
+        if (docstringExpr != null) {
+            val parserFacade = PsiParserFacade.SERVICE.getInstance(project)
+            val whitespace = parserFacade.createWhiteSpaceFromText("\n\n")
+            val docstringOwner = (docstringExpr.parent.takeIf { it.parent == file } ?: docstringExpr)
+            val wsElement = file.addAfter(whitespace, docstringOwner)
+            file.addAfter(assignment, wsElement)
+            return
+        }
+
+        // No module-level docstring – fall back to the original behaviour of
+        // inserting __all__ before the first top-level statement (or as the
+        // only statement in an otherwise empty file).
+        val statements = file.statements
+        val firstStatement = statements.firstOrNull()
+
+        if (firstStatement == null) {
             file.add(assignment)
+        } else {
+            file.addBefore(assignment, firstStatement)
         }
     }
 

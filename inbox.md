@@ -2,6 +2,7 @@
 
 ## Pending Tasks
 
+- [ ] Do not inspect libraries/dependencies
 - [-] Refactor document for exports
 - [ ] Make private/public
 - [ ] Render dataclass fields in preview
@@ -117,3 +118,4 @@ f("abc")
 ```
 
 - [x] Fix PluginException Caused by PyMissingInDunderAllInspection
+- [x] Create __all__ if not exists

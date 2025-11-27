@@ -173,7 +173,28 @@ class PyMissingInDunderAllInspection : PyInspection() {
 
             if (isAllowlistedModule(moduleFile) || isAllowlistedModule(packageInit)) return
 
-            val dunderAllNames = findDunderAllNames(packageInit) ?: return
+            // For the package __init__.py we want slightly different
+            // semantics than for the in-file check in [checkInitFileExports]:
+            //
+            // - If there is *no* __all__ at all, we still want to report
+            //   problems so that the quick-fix can create __all__ from
+            //   scratch. This is the case exercised by
+            //   ModuleMissingFromPackageAllFix_NoAll.
+            // - If __all__ exists but is not a simple list/tuple of strings,
+            //   we treat it as "custom/unsupported" and skip the
+            //   cross-file check entirely to avoid fighting with user code.
+
+            val dunderAllAssignment = findDunderAllAssignment(packageInit)
+            val dunderAllNames = dunderAllAssignment?.let { findDunderAllNames(packageInit) }
+
+            // There is some kind of __all__ assignment, but we could not
+            // interpret it as a simple sequence – bail out.
+            if (dunderAllAssignment != null && dunderAllNames == null) return
+
+            // When there is no __all__ at all, behave as if it were an empty
+            // list so that every suitable symbol in [moduleFile] is
+            // considered missing and the quick-fix can create __all__.
+            val exportedNames: Collection<String> = dunderAllNames ?: emptyList()
 
             for (element in moduleFile.iterateNames()) {
                 if (!isExportable(element)) continue
@@ -182,7 +203,7 @@ class PyMissingInDunderAllInspection : PyInspection() {
                 val name = element.name
                 if (name == null || StringUtil.isEmpty(name) || name.startsWith("_")) continue
 
-                if (!dunderAllNames.contains(name)) {
+                if (!exportedNames.contains(name)) {
                     // The inspection for a regular module is run on that
                     // module file itself. ProblemDescriptors created here must
                     // therefore be anchored to elements from [moduleFile]
