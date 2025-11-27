@@ -24,6 +24,42 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
 
     fun testModuleMissingFromPackageAllFix() = doModuleFixTest("ModuleMissingFromPackageAllFix")
 
+    fun testModuleMissingFromPackageAllFix_WithExistingImportFromOtherModule() {
+        val testName = "ModuleMissingFromPackageAllFix_WithExistingImportFromOtherModule"
+
+        myFixture.configureByFiles(
+            "inspections/PyMissingInDunderAllInspection/$testName/__init__.py",
+            "inspections/PyMissingInDunderAllInspection/$testName/client.py",
+            "inspections/PyMissingInDunderAllInspection/$testName/other.py",
+        )
+
+        myFixture.enableInspections(PyMissingInDunderAllInspection::class.java)
+        myFixture.checkHighlighting(true, false, false)
+
+        // Ensure the quick-fix is invoked in the context of the module that
+        // declares the missing symbol. ModCommand-based quick-fixes rely on
+        // the currently opened editor file as the context for the problem
+        // element, so we must open client.py before collecting and applying
+        // fixes.
+        val moduleFile = myFixture.findFileInTempDir(
+            "inspections/PyMissingInDunderAllInspection/$testName/client.py",
+        )
+        myFixture.openFileInEditor(moduleFile!!)
+
+        val fixes = myFixture.getAllQuickFixes()
+        fixes
+            .filter { it.familyName == "Add to __all__" }
+            .forEach { myFixture.launchAction(it) }
+
+        val initFile = myFixture.findFileInTempDir(
+            "inspections/PyMissingInDunderAllInspection/$testName/__init__.py",
+        )
+        myFixture.openFileInEditor(initFile!!)
+        myFixture.checkResultByFile(
+            "inspections/PyMissingInDunderAllInspection/${testName}_after/__init__.py",
+        )
+    }
+
     fun testAllowlistedTestFunction() {
         val testName = getTestName(false)
         myFixture.configureByFile("inspections/PyMissingInDunderAllInspection/$testName/__init__.py")

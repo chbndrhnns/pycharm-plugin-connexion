@@ -66,9 +66,9 @@ object PyAllExportUtil {
 
         val moduleName = sourceModule.name.removeSuffix(".py")
 
-        // All names currently exported via __all__; we will prefer to import
-        // *all* of them from the module when synthesising a fresh import
-        // statement so that the import list stays in sync with __all__.
+        // All names currently exported via __all__; may be useful when there
+        // are no existing re-export imports yet and this module is the first
+        // one being wired up.
         val exportedNames: List<String> = (dunderAllAssignment.assignedValue as? PySequenceExpression)
             ?.elements
             ?.mapNotNull { (it as? PyStringLiteralExpression)?.stringValue }
@@ -109,7 +109,24 @@ object PyAllExportUtil {
         // No suitable import found – create a new one and insert it after
         // the __all__ assignment. We use a relative import so that it works
         // both in real projects and test data.
-        val importNames = (exportedNames + name).distinct().sorted()
+        //
+        // IMPORTANT:
+        // - When there are already other from-imports in this __init__.py,
+        //   we must assume that __all__ aggregates symbols from multiple
+        //   modules. In that case we conservatively import [name] only from
+        //   [sourceModule] to avoid pulling unrelated symbols from the wrong
+        //   module.
+        // - When there are no existing from-imports, this module is likely
+        //   the first implementation module being wired up. In that simple
+        //   case it's safe (and preserves the previous behaviour expected by
+        //   older tests) to create a combined import that mirrors all names
+        //   currently present in __all__.
+        val hasAnyFromImports = file.statements.any { it is PyFromImportStatement }
+        val importNames = if (hasAnyFromImports) {
+            listOf(name)
+        } else {
+            (exportedNames + name).distinct().sorted()
+        }
         val importStatement = generator.createFromText(
             languageLevel,
             PyFromImportStatement::class.java,
