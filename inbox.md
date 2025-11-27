@@ -2,9 +2,9 @@
 
 ## Pending Tasks
 
+- [-] Refactor document for exports
 - [ ] Make private/public
 - [ ] Render dataclass fields in preview
-- [x] Fix PluginException Caused by PyMissingInDunderAllInspection
 - [ ] feat: Introduce parameter object
 - [ ] feat: Convert fn to lambda
 - [ ] feat: Inspect dataclass subclasses for @dataclass decorator
@@ -115,3 +115,5 @@ def f(x: CustomWrapper | str) -> None:
 
 f("abc")
 ```
+
+- [x] Fix PluginException Caused by PyMissingInDunderAllInspection
