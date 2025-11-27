@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.inspections
 
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInspection.LocalInspectionToolSession
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.util.text.StringUtil
@@ -33,7 +34,15 @@ class PyMissingInDunderAllInspection : PyInspection() {
         holder: ProblemsHolder,
         isOnTheFly: Boolean,
         session: LocalInspectionToolSession,
-    ): PsiElementVisitor = Visitor(holder, session)
+    ): PsiElementVisitor {
+        val settings = PluginSettingsState.instance().state
+        if (!settings.enablePyMissingInDunderAllInspection) {
+            // Return a no-op visitor when the inspection is disabled in settings.
+            return object : PyElementVisitor() {}
+        }
+
+        return Visitor(holder, session)
+    }
 
     private class Visitor(
         private val holder: ProblemsHolder,

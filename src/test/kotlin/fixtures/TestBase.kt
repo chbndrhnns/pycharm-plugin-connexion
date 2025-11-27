@@ -18,7 +18,20 @@ abstract class TestBase : MyPlatformTestCase() {
         );
         super.setUp()
         // Reset plugin settings to a known baseline after the IntelliJ test application is initialized
-        PluginSettingsState.instance().loadState(PluginSettingsState.State())
+        val svc = PluginSettingsState.instance()
+        svc.loadState(
+            PluginSettingsState.State(
+                enableWrapWithExpectedTypeIntention = true,
+                enableWrapItemsWithExpectedTypeIntention = true,
+                enableUnwrapToExpectedTypeIntention = true,
+                enableUnwrapItemsToExpectedTypeIntention = true,
+                enableIntroduceCustomTypeFromStdlibIntention = true,
+                enablePopulateKwOnlyArgumentsIntention = true,
+                enablePopulateRequiredArgumentsIntention = true,
+                enablePopulateRecursiveArgumentsIntention = true,
+                enablePyMissingInDunderAllInspection = true,
+            ),
+        )
         val sdk = PythonMockSdk.create(LanguageLevel.PYTHON311, myFixture.tempDirFixture.getFile("/")!!)
         Disposer.register(testRootDisposable) {
             runWriteAction {

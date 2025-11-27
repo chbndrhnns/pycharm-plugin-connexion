@@ -16,6 +16,7 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enablePopulateKwOnlyArgumentsIntention: Boolean = true,
         var enablePopulateRequiredArgumentsIntention: Boolean = true,
         var enablePopulateRecursiveArgumentsIntention: Boolean = true,
+        var enablePyMissingInDunderAllInspection: Boolean = true,
     )
 
     private var myState = State()
