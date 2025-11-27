@@ -3,7 +3,6 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import fixtures.TestBase
 
-//
 class SettingsToggleTest : TestBase() {
 
     fun testWrapIntentionHiddenWhenDisabled() {

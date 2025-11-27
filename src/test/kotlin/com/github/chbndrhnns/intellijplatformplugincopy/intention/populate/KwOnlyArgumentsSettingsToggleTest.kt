@@ -3,7 +3,6 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.populate
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import fixtures.TestBase
 
-//
 class KwOnlyArgumentsSettingsToggleTest : TestBase() {
 
     fun testIntentionHiddenWhenDisabled() {
