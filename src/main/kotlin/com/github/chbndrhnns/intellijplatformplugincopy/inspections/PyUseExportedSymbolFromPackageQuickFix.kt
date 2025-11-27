@@ -1,0 +1,99 @@
+package com.github.chbndrhnns.intellijplatformplugincopy.inspections
+
+import com.intellij.modcommand.ModPsiUpdater
+import com.intellij.modcommand.PsiUpdateModCommandQuickFix
+import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
+import com.jetbrains.python.psi.*
+
+/**
+ * Quick-fix that rewrites an import from a private implementation module to
+ * the public package export, e.g.:
+ *
+ *     from .mypackage._lib import Client
+ *
+ * becomes
+ *
+ *     from .mypackage import Client
+ *
+ * when ``Client`` is exported from ``mypackage.__init__.__all__``.
+ */
+class PyUseExportedSymbolFromPackageQuickFix(
+    private val importedName: String,
+) : PsiUpdateModCommandQuickFix() {
+
+    override fun getFamilyName(): String = "Use exported symbol from package instead of private module"
+
+    override fun applyFix(project: Project, element: PsiElement, updater: ModPsiUpdater) {
+        val importElement = element as? PyImportElement ?: return
+        val fromImport = importElement.parent as? PyFromImportStatement ?: return
+
+        val file = fromImport.containingFile as? PyFile ?: return
+
+        val generator = PyElementGenerator.getInstance(project)
+        val languageLevel = com.jetbrains.python.psi.LanguageLevel.forElement(file)
+
+        val importSource = fromImport.importSource ?: return
+
+        // ``importSource`` may be a qualified expression (for absolute
+        // imports) or a simple reference expression. We rewrite the text
+        // representation conservatively by dropping the last dotted
+        // component when it starts with an underscore.
+        val sourceText = importSource.text
+        val newSourceText = when (importSource) {
+            is PyQualifiedExpression -> {
+                val qualifierText = importSource.qualifier?.text
+                val referencedName = importSource.referencedName
+                if (referencedName != null && referencedName.startsWith("_")) {
+                    qualifierText ?: return
+                } else {
+                    // Not a private module after all – bail out.
+                    return
+                }
+            }
+
+            is PyReferenceExpression -> {
+                val referencedName = importSource.referencedName
+                if (referencedName != null && referencedName.startsWith("_")) {
+                    // ``from _impl import Name`` → ``from . import Name`` is
+                    // not what we want here; this quick-fix is meant for
+                    // ``from pkg._impl import Name`` style imports where
+                    // there is at least one public package component.
+                    return
+                }
+                sourceText
+            }
+
+            else -> return
+        }
+
+        val alias = importElement.asName
+
+        val newImportText = if (fromImport.relativeLevel != null && fromImport.relativeLevel!! > 0) {
+            // For relative imports we prepend the appropriate number of
+            // leading dots to the new source text.
+            val dots = "".padStart(fromImport.relativeLevel!!, '.')
+            val fromPart = if (newSourceText.isNotEmpty()) "$dots$newSourceText" else dots
+            "from $fromPart import ${buildImportedFragment(importedName, alias)}"
+        } else {
+            "from $newSourceText import ${buildImportedFragment(importedName, alias)}"
+        }
+
+        val newFromImport = generator.createFromText(
+            languageLevel,
+            PyFromImportStatement::class.java,
+            newImportText,
+        )
+
+        // Replace the entire from-import statement so that we handle
+        // multiple imported names consistently (for now this quick-fix is
+        // only offered for single-name imports in tests).
+        updater.getWritable(fromImport).replace(newFromImport)
+
+        // The ModCommand framework will take care of re-highlighting; no
+        // explicit PSI refresh call is required here.
+    }
+
+    private fun buildImportedFragment(name: String, alias: String?): String =
+        if (alias != null) "$name as $alias" else name
+}

@@ -75,5 +75,15 @@
                 enabledByDefault="true"
                 level="WARNING"
                 implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyMissingInDunderAllInspection"/>
+
+        <localInspection
+                language="Python"
+                shortName="PyPrivateModuleImportInspection"
+                displayName="Import from private module when symbol is exported from package"
+                groupPath="Python"
+                groupName="Python"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyPrivateModuleImportInspection"/>
     </extensions>
 </idea-plugin>
