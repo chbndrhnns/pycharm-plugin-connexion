@@ -78,9 +78,16 @@ class PyMissingInDunderAllInspection : PyInspection() {
         override fun visitPyFile(node: PyFile) {
             super.visitPyFile(node)
 
+            val directory = node.containingDirectory
+
             if (node.name == PyNames.INIT_DOT_PY) {
                 checkInitFileExports(node)
-            } else {
+            } else if (directory != null && directory.findFile(PyNames.INIT_DOT_PY) is PyFile) {
+                // Only run the cross-file package export check for modules
+                // that actually belong to a package (i.e. live next to an
+                // __init__.py). This keeps behaviour consistent whether the
+                // module is "private" (e.g. _client.py) or public
+                // (client.py).
                 checkModuleExportsFromContainingPackage(node)
             }
         }
