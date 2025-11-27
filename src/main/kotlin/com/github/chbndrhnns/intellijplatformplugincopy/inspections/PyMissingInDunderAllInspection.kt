@@ -3,6 +3,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.inspections
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInspection.LocalInspectionToolSession
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
@@ -78,6 +79,9 @@ class PyMissingInDunderAllInspection : PyInspection() {
         override fun visitPyFile(node: PyFile) {
             super.visitPyFile(node)
 
+            // Skip stdlib and third‑party library code – only inspect project content.
+            if (!isUserCodeFile(node)) return
+
             val directory = node.containingDirectory
 
             if (node.name == PyNames.INIT_DOT_PY) {
@@ -90,6 +94,16 @@ class PyMissingInDunderAllInspection : PyInspection() {
                 // (client.py).
                 checkModuleExportsFromContainingPackage(node)
             }
+        }
+
+        private fun isUserCodeFile(file: PyFile): Boolean {
+            val vFile = file.virtualFile ?: return true
+            val project = file.project
+            val index = ProjectRootManager.getInstance(project).fileIndex
+
+            // Only inspect files that are part of the project's own sources.
+            // This skips stdlib, installed packages and other library roots.
+            return index.isInContent(vFile)
         }
 
         /**

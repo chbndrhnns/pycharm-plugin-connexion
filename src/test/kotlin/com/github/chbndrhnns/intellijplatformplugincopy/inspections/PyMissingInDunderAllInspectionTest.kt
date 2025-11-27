@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.inspections
 
+import com.intellij.testFramework.PsiTestUtil
 import fixtures.TestBase
 
 class PyMissingInDunderAllInspectionTest : TestBase() {
@@ -101,6 +102,51 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
         assertTrue("Add to __all__ intention should not be offered for symbols in allowlisted modules", fixes.none {
             it.familyName == "Add to __all__"
         })
+    }
+
+    fun testSkipLibraryAndStdlibModules() {
+        val testName = "SkipLibraries"
+
+        myFixture.copyDirectoryToProject(
+            "inspections/PyMissingInDunderAllInspection/$testName",
+            "inspections/PyMissingInDunderAllInspection/$testName",
+        )
+
+        val libRoot = myFixture.findFileInTempDir(
+            "inspections/PyMissingInDunderAllInspection/$testName/lib_pkg",
+        )
+        assertNotNull("Library root should exist", libRoot)
+
+        // Mark lib_pkg as an excluded root so that its files are not part of
+        // the module content and therefore get skipped by the
+        // inspection's isUserCodeFile() guard.
+        PsiTestUtil.addExcludedRoot(myFixture.module, libRoot)
+
+        // 1) Project module should still be inspected and report the
+        //    missing export from project_pkg.module.
+        myFixture.configureByFile(
+            "inspections/PyMissingInDunderAllInspection/$testName/project_pkg/module.py",
+        )
+
+        myFixture.enableInspections(PyMissingInDunderAllInspection::class.java)
+        val projectInfos = myFixture.doHighlighting()
+
+        assertTrue(
+            "Expected at least one missing-__all__ problem in project code",
+            projectInfos.any { it.description?.contains("not exported in package __all__") == true },
+        )
+
+        // 2) Library module should *not* be inspected at all – there should
+        //    be no missing-__all__ problems when opening lib_pkg/module.py.
+        myFixture.configureByFile(
+            "inspections/PyMissingInDunderAllInspection/$testName/lib_pkg/module.py",
+        )
+
+        val libraryInfos = myFixture.doHighlighting()
+        assertTrue(
+            "No missing-__all__ problems should be reported for library code",
+            libraryInfos.none { it.description?.contains("not exported in package __all__") == true },
+        )
     }
 
     private fun doTest(applyFix: Boolean = false) {
