@@ -68,27 +68,24 @@ class PyPrivateModuleImportInspection : PyInspection() {
         if (file == packageInit) return
 
         val dunderAllNames = findDunderAllNames(packageInit) ?: return
-        if (dunderAllNames.isEmpty()) return
 
         for (importElement in fromImport.importElements) {
             val name = importElement.importedQName?.lastComponent ?: continue
 
-            if (!dunderAllNames.contains(name)) continue
-
-            registerProblemForImportElement(importElement, name, holder)
+            if (dunderAllNames.contains(name)) {
+                holder.registerProblem(
+                    importElement,
+                    "Symbol '$name' is exported from package __all__; import it from the package instead of the private module",
+                    PyUseExportedSymbolFromPackageQuickFix(name),
+                )
+            } else {
+                holder.registerProblem(
+                    importElement,
+                    "Symbol '$name' is not exported from package __all__ yet; make it public and import from the package",
+                    PyMakeSymbolPublicAndUseExportedSymbolQuickFix(name),
+                )
+            }
         }
-    }
-
-    private fun registerProblemForImportElement(
-        importElement: PyImportElement,
-        name: String,
-        holder: ProblemsHolder,
-    ) {
-        holder.registerProblem(
-            importElement,
-            "Symbol '$name' is exported from package __all__; import it from the package instead of the private module",
-            PyUseExportedSymbolFromPackageQuickFix(name),
-        )
     }
 
     private fun findDunderAllNames(file: PyFile): Collection<String>? {
