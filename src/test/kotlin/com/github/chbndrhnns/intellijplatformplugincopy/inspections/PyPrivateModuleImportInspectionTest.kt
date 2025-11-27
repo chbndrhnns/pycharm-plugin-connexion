@@ -33,4 +33,25 @@ class PyPrivateModuleImportInspectionTest : TestBase() {
             "inspections/PyPrivateModuleImportInspection/UseExportedSymbolFromPackage/cli_after.py",
         )
     }
+
+    fun testQuickFixNotOfferedInInit() {
+        myFixture.configureByFiles(
+            "inspections/PyPrivateModuleImportInspection/DoNotOfferInInit/mypackage/__init__.py",
+            "inspections/PyPrivateModuleImportInspection/DoNotOfferInInit/mypackage/_lib.py",
+        )
+
+        val initFile = myFixture.findFileInTempDir(
+            "inspections/PyPrivateModuleImportInspection/DoNotOfferInInit/mypackage/__init__.py",
+        )
+        myFixture.openFileInEditor(initFile!!)
+
+        myFixture.enableInspections(PyPrivateModuleImportInspection::class.java)
+        myFixture.doHighlighting()
+
+        val fixes = myFixture.getAllQuickFixes()
+        assertTrue(
+            "Use-exported-symbol quick-fix should not be offered in __init__.py where the re-export happens",
+            fixes.none { it.familyName == "Use exported symbol from package instead of private module" },
+        )
+    }
 }

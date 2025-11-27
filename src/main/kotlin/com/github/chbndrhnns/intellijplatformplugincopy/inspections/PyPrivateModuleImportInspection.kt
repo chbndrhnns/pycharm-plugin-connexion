@@ -45,13 +45,13 @@ class PyPrivateModuleImportInspection : PyInspection() {
 
                 for (statement in node.statements) {
                     val fromImport = statement as? PyFromImportStatement ?: continue
-                    checkFromImport(fromImport, holder)
+                    checkFromImport(node, fromImport, holder)
                 }
             }
         }
     }
 
-    private fun checkFromImport(fromImport: PyFromImportStatement, holder: ProblemsHolder) {
+    private fun checkFromImport(file: PyFile, fromImport: PyFromImportStatement, holder: ProblemsHolder) {
         if (fromImport.isStarImport) return
 
         val resolved = fromImport.resolveImportSource() as? PyFile ?: return
@@ -61,6 +61,11 @@ class PyPrivateModuleImportInspection : PyInspection() {
 
         val directory = resolved.containingDirectory ?: return
         val packageInit = directory.findFile(PyNames.INIT_DOT_PY) as? PyFile ?: return
+
+        // Do not offer this quick-fix inside the package __init__.py that
+        // performs the re-export itself. In that file we *want* the import
+        // from the private module, not from the public package.
+        if (file == packageInit) return
 
         val dunderAllNames = findDunderAllNames(packageInit) ?: return
         if (dunderAllNames.isEmpty()) return
