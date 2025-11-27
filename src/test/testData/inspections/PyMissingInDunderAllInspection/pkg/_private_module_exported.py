@@ -1,0 +1,2 @@
+class PublicInPrivateExported:
+    pass

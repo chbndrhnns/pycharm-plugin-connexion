@@ -1,0 +1,20 @@
+<html>
+<body>
+<h2>Symbol not exported in __all__</h2>
+<p>
+    Reports public top-level symbols in a Python module that are not exported via <code>__all__</code>.
+</p>
+<ul>
+    <li>If a module defines <code>__all__</code>, all public classes, functions, and variables defined at
+        the top level should be listed there.
+    </li>
+    <li>If a private module (file name starts with an underscore) lives inside a package that defines
+        <code>__all__</code>, its public symbols should be re-exported via the package's
+        <code>__all__</code>.
+    </li>
+    <li>A quick-fix is available for the module-level case to append the missing symbol name to the
+        module's <code>__all__</code> list or tuple.
+    </li>
+</ul>
+</body>
+</html>

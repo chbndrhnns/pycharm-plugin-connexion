@@ -13,6 +13,15 @@
         <applicationService
                 serviceImplementation="com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState"/>
 
+        <localInspection
+                language="Python"
+                shortName="PyMissingInDunderAllInspection"
+                displayName="Symbol not exported in __all__"
+                groupName="Python"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.jetbrains.python.inspections.PyMissingInDunderAllInspection"/>
+
         <intentionAction>
             <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.WrapWithExpectedTypeIntention
             </className>
