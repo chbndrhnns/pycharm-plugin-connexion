@@ -91,7 +91,27 @@ class PyMissingInDunderAllInspection : PyInspection() {
          */
         private fun checkInitFileExports(initFile: PyFile) {
             if (isAllowlistedModule(initFile)) return
-            val dunderAllNames = findDunderAllNames(initFile) ?: return
+            // For __init__.py itself we want slightly different semantics
+            // than for regular modules:
+            // - If there is *no* __all__ assignment, we still report
+            //   problems and let the quick-fix create __all__ from
+            //   scratch.
+            // - If __all__ exists but is not a simple list/tuple, we
+            //   consider it "custom/unsupported" and skip the inspection
+            //   entirely to avoid fighting with user code.
+
+            val dunderAllAssignment = findDunderAllAssignment(initFile)
+            val dunderAllNames: Collection<String> = if (dunderAllAssignment == null) {
+                emptyList()
+            } else {
+                when (val value = dunderAllAssignment.assignedValue) {
+                    null -> emptyList()
+                    is PySequenceExpression -> value.elements
+                        .mapNotNull { (it as? PyStringLiteralExpression)?.stringValue }
+
+                    else -> return
+                }
+            }
 
             // 1) Symbols defined directly in __init__.py
             for (element in initFile.iterateNames()) {
@@ -236,9 +256,12 @@ class PyMissingInDunderAllInspection : PyInspection() {
          * present or not a simple list/tuple.
          */
         private fun findDunderAllNames(file: PyFile): Collection<String>? {
-            val dunderAllAssignment = findDunderAllAssignment(file) ?: return emptyList()
+            // Used for checking regular modules against the containing
+            // package's __init__.py. If there is no __all__ assignment or it
+            // is not a simple list/tuple of strings, we return null so that
+            // callers can skip the package-level check entirely.
+            val dunderAllAssignment = findDunderAllAssignment(file) ?: return null
             return when (val value = dunderAllAssignment.assignedValue) {
-                null -> emptyList()
                 is PySequenceExpression -> value.elements
                     .mapNotNull { (it as? PyStringLiteralExpression)?.stringValue }
 
