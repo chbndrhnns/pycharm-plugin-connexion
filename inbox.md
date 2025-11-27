@@ -2,6 +2,9 @@
 
 ## Pending Tasks
 
+- [ ] feat: Introduce parameter object
+- [ ] feat: Convert fn to lambda
+- [ ] feat: Inspect dataclass subclasses for @dataclass decorator
 - [ ] Configure default base classes
 - [ ] Block list: Do not allow names from typing or collections.abc.
 
