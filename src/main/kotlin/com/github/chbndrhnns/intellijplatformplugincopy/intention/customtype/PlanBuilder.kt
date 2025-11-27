@@ -2,10 +2,8 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import com.intellij.openapi.editor.Editor
 import com.intellij.psi.util.PsiTreeUtil
-import com.jetbrains.python.psi.PyAnnotationOwner
-import com.jetbrains.python.psi.PyAssignmentStatement
-import com.jetbrains.python.psi.PyFile
-import com.jetbrains.python.psi.PyTargetExpression
+import com.jetbrains.python.PyNames
+import com.jetbrains.python.psi.*
 
 /**
  * Encapsulates the logic for turning the low-level [Target] produced by
@@ -19,6 +17,10 @@ class PlanBuilder(
 
     fun build(editor: Editor, file: PyFile): CustomTypePlan? {
         val detected = detector.find(editor, file) ?: return null
+
+        if (shouldIgnoreTarget(detected)) {
+            return null
+        }
 
         return when (detected) {
             is AnnotationTarget -> buildFromAnnotation(detected, file)
@@ -86,6 +88,64 @@ class PlanBuilder(
             field = target.dataclassField,
             targetElement = target.dataclassField ?: target.annotationRef ?: target.expression,
             sourceFile = file,
+        )
+    }
+
+    /**
+     * Centralized ignore rules for the custom type intention. These mirror the
+     * defaults used for the __all__ inspection so that both features behave
+     * consistently in test modules and for magic/metadata symbols.
+     */
+    private fun shouldIgnoreTarget(target: Target): Boolean {
+        return when (target) {
+            is AnnotationTarget -> shouldIgnoreByName(target.ownerName)
+            is ExpressionTarget -> {
+                val nameCandidates = listOfNotNull(
+                    target.assignmentName,
+                    target.parameterName,
+                    target.dataclassField?.name,
+                )
+
+                if (nameCandidates.any { shouldIgnoreByName(it) }) return true
+
+                // Additionally, skip any expression that lives inside a
+                // __all__ assignment like ``__all__ = ["..."]``.
+                isInsideDunderAll(target.expression)
+            }
+        }
+    }
+
+    private fun shouldIgnoreByName(name: String?): Boolean {
+        name ?: return false
+
+        if (name in IGNORED_EXACT_SYMBOL_NAMES) return true
+
+        return IGNORED_SYMBOL_NAME_PREFIXES.any { prefix -> name.startsWith(prefix) }
+    }
+
+    private fun isInsideDunderAll(expression: com.jetbrains.python.psi.PyExpression): Boolean {
+        val sequence = PsiTreeUtil.getParentOfType(expression, PySequenceExpression::class.java, false)
+            ?: return false
+
+        val assignment = PsiTreeUtil.getParentOfType(sequence, PyAssignmentStatement::class.java, false)
+            ?: return false
+
+        return assignment.targets.any { it.name == PyNames.ALL }
+    }
+
+    companion object {
+        private val IGNORED_EXACT_SYMBOL_NAMES = setOf(
+            "__all__",
+            "__version__",
+            "__author__",
+            "__doc__",
+            "__path__",
+            "__annotations__",
+        )
+
+        private val IGNORED_SYMBOL_NAME_PREFIXES = listOf(
+            "_",       // private / internal
+            "test_",  // pytest-style tests
         )
     }
 }
