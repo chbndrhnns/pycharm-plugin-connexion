@@ -22,6 +22,47 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
 
     fun testModuleMissingFromPackageAllFix() = doModuleFixTest("ModuleMissingFromPackageAllFix")
 
+    fun testAllowlistedTestFunction() {
+        val testName = getTestName(false)
+        myFixture.configureByFile("inspections/PyMissingInDunderAllInspection/$testName/__init__.py")
+
+        myFixture.enableInspections(PyMissingInDunderAllInspection::class.java)
+        myFixture.checkHighlighting(true, false, false)
+
+        val fixes = myFixture.getAllQuickFixes()
+        assertTrue("Add to __all__ intention should not be offered for allowlisted symbols", fixes.none {
+            it.familyName == "Add to __all__"
+        })
+    }
+
+    fun testAllowlistedTestPackage() {
+        val testName = getTestName(false)
+        myFixture.configureByFile("inspections/PyMissingInDunderAllInspection/$testName/__init__.py")
+
+        myFixture.enableInspections(PyMissingInDunderAllInspection::class.java)
+        myFixture.checkHighlighting(true, false, false)
+
+        val fixes = myFixture.getAllQuickFixes()
+        assertTrue("Add to __all__ intention should not be offered for symbols in allowlisted packages", fixes.none {
+            it.familyName == "Add to __all__"
+        })
+    }
+
+    fun testAllowlistedTestModule() {
+        myFixture.configureByFiles(
+            "inspections/PyMissingInDunderAllInspection/AllowlistedTestModule/__init__.py",
+            "inspections/PyMissingInDunderAllInspection/AllowlistedTestModule/test_helpers.py",
+        )
+
+        myFixture.enableInspections(PyMissingInDunderAllInspection::class.java)
+        myFixture.checkHighlighting(true, false, false)
+
+        val fixes = myFixture.getAllQuickFixes()
+        assertTrue("Add to __all__ intention should not be offered for symbols in allowlisted modules", fixes.none {
+            it.familyName == "Add to __all__"
+        })
+    }
+
     private fun doTest(applyFix: Boolean = false) {
         val testName = getTestName(false)
         myFixture.configureByFile("inspections/PyMissingInDunderAllInspection/$testName/__init__.py")

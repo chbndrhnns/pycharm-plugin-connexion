@@ -49,6 +49,32 @@ class PyMissingInDunderAllInspection : PyInspection() {
         private val session: LocalInspectionToolSession,
     ) : PyElementVisitor() {
 
+        /**
+         * Hardcoded allowlists for symbols that should not be required to
+         * appear in __all__.
+         *
+         * First step: keep it simple and prefix‑based so that we can later
+         * move this into configurable settings if needed.
+         */
+        private val allowlistedModuleNamePrefixes = listOf(
+            "test_",
+            "tests_",
+        )
+
+        private val allowlistedExactModuleNames = setOf(
+            "tests",
+        )
+
+        private val allowlistedFunctionNamePrefixes = listOf(
+            // Common test helpers / pytest style tests
+            "test_",
+        )
+
+        private val allowlistedClassNamePrefixes = listOf(
+            // Typical unittest / pytest style test classes
+            "Test",
+        )
+
         override fun visitPyFile(node: PyFile) {
             super.visitPyFile(node)
 
@@ -64,11 +90,13 @@ class PyMissingInDunderAllInspection : PyInspection() {
          * exported via that file's own __all__.
          */
         private fun checkInitFileExports(initFile: PyFile) {
+            if (isAllowlistedModule(initFile)) return
             // remove. Silly
             val dunderAllNames = findDunderAllNames(initFile) ?: return
 
             for (element in initFile.iterateNames()) {
                 if (!isExportable(element)) continue
+                if (isAllowlistedSymbol(element)) continue
 
                 val name = element.name
                 if (name == null || StringUtil.isEmpty(name) || name.startsWith("_")) continue
@@ -92,10 +120,13 @@ class PyMissingInDunderAllInspection : PyInspection() {
             val directory = moduleFile.containingDirectory ?: return
             val packageInit = directory.findFile(PyNames.INIT_DOT_PY) as? PyFile ?: return
 
+            if (isAllowlistedModule(moduleFile) || isAllowlistedModule(packageInit)) return
+
             val dunderAllNames = findDunderAllNames(packageInit) ?: return
 
             for (element in moduleFile.iterateNames()) {
                 if (!isExportable(element)) continue
+                if (isAllowlistedSymbol(element)) continue
 
                 val name = element.name
                 if (name == null || StringUtil.isEmpty(name) || name.startsWith("_")) continue
@@ -116,6 +147,43 @@ class PyMissingInDunderAllInspection : PyInspection() {
                     element is PyFunction ||
                     (element is PyTargetExpression && !PyNames.ALL.equals(element.name)) ||
                     element is PyTypeAliasStatement
+
+        private fun isAllowlistedModule(file: PyFile): Boolean {
+            val nameWithoutExtension = file.name.removeSuffix(".py")
+
+            // Allowlist by module file name (e.g. test_something.py, tests.py)
+            if (allowlistedExactModuleNames.contains(nameWithoutExtension)) return true
+            if (allowlistedModuleNamePrefixes.any { prefix -> nameWithoutExtension.startsWith(prefix) }) {
+                return true
+            }
+
+            // Also allowlist by containing package/directory name so that whole
+            // test packages (e.g. `tests`, `test_package`) are ignored by the
+            // inspection regardless of the individual module file names.
+            val directoryName = file.containingDirectory?.name
+            if (directoryName != null) {
+                if (allowlistedExactModuleNames.contains(directoryName)) return true
+                if (allowlistedModuleNamePrefixes.any { prefix -> directoryName.startsWith(prefix) }) {
+                    return true
+                }
+            }
+
+            return false
+        }
+
+        private fun isAllowlistedSymbol(element: PyElement): Boolean {
+            val name = (element as? PsiNameIdentifierOwner)?.name ?: return false
+
+            if (element is PyFunction && allowlistedFunctionNamePrefixes.any { prefix -> name.startsWith(prefix) }) {
+                return true
+            }
+
+            if (element is PyClass && allowlistedClassNamePrefixes.any { prefix -> name.startsWith(prefix) }) {
+                return true
+            }
+
+            return false
+        }
 
         private fun getNameIdentifier(element: PyElement): PsiElement? =
             if (element is PsiNameIdentifierOwner) element.nameIdentifier else element
