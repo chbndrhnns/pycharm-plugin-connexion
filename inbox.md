@@ -2,6 +2,7 @@
 
 ## Pending Tasks
 
+- [ ] Fix PluginException Caused by PyMissingInDunderAllInspection
 - [ ] feat: Introduce parameter object
 - [ ] feat: Convert fn to lambda
 - [ ] feat: Inspect dataclass subclasses for @dataclass decorator
