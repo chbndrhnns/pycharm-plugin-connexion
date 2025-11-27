@@ -65,5 +65,15 @@
                 displayName="DDD Toolkit"
                 id="com.github.chbndrhnns.intellijplatformplugincopy.settings"
                 instance="com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsConfigurable"/>
+
+        <localInspection
+                language="Python"
+                shortName="PyMissingInDunderAllInspection"
+                displayName="Symbol not exported in __all__"
+                groupPath="Python"
+                groupName="Python"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyMissingInDunderAllInspection"/>
     </extensions>
 </idea-plugin>

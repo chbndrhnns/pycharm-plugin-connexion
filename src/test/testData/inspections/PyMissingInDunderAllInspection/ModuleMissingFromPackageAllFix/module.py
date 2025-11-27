@@ -1,0 +1,2 @@
+class PublicClass:
+    pass
