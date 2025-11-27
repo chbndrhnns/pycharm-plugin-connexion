@@ -132,7 +132,13 @@ class PyMissingInDunderAllInspection : PyInspection() {
                 if (name == null || StringUtil.isEmpty(name) || name.startsWith("_")) continue
 
                 if (!dunderAllNames.contains(name)) {
-                    val nameIdentifier = getNameIdentifier(element) ?: continue
+                    // The inspection for a regular module is run on that
+                    // module file itself. ProblemDescriptors created here must
+                    // therefore be anchored to elements from [moduleFile]
+                    // (typically the symbol definition), not from the
+                    // containing package's __init__.py.
+                    val nameIdentifier = getNameIdentifier(element) ?: moduleFile
+
                     holder.registerProblem(
                         nameIdentifier,
                         "Symbol '$name' is not exported in package __all__",

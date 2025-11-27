@@ -2,6 +2,7 @@
 
 ## Pending Tasks
 
+- [ ] Render dataclass fields in preview
 - [ ] Fix PluginException Caused by PyMissingInDunderAllInspection
 - [ ] feat: Introduce parameter object
 - [ ] feat: Convert fn to lambda
