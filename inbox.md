@@ -2,6 +2,7 @@
 
 ## Pending Tasks
 
+- [ ] Make private/public
 - [ ] Render dataclass fields in preview
 - [x] Fix PluginException Caused by PyMissingInDunderAllInspection
 - [ ] feat: Introduce parameter object
