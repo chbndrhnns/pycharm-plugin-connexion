@@ -1,0 +1,39 @@
+<html>
+<body>
+<!-- Intention description for "Wrap Items With Expected Type" -->
+<p>
+    Wraps each element in a container expression with the expected item type constructor.
+</p>
+
+<p>
+    When a type mismatch is detected for a container (for example, the expected type is
+    <code>list[UserId]</code> but the actual literal is <code>[1, 2, 3]</code>), this intention
+    offers to wrap each element with the expected constructor.
+</p>
+
+<p>Example:</p>
+<table border="1">
+    <tr>
+        <th>Before</th>
+        <th>After</th>
+    </tr>
+    <tr>
+        <td>
+            <pre><code>from mytypes import UserId
+
+users: list[UserId] = [1, 2, 3]</code></pre>
+        </td>
+        <td>
+            <pre><code>from mytypes import UserId
+
+users: list[UserId] = [UserId(1), UserId(2), UserId(3)]</code></pre>
+        </td>
+    </tr>
+</table>
+
+<p>
+    This helps quickly fix container type mismatches by automatically applying the
+    appropriate constructor to each item.
+</p>
+</body>
+</html>
