@@ -91,9 +91,9 @@ class PyMissingInDunderAllInspection : PyInspection() {
          */
         private fun checkInitFileExports(initFile: PyFile) {
             if (isAllowlistedModule(initFile)) return
-            // remove. Silly
             val dunderAllNames = findDunderAllNames(initFile) ?: return
 
+            // 1) Symbols defined directly in __init__.py
             for (element in initFile.iterateNames()) {
                 if (!isExportable(element)) continue
                 if (isAllowlistedSymbol(element)) continue
@@ -105,6 +105,30 @@ class PyMissingInDunderAllInspection : PyInspection() {
                     val nameIdentifier = getNameIdentifier(element) ?: continue
                     holder.registerProblem(
                         nameIdentifier,
+                        "Symbol '$name' is not exported in __all__",
+                        PyAddSymbolToAllQuickFix(name),
+                    )
+                }
+            }
+
+            // 2) Imported symbols that should be part of the package API
+            for (statement in initFile.statements) {
+                val fromImport = statement as? PyFromImportStatement ?: continue
+
+                for (importElement in fromImport.importElements) {
+                    val importedQName = importElement.importedQName ?: continue
+                    val name = importedQName.lastComponent ?: continue
+
+                    if (name.isEmpty() || name.startsWith("_")) continue
+                    if (dunderAllNames.contains(name)) continue
+
+                    // Respect existing allowlists (e.g. test_ helpers)
+                    if (allowlistedFunctionNamePrefixes.any { prefix -> name.startsWith(prefix) }) continue
+                    if (allowlistedClassNamePrefixes.any { prefix -> name.startsWith(prefix) }) continue
+
+                    val anchor = importElement.asNameElement ?: importElement
+                    holder.registerProblem(
+                        anchor,
                         "Symbol '$name' is not exported in __all__",
                         PyAddSymbolToAllQuickFix(name),
                     )

@@ -16,6 +16,8 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
 
     fun testAddToAllFix() = doTest(applyFix = true)
 
+    fun testImportInInitAddToAllFix() = doTest(applyFix = true)
+
     fun testModuleMissingFromPackageAll() = doModuleTest("ModuleMissingFromPackageAll")
 
     fun testModulePresentInPackageAll() = doModuleTest("ModulePresentInPackageAll")
