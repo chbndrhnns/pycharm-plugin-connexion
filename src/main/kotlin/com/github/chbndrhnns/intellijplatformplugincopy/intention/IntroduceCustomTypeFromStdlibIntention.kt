@@ -55,13 +55,6 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
 
         val pyFile = file as? PyFile ?: return false
 
-        // Reuse the same heuristics as PyMissingInDunderAllInspection so that
-        // "Introduce custom type" stays out of typical test/migrations-style
-        // modules where such refactorings are usually not desired.
-        if (isAllowlistedModule(pyFile)) {
-            return false
-        }
-
         val elementAtCaret =
             PyTypeIntentions.findExpressionAtCaret(
                 editor,
@@ -118,7 +111,7 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
     }
 
     private fun hasBlockingInspections(project: Project, editor: Editor, range: TextRange): Boolean {
-        val highlights = DaemonCodeAnalyzerImpl.getHighlights(editor.document, null, project) ?: return false
+        val highlights = DaemonCodeAnalyzerImpl.getHighlights(editor.document, null, project)
 
         return highlights.any { info ->
             info.description != null &&
@@ -131,40 +124,5 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
     companion object {
         private val PLAN_KEY = Key.create<CustomTypePlan>("introduce.custom.type.plan")
 
-        /**
-         * Lightweight copy of PyMissingInDunderAllInspection's module allowlist
-         * logic so that we can share sensible defaults without introducing a
-         * dependency from the intention onto the inspection.
-         */
-        private val allowlistedModuleNamePrefixes = listOf(
-            "test_",
-            "tests_",
-        )
-
-        private val allowlistedExactModuleNames = setOf(
-            "tests",
-        )
-
-        private fun isAllowlistedModule(file: PyFile): Boolean {
-            val nameWithoutExtension = file.name.removeSuffix(".py")
-
-            // Allowlist by module file name (e.g. test_something.py, tests.py)
-            if (allowlistedExactModuleNames.contains(nameWithoutExtension)) return true
-            if (allowlistedModuleNamePrefixes.any { prefix -> nameWithoutExtension.startsWith(prefix) }) {
-                return true
-            }
-
-            // Also allowlist by containing package/directory name so that whole
-            // test packages (e.g. `tests`, `test_package`) are ignored.
-            val directoryName = file.containingDirectory?.name
-            if (directoryName != null) {
-                if (allowlistedExactModuleNames.contains(directoryName)) return true
-                if (allowlistedModuleNamePrefixes.any { prefix -> directoryName.startsWith(prefix) }) {
-                    return true
-                }
-            }
-
-            return false
-        }
     }
 }
