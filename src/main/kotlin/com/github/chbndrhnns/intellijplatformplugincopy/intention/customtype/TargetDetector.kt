@@ -195,6 +195,11 @@ class TargetDetector {
             ?: PsiTreeUtil.getParentOfType(leaf, PyNumericLiteralExpression::class.java, false)
             ?: return null
 
+        // Do not offer custom type introduction on docstrings (module, function, or class).
+        if (expr is PyStringLiteralExpression && expr.isDocStringLiteral()) {
+            return null
+        }
+
         if (isArgumentOfLibraryFunction(expr)) return null
 
         // Suppress the intention on implicit function-call results on the RHS of

@@ -223,4 +223,56 @@ class LiteralsTest : TestBase() {
             """.trimIndent()
         )
     }
+
+    fun testModuleDocstring_DoesNotOfferCustomTypeIntention() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            \"\"\"Module doc<caret>string\"\"\"
+
+            def f(x: int) -> None:
+                ...
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+
+        val intentions = myFixture.filterAvailableIntentions("Introduce custom type from int")
+        assertEmpty("Should not offer custom type introduction on module docstring", intentions)
+    }
+
+    fun testFunctionDocstring_DoesNotOfferCustomTypeIntention() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            def f(x: int) -> None:
+                \"\"\"Function doc<caret>string\"\"\"
+
+                return x
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+
+        val intentions = myFixture.filterAvailableIntentions("Introduce custom type from int")
+        assertEmpty("Should not offer custom type introduction on function docstring", intentions)
+    }
+
+    fun testClassDocstring_DoesNotOfferCustomTypeIntention() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            class C:
+                \"\"\"Class doc<caret>string\"\"\"
+
+                def __init__(self, x: int) -> None:
+                    self.x = x
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+
+        val intentions = myFixture.filterAvailableIntentions("Introduce custom type from int")
+        assertEmpty("Should not offer custom type introduction on class docstring", intentions)
+    }
 }

@@ -6,9 +6,8 @@
 - [ ] feat: Copy package as code snippet
 - [ ] feat: Copy selection with imports
 - [ ] Wrap default/default_factory after introducing custom type in dataclass/pydantic
-- [ ] Do not show custom type intent for docstrings
 - [ ] Only add warning for export if module is private
-- [-] Refactor document for exports
+- [ ] Refactor document for exports
 - [ ] Make private/public
 - [ ] Render dataclass fields in preview
 - [ ] feat: Introduce parameter object
@@ -19,7 +18,11 @@
 
 ## In Progress Tasks
 
-## Completed Tasks
+## Completed Tasks (newest first)
+
+- [x] Do not show custom type intent for docstrings
+
+## Completed Tasks (oldest first)
 
 - [x] Extract helpers between intentions
 - [x] Use actual values in preview
