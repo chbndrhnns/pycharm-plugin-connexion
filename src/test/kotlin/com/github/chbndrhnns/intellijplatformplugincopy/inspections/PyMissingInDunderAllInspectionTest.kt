@@ -37,7 +37,7 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
         )
 
         myFixture.enableInspections(PyMissingInDunderAllInspection::class.java)
-        myFixture.checkHighlighting(true, false, false)
+        myFixture.checkHighlighting(true, false, true)
 
         // Ensure the quick-fix is invoked in the context of the module that
         // declares the missing symbol. ModCommand-based quick-fixes rely on
@@ -46,6 +46,70 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
         // fixes.
         val moduleFile = myFixture.findFileInTempDir(
             "inspections/PyMissingInDunderAllInspection/$testName/client.py",
+        )
+        myFixture.openFileInEditor(moduleFile!!)
+
+        val fixes = myFixture.getAllQuickFixes()
+        fixes
+            .filter { it.familyName == "Add to __all__" }
+            .forEach { myFixture.launchAction(it) }
+
+        val initFile = myFixture.findFileInTempDir(
+            "inspections/PyMissingInDunderAllInspection/$testName/__init__.py",
+        )
+        myFixture.openFileInEditor(initFile!!)
+        myFixture.checkResultByFile(
+            "inspections/PyMissingInDunderAllInspection/${testName}_after/__init__.py",
+        )
+    }
+
+    fun testPrivateModuleMissingFromPackageAllFix_NoAll() {
+        val testName = "PrivateModuleMissingFromPackageAllFix_NoAll"
+
+        myFixture.configureByFiles(
+            "inspections/PyMissingInDunderAllInspection/$testName/__init__.py",
+            "inspections/PyMissingInDunderAllInspection/$testName/_module.py",
+        )
+
+        myFixture.enableInspections(PyMissingInDunderAllInspection::class.java)
+        myFixture.checkHighlighting(true, false, false)
+
+        // Ensure the quick-fix is invoked in the context of the private
+        // implementation module where the symbol is declared.
+        val moduleFile = myFixture.findFileInTempDir(
+            "inspections/PyMissingInDunderAllInspection/$testName/_module.py",
+        )
+        myFixture.openFileInEditor(moduleFile!!)
+
+        val fixes = myFixture.getAllQuickFixes()
+        fixes
+            .filter { it.familyName == "Add to __all__" }
+            .forEach { myFixture.launchAction(it) }
+
+        val initFile = myFixture.findFileInTempDir(
+            "inspections/PyMissingInDunderAllInspection/$testName/__init__.py",
+        )
+        myFixture.openFileInEditor(initFile!!)
+        myFixture.checkResultByFile(
+            "inspections/PyMissingInDunderAllInspection/${testName}_after/__init__.py",
+        )
+    }
+
+    fun testPublicModuleMissingFromPackageAllFix_NoAll() {
+        val testName = "PublicModuleMissingFromPackageAllFix_NoAll"
+
+        myFixture.configureByFiles(
+            "inspections/PyMissingInDunderAllInspection/$testName/__init__.py",
+            "inspections/PyMissingInDunderAllInspection/$testName/module.py",
+        )
+
+        myFixture.enableInspections(PyMissingInDunderAllInspection::class.java)
+        myFixture.checkHighlighting(true, false, true)
+
+        // Ensure the quick-fix is invoked in the context of the public
+        // module where the symbol is declared.
+        val moduleFile = myFixture.findFileInTempDir(
+            "inspections/PyMissingInDunderAllInspection/$testName/module.py",
         )
         myFixture.openFileInEditor(moduleFile!!)
 
@@ -123,16 +187,16 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
         PsiTestUtil.addExcludedRoot(myFixture.module, libRoot)
 
         // 1) Project module should still be inspected and report the
-        //    missing export from project_pkg.module.
+        //    missing export from project_pkg._module (private module only).
         myFixture.configureByFile(
-            "inspections/PyMissingInDunderAllInspection/$testName/project_pkg/module.py",
+            "inspections/PyMissingInDunderAllInspection/$testName/project_pkg/_module.py",
         )
 
         myFixture.enableInspections(PyMissingInDunderAllInspection::class.java)
         val projectInfos = myFixture.doHighlighting()
 
         assertTrue(
-            "Expected at least one missing-__all__ problem in project code",
+            "Expected at least one missing-__all__ problem in project code for private module",
             projectInfos.any { it.description?.contains("not exported in package __all__") == true },
         )
 
@@ -183,7 +247,7 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
         )
 
         myFixture.enableInspections(PyMissingInDunderAllInspection::class.java)
-        myFixture.checkHighlighting(true, false, false)
+        myFixture.checkHighlighting(true, false, true)
 
         // Ensure the quick-fix is invoked in the context of the module that
         // declares the missing symbol. ModCommand-based quick-fixes rely on

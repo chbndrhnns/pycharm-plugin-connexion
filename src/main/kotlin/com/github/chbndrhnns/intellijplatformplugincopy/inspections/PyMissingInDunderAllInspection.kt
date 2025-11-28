@@ -2,6 +2,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.inspections
 
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInspection.LocalInspectionToolSession
+import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.text.StringUtil
@@ -89,9 +90,7 @@ class PyMissingInDunderAllInspection : PyInspection() {
             } else if (directory != null && directory.findFile(PyNames.INIT_DOT_PY) is PyFile) {
                 // Only run the cross-file package export check for modules
                 // that actually belong to a package (i.e. live next to an
-                // __init__.py). This keeps behaviour consistent whether the
-                // module is "private" (e.g. _client.py) or public
-                // (client.py).
+                // __init__.py).
                 checkModuleExportsFromContainingPackage(node)
             }
         }
@@ -225,12 +224,28 @@ class PyMissingInDunderAllInspection : PyInspection() {
                     // declaration site in the implementation module. The
                     // quick-fix then uses the current editor file as context
                     // and updates the containing package's __init__.py.
-                    val importStatement = findImportSymbol(element, packageInit)
+                    val importStatement = findImportSymbol(element, moduleFile)
                     val problemElement: PsiElement = importStatement ?: (getNameIdentifier(element) ?: element)
+
+                    // UX rule: exporting symbols via __all__ should be
+                    // discoverable via the lightbulb both for public and
+                    // private modules, but we only want a *warning* in the
+                    // IDE when the implementation module itself is private
+                    // (e.g. ``_client.py``). Public modules should still be
+                    // able to invoke the export action manually via
+                    // Alt+Enter on the symbol or import, but with a weak
+                    // warning that doesn't clutter the UI.
+                    val isPrivateModule = moduleFile.name.removeSuffix(".py").startsWith("_")
+                    val highlightType = if (isPrivateModule) {
+                        ProblemHighlightType.GENERIC_ERROR_OR_WARNING
+                    } else {
+                        ProblemHighlightType.WEAK_WARNING
+                    }
 
                     holder.registerProblem(
                         problemElement,
                         "Symbol '$name' is not exported in package __all__",
+                        highlightType,
                         PyAddSymbolToAllQuickFix(name),
                     )
                 }

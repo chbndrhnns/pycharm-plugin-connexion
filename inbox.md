@@ -6,7 +6,6 @@
 - [ ] feat: Copy package as code snippet
 - [ ] feat: Copy selection with imports
 - [ ] Wrap default/default_factory after introducing custom type in dataclass/pydantic
-- [ ] Only add warning for export if module is private
 - [ ] Refactor document for exports
 - [ ] Make private/public
 - [ ] Render dataclass fields in preview
@@ -20,6 +19,8 @@
 
 ## Completed Tasks (newest first)
 
+- [x] Export: Quick fix no longer available for public modules]
+- [x] Export: Only add warning for export if module is private
 - [x] Do not show custom type intent for docstrings
 
 ## Completed Tasks (oldest first)
