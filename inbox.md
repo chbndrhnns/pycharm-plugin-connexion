@@ -2,6 +2,7 @@
 
 ## Pending Tasks
 
+- [ ] feat: Parse pytest identifer in search all
 - [ ] feat: Copy package as code snippet
 - [ ] feat: Copy selection with imports
 - [ ] Wrap default/default_factory after introducing custom type in dataclass/pydantic
