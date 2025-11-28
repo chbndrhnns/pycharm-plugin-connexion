@@ -218,15 +218,18 @@ class PyMissingInDunderAllInspection : PyInspection() {
                 if (name == null || StringUtil.isEmpty(name) || name.startsWith("_")) continue
 
                 if (!exportedNames.contains(name)) {
-                    // The inspection for a regular module is run on that
-                    // module file itself. ProblemDescriptors created here must
-                    // therefore be anchored to elements from [moduleFile]
-                    // (typically the symbol definition), not from the
-                    // containing package's __init__.py.
-                    val nameIdentifier = getNameIdentifier(element) ?: moduleFile
+                    // Prefer to highlight an existing re-export import in the
+                    // package __init__.py when there is one ("usage site"
+                    // inspection). When there is no such import yet,
+                    // highlight the symbol at its
+                    // declaration site in the implementation module. The
+                    // quick-fix then uses the current editor file as context
+                    // and updates the containing package's __init__.py.
+                    val importStatement = findImportSymbol(element, packageInit)
+                    val problemElement: PsiElement = importStatement ?: (getNameIdentifier(element) ?: element)
 
                     holder.registerProblem(
-                        nameIdentifier,
+                        problemElement,
                         "Symbol '$name' is not exported in package __all__",
                         PyAddSymbolToAllQuickFix(name),
                     )
@@ -234,10 +237,47 @@ class PyMissingInDunderAllInspection : PyInspection() {
             }
         }
 
+        /**
+         * Given a symbol defined in [moduleFile] and the containing package's
+         * [target] file, locate the import statement in
+         * {@code __init__.py} that brings this symbol into scope, if any.
+         */
+        private fun findImportSymbol(targetSymbol: PyElement, target: PyFile): PyImportStatementBase? {
+            for (stmt in target.importBlock) {
+                when (stmt) {
+                    is PyFromImportStatement -> {
+                        for (importElement in stmt.importElements) {
+                            val importedMatches = importElement
+                                .multiResolve()
+                                .any { it.element == targetSymbol }
+
+                            if (importedMatches) {
+                                return stmt
+                            }
+                        }
+                    }
+
+                    is PyImportStatement -> {
+                        for (importElement in stmt.importElements) {
+                            val importedMatches = importElement
+                                .multiResolve()
+                                .any { it.element == targetSymbol }
+
+                            if (importedMatches) {
+                                return stmt
+                            }
+                        }
+                    }
+                }
+            }
+
+            return null
+        }
+
         private fun isExportable(element: PyElement): Boolean =
             element is PyClass ||
                     element is PyFunction ||
-                    (element is PyTargetExpression && !PyNames.ALL.equals(element.name)) ||
+                    (element is PyTargetExpression && PyNames.ALL != element.name) ||
                     element is PyTypeAliasStatement
 
         private fun isAllowlistedModule(file: PyFile): Boolean {

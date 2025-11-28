@@ -206,11 +206,6 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
         val initFile = myFixture.findFileInTempDir("inspections/PyMissingInDunderAllInspection/$testName/__init__.py")
         myFixture.openFileInEditor(initFile!!)
 
-        // Debug helper: log the transformed __init__.py contents when a
-        // comparison failure occurs, to make it easier to align formatting
-        // (e.g. blank lines) with the expected _after file.
-        println("[DEBUG_LOG] Transformed __init__.py for $testName:\n" + myFixture.editor.document.text)
-
         myFixture.checkResultByFile(
             "inspections/PyMissingInDunderAllInspection/${testName}_after/__init__.py",
         )
