@@ -2,6 +2,8 @@
 
 ## Pending Tasks
 
+- [ ] feat: Copy package as code snippet
+- [ ] feat: Copy selection with imports
 - [ ] Wrap default/default_factory after introducing custom type in dataclass/pydantic
 - [ ] Do not show custom type intent for docstrings
 - [ ] Only add warning for export if module is private
