@@ -12,6 +12,10 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.refactoring.rename.RenameHandler
 import com.intellij.refactoring.rename.RenameHandlerRegistry
 import com.jetbrains.python.psi.*
+import com.jetbrains.python.psi.impl.PyBuiltinCache
+import com.jetbrains.python.psi.types.PyType
+import com.jetbrains.python.psi.types.PyTypeChecker
+import com.jetbrains.python.psi.types.TypeEvalContext
 
 /**
  * Applies a [CustomTypePlan] by performing all PSI mutations needed to
@@ -79,7 +83,14 @@ class CustomTypeApplier(
                 // to handle both simple types, containers (stripping args),
                 // and unions (preserving other branches).
                 rewriter.rewriteAnnotation(annRef, newRefBase, builtinName)
-                rewriter.wrapExpression(assignedExpr, newTypeName, pyGenerator)
+                // Only wrap the right-hand side when its inferred type
+                // corresponds to the builtin at the caret (the branch we are
+                // replacing). For union annotations like ``int | None`` with
+                // a default of ``None``, the RHS has type ``None`` so it will
+                // not be wrapped.
+                if (shouldWrapAssignedExpression(assignedExpr, builtinName)) {
+                    rewriter.wrapExpression(assignedExpr, newTypeName, pyGenerator)
+                }
             } else {
                 // Non-assignment annotations (parameters, returns, dataclass
                 // fields, etc.) keep their existing container type arguments
@@ -135,6 +146,39 @@ class CustomTypeApplier(
         if (!isPreview && targetFileForNewClass == pyFile && plan.preferredClassName == null) {
             startInlineRename(project, editor, newClass, pyFile)
         }
+    }
+
+    /**
+     * Decide whether an assigned expression should be wrapped when updating an
+     * annotated assignment.
+     *
+     * The goal is to only wrap values whose *inferred type* clearly matches the
+     * builtin type we are replacing, and to avoid wrapping sentinel/literal
+     * values that belong to other union branches (most importantly ``None``).
+     */
+    private fun shouldWrapAssignedExpression(expr: PyExpression, builtinName: String): Boolean {
+        if (expr is PyNoneLiteralExpression) return false
+
+        val project = expr.project
+        val context = TypeEvalContext.codeInsightFallback(project)
+        val exprType = context.getType(expr)
+
+
+        val builtinCache = PyBuiltinCache.getInstance(expr)
+        val builtinType: PyType? = when (builtinName) {
+            "int" -> builtinCache.intType
+            "float" -> builtinCache.floatType
+            "str" -> builtinCache.strType
+            "bool" -> builtinCache.boolType
+            else -> null
+        }
+
+        // We treat the RHS as belonging to the builtin branch only when its
+        // inferred type is compatible with the builtin type we are replacing.
+        if (PyTypeChecker.match(builtinType, exprType, context)) {
+            return true
+        }
+        return false
     }
 
     private fun wrapDataclassConstructorUsagesProjectWide(

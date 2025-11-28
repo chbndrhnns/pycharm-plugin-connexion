@@ -2,7 +2,9 @@
 
 ## Pending Tasks
 
-- [ ] Do not inspect libraries/dependencies
+- [ ] Wrap default/default_factory after introducing custom type in dataclass/pydantic
+- [ ] Do not show custom type intent for docstrings
+- [ ] Only add warning for export if module is private
 - [-] Refactor document for exports
 - [ ] Make private/public
 - [ ] Render dataclass fields in preview
@@ -119,3 +121,5 @@ f("abc")
 
 - [x] Fix PluginException Caused by PyMissingInDunderAllInspection
 - [x] Create __all__ if not exists
+- [x] Can we turn builtinName into a type instead of a string? -> no, too heavy
+- [x] Do not inspect libraries/dependencies

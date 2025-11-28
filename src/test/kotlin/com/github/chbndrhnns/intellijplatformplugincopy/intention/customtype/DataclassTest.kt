@@ -273,4 +273,37 @@ class DataclassTest : TestBase() {
             """.trimIndent()
         )
     }
+
+    fun testField_UnionWithNone_DefaultNoneIsNotWrapped() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            import dataclasses
+
+
+            @dataclasses.dataclass
+            class C:
+                val: i<caret>nt | None = None
+            """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+        val intention = myFixture.findSingleIntention("Introduce custom type from int")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            import dataclasses
+
+
+            class Customint(int):
+                pass
+            
+            
+            @dataclasses.dataclass
+            class C:
+                val: Customint | None = None
+            """.trimIndent()
+        )
+    }
 }
