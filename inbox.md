@@ -2,6 +2,7 @@
 
 ## Pending Tasks
 
+- [ ] fix: Missing description for PyPrivateModuleImportInspection
 - [ ] feat: Parse pytest identifer in search all
 - [ ] feat: Copy package as code snippet
 - [ ] feat: Copy selection with imports
@@ -18,6 +19,25 @@
 ## In Progress Tasks
 
 ## Completed Tasks (newest first)
+
+- [x] Use exported symbol instead of private... should not be suggested in this case:
+
+```python
+# ./myp/__init__.py
+__all__ = ['One']
+
+from ._one import One
+
+
+# ./myp/one.py
+class One: ...
+
+
+# ./myp/two.py
+from ._one import One
+
+_ = One
+```
 
 - [x] Export: Quick fix no longer available for public modules]
 - [x] Export: Only add warning for export if module is private

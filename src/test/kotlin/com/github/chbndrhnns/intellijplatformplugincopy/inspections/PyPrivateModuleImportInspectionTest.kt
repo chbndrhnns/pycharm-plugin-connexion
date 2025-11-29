@@ -171,4 +171,29 @@ class PyPrivateModuleImportInspectionTest : TestBase() {
             fixes.none { it.familyName == "Use exported symbol from package instead of private module" },
         )
     }
+
+    fun testQuickFixNotOfferedInSamePackage() {
+        myFixture.configureByFiles(
+            "inspections/PyPrivateModuleImportInspection/DoNotOfferInSamePackage/myp/__init__.py",
+            "inspections/PyPrivateModuleImportInspection/DoNotOfferInSamePackage/myp/_one.py",
+            "inspections/PyPrivateModuleImportInspection/DoNotOfferInSamePackage/myp/two.py",
+        )
+
+        val twoFile = myFixture.findFileInTempDir(
+            "inspections/PyPrivateModuleImportInspection/DoNotOfferInSamePackage/myp/two.py",
+        )
+        myFixture.openFileInEditor(twoFile!!)
+
+        myFixture.enableInspections(PyPrivateModuleImportInspection::class.java)
+        myFixture.doHighlighting()
+
+        val fixes = myFixture.getAllQuickFixes()
+        assertTrue(
+            "Quick-fix should not be offered when importing from private module within the same package",
+            fixes.none {
+                it.familyName == "Use exported symbol from package instead of private module" ||
+                        it.familyName == "Make symbol public and import from package"
+            },
+        )
+    }
 }

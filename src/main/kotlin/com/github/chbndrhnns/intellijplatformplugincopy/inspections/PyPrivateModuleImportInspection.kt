@@ -67,6 +67,12 @@ class PyPrivateModuleImportInspection : PyInspection() {
         // from the private module, not from the public package.
         if (file == packageInit) return
 
+        // Do not offer this quick-fix if the importing file is in the same
+        // package as the __init__.py that exports the symbol. Files within
+        // the same package should be allowed to import from private modules
+        // without being forced to use the public export.
+        if (file.containingDirectory == directory) return
+
         val dunderAllNames = findDunderAllNames(packageInit) ?: return
 
         for (importElement in fromImport.importElements) {
