@@ -2,6 +2,8 @@ package com.github.chbndrhnns.intellijplatformplugincopy.inspections
 
 import com.intellij.testFramework.PsiTestUtil
 import fixtures.TestBase
+import fixtures.doInspectionTest
+import fixtures.doMultiFileInspectionTest
 
 class PyMissingInDunderAllInspectionTest : TestBase() {
 
@@ -29,101 +31,49 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
 
     fun testModuleMissingFromPackageAllFix_WithExistingImportFromOtherModule() {
         val testName = "ModuleMissingFromPackageAllFix_WithExistingImportFromOtherModule"
+        val basePath = "inspections/PyMissingInDunderAllInspection/$testName"
 
-        myFixture.configureByFiles(
-            "inspections/PyMissingInDunderAllInspection/$testName/__init__.py",
-            "inspections/PyMissingInDunderAllInspection/$testName/client.py",
-            "inspections/PyMissingInDunderAllInspection/$testName/other.py",
-        )
-
-        myFixture.enableInspections(PyMissingInDunderAllInspection::class.java)
-        myFixture.checkHighlighting(true, false, true)
-
-        // Ensure the quick-fix is invoked in the context of the module that
-        // declares the missing symbol. ModCommand-based quick-fixes rely on
-        // the currently opened editor file as the context for the problem
-        // element, so we must open client.py before collecting and applying
-        // fixes.
-        val moduleFile = myFixture.findFileInTempDir(
-            "inspections/PyMissingInDunderAllInspection/$testName/client.py",
-        )
-        myFixture.openFileInEditor(moduleFile!!)
-
-        val fixes = myFixture.getAllQuickFixes()
-        fixes
-            .filter { it.familyName == "Add to __all__" }
-            .forEach { myFixture.launchAction(it) }
-
-        val initFile = myFixture.findFileInTempDir(
-            "inspections/PyMissingInDunderAllInspection/$testName/__init__.py",
-        )
-        myFixture.openFileInEditor(initFile!!)
-        myFixture.checkResultByFile(
-            "inspections/PyMissingInDunderAllInspection/${testName}_after/__init__.py",
+        myFixture.doMultiFileInspectionTest(
+            files = listOf("$basePath/__init__.py", "$basePath/client.py", "$basePath/other.py"),
+            inspection = PyMissingInDunderAllInspection::class.java,
+            targetFile = "$basePath/client.py",
+            checkHighlighting = false,
+            checkWeakWarnings = true,
+            fixFamilyName = "Add to __all__",
+            resultFileToCheck = "$basePath/__init__.py",
+            expectedResultFile = "inspections/PyMissingInDunderAllInspection/${testName}_after/__init__.py"
         )
     }
 
     fun testPrivateModuleMissingFromPackageAllFix_NoAll() {
         val testName = "PrivateModuleMissingFromPackageAllFix_NoAll"
+        val basePath = "inspections/PyMissingInDunderAllInspection/$testName"
 
-        myFixture.configureByFiles(
-            "inspections/PyMissingInDunderAllInspection/$testName/__init__.py",
-            "inspections/PyMissingInDunderAllInspection/$testName/_module.py",
-        )
-
-        myFixture.enableInspections(PyMissingInDunderAllInspection::class.java)
-        myFixture.checkHighlighting(true, false, false)
-
-        // Ensure the quick-fix is invoked in the context of the private
-        // implementation module where the symbol is declared.
-        val moduleFile = myFixture.findFileInTempDir(
-            "inspections/PyMissingInDunderAllInspection/$testName/_module.py",
-        )
-        myFixture.openFileInEditor(moduleFile!!)
-
-        val fixes = myFixture.getAllQuickFixes()
-        fixes
-            .filter { it.familyName == "Add to __all__" }
-            .forEach { myFixture.launchAction(it) }
-
-        val initFile = myFixture.findFileInTempDir(
-            "inspections/PyMissingInDunderAllInspection/$testName/__init__.py",
-        )
-        myFixture.openFileInEditor(initFile!!)
-        myFixture.checkResultByFile(
-            "inspections/PyMissingInDunderAllInspection/${testName}_after/__init__.py",
+        myFixture.doMultiFileInspectionTest(
+            files = listOf("$basePath/__init__.py", "$basePath/_module.py"),
+            inspection = PyMissingInDunderAllInspection::class.java,
+            targetFile = "$basePath/_module.py",
+            checkHighlighting = false,
+            checkWeakWarnings = false,
+            fixFamilyName = "Add to __all__",
+            resultFileToCheck = "$basePath/__init__.py",
+            expectedResultFile = "inspections/PyMissingInDunderAllInspection/${testName}_after/__init__.py"
         )
     }
 
     fun testPublicModuleMissingFromPackageAllFix_NoAll() {
         val testName = "PublicModuleMissingFromPackageAllFix_NoAll"
+        val basePath = "inspections/PyMissingInDunderAllInspection/$testName"
 
-        myFixture.configureByFiles(
-            "inspections/PyMissingInDunderAllInspection/$testName/__init__.py",
-            "inspections/PyMissingInDunderAllInspection/$testName/module.py",
-        )
-
-        myFixture.enableInspections(PyMissingInDunderAllInspection::class.java)
-        myFixture.checkHighlighting(true, false, true)
-
-        // Ensure the quick-fix is invoked in the context of the public
-        // module where the symbol is declared.
-        val moduleFile = myFixture.findFileInTempDir(
-            "inspections/PyMissingInDunderAllInspection/$testName/module.py",
-        )
-        myFixture.openFileInEditor(moduleFile!!)
-
-        val fixes = myFixture.getAllQuickFixes()
-        fixes
-            .filter { it.familyName == "Add to __all__" }
-            .forEach { myFixture.launchAction(it) }
-
-        val initFile = myFixture.findFileInTempDir(
-            "inspections/PyMissingInDunderAllInspection/$testName/__init__.py",
-        )
-        myFixture.openFileInEditor(initFile!!)
-        myFixture.checkResultByFile(
-            "inspections/PyMissingInDunderAllInspection/${testName}_after/__init__.py",
+        myFixture.doMultiFileInspectionTest(
+            files = listOf("$basePath/__init__.py", "$basePath/module.py"),
+            inspection = PyMissingInDunderAllInspection::class.java,
+            targetFile = "$basePath/module.py",
+            checkHighlighting = false,
+            checkWeakWarnings = true,
+            fixFamilyName = "Add to __all__",
+            resultFileToCheck = "$basePath/__init__.py",
+            expectedResultFile = "inspections/PyMissingInDunderAllInspection/${testName}_after/__init__.py"
         )
     }
 
@@ -215,58 +165,39 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
 
     private fun doTest(applyFix: Boolean = false) {
         val testName = getTestName(false)
-        myFixture.configureByFile("inspections/PyMissingInDunderAllInspection/$testName/__init__.py")
+        val basePath = "inspections/PyMissingInDunderAllInspection"
 
-        myFixture.enableInspections(PyMissingInDunderAllInspection::class.java)
-        myFixture.checkHighlighting(true, false, false)
-
-        if (applyFix) {
-            val fixes = myFixture.getAllQuickFixes()
-            fixes
-                .filter { it.familyName == "Add to __all__" }
-                .forEach { myFixture.launchAction(it) }
-
-            myFixture.checkResultByFile("inspections/PyMissingInDunderAllInspection/${testName}_after/__init__.py")
-        }
+        myFixture.doInspectionTest(
+            testFile = "$basePath/$testName/__init__.py",
+            inspection = PyMissingInDunderAllInspection::class.java,
+            fixFamilyName = if (applyFix) "Add to __all__" else null,
+            expectedResultFile = if (applyFix) "$basePath/${testName}_after/__init__.py" else null,
+            checkHighlighting = true
+        )
     }
 
     private fun doModuleTest(testName: String) {
-        myFixture.configureByFiles(
-            "inspections/PyMissingInDunderAllInspection/$testName/__init__.py",
-            "inspections/PyMissingInDunderAllInspection/$testName/module.py",
+        val basePath = "inspections/PyMissingInDunderAllInspection"
+        myFixture.doMultiFileInspectionTest(
+            files = listOf("$basePath/$testName/__init__.py", "$basePath/$testName/module.py"),
+            inspection = PyMissingInDunderAllInspection::class.java,
+            checkHighlighting = true,
+            checkWeakWarnings = false
         )
-
-        myFixture.enableInspections(PyMissingInDunderAllInspection::class.java)
-        myFixture.checkHighlighting(true, false, false)
     }
 
     private fun doModuleFixTest(testName: String) {
-        myFixture.configureByFiles(
-            "inspections/PyMissingInDunderAllInspection/$testName/__init__.py",
-            "inspections/PyMissingInDunderAllInspection/$testName/module.py",
-        )
+        val basePath = "inspections/PyMissingInDunderAllInspection"
 
-        myFixture.enableInspections(PyMissingInDunderAllInspection::class.java)
-        myFixture.checkHighlighting(true, false, true)
-
-        val moduleFile = myFixture.findFileInTempDir(
-            "inspections/PyMissingInDunderAllInspection/$testName/module.py",
-        )
-        myFixture.openFileInEditor(moduleFile!!)
-
-        val fixes = myFixture.getAllQuickFixes()
-        fixes
-            .filter { it.familyName == "Add to __all__" }
-            .forEach { myFixture.launchAction(it) }
-
-        // After applying the quick-fix, open the package __init__.py and
-        // compare it against the expected _after version to validate the
-        // cross-file update.
-        val initFile = myFixture.findFileInTempDir("inspections/PyMissingInDunderAllInspection/$testName/__init__.py")
-        myFixture.openFileInEditor(initFile!!)
-
-        myFixture.checkResultByFile(
-            "inspections/PyMissingInDunderAllInspection/${testName}_after/__init__.py",
+        myFixture.doMultiFileInspectionTest(
+            files = listOf("$basePath/$testName/__init__.py", "$basePath/$testName/module.py"),
+            inspection = PyMissingInDunderAllInspection::class.java,
+            targetFile = "$basePath/$testName/module.py",
+            checkHighlighting = false,
+            checkWeakWarnings = true,
+            fixFamilyName = "Add to __all__",
+            resultFileToCheck = "$basePath/$testName/__init__.py",
+            expectedResultFile = "$basePath/${testName}_after/__init__.py"
         )
     }
 }

@@ -1,11 +1,13 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.populate
 
 import fixtures.TestBase
+import fixtures.assertIntentionNotAvailable
+import fixtures.doIntentionTest
 
 class RecursiveArgumentsIntentionTest : TestBase() {
 
     fun testRecursiveDataclassPopulation() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from dataclasses import dataclass
@@ -24,14 +26,7 @@ class RecursiveArgumentsIntentionTest : TestBase() {
                 b: B
 
             a = A(<caret>)
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Populate missing arguments recursively")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             from dataclasses import dataclass
 
@@ -50,12 +45,13 @@ class RecursiveArgumentsIntentionTest : TestBase() {
 
             a = A(b=B(c=C(x=..., z=...)))
 
-            """.trimIndent()
+            """,
+            "Populate missing arguments recursively"
         )
     }
 
     fun testMixedTypesPopulation() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from dataclasses import dataclass
@@ -70,14 +66,7 @@ class RecursiveArgumentsIntentionTest : TestBase() {
                 other: str
 
             a = Node(<caret>)
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Populate missing arguments recursively")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             from dataclasses import dataclass
 
@@ -92,12 +81,13 @@ class RecursiveArgumentsIntentionTest : TestBase() {
 
             a = Node(leaf=Leaf(val=...), other=...)
 
-            """.trimIndent()
+            """,
+            "Populate missing arguments recursively"
         )
     }
 
     fun testUnionWithDataclass() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from dataclasses import dataclass
@@ -112,14 +102,7 @@ class RecursiveArgumentsIntentionTest : TestBase() {
                 d: Union[D, None]
 
             e = E(<caret>)
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Populate missing arguments recursively")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             from dataclasses import dataclass
             from typing import Union
@@ -134,12 +117,13 @@ class RecursiveArgumentsIntentionTest : TestBase() {
 
             e = E(d=D(v=...))
 
-            """.trimIndent()
+            """,
+            "Populate missing arguments recursively"
         )
     }
 
     fun testRecursionLimit() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from dataclasses import dataclass
@@ -149,14 +133,7 @@ class RecursiveArgumentsIntentionTest : TestBase() {
                 r: 'Rec'
 
             a = Rec(<caret>)
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Populate missing arguments recursively")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             from dataclasses import dataclass
             
@@ -166,23 +143,21 @@ class RecursiveArgumentsIntentionTest : TestBase() {
             
             a = Rec(r=Rec(r=Rec(r=Rec(r=Rec(r=Rec(r=Rec(r=...)))))))
 
-        """.trimIndent()
+            """,
+            "Populate missing arguments recursively"
         )
     }
 
     fun testPositionalOnlyFunctionCall_NoPopulateOffered() {
-        myFixture.configureByText(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             def sleep(__secs, /):
                 pass
 
             sleep(1<caret>)
-            """.trimIndent()
+            """,
+            "Populate missing arguments recursively"
         )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.availableIntentions.find { it.text == "Populate missing arguments recursively" }
-        assertNull("Populate recursive intention should NOT be available for positional-only calls", intention)
     }
 }

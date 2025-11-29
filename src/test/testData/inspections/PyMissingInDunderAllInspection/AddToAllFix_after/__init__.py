@@ -6,4 +6,4 @@ def public_function():
     pass
 
 
-__all__ = ['PublicClass']
+__all__ = ['PublicClass', 'public_function']

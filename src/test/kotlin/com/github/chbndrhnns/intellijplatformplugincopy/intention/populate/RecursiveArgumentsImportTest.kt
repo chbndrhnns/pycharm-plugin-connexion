@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.populate
 
 import fixtures.TestBase
+import fixtures.doIntentionTest
 
 class RecursiveArgumentsImportTest : TestBase() {
 
@@ -20,7 +21,7 @@ class RecursiveArgumentsImportTest : TestBase() {
             """.trimIndent()
         )
 
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "main.py",
             """
             from dataclasses import dataclass
@@ -30,14 +31,7 @@ class RecursiveArgumentsImportTest : TestBase() {
 
             def test():
                 m = Main(<caret>)
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Populate missing arguments recursively")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             from dataclasses import dataclass
             
@@ -47,7 +41,8 @@ class RecursiveArgumentsImportTest : TestBase() {
             def test():
                 m = Main(f=Other(val=...))
 
-            """.trimIndent()
+            """,
+            "Populate missing arguments recursively"
         )
     }
 
@@ -75,7 +70,7 @@ class RecursiveArgumentsImportTest : TestBase() {
             """.trimIndent()
         )
 
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "main.py",
             """
             from dataclasses import dataclass
@@ -85,14 +80,7 @@ class RecursiveArgumentsImportTest : TestBase() {
             
             def test():
                 m = Main(<caret>)
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Populate missing arguments recursively")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             from dataclasses import dataclass
             
@@ -102,7 +90,8 @@ class RecursiveArgumentsImportTest : TestBase() {
             def test():
                 m = Main(b=B(c=C(x=..., z=...)))
 
-            """.trimIndent()
+            """,
+            "Populate missing arguments recursively"
         )
     }
 }

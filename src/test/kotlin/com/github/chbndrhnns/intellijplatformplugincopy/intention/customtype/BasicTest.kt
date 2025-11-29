@@ -200,61 +200,46 @@ class BasicTest : TestBase() {
     }
 
     fun testIntentionAvailableForInFunctionCall() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             val = dict({"<caret>a": 1, "b": 2, "c": 3})
-            """.trimIndent()
-        )
-
-        val intention = myFixture.findSingleIntention("Introduce custom type from str")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             class Customstr(str):
                 pass
             
             
             val = dict({Customstr("a"): 1, "b": 2, "c": 3})
-            """.trimIndent()
+            """,
+            "Introduce custom type from str"
         )
     }
 
     fun testAssignmentVariableRewrite_WhenCaretOnVariable() {
-        myFixture.configureByText(
-            "a.py", """
+        myFixture.doIntentionTest(
+            "a.py",
+            """
             a<caret>bc: str = "text"
-        """.trimIndent()
-        )
-
-        val intention = myFixture.findSingleIntention("Introduce custom type from str")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             class Customstr(str):
                 pass
             
             
             abc: Customstr = Customstr("text")
-        """.trimIndent()
+            """,
+            "Introduce custom type from str"
         )
     }
 
     fun testFString_UpgradesReferencedVariable_InsteadOfWrappingContent() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             abc: str = "text"
             s = f"{a<caret>bc}"
-            """.trimIndent()
-        )
-
-        val intention = myFixture.findSingleIntention("Introduce custom type from str")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             class Customstr(str):
                 pass
@@ -262,23 +247,18 @@ class BasicTest : TestBase() {
             
             abc: Customstr = Customstr("text")
             s = f"{abc}"
-            """.trimIndent()
+            """,
+            "Introduce custom type from str"
         )
     }
 
     fun testFString_UpgradesReferencedParameter_InsteadOfWrappingContent() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             def do(a: str):
                 return f"{<caret>a}"
-            """.trimIndent()
-        )
-
-        val intention = myFixture.findSingleIntention("Introduce custom type from str")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             class Customstr(str):
                 pass
@@ -286,7 +266,8 @@ class BasicTest : TestBase() {
 
             def do(a: Customstr):
                 return f"{a}"
-            """.trimIndent()
+            """,
+            "Introduce custom type from str"
         )
     }
 }

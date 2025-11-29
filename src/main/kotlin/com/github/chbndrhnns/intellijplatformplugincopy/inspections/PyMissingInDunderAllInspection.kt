@@ -314,7 +314,7 @@ class PyMissingInDunderAllInspection : PyInspection() {
                     return true
                 }
             }
-
+            
             return false
         }
 

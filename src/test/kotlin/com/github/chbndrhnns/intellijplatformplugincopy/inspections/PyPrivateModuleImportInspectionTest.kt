@@ -1,148 +1,72 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.inspections
 
 import fixtures.TestBase
+import fixtures.doMultiFileInspectionTest
 
 class PyPrivateModuleImportInspectionTest : TestBase() {
 
     fun testUseExportedSymbolFromPackageQuickFix() {
-        myFixture.configureByFiles(
-            "inspections/PyPrivateModuleImportInspection/UseExportedSymbolFromPackage/mypackage/__init__.py",
-            "inspections/PyPrivateModuleImportInspection/UseExportedSymbolFromPackage/mypackage/_lib.py",
-            "inspections/PyPrivateModuleImportInspection/UseExportedSymbolFromPackage/cli.py",
-        )
-
-        val cliFile = myFixture.findFileInTempDir(
-            "inspections/PyPrivateModuleImportInspection/UseExportedSymbolFromPackage/cli.py",
-        )
-        myFixture.openFileInEditor(cliFile!!)
-
-        myFixture.enableInspections(PyPrivateModuleImportInspection::class.java)
-        myFixture.doHighlighting()
-
-        val fixes = myFixture.getAllQuickFixes()
-        fixes
-            .filter { it.familyName == "Use exported symbol from package instead of private module" }
-            .forEach { myFixture.launchAction(it) }
-
-        myFixture.checkResultByFile(
-            "inspections/PyPrivateModuleImportInspection/UseExportedSymbolFromPackage/cli_after.py",
+        val path = "inspections/PyPrivateModuleImportInspection/UseExportedSymbolFromPackage"
+        myFixture.doMultiFileInspectionTest(
+            files = listOf("$path/mypackage/__init__.py", "$path/mypackage/_lib.py", "$path/cli.py"),
+            inspection = PyPrivateModuleImportInspection::class.java,
+            targetFile = "$path/cli.py",
+            fixFamilyName = "Use exported symbol from package instead of private module",
+            resultFileToCheck = "$path/cli.py",
+            expectedResultFile = "$path/cli_after.py",
+            checkHighlighting = false
         )
     }
 
     fun testMakeSymbolPublicAndUseExportedSymbolQuickFix() {
-        myFixture.configureByFiles(
-            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol/mypackage/__init__.py",
-            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol/mypackage/_lib.py",
-            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol/cli.py",
-        )
-
-        val cliFile = myFixture.findFileInTempDir(
-            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol/cli.py",
-        )
-        myFixture.openFileInEditor(cliFile!!)
-
-        myFixture.enableInspections(PyPrivateModuleImportInspection::class.java)
-        myFixture.doHighlighting()
-
-        val fixes = myFixture.getAllQuickFixes()
-        fixes
-            .filter { it.familyName == "Make symbol public and import from package" }
-            .forEach { myFixture.launchAction(it) }
-
-        myFixture.checkResultByFile(
-            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol/cli_after.py",
-        )
-
-        val initFile = myFixture.findFileInTempDir(
-            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol/mypackage/__init__.py",
-        )
-        myFixture.openFileInEditor(initFile!!)
-        myFixture.checkResultByFile(
-            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol/mypackage/__init___after.py",
+        val path = "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol"
+        myFixture.doMultiFileInspectionTest(
+            files = listOf("$path/mypackage/__init__.py", "$path/mypackage/_lib.py", "$path/cli.py"),
+            inspection = PyPrivateModuleImportInspection::class.java,
+            targetFile = "$path/cli.py",
+            fixFamilyName = "Make symbol public and import from package",
+            expectedResultFiles = mapOf(
+                "$path/cli.py" to "$path/cli_after.py",
+                "$path/mypackage/__init__.py" to "$path/mypackage/__init___after.py"
+            ),
+            checkHighlighting = false
         )
     }
 
     fun testMakeSymbolPublicAndUseExportedSymbolQuickFix_MultipleSites() {
-        myFixture.configureByFiles(
-            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_MultipleSites/mypackage/__init__.py",
-            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_MultipleSites/mypackage/_lib.py",
-            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_MultipleSites/cli.py",
-            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_MultipleSites/other_consumer.py",
-        )
-
-        val cliFile = myFixture.findFileInTempDir(
-            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_MultipleSites/cli.py",
-        )
-        myFixture.openFileInEditor(cliFile!!)
-
-        myFixture.enableInspections(PyPrivateModuleImportInspection::class.java)
-        myFixture.doHighlighting()
-
-        val fixes = myFixture.getAllQuickFixes()
-        fixes
-            .filter { it.familyName == "Make symbol public and import from package" }
-            .forEach { myFixture.launchAction(it) }
-
-        myFixture.checkResultByFile(
-            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_MultipleSites/cli_after.py",
-        )
-
-        val otherFile = myFixture.findFileInTempDir(
-            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_MultipleSites/other_consumer.py",
-        )
-        myFixture.openFileInEditor(otherFile!!)
-        myFixture.checkResultByFile(
-            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_MultipleSites/other_consumer_after.py",
-        )
-
-        val initFile = myFixture.findFileInTempDir(
-            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_MultipleSites/mypackage/__init__.py",
-        )
-        myFixture.openFileInEditor(initFile!!)
-        myFixture.checkResultByFile(
-            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_MultipleSites/mypackage/__init___after.py",
+        val path = "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_MultipleSites"
+        myFixture.doMultiFileInspectionTest(
+            files = listOf("$path/mypackage/__init__.py", "$path/mypackage/_lib.py", "$path/cli.py", "$path/other_consumer.py"),
+            inspection = PyPrivateModuleImportInspection::class.java,
+            targetFile = "$path/cli.py",
+            fixFamilyName = "Make symbol public and import from package",
+            expectedResultFiles = mapOf(
+                "$path/cli.py" to "$path/cli_after.py",
+                "$path/other_consumer.py" to "$path/other_consumer_after.py",
+                "$path/mypackage/__init__.py" to "$path/mypackage/__init___after.py"
+            ),
+            checkHighlighting = false
         )
     }
 
     fun testMakeSymbolPublicAndUseExportedSymbolQuickFix_SkipPackageRefs() {
-        myFixture.configureByFiles(
-            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_SkipPackageRefs/mypackage/__init__.py",
-            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_SkipPackageRefs/mypackage/_lib.py",
-            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_SkipPackageRefs/mypackage/inside.py",
-            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_SkipPackageRefs/cli.py",
-        )
-
-        val cliFile = myFixture.findFileInTempDir(
-            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_SkipPackageRefs/cli.py",
-        )
-        myFixture.openFileInEditor(cliFile!!)
-
-        myFixture.enableInspections(PyPrivateModuleImportInspection::class.java)
-        myFixture.doHighlighting()
-
-        val fixes = myFixture.getAllQuickFixes()
-        fixes
-            .filter { it.familyName == "Make symbol public and import from package" }
-            .forEach { myFixture.launchAction(it) }
-
-        myFixture.checkResultByFile(
-            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_SkipPackageRefs/cli_after.py",
-        )
-
-        val insideFile = myFixture.findFileInTempDir(
-            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_SkipPackageRefs/mypackage/inside.py",
-        )
-        myFixture.openFileInEditor(insideFile!!)
-        myFixture.checkResultByFile(
-            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_SkipPackageRefs/mypackage/inside_after.py",
-        )
-
-        val initFile = myFixture.findFileInTempDir(
-            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_SkipPackageRefs/mypackage/__init__.py",
-        )
-        myFixture.openFileInEditor(initFile!!)
-        myFixture.checkResultByFile(
-            "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_SkipPackageRefs/mypackage/__init___after.py",
+        val path = "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_SkipPackageRefs"
+        myFixture.doMultiFileInspectionTest(
+            files = listOf(
+                "$path/mypackage/__init__.py",
+                "$path/mypackage/_lib.py",
+                "$path/mypackage/inside.py",
+                "$path/cli.py"
+            ),
+            inspection = PyPrivateModuleImportInspection::class.java,
+            targetFile = "$path/cli.py",
+            fixFamilyName = "Make symbol public and import from package",
+            expectedResultFiles = mapOf(
+                "$path/cli.py" to "$path/cli_after.py",
+                "$path/mypackage/inside.py" to "$path/mypackage/inside_after.py",
+                "$path/mypackage/__init__.py" to "$path/mypackage/__init___after.py"
+            ),
+            checkHighlighting = false
         )
     }
 

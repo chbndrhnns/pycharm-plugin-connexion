@@ -1,13 +1,14 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.populate
 
 import fixtures.TestBase
+import fixtures.doIntentionTest
 
 class RecursiveArgumentsPydanticTest : TestBase() {
 
     fun testPydanticAlias() {
         // We define a mock Pydantic structure. 
         // Note: effectively simulating what pydantic does for the type checker.
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             # Mimic basic Pydantic parts
@@ -24,14 +25,7 @@ class RecursiveArgumentsPydanticTest : TestBase() {
                 name: str = Field(alias="userName")
 
             u = User(<caret>)
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Populate missing arguments recursively")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             # Mimic basic Pydantic parts
             from typing import dataclass_transform
@@ -48,12 +42,13 @@ class RecursiveArgumentsPydanticTest : TestBase() {
 
             u = User(userName=...)
 
-            """.trimIndent()
+            """,
+            "Populate missing arguments recursively"
         )
     }
 
     fun testPydanticAliasRecursive() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from typing import dataclass_transform
@@ -72,14 +67,7 @@ class RecursiveArgumentsPydanticTest : TestBase() {
                 inner: Inner
 
             o = Outer(<caret>)
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Populate missing arguments recursively")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             from typing import dataclass_transform
 
@@ -98,7 +86,8 @@ class RecursiveArgumentsPydanticTest : TestBase() {
 
             o = Outer(inner=Inner(value=...))
 
-            """.trimIndent()
+            """,
+            "Populate missing arguments recursively"
         )
     }
 }
