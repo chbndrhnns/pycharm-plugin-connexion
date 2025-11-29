@@ -3,6 +3,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.unwrap
 import fixtures.SettingsTestUtils.withPluginSettings
 import fixtures.TestBase
 
+//
 class UnwrapSettingsToggleTest : TestBase() {
 
     fun testUnwrapIntentionHiddenWhenDisabled() {

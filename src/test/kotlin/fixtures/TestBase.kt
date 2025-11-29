@@ -21,6 +21,7 @@ abstract class TestBase : MyPlatformTestCase() {
         val svc = PluginSettingsState.instance()
         svc.loadState(
             PluginSettingsState.State(
+                //
                 enableWrapWithExpectedTypeIntention = true,
                 enableWrapItemsWithExpectedTypeIntention = true,
                 enableUnwrapToExpectedTypeIntention = true,

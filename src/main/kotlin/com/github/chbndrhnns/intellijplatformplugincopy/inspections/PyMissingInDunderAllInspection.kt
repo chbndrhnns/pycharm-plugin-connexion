@@ -134,7 +134,7 @@ class PyMissingInDunderAllInspection : PyInspection() {
             }
 
             // 1) Symbols defined directly in __init__.py
-            for (element in initFile.iterateNames()) {
+            for (element in initFile.topLevelClasses + initFile.topLevelFunctions) {
                 if (!isExportable(element)) continue
                 if (isAllowlistedSymbol(element)) continue
 
@@ -209,7 +209,7 @@ class PyMissingInDunderAllInspection : PyInspection() {
             // considered missing and the quick-fix can create __all__.
             val exportedNames: Collection<String> = dunderAllNames ?: emptyList()
 
-            for (element in moduleFile.iterateNames()) {
+            for (element in moduleFile.topLevelClasses + moduleFile.topLevelFunctions) {
                 if (!isExportable(element)) continue
                 if (isAllowlistedSymbol(element)) continue
 
@@ -314,7 +314,7 @@ class PyMissingInDunderAllInspection : PyInspection() {
                     return true
                 }
             }
-            
+
             return false
         }
 

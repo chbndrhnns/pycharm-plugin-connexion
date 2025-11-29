@@ -5,6 +5,7 @@ import fixtures.TestBase
 import fixtures.assertIntentionAvailable
 import fixtures.assertIntentionNotAvailable
 
+//
 class SettingsToggleTest : TestBase() {
 
     fun testWrapIntentionHiddenWhenDisabled() {

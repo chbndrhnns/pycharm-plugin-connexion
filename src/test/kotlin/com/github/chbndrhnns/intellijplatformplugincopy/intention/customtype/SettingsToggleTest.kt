@@ -3,6 +3,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 import fixtures.SettingsTestUtils.withPluginSettings
 import fixtures.TestBase
 
+//
 class SettingsToggleTest : TestBase() {
 
     fun testIntentionHiddenWhenDisabled() {

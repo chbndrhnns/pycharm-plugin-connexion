@@ -2,7 +2,7 @@ class PublicClass:
     pass
 
 
-def public_function():
+def <warning descr="Symbol 'public_function' is not exported in __all__">public_function</warning>():
     pass
 
 

@@ -23,15 +23,6 @@ class CopyPackageContentActionTest : BasePlatformTestCase() {
             .add(CommonDataKeys.VIRTUAL_FILE, directory)
             .build()
 
-        // Use createTestEvent instead of constructor if possible, or fallback to what works.
-        // Assuming createTestEvent(action, context) exists based on docs hint and standard patterns.
-        // If not, we might need another approach.
-        // But wait, TestActionEvent constructor IS valid in many versions.
-        // The error 'Unresolved reference createTestAction' suggests a Kotlin compiler issue or mismatch.
-        // I'll try to use the constructor again but WITHOUT the @Suppress to see if it changes anything, 
-        // and I'll make sure imports are clean.
-        // Actually, I'll try createTestEvent first.
-
         val event = TestActionEvent.createTestEvent(action, dataContext)
 
         // 1. Enabled by default

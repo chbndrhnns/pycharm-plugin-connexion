@@ -2,7 +2,7 @@ class PublicClass:
     pass
 
 
-def test_():
+def public_function():
     pass
 
 

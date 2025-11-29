@@ -36,7 +36,12 @@ class PyPrivateModuleImportInspectionTest : TestBase() {
     fun testMakeSymbolPublicAndUseExportedSymbolQuickFix_MultipleSites() {
         val path = "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_MultipleSites"
         myFixture.doMultiFileInspectionTest(
-            files = listOf("$path/mypackage/__init__.py", "$path/mypackage/_lib.py", "$path/cli.py", "$path/other_consumer.py"),
+            files = listOf(
+                "$path/mypackage/__init__.py",
+                "$path/mypackage/_lib.py",
+                "$path/cli.py",
+                "$path/other_consumer.py"
+            ),
             inspection = PyPrivateModuleImportInspection::class.java,
             targetFile = "$path/cli.py",
             fixFamilyName = "Make symbol public and import from package",
