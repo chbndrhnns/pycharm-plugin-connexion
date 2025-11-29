@@ -1,12 +1,12 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.unwrap
 
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import fixtures.TestBase
 
 /**
  * Basic unwrap intention behavior: assignments, arguments, returns, and
  * simple container cases for [UnwrapToExpectedTypeIntention].
  */
-class UnwrapBasicTest : BasePlatformTestCase() {
+class UnwrapBasicTest : TestBase() {
 
     fun testAnnotatedAssignment_NewType_UnwrapsToUnderlyingType() {
         myFixture.configureByText(

@@ -6,6 +6,9 @@ All tests in this package cover `UnwrapToExpectedTypeIntention`.
 
 - `UnwrapBasicTest` – basic unwrapping behavior for NewType-like wrappers in
   assignments, arguments, returns, and simple container cases.
+- `UnwrapContextBreadthTest` – unwrapping in various contexts (yield, comprehension, returns).
+- `UnwrapItemsTest` – unwrapping items inside collections.
+- `UnwrapSettingsToggleTest` – settings behavior.
 
 **UI / presentation tests**
 

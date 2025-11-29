@@ -9,7 +9,7 @@ All tests in this package cover `WrapWithExpectedTypeIntention`.
 - `WrapUnionChoiceTest` – how the union chooser selects and applies options (no forward refs).
 - `WrapForwardRefsTest` – behavior for forward-referenced types (which candidate is applied, availability).
 - `WrapParenthesesTest` – wrapping when expressions are parenthesized or nested.
-- `WrapGenericsTest` – wrapping driven by generic types.
+- `GenericTest` – wrapping driven by generic types.
 - `WrapDataclassesTest` – dataclass-specific wrapping.
 
 **UI / presentation tests**

@@ -1,16 +1,12 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.unwrap
 
-import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
+import fixtures.SettingsTestUtils.withPluginSettings
 import fixtures.TestBase
 
 class UnwrapSettingsToggleTest : TestBase() {
 
     fun testUnwrapIntentionHiddenWhenDisabled() {
-        val svc = PluginSettingsState.instance()
-        val old = svc.state
-        try {
-            svc.loadState(old.copy(enableUnwrapToExpectedTypeIntention = false))
-
+        withPluginSettings({ it.copy(enableUnwrapToExpectedTypeIntention = false) }) {
             myFixture.configureByText(
                 "a.py",
                 """
@@ -25,17 +21,11 @@ class UnwrapSettingsToggleTest : TestBase() {
             val intentions = myFixture.availableIntentions
             val hasUnwrap = intentions.any { it.text.startsWith("Unwrap ") }
             assertFalse("Unwrap intention should be hidden when disabled in settings", hasUnwrap)
-        } finally {
-            svc.loadState(old)
         }
     }
 
     fun testUnwrapIntentionVisibleWhenEnabled() {
-        val svc = PluginSettingsState.instance()
-        val old = svc.state
-        try {
-            svc.loadState(old.copy(enableUnwrapToExpectedTypeIntention = true))
-
+        withPluginSettings({ it.copy(enableUnwrapToExpectedTypeIntention = true) }) {
             myFixture.configureByText(
                 "a.py",
                 """
@@ -48,8 +38,6 @@ class UnwrapSettingsToggleTest : TestBase() {
 
             myFixture.doHighlighting()
             myFixture.findSingleIntention("Unwrap UserId()")
-        } finally {
-            svc.loadState(old)
         }
     }
 }

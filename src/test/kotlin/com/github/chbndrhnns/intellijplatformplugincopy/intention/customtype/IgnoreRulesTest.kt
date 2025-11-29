@@ -31,7 +31,7 @@ class IgnoreRulesTest : TestBase() {
         val hasIntroduce = intentions.any { it.text.startsWith("Introduce custom type") }
         assertFalse("Intention should not be offered for ignored symbol names like __version__", hasIntroduce)
     }
-    
+
     fun testIntentionStillOfferedForRegularSymbol() {
         myFixture.configureByText(
             "a.py",
