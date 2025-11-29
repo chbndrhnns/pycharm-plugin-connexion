@@ -17,6 +17,7 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enablePopulateRequiredArgumentsIntention: Boolean = true,
         var enablePopulateRecursiveArgumentsIntention: Boolean = true,
         var enablePyMissingInDunderAllInspection: Boolean = true,
+        var enableCopyPackageContentAction: Boolean = true,
     )
 
     private var myState = State()

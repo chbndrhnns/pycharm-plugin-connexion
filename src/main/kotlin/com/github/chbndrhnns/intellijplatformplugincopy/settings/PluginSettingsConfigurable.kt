@@ -18,6 +18,7 @@ class PluginSettingsConfigurable : SearchableConfigurable {
     private lateinit var enablePopulateRequiredArgsCb: JBCheckBox
     private lateinit var enablePopulateRecursiveArgsCb: JBCheckBox
     private lateinit var enableDunderAllInspectionCb: JBCheckBox
+    private lateinit var enableCopyPackageContentCb: JBCheckBox
 
     override fun getId(): String = "com.github.chbndrhnns.intellijplatformplugincopy.settings"
     override fun getDisplayName(): String = "DDD Toolkit"
@@ -35,6 +36,7 @@ class PluginSettingsConfigurable : SearchableConfigurable {
         enablePopulateRequiredArgsCb = JBCheckBox("Enable ‘Populate missing required call arguments’ intention")
         enablePopulateRecursiveArgsCb = JBCheckBox("Enable ‘Populate missing arguments recursively’ intention")
         enableDunderAllInspectionCb = JBCheckBox("Enable ‘__all__’ export inspection")
+        enableCopyPackageContentCb = JBCheckBox("Enable ‘Copy Package Content’ context menu action")
         inner.add(enableWrapCb)
         inner.add(enableWrapItemsCb)
         inner.add(enableUnwrapCb)
@@ -44,6 +46,7 @@ class PluginSettingsConfigurable : SearchableConfigurable {
         inner.add(enablePopulateRequiredArgsCb)
         inner.add(enablePopulateRecursiveArgsCb)
         inner.add(enableDunderAllInspectionCb)
+        inner.add(enableCopyPackageContentCb)
         p.add(inner, BorderLayout.NORTH)
         panel = p
         return p
@@ -59,7 +62,8 @@ class PluginSettingsConfigurable : SearchableConfigurable {
                 (::enablePopulateKwOnlyArgsCb.isInitialized && enablePopulateKwOnlyArgsCb.isSelected != state.enablePopulateKwOnlyArgumentsIntention) ||
                 (::enablePopulateRequiredArgsCb.isInitialized && enablePopulateRequiredArgsCb.isSelected != state.enablePopulateRequiredArgumentsIntention) ||
                 (::enablePopulateRecursiveArgsCb.isInitialized && enablePopulateRecursiveArgsCb.isSelected != state.enablePopulateRecursiveArgumentsIntention) ||
-                (::enableDunderAllInspectionCb.isInitialized && enableDunderAllInspectionCb.isSelected != state.enablePyMissingInDunderAllInspection)
+                (::enableDunderAllInspectionCb.isInitialized && enableDunderAllInspectionCb.isSelected != state.enablePyMissingInDunderAllInspection) ||
+                (::enableCopyPackageContentCb.isInitialized && enableCopyPackageContentCb.isSelected != state.enableCopyPackageContentAction)
     }
 
     override fun apply() {
@@ -74,6 +78,7 @@ class PluginSettingsConfigurable : SearchableConfigurable {
             enablePopulateRequiredArgumentsIntention = enablePopulateRequiredArgsCb.isSelected,
             enablePopulateRecursiveArgumentsIntention = enablePopulateRecursiveArgsCb.isSelected,
             enablePyMissingInDunderAllInspection = enableDunderAllInspectionCb.isSelected,
+            enableCopyPackageContentAction = enableCopyPackageContentCb.isSelected,
         )
         svc.loadState(s)
     }
@@ -96,6 +101,8 @@ class PluginSettingsConfigurable : SearchableConfigurable {
             st.enablePopulateRecursiveArgumentsIntention
         if (::enableDunderAllInspectionCb.isInitialized) enableDunderAllInspectionCb.isSelected =
             st.enablePyMissingInDunderAllInspection
+        if (::enableCopyPackageContentCb.isInitialized) enableCopyPackageContentCb.isSelected =
+            st.enableCopyPackageContentAction
     }
 
     override fun disposeUIResources() {

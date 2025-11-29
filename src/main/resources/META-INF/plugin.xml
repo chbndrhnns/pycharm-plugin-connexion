@@ -86,4 +86,15 @@
                 level="WARNING"
                 implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyPrivateModuleImportInspection"/>
     </extensions>
+
+    <actions>
+        <action id="com.github.chbndrhnns.intellijplatformplugincopy.actions.CopyPackageContentAction"
+                class="com.github.chbndrhnns.intellijplatformplugincopy.actions.CopyPackageContentAction"
+                text="Copy Package Content"
+                description="Copies the content of all files in the selected directory to the clipboard">
+
+            <!-- Add to the Project View context menu (right-click on a folder) -->
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="CopyReference"/>
+        </action>
+    </actions>
 </idea-plugin>

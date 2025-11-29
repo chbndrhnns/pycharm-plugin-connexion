@@ -15,7 +15,6 @@ class C:
 ```
 - [ ] fix: Missing description for PyPrivateModuleImportInspection
 - [ ] feat: Parse pytest identifer in search all
-- [ ] feat: Copy package as code snippet
 - [ ] feat: Copy selection with imports
 - [ ] Wrap default/default_factory after introducing custom type in dataclass/pydantic
 - [ ] Refactor document for exports
@@ -31,6 +30,7 @@ class C:
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Copy package as code snippet
 - [x] Use exported symbol instead of private... should not be suggested in this case:
 
 ```python
