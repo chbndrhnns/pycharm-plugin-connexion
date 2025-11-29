@@ -2,6 +2,17 @@
 
 ## Pending Tasks
 
+- [ ] fix: No wrap with Self
+
+```python
+class C:
+    def do(self, val: str):
+        ...
+
+    def other(self):
+        self.do("abc")
+
+```
 - [ ] fix: Missing description for PyPrivateModuleImportInspection
 - [ ] feat: Parse pytest identifer in search all
 - [ ] feat: Copy package as code snippet
