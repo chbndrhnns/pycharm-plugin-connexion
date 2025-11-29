@@ -1,11 +1,12 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 
 import fixtures.TestBase
+import fixtures.assertIntentionNotAvailable
 
 class WrapLiteralTest : TestBase() {
 
     fun testLiteral_NoWrapOffered() {
-        myFixture.configureByText(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             from typing import Literal
@@ -14,16 +15,13 @@ class WrapLiteralTest : TestBase() {
                 pass
 
             foo(<caret>'w')
-            """.trimIndent()
+            """,
+            "Wrap with Literal"
         )
-
-        myFixture.doHighlighting()
-        val wrapIntention = myFixture.availableIntentions.find { it.text.startsWith("Wrap with Literal") }
-        assertNull("Wrap intention with Literal should not be offered", wrapIntention)
     }
 
     fun testLiteral_Open_NoWrapOffered() {
-        myFixture.configureByText(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             # open definition usually comes from builtins or io, but for simplicity let's mock a function with Literal
@@ -33,11 +31,8 @@ class WrapLiteralTest : TestBase() {
                 pass
 
             my_open('data.json', <caret>'x')
-            """.trimIndent()
+            """,
+            "Wrap with Literal"
         )
-
-        myFixture.doHighlighting()
-        val wrapIntention = myFixture.availableIntentions.find { it.text.startsWith("Wrap with Literal") }
-        assertNull("Wrap intention with Literal should not be offered", wrapIntention)
     }
 }

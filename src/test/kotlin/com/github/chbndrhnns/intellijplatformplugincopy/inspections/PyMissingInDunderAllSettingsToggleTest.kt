@@ -10,7 +10,6 @@ class PyMissingInDunderAllSettingsToggleTest : TestBase() {
             myFixture.configureByFile("inspections/PyMissingInDunderAllInspection/MissingInAll/__init__.py")
 
             myFixture.enableInspections(PyMissingInDunderAllInspection::class.java)
-            // When disabled via settings, the inspection should not report any problems.
             myFixture.checkHighlighting(true, false, false)
         }
     }

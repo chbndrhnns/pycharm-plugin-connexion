@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 
 import fixtures.TestBase
+import fixtures.doIntentionTest
 
 /**
  * Parentheses and nesting related wrap tests.
@@ -8,49 +9,37 @@ import fixtures.TestBase
 class WrapParenthesesTest : TestBase() {
 
     fun testWrapParenthesizedAssignment() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from pathlib import Path
             a: Path = ("<caret>val")
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Wrap with Path()")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             from pathlib import Path
             a: Path = Path("val")
-            """.trimIndent()
+            """,
+            "Wrap with Path()"
         )
     }
 
     fun testWrapNestedParenthesizedAssignment() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from pathlib import Path
             a: Path = (("<caret>val"))
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Wrap with Path()")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             from pathlib import Path
             a: Path = Path("val")
-            """.trimIndent()
+            """,
+            "Wrap with Path()"
         )
     }
 
     fun testWrapParenthesizedArgument() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             class CustomWrapper:
@@ -63,14 +52,7 @@ class WrapParenthesesTest : TestBase() {
             
             
             result = process_data(<caret>((("some_string"))))
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Wrap with CustomWrapper()")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             class CustomWrapper:
                 def __init__(self, value: str):
@@ -82,7 +64,8 @@ class WrapParenthesesTest : TestBase() {
             
             
             result = process_data(CustomWrapper("some_string"))
-            """.trimIndent()
+            """,
+            "Wrap with CustomWrapper()"
         )
     }
 }

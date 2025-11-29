@@ -1,6 +1,8 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.unwrap
 
 import fixtures.TestBase
+import fixtures.assertIntentionNotAvailable
+import fixtures.doIntentionTest
 
 /**
  * Basic unwrap intention behavior: assignments, arguments, returns, and
@@ -9,32 +11,26 @@ import fixtures.TestBase
 class UnwrapBasicTest : TestBase() {
 
     fun testAnnotatedAssignment_NewType_UnwrapsToUnderlyingType() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from typing import NewType
             UserId = NewType("UserId", int)
 
             x: int = <caret>UserId(42)
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Unwrap UserId()")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             from typing import NewType
             UserId = NewType("UserId", int)
 
             x: int = 42
-            """.trimIndent()
+            """,
+            "Unwrap UserId()"
         )
     }
 
     fun testArgument_NewType_UnwrapsToParameterType() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from typing import NewType
@@ -44,14 +40,7 @@ class UnwrapBasicTest : TestBase() {
                 ...
 
             f(<caret>UserId(10))
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Unwrap UserId()")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             from typing import NewType
             UserId = NewType("UserId", int)
@@ -60,12 +49,13 @@ class UnwrapBasicTest : TestBase() {
                 ...
 
             f(10)
-            """.trimIndent()
+            """,
+            "Unwrap UserId()"
         )
     }
 
     fun testArgument_NewType_CaretOnInnerLiteral_UnwrapsToParameterType() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from typing import NewType
@@ -75,14 +65,7 @@ class UnwrapBasicTest : TestBase() {
                 ...
 
             f(UserId(<caret>10))
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Unwrap UserId()")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             from typing import NewType
             UserId = NewType("UserId", int)
@@ -91,12 +74,13 @@ class UnwrapBasicTest : TestBase() {
                 ...
 
             f(10)
-            """.trimIndent()
+            """,
+            "Unwrap UserId()"
         )
     }
 
     fun testArgument_NewType_CaretOnInnerParenthesis_UnwrapsToParameterType() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from typing import NewType
@@ -106,14 +90,7 @@ class UnwrapBasicTest : TestBase() {
                 ...
 
             f(UserId<caret>(10))
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Unwrap UserId()")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             from typing import NewType
             UserId = NewType("UserId", int)
@@ -122,12 +99,13 @@ class UnwrapBasicTest : TestBase() {
                 ...
 
             f(10)
-            """.trimIndent()
+            """,
+            "Unwrap UserId()"
         )
     }
 
     fun testReturn_NewType_UnwrapsToReturnType() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from typing import NewType
@@ -135,41 +113,32 @@ class UnwrapBasicTest : TestBase() {
 
             def get_user_id() -> int:
                 return <caret>UserId(1)
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Unwrap UserId()")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             from typing import NewType
             UserId = NewType("UserId", int)
 
             def get_user_id() -> int:
                 return 1
-            """.trimIndent()
+            """,
+            "Unwrap UserId()"
         )
     }
 
     fun testContainerConstructor_List_UnwrapNotOffered() {
-        myFixture.configureByText(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             from typing import List
 
             xs: List[int] = <caret>list([1, 2, 3])
-            """.trimIndent()
+            """,
+            "Unwrap list()"
         )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.availableIntentions.find { it.text == "Unwrap list()" }
-        assertNull("Unwrap intention should not be offered for container constructors", intention)
     }
 
     fun testAnnotatedAssignment_Int_RespectsAnnotatedExpectedType() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from typing import Annotated, NewType
@@ -177,21 +146,15 @@ class UnwrapBasicTest : TestBase() {
             UserId = NewType("UserId", int)
 
             x: Annotated[int, "meta"] = <caret>UserId(42)
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Unwrap UserId()")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             from typing import Annotated, NewType
 
             UserId = NewType("UserId", int)
 
             x: Annotated[int, "meta"] = 42
-            """.trimIndent()
+            """,
+            "Unwrap UserId()"
         )
     }
 }

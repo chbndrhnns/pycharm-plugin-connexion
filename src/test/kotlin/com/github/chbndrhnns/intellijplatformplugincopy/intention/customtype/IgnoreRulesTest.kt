@@ -1,49 +1,39 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import fixtures.TestBase
+import fixtures.assertIntentionAvailable
+import fixtures.assertIntentionNotAvailable
 
 class IgnoreRulesTest : TestBase() {
 
     fun testIntentionNotOfferedInsideDunderAllValues() {
-        myFixture.configureByText(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             __all__ = ["i<caret>nt"]
-            """.trimIndent()
+            """,
+            "Introduce custom type"
         )
-
-        myFixture.doHighlighting()
-        val intentions = myFixture.availableIntentions
-        val hasIntroduce = intentions.any { it.text.startsWith("Introduce custom type") }
-        assertFalse("Intention should not be offered for __all__ assignment values", hasIntroduce)
     }
 
     fun testIntentionNotOfferedForIgnoredSymbolNames() {
-        myFixture.configureByText(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             __version__: int = 1<caret>23
-            """.trimIndent()
+            """,
+            "Introduce custom type"
         )
-
-        myFixture.doHighlighting()
-        val intentions = myFixture.availableIntentions
-        val hasIntroduce = intentions.any { it.text.startsWith("Introduce custom type") }
-        assertFalse("Intention should not be offered for ignored symbol names like __version__", hasIntroduce)
     }
 
     fun testIntentionStillOfferedForRegularSymbol() {
-        myFixture.configureByText(
+        myFixture.assertIntentionAvailable(
             "a.py",
             """
             def f():
                 value: int = 1<caret>23
-            """.trimIndent()
+            """,
+            "Introduce custom type"
         )
-
-        myFixture.doHighlighting()
-        val intentions = myFixture.availableIntentions
-        val hasIntroduce = intentions.any { it.text.startsWith("Introduce custom type") }
-        assertTrue("Intention should still be offered for regular symbols", hasIntroduce)
     }
 }

@@ -1,10 +1,11 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import fixtures.TestBase
+import fixtures.doIntentionTest
 
 class PydanticTest : TestBase() {
     fun testCall_IntroduceFromKeywordValue_UpdatesFieldAndUsages() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from pydantic import BaseModel
@@ -17,18 +18,11 @@ class PydanticTest : TestBase() {
             def do():
                 D(product_id=12<caret>3)
                 D(product_id=456)
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Introduce custom type from int")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             from pydantic import BaseModel
-
-
+            
+            
             class ProductId(int):
                 pass
             
@@ -40,8 +34,8 @@ class PydanticTest : TestBase() {
             def do():
                 D(product_id=ProductId(123))
                 D(product_id=ProductId(456))
-            """.trimIndent()
+            """,
+            "Introduce custom type from int"
         )
     }
-
 }

@@ -1,11 +1,13 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.populate
 
 import fixtures.TestBase
+import fixtures.assertIntentionNotAvailable
+import fixtures.doIntentionTest
 
 class KwOnlyArgumentsIntentionTest : TestBase() {
 
     fun testDataclassPopulation() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from dataclasses import dataclass
@@ -17,14 +19,7 @@ class KwOnlyArgumentsIntentionTest : TestBase() {
                 z: int = 1
 
             a = A(<caret>)
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Populate missing arguments with '...'")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             from dataclasses import dataclass
 
@@ -35,12 +30,13 @@ class KwOnlyArgumentsIntentionTest : TestBase() {
                 z: int = 1
 
             a = A(x=..., y=..., z=...)
-            """.trimIndent()
+            """,
+            "Populate missing arguments with '...'"
         )
     }
 
     fun testKwOnlyMethods() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             class C:
@@ -48,26 +44,20 @@ class KwOnlyArgumentsIntentionTest : TestBase() {
                     pass
 
             C().foo(<caret>)
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Populate missing arguments with '...'")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             class C:
                 def foo(self, *, a, b):
                     pass
 
             C().foo(a=..., b=...)
-            """.trimIndent()
+            """,
+            "Populate missing arguments with '...'"
         )
     }
 
     fun testNestedClass() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from dataclasses import dataclass
@@ -78,14 +68,7 @@ class KwOnlyArgumentsIntentionTest : TestBase() {
                     f: int
 
             Outer.Inner(<caret>)
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Populate missing arguments with '...'")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             from dataclasses import dataclass
 
@@ -95,48 +78,40 @@ class KwOnlyArgumentsIntentionTest : TestBase() {
                     f: int
 
             Outer.Inner(f=...)
-            """.trimIndent()
+            """,
+            "Populate missing arguments with '...'"
         )
     }
 
     fun testPartialArguments() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             def foo(a, b, c):
                 pass
 
             foo(1, <caret>)
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Populate missing arguments with '...'")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             def foo(a, b, c):
                 pass
 
             foo(1, b=..., c=...)
-            """.trimIndent()
+            """,
+            "Populate missing arguments with '...'"
         )
     }
 
     fun testPositionalOnlyFunctionCall_NoPopulateOffered() {
-        myFixture.configureByText(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             def sleep(__secs, /):
                 pass
 
             sleep(1<caret>)
-            """.trimIndent()
+            """,
+            "Populate missing arguments with '...'"
         )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.availableIntentions.find { it.text == "Populate missing arguments with '...'" }
-        assertNull("Populate intention should NOT be available for positional-only calls", intention)
     }
 }

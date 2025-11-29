@@ -1,11 +1,12 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.unwrap
 
 import fixtures.TestBase
+import fixtures.doIntentionTest
 
 class UnwrapContextBreadthTest : TestBase() {
 
     fun testYield_Unwraps() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from typing import NewType, Iterator
@@ -13,24 +14,20 @@ class UnwrapContextBreadthTest : TestBase() {
             
             def f() -> Iterator[int]:
                 yield <caret>UserId(1)
-            """.trimIndent()
-        )
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Unwrap UserId()")
-        myFixture.launchAction(intention)
-        myFixture.checkResult(
+            """,
             """
             from typing import NewType, Iterator
             UserId = NewType("UserId", int)
             
             def f() -> Iterator[int]:
                 yield 1
-            """.trimIndent()
+            """,
+            "Unwrap UserId()"
         )
     }
 
     fun testDefaultValue_Unwraps() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from typing import NewType
@@ -38,24 +35,20 @@ class UnwrapContextBreadthTest : TestBase() {
             
             def f(x: int = <caret>UserId(1)):
                 pass
-            """.trimIndent()
-        )
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Unwrap UserId()")
-        myFixture.launchAction(intention)
-        myFixture.checkResult(
+            """,
             """
             from typing import NewType
             UserId = NewType("UserId", int)
             
             def f(x: int = 1):
                 pass
-            """.trimIndent()
+            """,
+            "Unwrap UserId()"
         )
     }
 
     fun testKeywordArgument_Unwraps() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from typing import NewType
@@ -64,12 +57,7 @@ class UnwrapContextBreadthTest : TestBase() {
             def f(x: int): pass
             
             f(x=<caret>UserId(1))
-            """.trimIndent()
-        )
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Unwrap UserId()")
-        myFixture.launchAction(intention)
-        myFixture.checkResult(
+            """,
             """
             from typing import NewType
             UserId = NewType("UserId", int)
@@ -77,58 +65,51 @@ class UnwrapContextBreadthTest : TestBase() {
             def f(x: int): pass
             
             f(x=1)
-            """.trimIndent()
+            """,
+            "Unwrap UserId()"
         )
     }
 
     fun testLambdaBody_Unwraps() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from typing import NewType, Callable
             UserId = NewType("UserId", int)
             
             f: Callable[[], int] = lambda: <caret>UserId(1)
-            """.trimIndent()
-        )
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Unwrap UserId()")
-        myFixture.launchAction(intention)
-        myFixture.checkResult(
+            """,
             """
             from typing import NewType, Callable
             UserId = NewType("UserId", int)
             
             f: Callable[[], int] = lambda: 1
-            """.trimIndent()
+            """,
+            "Unwrap UserId()"
         )
     }
 
     fun testComprehension_Unwraps() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from typing import NewType, List
             UserId = NewType("UserId", int)
             
             l: List[int] = [<caret>UserId(x) for x in range(3)]
-            """.trimIndent()
-        )
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Unwrap UserId()")
-        myFixture.launchAction(intention)
-        myFixture.checkResult(
+            """,
             """
             from typing import NewType, List
             UserId = NewType("UserId", int)
             
             l: List[int] = [x for x in range(3)]
-            """.trimIndent()
+            """,
+            "Unwrap UserId()"
         )
     }
 
     fun testPatternMatching_Unwraps() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from typing import NewType
@@ -138,12 +119,7 @@ class UnwrapContextBreadthTest : TestBase() {
                 match x:
                     case 1:
                         y: int = <caret>UserId(1)
-            """.trimIndent()
-        )
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Unwrap UserId()")
-        myFixture.launchAction(intention)
-        myFixture.checkResult(
+            """,
             """
             from typing import NewType
             UserId = NewType("UserId", int)
@@ -152,12 +128,13 @@ class UnwrapContextBreadthTest : TestBase() {
                 match x:
                     case 1:
                         y: int = 1
-            """.trimIndent()
+            """,
+            "Unwrap UserId()"
         )
     }
 
     fun testWalrusOperator_Unwraps() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from typing import NewType
@@ -166,12 +143,7 @@ class UnwrapContextBreadthTest : TestBase() {
             def f(p: int): ...
             if (x := <caret>UserId(1)):
                f(x)
-            """.trimIndent()
-        )
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Unwrap UserId()")
-        myFixture.launchAction(intention)
-        myFixture.checkResult(
+            """,
             """
             from typing import NewType
             UserId = NewType("UserId", int)
@@ -179,12 +151,13 @@ class UnwrapContextBreadthTest : TestBase() {
             def f(p: int): ...
             if (x := 1):
                f(x)
-            """.trimIndent()
+            """,
+            "Unwrap UserId()"
         )
     }
 
     fun testAttributeChain_Unwraps() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from typing import NewType
@@ -194,12 +167,7 @@ class UnwrapContextBreadthTest : TestBase() {
                 x: int = 1
             a = A()
             y: int = <caret>UserId(a.x)
-            """.trimIndent()
-        )
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Unwrap UserId()")
-        myFixture.launchAction(intention)
-        myFixture.checkResult(
+            """,
             """
             from typing import NewType
             UserId = NewType("UserId", int)
@@ -208,7 +176,8 @@ class UnwrapContextBreadthTest : TestBase() {
                 x: int = 1
             a = A()
             y: int = a.x
-            """.trimIndent()
+            """,
+            "Unwrap UserId()"
         )
     }
 

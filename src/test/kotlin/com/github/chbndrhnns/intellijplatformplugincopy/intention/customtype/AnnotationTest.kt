@@ -1,27 +1,29 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import fixtures.TestBase
+import fixtures.doIntentionTest
 
 class AnnotationTest : TestBase() {
 
     fun testAnnotatedAssignment_UnionType_UpdatesOnlyMatchingPart() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             val: int | str | None = <caret>2
-            """.trimIndent()
+            """,
+            """
+            class Customint(int):
+                pass
+            
+            
+            val: Customint | str | None = Customint(2)
+            """,
+            "Introduce custom type from int"
         )
-
-        val intention = myFixture.findSingleIntention("Introduce custom type from int")
-        myFixture.launchAction(intention)
-
-        val text = myFixture.file.text
-        assertTrue(text.contains("class Customint(int):"))
-        assertTrue(text.contains("val: Customint | str | None = Customint(2)"))
     }
 
     fun testAnnotatedParameter_UnionType_UpdatesOnlyMatchingPart() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             class CustomWrapper: ...
@@ -32,13 +34,7 @@ class AnnotationTest : TestBase() {
             
             
             f("a<caret>bc")
-            """.trimIndent()
-        )
-
-        val intention = myFixture.findSingleIntention("Introduce custom type from str")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             class Customstr(str):
                 pass
@@ -49,32 +45,28 @@ class AnnotationTest : TestBase() {
 
             def f(x: CustomWrapper | Customstr) -> None:
                 pass
-
-
+            
+            
             f(Customstr("abc"))
-        """.trimIndent()
+            """,
+            "Introduce custom type from str"
         )
     }
 
     fun testAnnotatedAssignment_UnionType_String_UpdatesOnlyMatchingPart() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             val: int | str | None = <caret>"hello"
-            """.trimIndent()
-        )
-
-        val intention = myFixture.findSingleIntention("Introduce custom type from str")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             class Customstr(str):
                 pass
             
             
             val: int | Customstr | None = Customstr("hello")
-        """.trimIndent()
+            """,
+            "Introduce custom type from str"
         )
     }
 }

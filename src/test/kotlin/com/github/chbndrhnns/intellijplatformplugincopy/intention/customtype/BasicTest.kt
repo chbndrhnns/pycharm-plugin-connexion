@@ -1,6 +1,8 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import fixtures.TestBase
+import fixtures.assertIntentionNotAvailable
+import fixtures.doIntentionTest
 
 /**
  * Basic smoke tests for introducing a custom type from stdlib types.
@@ -15,18 +17,12 @@ import fixtures.TestBase
 class BasicTest : TestBase() {
 
     fun testSimpleAnnotatedAssignment_Int_RewritesAnnotation() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             def test_():
                 val: int = 1<caret>234
-            """.trimIndent()
-        )
-
-        val intention = myFixture.findSingleIntention("Introduce custom type from int")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             class Customint(int):
                 pass
@@ -34,25 +30,19 @@ class BasicTest : TestBase() {
 
             def test_():
                 val: Customint = Customint(1234)
-            """.trimIndent()
+            """,
+            "Introduce custom type from int"
         )
     }
 
 
     fun testSimpleAnnotatedParam_Int_RewritesAnnotation() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             def f(x: <caret>int) -> None:
                 ...
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Introduce custom type from int")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             class Customint(int):
                 pass
@@ -60,12 +50,13 @@ class BasicTest : TestBase() {
 
             def f(x: Customint) -> None:
                 ...
-            """.trimIndent()
+            """,
+            "Introduce custom type from int"
         )
     }
 
     fun testSimpleDataclassField_UsesCustomType() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             import dataclasses
@@ -79,14 +70,7 @@ class BasicTest : TestBase() {
             def do():
                 D(product_id=123)
                 D(product_id=456)
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Introduce custom type from int")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             import dataclasses
             
@@ -103,12 +87,13 @@ class BasicTest : TestBase() {
             def do():
                 D(product_id=ProductId(123))
                 D(product_id=ProductId(456))
-            """.trimIndent()
+            """,
+            "Introduce custom type from int"
         )
     }
 
     fun testSimplePydanticField_UsesCustomType() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             import pydantic
@@ -121,14 +106,7 @@ class BasicTest : TestBase() {
             def do():
                 D(product_id=123)
                 D(product_id=456)
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Introduce custom type from int")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             import pydantic
 
@@ -144,12 +122,13 @@ class BasicTest : TestBase() {
             def do():
                 D(product_id=ProductId(123))
                 D(product_id=ProductId(456))
-            """.trimIndent()
+            """,
+            "Introduce custom type from int"
         )
     }
 
     fun testIntentionNotAvailable_WhenAlreadyCustomTypeInheritingStr() {
-        myFixture.configureByText(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             class CustomStr(str):
@@ -157,15 +136,13 @@ class BasicTest : TestBase() {
 
             def do():
                 val: CustomStr = "a<caret>bc"
-            """.trimIndent()
+            """,
+            "Introduce custom type"
         )
-
-        val intentions = myFixture.filterAvailableIntentions("Introduce custom type")
-        assertEmpty("Intention should not be available when type is already a custom subclass of str", intentions)
     }
 
     fun testIntentionNotAvailable_WhenTypeErrorPresent() {
-        myFixture.configureByText(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             from typing import NewType
@@ -173,15 +150,13 @@ class BasicTest : TestBase() {
             One = NewType("One", str)
             
             val: One = "a<caret>bc"
-            """.trimIndent()
+            """,
+            "Introduce custom type"
         )
-
-        val intentions = myFixture.filterAvailableIntentions("Introduce custom type")
-        assertEmpty("Intention should not be available when type error is present", intentions)
     }
 
     fun testIntentionNotAvailable_WhenTypeErrorOnRhsOfAnnotatedAssignment() {
-        myFixture.configureByText(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             def do():
@@ -189,20 +164,13 @@ class BasicTest : TestBase() {
 
 
             val: i<caret>nt = do()
-            """.trimIndent(),
-        )
-
-        myFixture.doHighlighting()
-
-        val intentions = myFixture.filterAvailableIntentions("Introduce custom type")
-        assertEmpty(
-            "Intention should not be available when RHS of annotated assignment has a type checker error",
-            intentions,
+            """,
+            "Introduce custom type"
         )
     }
 
     fun testIntentionNotAvailable_OnFunctionCallResult() {
-        myFixture.configureByText(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             def do():
@@ -211,18 +179,13 @@ class BasicTest : TestBase() {
 
             def usage():
                 val = <caret>do()
-            """.trimIndent(),
-        )
-
-        val intentions = myFixture.filterAvailableIntentions("Introduce custom type")
-        assertEmpty(
-            "Intention should not be available on implicit function call result on RHS of annotated assignment",
-            intentions,
+            """,
+            "Introduce custom type"
         )
     }
 
     fun testIntentionNotAvailable_OnAssignmentTargetOfFunctionCallResult() {
-        myFixture.configureByText(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             def do():
@@ -231,13 +194,8 @@ class BasicTest : TestBase() {
 
             def usage():
                 va<caret>l = do()
-            """.trimIndent(),
-        )
-
-        val intentions = myFixture.filterAvailableIntentions("Introduce custom type")
-        assertEmpty(
-            "Intention should not be available on assignment target when RHS is an implicit function call result",
-            intentions,
+            """,
+            "Introduce custom type"
         )
     }
 

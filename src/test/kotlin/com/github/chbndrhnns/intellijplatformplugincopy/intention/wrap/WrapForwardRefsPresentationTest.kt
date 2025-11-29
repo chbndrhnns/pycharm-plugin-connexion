@@ -1,8 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.WrapWithExpectedTypeIntentionHooks
-import fixtures.FakePopupHost
 import fixtures.TestBase
+import fixtures.withWrapPopupSelection
 
 /**
  * UI / presentation tests for wrap intention with forward-referenced types.
@@ -10,9 +9,7 @@ import fixtures.TestBase
 class WrapForwardRefsPresentationTest : TestBase() {
 
     fun testUnionChooserShowsFqnForForwardRef_acrossModules_qualifiedStrings() {
-        val fake = FakePopupHost().apply { selectedIndex = 0 }
-        WrapWithExpectedTypeIntentionHooks.popupHost = fake
-        try {
+        withWrapPopupSelection(0) { fake ->
             myFixture.addFileToProject(
                 "pkg/__init__.py",
                 """"""
@@ -47,15 +44,11 @@ class WrapForwardRefsPresentationTest : TestBase() {
             myFixture.launchAction(intention)
 
             assertEquals(listOf("User (pkg.b.User)", "Token (pkg.b.Token)"), fake.lastLabels)
-        } finally {
-            WrapWithExpectedTypeIntentionHooks.popupHost = null
         }
     }
 
     fun testUnionChooserShowsFqnForForwardRef_mixedQuotedAndRef() {
-        val fake = FakePopupHost().apply { selectedIndex = 0 }
-        WrapWithExpectedTypeIntentionHooks.popupHost = fake
-        try {
+        withWrapPopupSelection(0) { fake ->
             myFixture.configureByText(
                 "a.py",
                 """
@@ -82,15 +75,11 @@ class WrapForwardRefsPresentationTest : TestBase() {
 
             // Expect FQNs for both candidates even when one comes from a quoted forward ref
             assertEquals(listOf("User (a.User)", "Token (a.Token)"), fake.lastLabels)
-        } finally {
-            WrapWithExpectedTypeIntentionHooks.popupHost = null
         }
     }
 
     fun testUnionChooserShowsFqnForForwardRef_quotedUnion() {
-        val fake = FakePopupHost().apply { selectedIndex = 1 }
-        WrapWithExpectedTypeIntentionHooks.popupHost = fake
-        try {
+        withWrapPopupSelection(1) { fake ->
             myFixture.configureByText(
                 "a.py",
                 """
@@ -117,15 +106,11 @@ class WrapForwardRefsPresentationTest : TestBase() {
 
             // Ensure chooser labels include fully qualified names for both quoted members
             assertEquals(listOf("User (a.User)", "Token (a.Token)"), fake.lastLabels)
-        } finally {
-            WrapWithExpectedTypeIntentionHooks.popupHost = null
         }
     }
 
     fun testUnionChooserShowsFqnForForwardRef_newTypesQuotedUnion() {
-        val fake = FakePopupHost().apply { selectedIndex = 0 }
-        WrapWithExpectedTypeIntentionHooks.popupHost = fake
-        try {
+        withWrapPopupSelection(0) { fake ->
             myFixture.configureByText(
                 "a.py",
                 """
@@ -147,8 +132,6 @@ class WrapForwardRefsPresentationTest : TestBase() {
 
             // Ensure chooser labels use fully qualified names for NewType-based forward refs
             assertEquals(listOf("CloudId (a.CloudId)", "Namespace (a.Namespace)"), fake.lastLabels)
-        } finally {
-            WrapWithExpectedTypeIntentionHooks.popupHost = null
         }
     }
 }

@@ -1,11 +1,13 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import fixtures.TestBase
+import fixtures.assertIntentionNotAvailable
+import fixtures.doIntentionTest
 
 class DataclassTest : TestBase() {
 
     fun testField_WrapsKeywordArgumentUsages() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             import dataclasses
@@ -19,14 +21,7 @@ class DataclassTest : TestBase() {
             def do():
                 D(product_id=123)
                 D(product_id=456)
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Introduce custom type from int")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             import dataclasses
             
@@ -43,12 +38,13 @@ class DataclassTest : TestBase() {
             def do():
                 D(product_id=ProductId(123))
                 D(product_id=ProductId(456))
-            """.trimIndent()
+            """,
+            "Introduce custom type from int"
         )
     }
 
     fun testField_WrapsPositionalArgumentUsages() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             import dataclasses
@@ -63,14 +59,7 @@ class DataclassTest : TestBase() {
             def do():
                 D(123, "x")
                 D(456, other="y")
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Introduce custom type from int")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             import dataclasses
             
@@ -88,12 +77,13 @@ class DataclassTest : TestBase() {
             def do():
                 D(ProductId(123), "x")
                 D(ProductId(456), other="y")
-            """.trimIndent()
+            """,
+            "Introduce custom type from int"
         )
     }
 
     fun testCall_IntroduceFromKeywordValue_UpdatesFieldAndAllUsages() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             import dataclasses
@@ -107,14 +97,7 @@ class DataclassTest : TestBase() {
             def do():
                 D(product_id=12<caret>3)
                 D(product_id=456)
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Introduce custom type from int")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             import dataclasses
             
@@ -131,12 +114,13 @@ class DataclassTest : TestBase() {
             def do():
                 D(product_id=ProductId(123))
                 D(product_id=ProductId(456))
-            """.trimIndent()
+            """,
+            "Introduce custom type from int"
         )
     }
 
     fun testCall_IntroduceFromPositionalValue_UpdatesFieldAndUsages() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             import dataclasses
@@ -151,14 +135,7 @@ class DataclassTest : TestBase() {
             def do():
                 D(12<caret>3, "a")
                 D(456, "b")
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Introduce custom type from int")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
                 import dataclasses
 
@@ -176,12 +153,13 @@ class DataclassTest : TestBase() {
                 def do():
                     D(ProductId(123), "a")
                     D(ProductId(456), "b")
-            """.trimIndent()
+            """,
+            "Introduce custom type from int"
         )
     }
 
     fun testCall_DoesNotOfferCustomTypeIfAlreadyCustom() {
-        myFixture.configureByText(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             import dataclasses
@@ -198,16 +176,13 @@ class DataclassTest : TestBase() {
 
             def do():
                 D(product_id=12<caret>3)
-            """.trimIndent()
+            """,
+            "Introduce custom type from int"
         )
-
-        myFixture.doHighlighting()
-        val intentions = myFixture.filterAvailableIntentions("Introduce custom type from int")
-        assertEmpty("Should not offer introducing a custom type when one already exists", intentions)
     }
 
     fun testField_WithSnakeCaseName_UsesFieldNameForClass() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             import dataclasses
@@ -216,16 +191,7 @@ class DataclassTest : TestBase() {
             @dataclasses.dataclass
             class D:
                 product_id: i<caret>nt
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Introduce custom type from int")
-        myFixture.launchAction(intention)
-
-        val result = myFixture.file.text
-
-        myFixture.checkResult(
+            """,
             """
             import dataclasses
             
@@ -237,12 +203,13 @@ class DataclassTest : TestBase() {
             @dataclasses.dataclass
             class D:
                 product_id: ProductId
-                """.trimIndent()
+            """,
+            "Introduce custom type from int"
         )
     }
 
     fun testField_ListOfStr_UsesPluralFieldNameForClass() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             import dataclasses
@@ -251,14 +218,7 @@ class DataclassTest : TestBase() {
             @dataclasses.dataclass
             class FileUpload:
                 files: li<caret>st[str]
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Introduce custom type from list")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             import dataclasses
             
@@ -270,12 +230,13 @@ class DataclassTest : TestBase() {
             @dataclasses.dataclass
             class FileUpload:
                 files: Files
-            """.trimIndent()
+            """,
+            "Introduce custom type from list"
         )
     }
 
     fun testField_UnionWithNone_DefaultNoneIsNotWrapped() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             import dataclasses
@@ -284,14 +245,7 @@ class DataclassTest : TestBase() {
             @dataclasses.dataclass
             class C:
                 val: i<caret>nt | None = None
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Introduce custom type from int")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             import dataclasses
 
@@ -303,7 +257,8 @@ class DataclassTest : TestBase() {
             @dataclasses.dataclass
             class C:
                 val: Customint | None = None
-            """.trimIndent()
+            """,
+            "Introduce custom type from int"
         )
     }
 }

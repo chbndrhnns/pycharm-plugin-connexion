@@ -1,8 +1,8 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.WrapWithExpectedTypeIntentionHooks
-import fixtures.FakePopupHost
 import fixtures.TestBase
+import fixtures.doIntentionTest
+import fixtures.withWrapPopupSelection
 
 /**
  * Wrap intention behavior when the expected type is a union (without forward refs).
@@ -10,7 +10,7 @@ import fixtures.TestBase
 class WrapUnionChoiceTest : TestBase() {
 
     fun testUnionAutoSelect_PathOverStr() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from pathlib import Path
@@ -19,14 +19,7 @@ class WrapUnionChoiceTest : TestBase() {
                 pass
 
             f(<caret>"val")
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Wrap with Path()")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             from pathlib import Path
 
@@ -34,43 +27,33 @@ class WrapUnionChoiceTest : TestBase() {
                 pass
 
             f(Path("val"))
-            """.trimIndent()
+            """,
+            "Wrap with Path()"
         )
     }
 
     fun testUnionChooser_WithTypingUnionContainingOr() {
-        val fake = FakePopupHost().apply { selectedIndex = 0 }
-        WrapWithExpectedTypeIntentionHooks.popupHost = fake
-        try {
-            myFixture.configureByText(
+        withWrapPopupSelection(0) {
+            myFixture.doIntentionTest(
                 "a.py",
                 """
-            from typing import NewType, Union
-
-            One = NewType("One", str)
-            Two = NewType("Two", str)
-
-            a: Union[One | Two] = <caret>"val"
-            """.trimIndent()
-            )
-
-            myFixture.doHighlighting()
-            val intention = myFixture.findSingleIntention("Wrap with expected union type…")
-            myFixture.launchAction(intention)
-
-            myFixture.checkResult(
+                from typing import NewType, Union
+    
+                One = NewType("One", str)
+                Two = NewType("Two", str)
+    
+                a: Union[One | Two] = <caret>"val"
+                """,
                 """
-            from typing import NewType, Union
-
-            One = NewType("One", str)
-            Two = NewType("Two", str)
-
-            a: Union[One | Two] = One("val")
-            """.trimIndent()
+                from typing import NewType, Union
+    
+                One = NewType("One", str)
+                Two = NewType("Two", str)
+    
+                a: Union[One | Two] = One("val")
+                """,
+                "Wrap with expected union type…"
             )
-        } finally {
-            WrapWithExpectedTypeIntentionHooks.popupHost =
-                null
         }
     }
 }

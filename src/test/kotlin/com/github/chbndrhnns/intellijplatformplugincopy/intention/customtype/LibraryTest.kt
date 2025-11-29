@@ -1,39 +1,37 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import fixtures.TestBase
+import fixtures.assertIntentionAvailable
+import fixtures.assertIntentionNotAvailable
 
 class LibraryTest : TestBase() {
 
     fun testIntentionNotAvailable_WhenArgumentToJsonDump() {
-        myFixture.configureByText(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             import json
             
             def do(f):
                 json.dump({}, f, indent=<caret>2)
-            """.trimIndent()
+            """,
+            "Introduce custom type"
         )
-
-        val intentions = myFixture.filterAvailableIntentions("Introduce custom type")
-        assertEmpty("Intention should not be available for library function arguments", intentions)
     }
 
     fun testIntentionNotAvailable_WhenArgumentToBuiltinPrint() {
-        myFixture.configureByText(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             def do():
                 print("hello", end=<caret>"\n")
-            """.trimIndent()
+            """,
+            "Introduce custom type"
         )
-
-        val intentions = myFixture.filterAvailableIntentions("Introduce custom type")
-        assertEmpty("Intention should not be available for builtin function arguments", intentions)
     }
 
     fun testIntentionAvailable_WhenArgumentToUserFunction() {
-        myFixture.configureByText(
+        myFixture.assertIntentionAvailable(
             "a.py",
             """
             def my_func(x: int):
@@ -41,25 +39,21 @@ class LibraryTest : TestBase() {
             
             def do():
                 my_func(x=<caret>2)
-            """.trimIndent()
+            """,
+            "Introduce custom type"
         )
-
-        val intentions = myFixture.filterAvailableIntentions("Introduce custom type")
-        assertNotEmpty(intentions)
     }
 
     fun testIntentionAvailable_WhenInDictPassedToLibrary() {
-        myFixture.configureByText(
+        myFixture.assertIntentionAvailable(
             "a.py",
             """
             import json
             
             def do(f):
                 json.dump({"key": <caret>123}, f)
-            """.trimIndent()
+            """,
+            "Introduce custom type"
         )
-
-        val intentions = myFixture.filterAvailableIntentions("Introduce custom type")
-        assertNotEmpty(intentions)
     }
 }

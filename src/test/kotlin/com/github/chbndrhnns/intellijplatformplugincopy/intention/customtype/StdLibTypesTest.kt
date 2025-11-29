@@ -1,51 +1,46 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import fixtures.TestBase
+import fixtures.assertIntentionAvailable
 
 class StdLibTypesTest : TestBase() {
 
     fun testDatetime_IntentionAvailable() {
-        myFixture.configureByText(
+        myFixture.assertIntentionAvailable(
             "a.py",
             """
             import datetime
             
             def f(d: datetime.date<caret>time):
                 pass
-            """.trimIndent()
+            """,
+            "Introduce custom type from datetime"
         )
-
-        val intentions = myFixture.filterAvailableIntentions("Introduce custom type from datetime")
-        assertNotEmpty(intentions)
     }
 
     fun testDate_IntentionAvailable() {
-        myFixture.configureByText(
+        myFixture.assertIntentionAvailable(
             "a.py",
             """
             import datetime
             
             def f(d: datetime.da<caret>te):
                 pass
-            """.trimIndent()
+            """,
+            "Introduce custom type from date"
         )
-
-        val intentions = myFixture.filterAvailableIntentions("Introduce custom type from date")
-        assertNotEmpty(intentions)
     }
 
     fun testUUID_IntentionAvailable() {
-        myFixture.configureByText(
+        myFixture.assertIntentionAvailable(
             "a.py",
             """
             import uuid
             
             def f(id: uuid.U<caret>UID):
                 pass
-            """.trimIndent()
+            """,
+            "Introduce custom type from UUID"
         )
-
-        val intentions = myFixture.filterAvailableIntentions("Introduce custom type from UUID")
-        assertNotEmpty(intentions)
     }
 }

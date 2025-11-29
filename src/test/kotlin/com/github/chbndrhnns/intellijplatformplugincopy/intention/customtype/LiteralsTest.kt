@@ -1,25 +1,20 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import fixtures.TestBase
+import fixtures.assertIntentionNotAvailable
+import fixtures.doIntentionTest
 
 class LiteralsTest : TestBase() {
 
     fun testString_NoAnnotation_WrapsWithCustomStr() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             def expect_str(s) -> None:
                 ...
 
             expect_str("ab<caret>c")
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Introduce custom type from str")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             class Customstr(str):
                 pass
@@ -29,26 +24,20 @@ class LiteralsTest : TestBase() {
                 ...
 
             expect_str(Customstr("abc"))
-            """.trimIndent()
+            """,
+            "Introduce custom type from str"
         )
     }
 
     fun testString_Annotation_UpdatesAnnotationAfterWrap() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             def expect_str(s: str) -> None:
                 ...
 
             expect_str("ab<caret>c")
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Introduce custom type from str")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             class Customstr(str):
                 pass
@@ -58,81 +47,64 @@ class LiteralsTest : TestBase() {
                 ...
 
             expect_str(Customstr("abc"))
-            """.trimIndent()
+            """,
+            "Introduce custom type from str"
         )
     }
 
     fun testStringAssignment_NoAnnotation_WrapsWithCustomStr() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             val = "s<caret>tr"
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Introduce custom type from str")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             class Customstr(str):
                 pass
 
 
             val = Customstr("str")
-            """.trimIndent()
+            """,
+            "Introduce custom type from str"
         )
     }
 
     fun testFloatAssignment_UsesFloatAndWrapsValue() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             val = 4567.<caret>6
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Introduce custom type from float")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             class Customfloat(float):
                 pass
             
             
             val = Customfloat(4567.6)
-            """.trimIndent()
+            """,
+            "Introduce custom type from float"
         )
     }
 
     fun testIntAssignment_WithSnakeCaseName_UsesTargetNameForClass() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             product_id = 12<caret>34
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Introduce custom type from int")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             class ProductId(int):
                 pass
 
 
             product_id = ProductId(1234)
-            """.trimIndent()
+            """,
+            "Introduce custom type from int"
         )
     }
 
     fun testKeywordArgument_WithSnakeCaseName_UsesKeywordForClass() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             def do(my_arg) -> None:
@@ -140,14 +112,7 @@ class LiteralsTest : TestBase() {
 
             def test_():
                 do(my_arg=12<caret>34)
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Introduce custom type from int")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             class MyArg(int):
                 pass
@@ -158,12 +123,13 @@ class LiteralsTest : TestBase() {
 
             def test_():
                 do(my_arg=MyArg(1234))
-            """.trimIndent()
+            """,
+            "Introduce custom type from int"
         )
     }
 
     fun testDictValue_WhenExpectedTypeIsAlreadyCustom_DoesNotOfferIntention() {
-        myFixture.configureByText(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             class CustomInt(int):
@@ -171,17 +137,13 @@ class LiteralsTest : TestBase() {
 
 
             val: dict[str, CustomInt] = {"a": <caret>1, "b": 2, "c": 3}
-            """.trimIndent()
+            """,
+            "Introduce custom type from int"
         )
-
-        myFixture.doHighlighting()
-
-        val intentions = myFixture.filterAvailableIntentions("Introduce custom type from int")
-        assertEmpty("Should not offer to introduce custom type when expected type is already custom", intentions)
     }
 
     fun testDictKey_WhenExpectedTypeIsAlreadyCustom_DoesNotOfferIntention() {
-        myFixture.configureByText(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             class CustomStr(str):
@@ -189,30 +151,18 @@ class LiteralsTest : TestBase() {
 
 
             val: dict[CustomStr, int] = {<caret>"a": 1, "b": 2}
-            """.trimIndent()
+            """,
+            "Introduce custom type from str"
         )
-
-        myFixture.doHighlighting()
-
-        // We expect NO "Introduce custom type..." intention here
-        val intentions = myFixture.filterAvailableIntentions("Introduce custom type from str")
-        assertEmpty("Should not offer to introduce custom type when expected type is already custom", intentions)
     }
 
     fun testParameterDefaultValue_WithSnakeCaseName_UsesParameterNameForClass() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             def extract_saved_reels(self, output_dir: str = "saved_ree<caret>ls"):
                 pass
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Introduce custom type from str")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             class OutputDir(str):
                 pass
@@ -220,42 +170,35 @@ class LiteralsTest : TestBase() {
 
             def extract_saved_reels(self, output_dir: OutputDir = OutputDir("saved_reels")):
                 pass
-            """.trimIndent()
+            """,
+            "Introduce custom type from str"
         )
     }
 
     fun testModuleDocstring_DoesNotOfferCustomTypeIntention() {
-        myFixture.configureByText(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             \"\"\"Module doc<caret>string\"\"\"
 
             def f(x: int) -> None:
                 ...
-            """.trimIndent()
+            """,
+            "Introduce custom type from int"
         )
-
-        myFixture.doHighlighting()
-
-        val intentions = myFixture.filterAvailableIntentions("Introduce custom type from int")
-        assertEmpty("Should not offer custom type introduction on module docstring", intentions)
     }
 
     fun testFunctionDocstring_DoesNotOfferCustomTypeIntention() {
-        myFixture.configureByText(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             def f(x: int) -> None:
                 \"\"\"Function doc<caret>string\"\"\"
 
                 return x
-            """.trimIndent()
+            """,
+            "Introduce custom type from int"
         )
-
-        myFixture.doHighlighting()
-
-        val intentions = myFixture.filterAvailableIntentions("Introduce custom type from int")
-        assertEmpty("Should not offer custom type introduction on function docstring", intentions)
     }
 
     fun testClassDocstring_DoesNotOfferCustomTypeIntention() {

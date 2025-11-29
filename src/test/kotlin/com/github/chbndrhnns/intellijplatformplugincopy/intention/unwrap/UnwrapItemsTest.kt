@@ -2,12 +2,13 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.unwrap
 
 import fixtures.TestBase
 
+import fixtures.assertIntentionAvailable
+import fixtures.doIntentionTest
+
 class UnwrapItemsTest : TestBase() {
 
     fun testList_CustomInt_UnwrapItems() {
-        myFixture.configureByText(
-            "a.py",
-            """
+        val text = """
             class CustomInt(int):
                 pass
 
@@ -16,21 +17,13 @@ class UnwrapItemsTest : TestBase() {
                 <caret>CustomInt(2),
                 CustomInt(3),
             ]
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intentions = myFixture.filterAvailableIntentions("Unwrap")
-        val names = intentions.map { it.text }
-
-        println("Available intentions: \$names")
-
-        assertContainsElements(names, "Unwrap CustomInt()")
-        assertContainsElements(names, "Unwrap items CustomInt()")
+            """
+        myFixture.assertIntentionAvailable("a.py", text, "Unwrap CustomInt()")
+        myFixture.assertIntentionAvailable("a.py", text, "Unwrap items CustomInt()")
     }
 
     fun testUnwrapItems_InvokesAllItemsUnwrapping() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             class CustomInt(int):
@@ -41,14 +34,7 @@ class UnwrapItemsTest : TestBase() {
                 <caret>CustomInt(2),
                 CustomInt(3),
             ]
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Unwrap items CustomInt()")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             class CustomInt(int):
                 pass
@@ -58,7 +44,8 @@ class UnwrapItemsTest : TestBase() {
                 2,
                 3,
             ]
-            """.trimIndent()
+            """,
+            "Unwrap items CustomInt()"
         )
     }
 }

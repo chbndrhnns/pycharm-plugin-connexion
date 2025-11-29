@@ -11,11 +11,6 @@ class PyPrivateModuleImportInspectionTest : TestBase() {
             "inspections/PyPrivateModuleImportInspection/UseExportedSymbolFromPackage/cli.py",
         )
 
-        // Ensure the quick-fix is invoked in the context of the file that
-        // contains the import statement (cli.py). ModCommand-based
-        // quick-fixes rely on the currently opened editor file as the context
-        // for the problem element, so we must open cli.py before collecting
-        // and applying fixes.
         val cliFile = myFixture.findFileInTempDir(
             "inspections/PyPrivateModuleImportInspection/UseExportedSymbolFromPackage/cli.py",
         )

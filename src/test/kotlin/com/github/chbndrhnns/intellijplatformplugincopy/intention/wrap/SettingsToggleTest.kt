@@ -2,38 +2,34 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 
 import fixtures.SettingsTestUtils.withPluginSettings
 import fixtures.TestBase
+import fixtures.assertIntentionAvailable
+import fixtures.assertIntentionNotAvailable
 
 class SettingsToggleTest : TestBase() {
 
     fun testWrapIntentionHiddenWhenDisabled() {
         withPluginSettings({ it.copy(enableWrapWithExpectedTypeIntention = false) }) {
-            myFixture.configureByText(
+            myFixture.assertIntentionNotAvailable(
                 "a.py",
                 """
                 from pathlib import Path
                 a: str = Path(<caret>"val")
-                """.trimIndent()
+                """,
+                "Wrap with"
             )
-
-            myFixture.doHighlighting()
-            val intentions = myFixture.availableIntentions
-            val hasWrap = intentions.any { it.text.startsWith("Wrap with") }
-            assertFalse("Wrap intention should be hidden when disabled in settings", hasWrap)
         }
     }
 
     fun testWrapIntentionVisibleWhenEnabled() {
         withPluginSettings({ it.copy(enableWrapWithExpectedTypeIntention = true) }) {
-            myFixture.configureByText(
+            myFixture.assertIntentionAvailable(
                 "a.py",
                 """
                 from pathlib import Path
                 a: str = Path(<caret>"val")
-                """.trimIndent()
+                """,
+                "Wrap with str()"
             )
-
-            myFixture.doHighlighting()
-            myFixture.findSingleIntention("Wrap with str()")
         }
     }
 }

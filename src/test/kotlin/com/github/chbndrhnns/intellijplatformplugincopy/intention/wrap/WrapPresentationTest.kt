@@ -1,8 +1,8 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.WrapWithExpectedTypeIntentionHooks
-import fixtures.FakePopupHost
 import fixtures.TestBase
+import fixtures.assertIntentionAvailable
+import fixtures.withWrapPopupSelection
 
 /**
  * UI / presentation tests for wrap intention (non-forward-ref cases):
@@ -55,26 +55,18 @@ class WrapPresentationTest : TestBase() {
     }
 
     fun testWrapIntentionTextUsesActualType() {
-        myFixture.configureByText(
+        myFixture.assertIntentionAvailable(
             "a.py",
             """
             from pathlib import Path  
             a: str = Path(<caret>"val")
-            """.trimIndent()
+            """,
+            "Wrap with str()"
         )
-
-        myFixture.doHighlighting()
-        val intentions = myFixture.availableIntentions
-        val wrapIntention = intentions.find { it.text.startsWith("Wrap with") }
-
-        assertNotNull("Wrap intention should be available", wrapIntention)
-        assertEquals("Intention text should show actual expected type", "Wrap with str()", wrapIntention?.text)
     }
 
     fun testUnionChooserShowsFqnForClasses() {
-        val fake = FakePopupHost().apply { selectedIndex = 0 }
-        WrapWithExpectedTypeIntentionHooks.popupHost = fake
-        try {
+        withWrapPopupSelection(0) { fake ->
             myFixture.configureByText(
                 "a.py",
                 """
@@ -98,8 +90,6 @@ class WrapPresentationTest : TestBase() {
             myFixture.launchAction(intention)
 
             assertEquals(listOf("User (a.User)", "Token (a.Token)"), fake.lastLabels)
-        } finally {
-            WrapWithExpectedTypeIntentionHooks.popupHost = null
         }
     }
 }

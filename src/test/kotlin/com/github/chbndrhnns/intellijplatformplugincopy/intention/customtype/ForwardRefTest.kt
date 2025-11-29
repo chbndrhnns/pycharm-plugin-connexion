@@ -1,44 +1,34 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import fixtures.TestBase
+import fixtures.doIntentionTest
 
 class ForwardRefTest : TestBase() {
 
     fun testAssignment_UnionInString_UpdatesTextInsideString() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             val: "int | str | None" = <caret>2
-            """.trimIndent()
-        )
-
-        val intention = myFixture.findSingleIntention("Introduce custom type from int")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             class Customint(int):
                 pass
             
             
             val: "Customint | str | None" = Customint(2)
-            """.trimIndent()
+            """,
+            "Introduce custom type from int"
         )
     }
 
     fun testParameter_UnionInString_UpdatesTextInsideString() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             def do(val: "int | str | None" = <caret>2):
                 pass
-            """.trimIndent()
-        )
-
-        val intention = myFixture.findSingleIntention("Introduce custom type from int")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             class Customint(int):
                 pass
@@ -46,23 +36,18 @@ class ForwardRefTest : TestBase() {
             
             def do(val: "Customint | str | None" = Customint(2)):
                 pass
-            """.trimIndent()
+            """,
+            "Introduce custom type from int"
         )
     }
 
     fun testAssignment_MixedReferencesAndStrings_UpdatesStringPart() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             # This is valid python if types are defined
             val: str | "int" = <caret>2
-            """.trimIndent()
-        )
-
-        val intention = myFixture.findSingleIntention("Introduce custom type from int")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             class Customint(int):
                 pass
@@ -70,7 +55,8 @@ class ForwardRefTest : TestBase() {
             
             # This is valid python if types are defined
             val: str | "Customint" = Customint(2)
-        """.trimIndent()
+            """,
+            "Introduce custom type from int"
         )
     }
 }

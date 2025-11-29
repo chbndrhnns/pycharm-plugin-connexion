@@ -1,12 +1,10 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.WrapWithExpectedTypeIntentionHooks
-import fixtures.FakePopupHost
-import fixtures.TestBase
+import fixtures.*
 
 class GenericTest : TestBase() {
     fun testDeclarationAssignmentSplit() {
-        myFixture.configureByText(
+        myFixture.assertIntentionAvailable(
             "a.py",
             """
             class ProductId(int):
@@ -15,37 +13,31 @@ class GenericTest : TestBase() {
             def test_():
                 val: ProductId
                 val = 12<caret>34
-            """.trimIndent()
+            """,
+            "Wrap with ProductId()"
         )
-
-        myFixture.doHighlighting()
-        myFixture.findSingleIntention("Wrap with ProductId()")
     }
 
     fun testIsAvailableForAssignments() {
-        myFixture.configureByText(
+        myFixture.assertIntentionAvailable(
             "a.py",
             """
             from pathlib import Path
             a: str = Path(<caret>"val")
-            """.trimIndent()
+            """,
+            "Wrap with str()"
         )
-
-        myFixture.doHighlighting()
-        myFixture.findSingleIntention("Wrap with str()")
     }
 
     fun testIsAvailableForReturnValues() {
-        myFixture.configureByText(
+        myFixture.assertIntentionAvailable(
             "a.py",
             """
             def do(val: float) -> str:
                 return <caret>val
-            """.trimIndent()
+            """,
+            "Wrap with str()"
         )
-
-        myFixture.doHighlighting()
-        myFixture.findSingleIntention("Wrap with str()")
     }
 
 
@@ -59,7 +51,7 @@ class GenericTest : TestBase() {
             """.trimIndent()
         )
 
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "main.py",
             """
             from .custom_types import CustomWrapper
@@ -68,15 +60,7 @@ class GenericTest : TestBase() {
                 return data.value
             
             result = process_data(<caret>"some_string")
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-
-        val intention = myFixture.findSingleIntention("Wrap with CustomWrapper()")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             from .custom_types import CustomWrapper
             
@@ -84,7 +68,8 @@ class GenericTest : TestBase() {
                 return data.value
             
             result = process_data(CustomWrapper("some_string"))
-            """.trimIndent()
+            """,
+            "Wrap with CustomWrapper()"
         )
     }
 
@@ -125,7 +110,7 @@ class GenericTest : TestBase() {
     }
 
     fun testWrapAndNoImportIfSameModule() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "main.py",
             """
             class CustomWrapper:
@@ -137,15 +122,7 @@ class GenericTest : TestBase() {
 
 
             result = process_data(<caret>"some_string")
-            """.trimIndent()
-        )
-        myFixture.configureByFile("main.py")
-        myFixture.doHighlighting()
-
-        val intention = myFixture.findSingleIntention("Wrap with CustomWrapper()")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             class CustomWrapper:
                 def __init__(self, value: str):
@@ -156,15 +133,14 @@ class GenericTest : TestBase() {
 
 
             result = process_data(CustomWrapper("some_string"))
-            """.trimIndent()
+            """,
+            "Wrap with CustomWrapper()"
         )
     }
 
     fun testWrapWithPep604UnionChoosesFirstBranch() {
-        val fake = FakePopupHost().apply { selectedIndex = 0 }
-        WrapWithExpectedTypeIntentionHooks.popupHost = fake
-        try {
-            myFixture.configureByText(
+        withWrapPopupSelection(0) { fake ->
+            myFixture.doIntentionTest(
                 "a.py",
                 """
                 from pathlib import Path
@@ -173,18 +149,7 @@ class GenericTest : TestBase() {
                     pass
                 
                 f(<caret>Path("val"))
-                """.trimIndent()
-            )
-
-            myFixture.doHighlighting()
-            val intention = myFixture.findSingleIntention("Wrap with expected union type…")
-            myFixture.launchAction(intention)
-
-            val labels = fake.lastLabels
-            assertTrue("Expected 'str' in chooser, got: ${'$'}labels", labels.any { it.startsWith("str") })
-            assertTrue("Expected 'int' in chooser, got: ${'$'}labels", labels.any { it.startsWith("int") })
-
-            myFixture.checkResult(
+                """,
                 """
                 from pathlib import Path
                 
@@ -192,30 +157,30 @@ class GenericTest : TestBase() {
                     pass
                 
                 f(str(Path("val")))
-                """.trimIndent()
+                """,
+                "Wrap with expected union type…"
             )
-        } finally {
-            WrapWithExpectedTypeIntentionHooks.popupHost = null
+            val labels = fake.lastLabels
+            assertTrue("Expected 'str' in chooser, got: ${'$'}labels", labels.any { it.startsWith("str") })
+            assertTrue("Expected 'int' in chooser, got: ${'$'}labels", labels.any { it.startsWith("int") })
         }
     }
 
     fun testIsAvailableForAssignments_WithAnnotatedExpectedType() {
-        myFixture.configureByText(
+        myFixture.assertIntentionAvailable(
             "a.py",
             """
             from typing import Annotated
 
             from pathlib import Path
             a: Annotated[str, "meta"] = Path(<caret>"val")
-            """.trimIndent()
+            """,
+            "Wrap with str()"
         )
-
-        myFixture.doHighlighting()
-        myFixture.findSingleIntention("Wrap with str()")
     }
 
     fun testWrapWithOptionalPicksInnerTypeNotNone() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from typing import Optional
@@ -225,15 +190,7 @@ class GenericTest : TestBase() {
                 pass
             
             f(<caret>Path("val"))
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        // Expect Optional[str] -> choose str()
-        val intention = myFixture.findSingleIntention("Wrap with str()")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             from typing import Optional
             from pathlib import Path
@@ -242,7 +199,8 @@ class GenericTest : TestBase() {
                 pass
             
             f(str(Path("val")))
-            """.trimIndent()
+            """,
+            "Wrap with str()"
         )
     }
 
@@ -281,7 +239,7 @@ class GenericTest : TestBase() {
     }
 
     fun testWrapWithUnionCustomFirstPicksCustom() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             class CustomWrapper(str): ...
@@ -292,14 +250,7 @@ class GenericTest : TestBase() {
             
             
             f("a<caret>bc")
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Wrap with CustomWrapper()")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             class CustomWrapper(str): ...
             
@@ -309,12 +260,13 @@ class GenericTest : TestBase() {
             
             
             f(CustomWrapper("abc"))
-            """.trimIndent()
+            """,
+            "Wrap with CustomWrapper()"
         )
     }
 
     fun testNoMultiWrapOnSameCtorWhenFirstWrapFailed() {
-        myFixture.configureByText(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             from typing import NewType
@@ -325,20 +277,14 @@ class GenericTest : TestBase() {
 
             def test_():
                 do(One(<caret>"abc"))
-            """.trimIndent()
+            """,
+            "Wrap with One()"
         )
-
-        myFixture.doHighlighting()
-        val intentions = myFixture.availableIntentions
-        val hasWrapWithOne = intentions.any { it.text == "Wrap with One()" }
-        assertFalse("Intention should not be offered when already wrapped with One()", hasWrapWithOne)
     }
 
     fun testWrapWithEquivalentNewTypesChooserPickFirst() {
-        val fake = FakePopupHost().apply { selectedIndex = 0 }
-        WrapWithExpectedTypeIntentionHooks.popupHost = fake
-        try {
-            myFixture.configureByText(
+        withWrapPopupSelection(0) { fake ->
+            myFixture.doIntentionTest(
                 "a.py",
                 """
                 from typing import NewType
@@ -349,17 +295,7 @@ class GenericTest : TestBase() {
                     ...
 
                 do(<caret>"abc")
-                """.trimIndent()
-            )
-
-            myFixture.doHighlighting()
-            val intention = myFixture.findSingleIntention("Wrap with expected union type…")
-            myFixture.launchAction(intention)
-
-            // Verify chooser labels include fully qualified names for NewType aliases and that first was picked
-            assertEquals(listOf("One (a.One)", "Two (a.Two)"), fake.lastLabels)
-
-            myFixture.checkResult(
+                """,
                 """
                 from typing import NewType
                 One = NewType("One", str)
@@ -369,17 +305,16 @@ class GenericTest : TestBase() {
                     ...
 
                 do(One("abc"))
-                """.trimIndent()
+                """,
+                "Wrap with expected union type…"
             )
-        } finally {
-            WrapWithExpectedTypeIntentionHooks.popupHost = null
+            // Verify chooser labels include fully qualified names for NewType aliases and that first was picked
+            assertEquals(listOf("One (a.One)", "Two (a.Two)"), fake.lastLabels)
         }
     }
 
     fun testWrapWithEquivalentNewTypesChooserPickSecond() {
-        val fake = FakePopupHost().apply { selectedIndex = 1 }
-        WrapWithExpectedTypeIntentionHooks.popupHost = fake
-        try {
+        withWrapPopupSelection(1) {
             myFixture.configureByText(
                 "a.py",
                 """
@@ -402,8 +337,6 @@ class GenericTest : TestBase() {
             val text = myFixture.file.text
             assertTrue(text.contains("def do(arg: One | Two) -> None:"))
             assertTrue(text.contains("do(Two(\"abc\"))"))
-        } finally {
-            WrapWithExpectedTypeIntentionHooks.popupHost = null
         }
     }
 }

@@ -1,6 +1,8 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 
 import fixtures.TestBase
+import fixtures.assertIntentionNotAvailable
+import fixtures.doIntentionTest
 
 /**
  * Basic wrap intention behavior: assignments, arguments, returns without
@@ -9,28 +11,22 @@ import fixtures.TestBase
 class WrapBasicTest : TestBase() {
 
     fun testAssignment_PathToStr_WrapsWithStrConstructor() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from pathlib import Path
             a: str = Path(<caret>"val")
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Wrap with str()")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             from pathlib import Path
             a: str = str(Path("val"))
-            """.trimIndent()
+            """,
+            "Wrap with str()"
         )
     }
 
     fun testCustomInt_UnwrapAvailable_WrapNotOffered() {
-        myFixture.configureByText(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             class CustomInt(int):
@@ -39,95 +35,75 @@ class WrapBasicTest : TestBase() {
             val: list[int] = [
             CustomInt(<caret>1),
             ] 
-            """.trimIndent()
+            """,
+            "Wrap with"
         )
-        myFixture.doHighlighting()
-        val wrapIntention = myFixture.availableIntentions.find { it.text.startsWith("Wrap with") }
-        assertNull("Wrap intention should not be offered", wrapIntention)
     }
 
     fun testAssignment_StrToPath_WrapsWithPathConstructor() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from pathlib import Path
             a: Path = "<caret>val"
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Wrap with Path()")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             from pathlib import Path
             a: Path = Path("val")
-            """.trimIndent()
+            """,
+            "Wrap with Path()"
         )
     }
 
     fun testReturn_FloatToStr_WrapsWithStrConstructor() {
-        myFixture.configureByText(
-            "a.py", """
+        myFixture.doIntentionTest(
+            "a.py",
+            """
             def do(val: float) -> str:
                 return <caret>val
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Wrap with str()")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             def do(val: float) -> str:
                 return str(val)
-            """.trimIndent()
+            """,
+            "Wrap with str()"
         )
     }
 
     fun testCall_NoExpectedType_NoStrWrapOffered() {
-        myFixture.configureByText(
-            "a.py", """
+        myFixture.assertIntentionNotAvailable(
+            "a.py",
+            """
             def process_data() -> int:
                 return 1            
             
             result = process_data<caret>()
-            """.trimIndent()
+            """,
+            "Wrap with str()"
         )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.availableIntentions.find { it.text == "Wrap with str()" }
-        assertNull("Intention 'Wrap with str()' should NOT be available", intention)
     }
 
     fun testArgument_IntLiteral_ReplacedWithStrLiteral() {
-        myFixture.configureByText(
-            "a.py", """
+        myFixture.doIntentionTest(
+            "a.py",
+            """
             def process_data(arg: str) -> int:
                 return int(1)
             
             result = process_data(1<caret>23)
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Wrap with str()")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             def process_data(arg: str) -> int:
                 return int(1)
             
             result = process_data("123")
-            """.trimIndent()
+            """,
+            "Wrap with str()"
         )
     }
 
     fun testKeywordOnlyParam_IntToBool_WrapsWithBoolConstructor() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             class CompletedProcess: ...
@@ -136,14 +112,7 @@ class WrapBasicTest : TestBase() {
                 return CompletedProcess()
             
             run(shell=<caret>0)
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Wrap with bool()")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             class CompletedProcess: ...
             
@@ -151,13 +120,14 @@ class WrapBasicTest : TestBase() {
                 return CompletedProcess()
             
             run(shell=bool(0))
-            """.trimIndent()
+            """,
+            "Wrap with bool()"
         )
     }
 
     fun testClassInit_ParseKwArg_NoWrapSuggestion() {
         // This tests that we do not fall back on class variables when suggesting wraps
-        myFixture.configureByText(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             class Client:
@@ -168,29 +138,23 @@ class WrapBasicTest : TestBase() {
             
             
             Client(val="a<caret>bc")
-            """.trimIndent()
+            """,
+            "Wrap with"
         )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.availableIntentions.find { it.text.startsWith("Wrap with") }
-        assertNull("Wrap intention should not be offered when types match, but got: ${intention?.text}", intention)
     }
 
     fun testPrint_StrArgument_NoObjectWrapSuggestion() {
-        myFixture.configureByText(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             print("a<caret>bc")
-            """.trimIndent()
+            """,
+            "Wrap with object()"
         )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.availableIntentions.find { it.text == "Wrap with object()" }
-        assertNull("Wrap with object() intention should not be offered", intention)
     }
 
     fun testArgument_AnyExpected_NoAnyWrapSuggestion() {
-        myFixture.configureByText(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             from typing import Any
@@ -199,16 +163,13 @@ class WrapBasicTest : TestBase() {
                 pass
             
             foo("s<caret>tr")
-            """.trimIndent()
+            """,
+            "Wrap with Any()"
         )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.availableIntentions.find { it.text == "Wrap with Any()" }
-        assertNull("Wrap with Any() intention should not be offered", intention)
     }
 
     fun testExistingMatch_NoWrapOffered() {
-        myFixture.configureByText(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             from typing import TypeVar, Generic, Union
@@ -222,15 +183,8 @@ class WrapBasicTest : TestBase() {
             
             val = Path()
             open(v<caret>al)
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intentions = myFixture.availableIntentions.map { it.text }
-        val wrapIntentions = intentions.filter { it.startsWith("Wrap with") }
-        assertEmpty(
-            "No 'Wrap with ...' intention should be available because val is already compatible with PathLike",
-            wrapIntentions
+            """,
+            "Wrap with"
         )
     }
 }

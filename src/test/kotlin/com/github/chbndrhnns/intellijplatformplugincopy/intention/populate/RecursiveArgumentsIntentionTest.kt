@@ -77,8 +77,6 @@ class RecursiveArgumentsIntentionTest : TestBase() {
         val intention = myFixture.findSingleIntention("Populate missing arguments recursively")
         myFixture.launchAction(intention)
 
-        println("DEBUG_RESULT_2:\n" + myFixture.file.text)
-
         myFixture.checkResult(
             """
             from dataclasses import dataclass
@@ -120,8 +118,6 @@ class RecursiveArgumentsIntentionTest : TestBase() {
         myFixture.doHighlighting()
         val intention = myFixture.findSingleIntention("Populate missing arguments recursively")
         myFixture.launchAction(intention)
-
-        println("DEBUG_RESULT_3:\n" + myFixture.file.text)
 
         myFixture.checkResult(
             """

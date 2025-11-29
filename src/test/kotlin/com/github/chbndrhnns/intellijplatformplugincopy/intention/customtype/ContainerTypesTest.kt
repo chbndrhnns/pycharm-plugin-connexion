@@ -1,61 +1,51 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import fixtures.TestBase
+import fixtures.assertIntentionAvailable
+import fixtures.doIntentionTest
 
 class ContainerTypesTest : TestBase() {
 
     fun testList_IntentionAvailable() {
-        myFixture.configureByText(
+        myFixture.assertIntentionAvailable(
             "a.py",
             """
             def f(x: li<caret>st[int]):
                 pass
-            """.trimIndent()
+            """,
+            "Introduce custom type from list"
         )
-
-        val intentions = myFixture.filterAvailableIntentions("Introduce custom type from list")
-        assertNotEmpty(intentions)
     }
 
     fun testSet_IntentionAvailable() {
-        myFixture.configureByText(
+        myFixture.assertIntentionAvailable(
             "a.py",
             """
             def f(x: s<caret>et[int]):
                 pass
-            """.trimIndent()
+            """,
+            "Introduce custom type from set"
         )
-
-        val intentions = myFixture.filterAvailableIntentions("Introduce custom type from set")
-        assertNotEmpty(intentions)
     }
 
     fun testDict_IntentionAvailable() {
-        myFixture.configureByText(
+        myFixture.assertIntentionAvailable(
             "a.py",
             """
             def f(x: di<caret>ct[str, int]):
                 pass
-            """.trimIndent()
+            """,
+            "Introduce custom type from dict"
         )
-
-        val intentions = myFixture.filterAvailableIntentions("Introduce custom type from dict")
-        assertNotEmpty(intentions)
     }
 
     fun testDict_GeneratesGenericCustomTypeAndKeepsArguments() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             def do(arg: di<caret>ct[str, list[int]]) -> None:
                 ...
-            """.trimIndent()
-        )
-
-        val intention = myFixture.findSingleIntention("Introduce custom type from dict")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             class Customdict(dict[str, list[int]]):
                 pass
@@ -63,23 +53,18 @@ class ContainerTypesTest : TestBase() {
 
             def do(arg: Customdict) -> None:
                 ...
-            """.trimIndent()
+            """,
+            "Introduce custom type from dict"
         )
     }
 
     fun testList_GeneratesCustomType() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             def f(x: li<caret>st[int]):
                 pass
-            """.trimIndent()
-        )
-
-        val intention = myFixture.findSingleIntention("Introduce custom type from list")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
                 class Customlist(list[int]):
                     pass
@@ -87,12 +72,13 @@ class ContainerTypesTest : TestBase() {
                 
                 def f(x: Customlist):
                     pass
-            """.trimIndent()
+            """,
+            "Introduce custom type from list"
         )
     }
 
     fun testDict_AnnotatedAssignment_WrapsValueAndKeepsArguments() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             def do():
@@ -101,13 +87,7 @@ class ContainerTypesTest : TestBase() {
                     "b": 2,
                     "c": 3,
                 }
-            """.trimIndent(),
-        )
-
-        val intention = myFixture.findSingleIntention("Introduce custom type from dict")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             class Customdict(dict[str, int]):
                 pass
@@ -119,7 +99,8 @@ class ContainerTypesTest : TestBase() {
                     "b": 2,
                     "c": 3,
                 })
-                """.trimIndent(),
+            """,
+            "Introduce custom type from dict"
         )
     }
 }

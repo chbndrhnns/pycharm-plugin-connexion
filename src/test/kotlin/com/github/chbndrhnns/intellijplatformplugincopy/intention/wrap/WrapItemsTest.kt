@@ -1,13 +1,14 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 
 import fixtures.TestBase
+import fixtures.assertIntentionAvailable
+import fixtures.assertIntentionNotAvailable
+import fixtures.doIntentionTest
 
 class WrapItemsTest : TestBase() {
 
     fun testList_CustomInt_WrapSingleElementAndWrapItems() {
-        myFixture.configureByText(
-            "a.py",
-            """
+        val text = """
             class CustomInt(int):
                 pass
 
@@ -16,19 +17,21 @@ class WrapItemsTest : TestBase() {
                 <caret>2,
                 3,
             ]
-            """.trimIndent()
+            """
+        myFixture.assertIntentionAvailable(
+            "a.py",
+            text,
+            "Wrap with CustomInt()"
         )
-
-        myFixture.doHighlighting()
-        val intentions = myFixture.filterAvailableIntentions("Wrap")
-        val names = intentions.map { it.text }
-
-        assertContainsElements(names, "Wrap with CustomInt()")
-        assertContainsElements(names, "Wrap items with CustomInt()")
+        myFixture.assertIntentionAvailable(
+            "a.py",
+            text,
+            "Wrap items with CustomInt()"
+        )
     }
 
     fun testWrapSingleElement_InvokesSingleWrapping() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             class CustomInt(int):
@@ -39,14 +42,7 @@ class WrapItemsTest : TestBase() {
                 <caret>2,
                 3,
             ]
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Wrap with CustomInt()")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             class CustomInt(int):
                 pass
@@ -56,12 +52,13 @@ class WrapItemsTest : TestBase() {
                 CustomInt(2),
                 3,
             ]
-            """.trimIndent()
+            """,
+            "Wrap with CustomInt()"
         )
     }
 
     fun testWrapItems_InvokesAllItemsWrapping() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             class CustomInt(int):
@@ -72,14 +69,7 @@ class WrapItemsTest : TestBase() {
                 <caret>2,
                 3,
             ]
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Wrap items with CustomInt()")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             class CustomInt(int):
                 pass
@@ -89,12 +79,13 @@ class WrapItemsTest : TestBase() {
                 CustomInt(2),
                 CustomInt(3),
             ]
-            """.trimIndent()
+            """,
+            "Wrap items with CustomInt()"
         )
     }
 
     fun testCustomInt_UnwrapAvailable_WrapNotOffered() {
-        myFixture.configureByText(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             class CustomInt(int):
@@ -103,11 +94,9 @@ class WrapItemsTest : TestBase() {
             val: list[int] = [
             Custom<caret>Int(1),
             ] 
-            """.trimIndent()
+            """,
+            "Wrap items with"
         )
-        myFixture.doHighlighting()
-        val wrapIntention = myFixture.availableIntentions.find { it.text.startsWith("Wrap items with") }
-        assertNull("Wrap intention should not be offered", wrapIntention)
     }
 
 

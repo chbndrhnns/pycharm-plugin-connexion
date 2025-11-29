@@ -1,8 +1,9 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.WrapWithExpectedTypeIntentionHooks
-import fixtures.FakePopupHost
 import fixtures.TestBase
+import fixtures.assertIntentionNotAvailable
+import fixtures.doIntentionTest
+import fixtures.withWrapPopupSelection
 
 /**
  * Wrap intention behavior for forward-referenced types.
@@ -10,7 +11,7 @@ import fixtures.TestBase
 class WrapForwardRefsTest : TestBase() {
 
     fun testNonContainerForwardRef_param() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from __future__ import annotations
@@ -22,13 +23,7 @@ class WrapForwardRefsTest : TestBase() {
                 def __init__(self, value): ...
 
             f(<caret>value)
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Wrap with A()")
-        myFixture.launchAction(intention)
-        myFixture.checkResult(
+            """,
             """
             from __future__ import annotations
 
@@ -39,15 +34,14 @@ class WrapForwardRefsTest : TestBase() {
                 def __init__(self, value): ...
 
             f(A(value))
-            """.trimIndent()
+            """,
+            "Wrap with A()"
         )
     }
 
     fun testUnionWithForwardRef_mixed() {
-        val fake = FakePopupHost().apply { selectedIndex = 0 }
-        WrapWithExpectedTypeIntentionHooks.popupHost = fake
-        try {
-            myFixture.configureByText(
+        withWrapPopupSelection(0) { fake ->
+            myFixture.doIntentionTest(
                 "a.py",
                 """
                 from __future__ import annotations
@@ -61,19 +55,7 @@ class WrapForwardRefsTest : TestBase() {
                     def __init__(self, v): ...
 
                 f(<caret>v)
-                """.trimIndent()
-            )
-
-            myFixture.doHighlighting()
-            val intention = myFixture.findSingleIntention("Wrap with expected union type…")
-            myFixture.launchAction(intention)
-
-            // We should offer both A and B; order is not strictly important, but A first is fine
-            assertTrue(fake.lastLabels.any { it.startsWith("A") })
-            assertTrue(fake.lastLabels.any { it.startsWith("B") })
-
-            // First gets applied (A)
-            myFixture.checkResult(
+                """,
                 """
                 from __future__ import annotations
 
@@ -86,18 +68,18 @@ class WrapForwardRefsTest : TestBase() {
                     def __init__(self, v): ...
 
                 f(A(v))
-                """.trimIndent()
+                """,
+                "Wrap with expected union type…"
             )
-        } finally {
-            WrapWithExpectedTypeIntentionHooks.popupHost = null
+            // We should offer both A and B; order is not strictly important, but A first is fine
+            assertTrue(fake.lastLabels.any { it.startsWith("A") })
+            assertTrue(fake.lastLabels.any { it.startsWith("B") })
         }
     }
 
     fun testContainerWithForwardRef_itemWrap() {
-        val fake = FakePopupHost().apply { selectedIndex = 0 }
-        WrapWithExpectedTypeIntentionHooks.popupHost = fake
-        try {
-            myFixture.configureByText(
+        withWrapPopupSelection(0) {
+            myFixture.doIntentionTest(
                 "a.py",
                 """
                 from __future__ import annotations
@@ -109,13 +91,7 @@ class WrapForwardRefsTest : TestBase() {
                     def __init__(self, v): ...
 
                 f([<caret>v])
-                """.trimIndent()
-            )
-
-            myFixture.doHighlighting()
-            val intention = myFixture.findSingleIntention("Wrap with A()")
-            myFixture.launchAction(intention)
-            myFixture.checkResult(
+                """,
                 """
                 from __future__ import annotations
                 from typing import List
@@ -126,15 +102,14 @@ class WrapForwardRefsTest : TestBase() {
                     def __init__(self, v): ...
 
                 f([A(v)])
-                """.trimIndent()
+                """,
+                "Wrap with A()"
             )
-        } finally {
-            WrapWithExpectedTypeIntentionHooks.popupHost = null
         }
     }
 
     fun testUnresolvedForwardRef_offersTextualWrap() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from __future__ import annotations
@@ -142,53 +117,36 @@ class WrapForwardRefsTest : TestBase() {
             def f(x: 'Ghost'): ...
 
             f(<caret>v)
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Wrap with Ghost()")
-        myFixture.launchAction(intention)
-        myFixture.checkResult(
+            """,
             """
             from __future__ import annotations
 
             def f(x: 'Ghost'): ...
 
             f(Ghost(v))
-            """.trimIndent()
+            """,
+            "Wrap with Ghost()"
         )
     }
 
     fun testParameterDefault_UnionForwardRef_NoWrapOffered() {
-        myFixture.configureByText(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             def do(val: "int | str | None" = <caret>2):
                 pass
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val wrapIntention = myFixture.availableIntentions.find { it.text.startsWith("Wrap with") }
-        assertNull(
-            "Wrap intention should not be offered when value matches one of the union types in forward ref",
-            wrapIntention
+            """,
+            "Wrap with"
         )
     }
 
     fun testAssignment_UnionForwardRef_NoWrapOffered() {
-        myFixture.configureByText(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             val: "int | str | None" = <caret>2
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val wrapIntention = myFixture.availableIntentions.find { it.text.startsWith("Wrap with") }
-        assertNull(
-            "Wrap intention should not be offered when value matches one of the union types in forward ref",
-            wrapIntention
+            """,
+            "Wrap with"
         )
     }
 }

@@ -1,11 +1,13 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.populate
 
 import fixtures.TestBase
+import fixtures.assertIntentionNotAvailable
+import fixtures.doIntentionTest
 
 class RequiredArgumentsIntentionTest : TestBase() {
 
     fun testDataclassPopulation_OnlyRequiredFields() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from dataclasses import dataclass
@@ -17,14 +19,7 @@ class RequiredArgumentsIntentionTest : TestBase() {
                 z: int = 1
 
             a = A(<caret>)
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Populate required arguments with '...'")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             from dataclasses import dataclass
 
@@ -35,12 +30,13 @@ class RequiredArgumentsIntentionTest : TestBase() {
                 z: int = 1
 
             a = A(x=..., y=...)
-            """.trimIndent()
+            """,
+            "Populate required arguments with '...'"
         )
     }
 
     fun testKwOnlyMethods_RequiredOnly() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             class C:
@@ -48,26 +44,20 @@ class RequiredArgumentsIntentionTest : TestBase() {
                     pass
 
             C().foo(<caret>)
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Populate required arguments with '...'")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             class C:
                 def foo(self, *, a, b=1):
                     pass
 
             C().foo(a=...)
-            """.trimIndent()
+            """,
+            "Populate required arguments with '...'"
         )
     }
 
     fun testNestedClass_RequiredOnly() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             from dataclasses import dataclass
@@ -79,14 +69,7 @@ class RequiredArgumentsIntentionTest : TestBase() {
                     g: int | None = None
 
             Outer.Inner(<caret>)
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Populate required arguments with '...'")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             from dataclasses import dataclass
 
@@ -97,48 +80,40 @@ class RequiredArgumentsIntentionTest : TestBase() {
                     g: int | None = None
 
             Outer.Inner(f=...)
-            """.trimIndent()
+            """,
+            "Populate required arguments with '...'"
         )
     }
 
     fun testPartialArguments_OnlyMissingRequired() {
-        myFixture.configureByText(
+        myFixture.doIntentionTest(
             "a.py",
             """
             def foo(a, b, c=3):
                 pass
 
             foo(1, <caret>)
-            """.trimIndent()
-        )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Populate required arguments with '...'")
-        myFixture.launchAction(intention)
-
-        myFixture.checkResult(
+            """,
             """
             def foo(a, b, c=3):
                 pass
 
             foo(1, b=...)
-            """.trimIndent()
+            """,
+            "Populate required arguments with '...'"
         )
     }
 
     fun testPositionalOnlyFunctionCall_NoPopulateOffered() {
-        myFixture.configureByText(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             def sleep(__secs, /):
                 pass
 
             sleep(1<caret>)
-            """.trimIndent()
+            """,
+            "Populate required arguments with '...'"
         )
-
-        myFixture.doHighlighting()
-        val intention = myFixture.availableIntentions.find { it.text == "Populate required arguments with '...'" }
-        assertNull("Populate intention should NOT be available for positional-only calls", intention)
     }
 }

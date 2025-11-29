@@ -249,11 +249,6 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
         myFixture.enableInspections(PyMissingInDunderAllInspection::class.java)
         myFixture.checkHighlighting(true, false, true)
 
-        // Ensure the quick-fix is invoked in the context of the module that
-        // declares the missing symbol. ModCommand-based quick-fixes rely on
-        // the currently opened editor file as the context for the problem
-        // element, so we must open module.py before collecting and applying
-        // fixes.
         val moduleFile = myFixture.findFileInTempDir(
             "inspections/PyMissingInDunderAllInspection/$testName/module.py",
         )
