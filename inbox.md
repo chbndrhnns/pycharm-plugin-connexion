@@ -2,6 +2,36 @@
 
 ## Pending Tasks
 
+- feat: Support export of attributes
+- [ ] fix: Messed up imports
+```python
+# missing/__init__.py
+class PublicClass:
+    pass
+
+
+__all__ = ['PublicClass']
+
+# missing/_mob.py
+def public_<caret>function():
+    pass
+```
+
+leads to:
+
+```python
+# missing/__init__.py
+class PublicClass:
+    pass
+
+
+__all__ = ['PublicClass', 'public_function']
+
+from ._mob import PublicClass, public_function
+
+```
+
+
 - [ ] fix: No wrap with Self
 
 ```python
