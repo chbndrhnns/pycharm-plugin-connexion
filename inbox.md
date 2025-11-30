@@ -2,21 +2,10 @@
 
 ## Pending Tasks
 
+- [ ] Copy pydantic mock
+- [ ] test normal classes when introducing types
 - [ ] ignore_testParameterAnnotationUpdateWrapsCallSites
 - [ ] feat: Support export of attributes
-
-- [ ] fix: No wrap with Self
-
-```python
-class C:
-    def do(self, val: str):
-        ...
-
-    def other(self):
-        self.do("abc")
-
-```
-
 - [ ] feat: Parse pytest identifier in search all dialog
 - [ ] feat: Copy selection with imports
 - [ ] Wrap default/default_factory after introducing custom type in dataclass/pydantic
@@ -31,8 +20,19 @@ class C:
 
 ## In Progress Tasks
 
-
 ## Completed Tasks (newest first)
+
+- [x] fix: No wrap with Self
+
+```python
+class C:
+    def do(self, val: str):
+        ...
+
+    def other(self):
+        self.do("abc")
+
+```
 
 - [x] fix: Missing description for PyPrivateModuleImportInspection
 - [x] fix: Messed up imports
@@ -46,9 +46,13 @@ class PublicClass:
 
 __all__ = ['PublicClass']
 
+
 # missing/_mob.py
-def public_<caret>function():
-    pass
+def public_<
+
+
+    caret > function():
+pass
 ```
 
 leads to:

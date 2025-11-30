@@ -1,4 +1,4 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
+// Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.*
@@ -9,14 +9,6 @@ import com.jetbrains.python.refactoring.PyReplaceExpressionUtil
 
 /**
  * Encapsulates PSI rewrites for the "Introduce custom type from stdlib" feature.
- *
- * Behaviour is a direct extraction from IntroduceCustomTypeFromStdlibIntention so
- * that all existing tests keep passing:
- * - Rewriting annotations to use the new custom type.
- * - Wrapping expressions at call sites.
- * - Updating parameter annotations when invoked from a call-site.
- * - Synchronising dataclass field annotations and wrapping constructor usages
- *   within a single file.
  */
 class UsageRewriter {
 
@@ -75,13 +67,15 @@ class UsageRewriter {
         val argList = PsiTreeUtil.getParentOfType(expr, PyArgumentList::class.java, false) ?: return
         val call = argList.parent as? PyCallExpression ?: return
 
-        val context = TypeEvalContext.codeAnalysis(expr.project, expr.containingFile)
+        // Use codeInsightFallback to ensure we can resolve synthetic members if needed
+        val context = TypeEvalContext.codeInsightFallback(expr.project)
         val resolveContext = PyResolveContext.defaultContext(context)
 
-        // Use standard helper to find the parameter corresponding to the argument
         val mappingList = call.multiMapArguments(resolveContext)
         val mapping = mappingList.firstOrNull() ?: return
         val mappedParamWrapper = mapping.mappedParameters[expr] ?: return
+
+        // We need the physical parameter to update its annotation.
         val mappedParam = mappedParamWrapper.parameter as? PyNamedParameter ?: return
 
         val parameter =
@@ -186,7 +180,7 @@ class UsageRewriter {
     }
 
     /**
-     * Wrap all constructor usages of the given dataclass [field] with the
+     * Wrap all constructor usages of the given dataclass/Pydantic [field] with the
      * provided wrapper type within a single [file].
      */
     fun wrapDataclassConstructorUsages(
@@ -198,35 +192,49 @@ class UsageRewriter {
         val pyClass = PsiTreeUtil.getParentOfType(field, PyClass::class.java) ?: return
         val fieldName = field.name ?: return
 
+        // Use codeInsightFallback to ensure synthetic members (like Pydantic's __init__) are resolved.
+        val resolveContext = PyResolveContext.defaultContext(TypeEvalContext.codeInsightFallback(file.project))
+
         val calls = PsiTreeUtil.collectElementsOfType(file, PyCallExpression::class.java)
         for (call in calls) {
             val callee = call.callee as? PyReferenceExpression ?: continue
-            val resolved = callee.reference.resolve()
-            if (resolved != pyClass) continue
+            if (callee.reference.resolve() != pyClass) continue
 
-            val argList = call.argumentList ?: continue
+            val mappingList = call.multiMapArguments(resolveContext)
 
-            // 1) Prefer keyword arguments matching the field name.
-            val keywordArg = argList.arguments
-                .filterIsInstance<PyKeywordArgument>()
-                .firstOrNull { it.keyword == fieldName }
-            if (keywordArg != null) {
-                val valueExpr = keywordArg.valueExpression ?: continue
-                wrapArgumentExpressionIfNeeded(valueExpr, wrapperTypeName, generator)
-                continue
+            var handled = false
+            for (mapping in mappingList) {
+                for ((arg, paramWrapper) in mapping.mappedParameters) {
+                    // Use paramWrapper.name to match the field name.
+                    // This handles both physical parameters (dataclasses) and synthetic ones (Pydantic),
+                    // where paramWrapper.parameter might be null.
+                    if (paramWrapper.name == fieldName) {
+                        // Extract the value from the keyword argument to avoid wrapping the whole `k=v` expression.
+                        val realArg = when (arg) {
+                            is PyKeywordArgument -> arg.valueExpression
+                            is PyStarArgument -> null // Skip *args and **kwargs
+                            else -> arg
+                        }
+
+                        if (realArg != null) {
+                            wrapArgumentExpressionIfNeeded(realArg, wrapperTypeName, generator)
+                            handled = true
+                        }
+                    }
+                }
             }
 
-            // 2) Fallback: positional arguments mapped by field index.
-            val fields = pyClass.classAttributes
-            val fieldIndex = fields.indexOfFirst { it.name == fieldName }
-            if (fieldIndex < 0) continue
-
-            val allArgs = argList.arguments.toList()
-            val positionalArgs = allArgs.filter { it !is PyKeywordArgument }
-            if (fieldIndex >= positionalArgs.size) continue
-
-            val valueExpr = positionalArgs[fieldIndex] ?: continue
-            wrapArgumentExpressionIfNeeded(valueExpr, wrapperTypeName, generator)
+            if (!handled) {
+                val argList = call.argumentList ?: continue
+                for (arg in argList.arguments) {
+                    if (arg is PyKeywordArgument && arg.keyword == fieldName) {
+                        val valueExpr = arg.valueExpression
+                        if (valueExpr != null) {
+                            wrapArgumentExpressionIfNeeded(valueExpr, wrapperTypeName, generator)
+                        }
+                    }
+                }
+            }
         }
     }
 

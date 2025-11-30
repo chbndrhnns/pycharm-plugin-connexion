@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
+import UsageRewriter
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext
@@ -175,10 +176,7 @@ class CustomTypeApplier(
 
         // We treat the RHS as belonging to the builtin branch only when its
         // inferred type is compatible with the builtin type we are replacing.
-        if (PyTypeChecker.match(builtinType, exprType, context)) {
-            return true
-        }
-        return false
+        return PyTypeChecker.match(builtinType, exprType, context)
     }
 
     private fun wrapDataclassConstructorUsagesProjectWide(
