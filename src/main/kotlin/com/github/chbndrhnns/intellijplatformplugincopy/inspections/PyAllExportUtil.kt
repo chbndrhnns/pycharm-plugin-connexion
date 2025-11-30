@@ -2,6 +2,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.inspections
 
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiParserFacade
+import com.intellij.psi.codeStyle.CodeStyleManager
 import com.jetbrains.python.PyNames
 import com.jetbrains.python.psi.*
 
@@ -155,13 +156,16 @@ object PyAllExportUtil {
         val generator = PyElementGenerator.getInstance(project)
         val languageLevel = LanguageLevel.forElement(file)
 
+        val lit = generator.createStringLiteralFromString(name, true)
+        val stmtText = "__all__ = [${lit.text}]"
         val assignment = generator.createFromText(
             languageLevel,
             PyAssignmentStatement::class.java,
-            "__all__ = ['$name']",
+            stmtText,
         )
 
         insertStatementAtModuleTop(project, file, assignment)
+        CodeStyleManager.getInstance(project).reformat(assignment)
     }
 
     private fun insertStatementAtModuleTop(
@@ -214,21 +218,14 @@ object PyAllExportUtil {
             return
         }
 
-        // Use the same quoting style as our other __all__ helpers, i.e. a
-        // simple single-quoted string literal. Relying on the default
-        // createStringLiteralFromString() may flip to double quotes and break
-        // text-based test expectations.
-        val languageLevel = LanguageLevel.forElement(sequence)
-        val stringLiteral = generator.createExpressionFromText(
-            languageLevel,
-            "'$name'",
-        ) as PyStringLiteralExpression
+        val newItem = generator.createStringLiteralFromString(name, false)
         val firstElement = sequence.elements.firstOrNull()
         generator.insertItemIntoListRemoveRedundantCommas(
             sequence,
             firstElement,
-            stringLiteral,
+            newItem,
         )
+        CodeStyleManager.getInstance(project).reformat(sequence)
     }
 
     private fun getExportedNames(sequence: PySequenceExpression): List<String> {
