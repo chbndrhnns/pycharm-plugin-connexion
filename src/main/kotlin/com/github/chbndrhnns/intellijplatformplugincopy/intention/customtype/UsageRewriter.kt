@@ -2,6 +2,9 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.*
+import com.jetbrains.python.psi.resolve.PyResolveContext
+import com.jetbrains.python.psi.search.PyOverridingMethodsSearch
+import com.jetbrains.python.psi.types.TypeEvalContext
 
 /**
  * Encapsulates PSI rewrites for the "Introduce custom type from stdlib" feature.
@@ -74,67 +77,91 @@ class UsageRewriter {
         newTypeName: String,
         generator: PyElementGenerator,
     ) {
-        // Locate the argument list and enclosing call for the expression.
         val argList = PsiTreeUtil.getParentOfType(expr, PyArgumentList::class.java, false) ?: return
         val call = argList.parent as? PyCallExpression ?: return
-        val callee = call.callee as? PyReferenceExpression ?: return
-        val resolved = callee.reference.resolve() as? PyFunction ?: return
 
-        // Map the expression back to the corresponding parameter, handling
-        // the straightforward positional and keyword cases covered by tests.
-        val resolvedParam: PyNamedParameter =
-            when (val kwArg = PsiTreeUtil.getParentOfType(expr, PyKeywordArgument::class.java, false)) {
-                null -> {
-                    val args = argList.arguments.toList()
-                    val positionalArgs = args.filter { it !is PyKeywordArgument }
-                    val posIndex = positionalArgs.indexOf(expr)
-                    if (posIndex < 0) return
-
-                    val params = resolved.parameterList.parameters
-                    if (posIndex >= params.size) return
-                    params[posIndex] as? PyNamedParameter ?: return
-                }
-
-                else -> {
-                    if (kwArg.valueExpression != expr) return
-                    val name = kwArg.keyword ?: return
-                    resolved.parameterList.findParameterByName(name) ?: return
-                }
-            }
+        val context = TypeEvalContext.codeAnalysis(expr.project, expr.containingFile)
+        val resolveContext = PyResolveContext.defaultContext(context)
+        val mappingList = call.multiMapArguments(resolveContext)
+        val mapping = mappingList.firstOrNull() ?: return
+        val mappedParamWrapper = mapping.mappedParameters[expr] ?: return
+        val mappedParam = mappedParamWrapper.parameter as? PyNamedParameter ?: return
 
         val parameter =
-            if (resolvedParam.containingFile != expr.containingFile && expr.containingFile.originalFile == resolvedParam.containingFile) {
-                PsiTreeUtil.findSameElementInCopy(resolvedParam, expr.containingFile)
-            } else if (!expr.isPhysical && resolvedParam.containingFile != expr.containingFile) {
+            if (mappedParam.containingFile != expr.containingFile && expr.containingFile.originalFile == mappedParam.containingFile) {
+                PsiTreeUtil.findSameElementInCopy(mappedParam, expr.containingFile)
+            } else if (!expr.isPhysical && mappedParam.containingFile != expr.containingFile) {
                 return
             } else {
-                resolvedParam
+                mappedParam
             }
 
-        val annotation = parameter.annotation ?: return
-        val annExpr = annotation.value ?: return
+        val function = PsiTreeUtil.getParentOfType(parameter, PyFunction::class.java) ?: return
+        val paramIndex = function.parameterList.parameters.indexOf(parameter)
 
+        val newAnnotationText = computeNewAnnotationText(parameter, builtinName, newTypeName, generator)
+
+        updateParameterType(parameter, newAnnotationText)
+
+        updateOverrides(function, paramIndex, newAnnotationText)
+    }
+
+    private fun computeNewAnnotationText(
+        parameter: PyNamedParameter,
+        builtinName: String,
+        newTypeName: String,
+        generator: PyElementGenerator
+    ): String {
+        val annotation = parameter.annotation
+        val annExpr = annotation?.value ?: return newTypeName
+
+        val copy = annExpr.copy() as PyExpression
         val newTypeRef = generator.createExpressionFromText(LanguageLevel.getLatest(), newTypeName)
 
-        // For call‑site initiated intentions we prefer to only update the
-        // matching part of the annotation (e.g. a single union member) so
-        // that constructs like ``CustomWrapper | str`` become
-        // ``CustomWrapper | Customstr`` instead of collapsing the whole
-        // union to just ``Customstr``. When we cannot reliably locate the
-        // builtin inside the annotation, we fall back to a full replacement
-        // to preserve previous behaviour.
-        val builtinRefInAnn = PsiTreeUtil.collectElementsOfType(annExpr, PyReferenceExpression::class.java)
+        val builtinRefInAnn = PsiTreeUtil.collectElementsOfType(copy, PyReferenceExpression::class.java)
             .firstOrNull { it.name == builtinName }
 
         when {
-            builtinRefInAnn != null ->
+            builtinRefInAnn != null -> {
+                if (builtinRefInAnn == copy) {
+                    return newTypeName
+                }
                 rewriteAnnotation(builtinRefInAnn, newTypeRef, builtinName)
+            }
 
-            annExpr is PyStringLiteralExpression ->
-                rewriteAnnotation(annExpr, newTypeRef, builtinName)
+            copy is PyStringLiteralExpression ->
+                rewriteAnnotation(copy, newTypeRef, builtinName)
 
             else ->
-                annExpr.replace(newTypeRef)
+                copy.replace(newTypeRef)
+        }
+
+        return copy.text
+    }
+
+    private fun updateParameterType(parameter: PyNamedParameter, newTypeAnnotation: String) {
+        val project = parameter.project
+        val generator = PyElementGenerator.getInstance(project)
+        val defaultValue = parameter.defaultValueText
+        val newParameter = generator.createParameter(
+            parameter.name!!,
+            defaultValue,
+            newTypeAnnotation,
+            LanguageLevel.forElement(parameter)
+        )
+        parameter.replace(newParameter)
+    }
+
+    private fun updateOverrides(baseFunction: PyFunction, paramIndex: Int, newTypeAnnotation: String) {
+        val overrides = PyOverridingMethodsSearch.search(baseFunction, true).findAll()
+        for (override in overrides) {
+            val parameters = override.parameterList.parameters
+            if (paramIndex < parameters.size) {
+                val param = parameters[paramIndex]
+                if (param is PyNamedParameter) {
+                    updateParameterType(param, newTypeAnnotation)
+                }
+            }
         }
     }
 

@@ -20,7 +20,7 @@ class LiteralsTest : TestBase() {
                 pass
 
 
-            def expect_str(s) -> None:
+            def expect_str(s: Customstr) -> None:
                 ...
 
             expect_str(Customstr("abc"))

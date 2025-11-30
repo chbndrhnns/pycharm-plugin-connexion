@@ -42,4 +42,32 @@ class ParameterTest : TestBase() {
             "Introduce custom type from int"
         )
     }
+
+    fun testParameterAnnotationUpdatedWhenCustomTypeIntroducedOnArgument() {
+        myFixture.doIntentionTest(
+            "a.py",
+            """
+            class C:
+                def do(self, val: str):
+                    ...
+
+                def other(self):
+                    self.do("a<caret>bc")
+            """,
+            """
+            class Customstr(str):
+                pass
+
+
+            class C:
+                def do(self, val: Customstr):
+                    ...
+
+                def other(self):
+                    self.do(Customstr("abc"))
+            """,
+            "Introduce custom type from str"
+        )
+    }
+
 }
