@@ -4,6 +4,8 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.*
+import com.jetbrains.python.psi.impl.getImplicitArgumentCount
+import com.jetbrains.python.psi.resolve.PyResolveContext
 import com.jetbrains.python.psi.types.*
 
 // Exposed to sibling module ContainerTyping within the same source set.
@@ -163,8 +165,7 @@ internal object ExpectedTypeInfo {
             if (retAnn is PySubscriptionExpression) {
                 // Generator[Yield, Send, Return] or Iterator[Yield] or Iterable[Yield]
                 val qName = (retAnn.operand as? PyReferenceExpression)?.reference?.resolve()
-                val name =
-                    (qName as? PyQualifiedNameOwner)?.qualifiedName ?: (retAnn.operand as? PyReferenceExpression)?.name
+                (qName as? PyQualifiedNameOwner)?.qualifiedName ?: (retAnn.operand as? PyReferenceExpression)?.name
 
                 // Simple heuristic: first type argument is the yield type for Generator/Iterator
                 val index = 0
@@ -293,11 +294,18 @@ internal object ExpectedTypeInfo {
 
             is PyFunction -> {
                 val kw = keywordNameAt(args, argIndex, expr)
-                functionParamTypeInfo(callee, argList, argIndex, kw, ctx)
+                val offset = computeParameterOffset(call, callee, ctx)
+                functionParamTypeInfo(callee, argList, argIndex, kw, ctx, offset)
             }
 
             else -> null
         }
+    }
+
+    private fun computeParameterOffset(call: PyCallExpression, function: PyFunction, ctx: TypeEvalContext): Int {
+        val ref = call.callee as? PyReferenceExpression ?: return 0
+        val resolveContext = PyResolveContext.defaultContext(ctx)
+        return ref.getImplicitArgumentCount(function, resolveContext)
     }
 
     private fun resolvedCallee(call: PyCallExpression): PsiElement? =
