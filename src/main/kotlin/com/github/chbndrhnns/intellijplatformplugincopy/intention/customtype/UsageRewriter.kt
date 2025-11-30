@@ -5,6 +5,7 @@ import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.resolve.PyResolveContext
 import com.jetbrains.python.psi.search.PyOverridingMethodsSearch
 import com.jetbrains.python.psi.types.TypeEvalContext
+import com.jetbrains.python.refactoring.PyReplaceExpressionUtil
 
 /**
  * Encapsulates PSI rewrites for the "Introduce custom type from stdlib" feature.
@@ -23,9 +24,7 @@ class UsageRewriter {
      * Replace the referenced builtin in an annotation with [newTypeRef].
      *
      * For subscripted container annotations (e.g. ``dict[str, list[int]]``),
-     * we keep the existing index expression and only swap out the operand so
-     * that ``dict`` becomes ``CustomDict`` but the concrete type arguments are
-     * preserved, yielding ``CustomDict[str, list[int]]``.
+     * we keep the existing index expression and only swap out the operand.
      *
      * Supports forward references (string literals) by replacing the type name
      * inside the string.
@@ -36,20 +35,17 @@ class UsageRewriter {
             val newContent = oldContent.replace(Regex("\\b$oldTypeName\\b"), newTypeRef.text)
             val generator = PyElementGenerator.getInstance(annotationElement.project)
             val newExpr = generator.createStringLiteral(annotationElement, newContent)
-            annotationElement.replace(newExpr)
+            PyReplaceExpressionUtil.replaceExpression(annotationElement, newExpr)
             return
         }
 
         val parentSub = annotationElement.parent as? PySubscriptionExpression
         if (parentSub != null && parentSub.operand == annotationElement) {
-            // ``annotationRef`` is the callee part of a subscription; we want
-            // to replace the whole subscription expression (e.g. ``list[int]``)
-            // with the new custom type (e.g. ``CustomList``), because the
-            // custom type definition already captures the generic arguments
-            // (e.g. ``class CustomList(list[int]): ...``).
-            parentSub.replace(newTypeRef)
+            // Replace the whole subscription expression (e.g. ``list[int]``)
+            // with the new custom type (e.g. ``CustomList``)
+            PyReplaceExpressionUtil.replaceExpression(parentSub, newTypeRef)
         } else {
-            annotationElement.replace(newTypeRef)
+            PyReplaceExpressionUtil.replaceExpression(annotationElement, newTypeRef)
         }
     }
 

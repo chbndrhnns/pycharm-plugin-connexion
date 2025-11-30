@@ -2,7 +2,8 @@
 
 ## Pending Tasks
 
-- feat: Support export of attributes
+- [ ] ignore_testParameterAnnotationUpdateWrapsCallSites
+- [ ] feat: Support export of attributes
 
 - [ ] fix: No wrap with Self
 

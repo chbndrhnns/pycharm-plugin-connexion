@@ -70,4 +70,29 @@ class ParameterTest : TestBase() {
         )
     }
 
+    fun ignore_testParameterAnnotationUpdateWrapsCallSites() {
+        myFixture.doIntentionTest(
+            "a.py",
+            """
+            class C:
+                def do(self, val: st<caret>r): ...
+            
+                def other(self):
+                    self.do(str("abc"))
+            """,
+            """
+            class Customstr(str):
+                pass
+            
+            
+            class C:
+                def do(self, val: Customstr): ...
+            
+                def other(self):
+                    self.do(Customstr(str("abc")))
+            """,
+            "Introduce custom type from str"
+        )
+    }
+
 }
