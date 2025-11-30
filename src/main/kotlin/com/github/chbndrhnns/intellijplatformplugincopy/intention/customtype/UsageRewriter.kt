@@ -59,13 +59,12 @@ class UsageRewriter {
             LanguageLevel.getLatest(),
             "$newTypeName($exprText)",
         )
-        expr.replace(wrapped)
+        PyReplaceExpressionUtil.replaceExpression(expr, wrapped)
     }
 
     /**
      * When the intention is started from a call-site expression, update the
-     * corresponding parameter annotation in the resolved callable so that it
-     * refers to [newTypeName] instead of the builtin.
+     * corresponding parameter annotation in the resolved callable.
      */
     fun updateParameterAnnotationFromCallSite(
         expr: PyExpression,
@@ -78,6 +77,8 @@ class UsageRewriter {
 
         val context = TypeEvalContext.codeAnalysis(expr.project, expr.containingFile)
         val resolveContext = PyResolveContext.defaultContext(context)
+
+        // Use standard helper to find the parameter corresponding to the argument
         val mappingList = call.multiMapArguments(resolveContext)
         val mapping = mappingList.firstOrNull() ?: return
         val mappedParamWrapper = mapping.mappedParameters[expr] ?: return
