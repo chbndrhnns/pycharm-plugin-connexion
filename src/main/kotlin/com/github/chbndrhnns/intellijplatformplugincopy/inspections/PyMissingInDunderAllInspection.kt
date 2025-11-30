@@ -48,34 +48,22 @@ class PyMissingInDunderAllInspection : PyInspection() {
 
     private class Visitor(
         private val holder: ProblemsHolder,
-        private val session: LocalInspectionToolSession,
+        @Suppress("unused") private val session: LocalInspectionToolSession,
     ) : PyElementVisitor() {
 
-        /**
-         * Hardcoded allowlists for symbols that should not be required to
-         * appear in __all__.
-         *
-         * First step: keep it simple and prefix‑based so that we can later
-         * move this into configurable settings if needed.
-         */
-        private val allowlistedModuleNamePrefixes = listOf(
-            "test_",
-            "tests_",
-        )
-
-        private val allowlistedExactModuleNames = setOf(
-            "tests",
-        )
-
-        private val allowlistedFunctionNamePrefixes = listOf(
-            // Common test helpers / pytest style tests
-            "test_",
-        )
-
-        private val allowlistedClassNamePrefixes = listOf(
-            // Typical unittest / pytest style test classes
-            "Test",
-        )
+        companion object {
+            /**
+             * Hardcoded allowlists for symbols that should not be required to
+             * appear in __all__.
+             *
+             * First step: keep it simple and prefix‑based so that we can later
+             * move this into configurable settings if needed.
+             */
+            private val ALLOWLISTED_MODULE_NAME_PREFIXES = listOf("test_", "tests_")
+            private val ALLOWLISTED_EXACT_MODULE_NAMES = setOf("tests")
+            private val ALLOWLISTED_FUNCTION_NAME_PREFIXES = listOf("test_")
+            private val ALLOWLISTED_CLASS_NAME_PREFIXES = listOf("Test")
+        }
 
         override fun visitPyFile(node: PyFile) {
             super.visitPyFile(node)
@@ -121,16 +109,9 @@ class PyMissingInDunderAllInspection : PyInspection() {
             //   entirely to avoid fighting with user code.
 
             val dunderAllAssignment = findDunderAllAssignment(initFile)
-            val dunderAllNames: Collection<String> = if (dunderAllAssignment == null) {
-                emptyList()
-            } else {
-                when (val value = dunderAllAssignment.assignedValue) {
-                    null -> emptyList()
-                    is PySequenceExpression -> value.elements
-                        .mapNotNull { (it as? PyStringLiteralExpression)?.stringValue }
-
-                    else -> return
-                }
+            val dunderAllNames: Set<String> = when {
+                dunderAllAssignment == null -> emptySet()
+                else -> extractDunderAllNames(dunderAllAssignment) ?: return
             }
 
             // 1) Symbols defined directly in __init__.py
@@ -163,8 +144,8 @@ class PyMissingInDunderAllInspection : PyInspection() {
                     if (dunderAllNames.contains(name)) continue
 
                     // Respect existing allowlists (e.g. test_ helpers)
-                    if (allowlistedFunctionNamePrefixes.any { prefix -> name.startsWith(prefix) }) continue
-                    if (allowlistedClassNamePrefixes.any { prefix -> name.startsWith(prefix) }) continue
+                    if (ALLOWLISTED_FUNCTION_NAME_PREFIXES.any { name.startsWith(it) }) continue
+                    if (ALLOWLISTED_CLASS_NAME_PREFIXES.any { name.startsWith(it) }) continue
 
                     val anchor = importElement.asNameElement ?: importElement
                     holder.registerProblem(
@@ -198,16 +179,13 @@ class PyMissingInDunderAllInspection : PyInspection() {
             //   cross-file check entirely to avoid fighting with user code.
 
             val dunderAllAssignment = findDunderAllAssignment(packageInit)
-            val dunderAllNames = dunderAllAssignment?.let { findDunderAllNames(packageInit) }
-
-            // There is some kind of __all__ assignment, but we could not
-            // interpret it as a simple sequence – bail out.
-            if (dunderAllAssignment != null && dunderAllNames == null) return
-
-            // When there is no __all__ at all, behave as if it were an empty
-            // list so that every suitable symbol in [moduleFile] is
-            // considered missing and the quick-fix can create __all__.
-            val exportedNames: Collection<String> = dunderAllNames ?: emptyList()
+            val exportedNames: Set<String> = when {
+                // No __all__ at all – behave as if it were empty so that every
+                // suitable symbol is considered missing and the quick-fix can create __all__.
+                dunderAllAssignment == null -> emptySet()
+                // __all__ exists but is not a simple sequence – bail out.
+                else -> extractDunderAllNames(dunderAllAssignment) ?: return
+            }
 
             for (element in moduleFile.topLevelClasses + moduleFile.topLevelFunctions) {
                 if (!isExportable(element)) continue
@@ -257,37 +235,12 @@ class PyMissingInDunderAllInspection : PyInspection() {
          * [target] file, locate the import statement in
          * {@code __init__.py} that brings this symbol into scope, if any.
          */
-        private fun findImportSymbol(targetSymbol: PyElement, target: PyFile): PyImportStatementBase? {
-            for (stmt in target.importBlock) {
-                when (stmt) {
-                    is PyFromImportStatement -> {
-                        for (importElement in stmt.importElements) {
-                            val importedMatches = importElement
-                                .multiResolve()
-                                .any { it.element == targetSymbol }
-
-                            if (importedMatches) {
-                                return stmt
-                            }
-                        }
-                    }
-
-                    is PyImportStatement -> {
-                        for (importElement in stmt.importElements) {
-                            val importedMatches = importElement
-                                .multiResolve()
-                                .any { it.element == targetSymbol }
-
-                            if (importedMatches) {
-                                return stmt
-                            }
-                        }
-                    }
+        private fun findImportSymbol(targetSymbol: PyElement, target: PyFile): PyImportStatementBase? =
+            target.importBlock.firstOrNull { stmt ->
+                stmt.importElements.any { importElement ->
+                    importElement.multiResolve().any { it.element == targetSymbol }
                 }
             }
-
-            return null
-        }
 
         private fun isExportable(element: PyElement): Boolean =
             element is PyClass ||
@@ -298,38 +251,26 @@ class PyMissingInDunderAllInspection : PyInspection() {
         private fun isAllowlistedModule(file: PyFile): Boolean {
             val nameWithoutExtension = file.name.removeSuffix(".py")
 
-            // Allowlist by module file name (e.g. test_something.py, tests.py)
-            if (allowlistedExactModuleNames.contains(nameWithoutExtension)) return true
-            if (allowlistedModuleNamePrefixes.any { prefix -> nameWithoutExtension.startsWith(prefix) }) {
-                return true
-            }
+            if (isAllowlistedName(nameWithoutExtension)) return true
 
             // Also allowlist by containing package/directory name so that whole
             // test packages (e.g. `tests`, `test_package`) are ignored by the
             // inspection regardless of the individual module file names.
             val directoryName = file.containingDirectory?.name
-            if (directoryName != null) {
-                if (allowlistedExactModuleNames.contains(directoryName)) return true
-                if (allowlistedModuleNamePrefixes.any { prefix -> directoryName.startsWith(prefix) }) {
-                    return true
-                }
-            }
-
-            return false
+            return directoryName != null && isAllowlistedName(directoryName)
         }
+
+        private fun isAllowlistedName(name: String): Boolean =
+            name in ALLOWLISTED_EXACT_MODULE_NAMES ||
+                    ALLOWLISTED_MODULE_NAME_PREFIXES.any { name.startsWith(it) }
 
         private fun isAllowlistedSymbol(element: PyElement): Boolean {
             val name = (element as? PsiNameIdentifierOwner)?.name ?: return false
-
-            if (element is PyFunction && allowlistedFunctionNamePrefixes.any { prefix -> name.startsWith(prefix) }) {
-                return true
+            return when (element) {
+                is PyFunction -> ALLOWLISTED_FUNCTION_NAME_PREFIXES.any { name.startsWith(it) }
+                is PyClass -> ALLOWLISTED_CLASS_NAME_PREFIXES.any { name.startsWith(it) }
+                else -> false
             }
-
-            if (element is PyClass && allowlistedClassNamePrefixes.any { prefix -> name.startsWith(prefix) }) {
-                return true
-            }
-
-            return false
         }
 
         private fun getNameIdentifier(element: PyElement): PsiElement? =
@@ -348,22 +289,13 @@ class PyMissingInDunderAllInspection : PyInspection() {
         }
 
         /**
-         * Locate a simple sequence __all__ assignment in [file] and return the
-         * collection of exported names, or {@code null} if __all__ is not
-         * present or not a simple list/tuple.
+         * Extract exported names from a __all__ assignment.
+         * Returns {@code null} if the assignment value is not a simple list/tuple.
          */
-        private fun findDunderAllNames(file: PyFile): Collection<String>? {
-            // Used for checking regular modules against the containing
-            // package's __init__.py. If there is no __all__ assignment or it
-            // is not a simple list/tuple of strings, we return null so that
-            // callers can skip the package-level check entirely.
-            val dunderAllAssignment = findDunderAllAssignment(file) ?: return null
-            return when (val value = dunderAllAssignment.assignedValue) {
-                is PySequenceExpression -> value.elements
-                    .mapNotNull { (it as? PyStringLiteralExpression)?.stringValue }
-
-                else -> null
-            }
-        }
+        private fun extractDunderAllNames(assignment: PyAssignmentStatement): Set<String>? =
+            (assignment.assignedValue as? PySequenceExpression)
+                ?.elements
+                ?.mapNotNull { (it as? PyStringLiteralExpression)?.stringValue }
+                ?.toSet()
     }
 }
