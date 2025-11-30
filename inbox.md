@@ -15,8 +15,8 @@ class C:
         self.do("abc")
 
 ```
-- [ ] fix: Missing description for PyPrivateModuleImportInspection
-- [ ] feat: Parse pytest identifer in search all
+
+- [ ] feat: Parse pytest identifier in search all dialog
 - [ ] feat: Copy selection with imports
 - [ ] Wrap default/default_factory after introducing custom type in dataclass/pydantic
 - [ ] Refactor document for exports
@@ -30,9 +30,12 @@ class C:
 
 ## In Progress Tasks
 
+
 ## Completed Tasks (newest first)
 
-- [ ] fix: Messed up imports
+- [x] fix: Missing description for PyPrivateModuleImportInspection
+- [x] fix: Messed up imports
+
 ```python
 
 # missing/__init__.py
