@@ -141,7 +141,15 @@ object PyAllExportUtil {
         }
 
         // Case 2: No imports -> likely first wiring -> mirror all exported names
-        return (exportedNames + nameToExport).distinct().sorted()
+        // BUT: Do not import names that are already defined in the file itself.
+        val definedNames = (targetFile.topLevelClasses.mapNotNull { it.name } +
+                targetFile.topLevelFunctions.mapNotNull { it.name } +
+                targetFile.topLevelAttributes.mapNotNull { it.name }).toSet()
+
+        return (exportedNames + nameToExport)
+            .filter { it !in definedNames }
+            .distinct()
+            .sorted()
     }
 
     private fun findRelativeImport(file: PyFile, moduleName: String): PyFromImportStatement? {

@@ -200,4 +200,19 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
             expectedResultFile = "$basePath/${testName}_after/__init__.py"
         )
     }
+    fun testReproductionIssue() {
+        val testName = "ReproductionIssue"
+        val basePath = "inspections/PyMissingInDunderAllInspection/$testName"
+
+        myFixture.doMultiFileInspectionTest(
+            files = listOf("$basePath/__init__.py", "$basePath/_mob.py"),
+            inspection = PyMissingInDunderAllInspection::class.java,
+            targetFile = "$basePath/_mob.py",
+            checkHighlighting = false,
+            checkWeakWarnings = true,
+            fixFamilyName = "Add to __all__",
+            resultFileToCheck = "$basePath/__init__.py",
+            expectedResultFile = "inspections/PyMissingInDunderAllInspection/${testName}_after/__init__.py"
+        )
+    }
 }
