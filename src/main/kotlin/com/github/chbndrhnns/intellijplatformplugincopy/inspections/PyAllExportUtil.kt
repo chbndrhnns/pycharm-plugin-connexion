@@ -2,8 +2,11 @@ package com.github.chbndrhnns.intellijplatformplugincopy.inspections
 
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiParserFacade
+import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.codeStyle.CodeStyleManager
+import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.PyNames
+import com.jetbrains.python.documentation.docstrings.DocStringUtil
 import com.jetbrains.python.psi.*
 
 /** Utility responsible for keeping a package's {@code __all__} and re-export
@@ -164,40 +167,41 @@ object PyAllExportUtil {
             stmtText,
         )
 
-        insertStatementAtModuleTop(project, file, assignment)
+        insertStatementBelowDocstring(project, file, assignment)
         CodeStyleManager.getInstance(project).reformat(assignment)
     }
 
-    private fun insertStatementAtModuleTop(
+    private fun insertStatementBelowDocstring(
         project: Project,
         file: PyFile,
-        statement: PyStatement
+        allStatementText: PyStatement, // e.g. "__all__ = ['a', 'b']"
     ) {
-        // If the file has a module-level docstring, keep it at the very top
-        // and insert __all__ *after* it with exactly one blank line in
-        // between, so the layout becomes:
-        //
-        //   """docstring"""
-        //
-        //   __all__ = [...]
-        val docstringExpr = file.docStringExpression
-        if (docstringExpr != null) {
-            val parserFacade = PsiParserFacade.SERVICE.getInstance(project)
-            val whitespace = parserFacade.createWhiteSpaceFromText("\n\n")
-            val docstringOwner = (docstringExpr.parent.takeIf { it.parent == file } ?: docstringExpr)
-            val wsElement = file.addAfter(whitespace, docstringOwner)
-            file.addAfter(statement, wsElement)
-        } else {
-            // No module-level docstring – fall back to the original behaviour of
-            // inserting __all__ before the first top-level statement (or as the
-            // only statement in an otherwise empty file).
-            val firstStatement = file.statements.firstOrNull()
-            if (firstStatement == null) {
-                file.add(statement)
-            } else {
-                file.addBefore(statement, firstStatement)
+        val generator = PyElementGenerator.getInstance(project)
+        val level = LanguageLevel.forElement(file)
+        val newStmt = generator.createFromText(level, PyStatement::class.java, allStatementText.text)
+
+        // 1) Find module docstring (expression) and convert to its statement
+        val docExpr = DocStringUtil.findDocStringExpression(file)
+        val docStmt = PsiTreeUtil.getParentOfType(docExpr, PyStatement::class.java, /* strict = */ false)
+        val inserted = when {
+            docStmt != null -> file.addAfter(newStmt, docStmt) as PyStatement
+            file.statements.isNotEmpty() -> file.addBefore(newStmt, file.statements.first()) as PyStatement
+            else -> file.add(newStmt) as PyStatement
+        }
+
+        // 2) Normalize spacing to exactly one blank line after the docstring
+        if (docStmt != null) {
+            val afterDoc = docStmt.nextSibling
+            val parser = PsiParserFacade.getInstance(project)
+            val oneBlank = parser.createWhiteSpaceFromText("\n\n")
+            when (afterDoc) {
+                is PsiWhiteSpace -> afterDoc.replace(oneBlank)
+                else -> file.addAfter(oneBlank, docStmt)
             }
         }
+
+        // 3) Let code style polish the result
+        CodeStyleManager.getInstance(project).reformat(inserted)
     }
 
     /**
