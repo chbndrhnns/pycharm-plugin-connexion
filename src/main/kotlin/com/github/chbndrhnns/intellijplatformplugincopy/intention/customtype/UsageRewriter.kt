@@ -130,7 +130,7 @@ class UsageRewriter {
                 rewriteAnnotation(copy, newTypeRef, builtinName)
 
             else ->
-                copy.replace(newTypeRef)
+                PyReplaceExpressionUtil.replaceExpression(copy, newTypeRef)
         }
 
         return copy.text
@@ -163,9 +163,7 @@ class UsageRewriter {
     }
 
     /**
-     * Synchronise the dataclass field's annotation with the newly introduced
-     * type. This mirrors the inline behaviour previously used when
-     * target.annotationRef == null.
+     * Synchronise the dataclass field's annotation with the newly introduced type.
      */
     fun syncDataclassFieldAnnotation(
         field: PyTargetExpression,
@@ -175,17 +173,14 @@ class UsageRewriter {
         val typeDecl = PsiTreeUtil.getParentOfType(field, PyTypeDeclarationStatement::class.java, false)
         val annExpr = typeDecl?.annotation?.value
         if (annExpr != null) {
-            // Replace the builtin reference inside the annotation with the new
-            // type reference, falling back to a plain replacement when the
-            // annotation is just the builtin name.
             val builtinRefInAnn = PsiTreeUtil.findChildOfType(annExpr, PyReferenceExpression::class.java)
             val replacement = newTypeRef.copy() as PyExpression
             when {
                 builtinRefInAnn != null && builtinRefInAnn.name == builtinName ->
-                    builtinRefInAnn.replace(replacement)
+                    PyReplaceExpressionUtil.replaceExpression(builtinRefInAnn, replacement)
 
                 annExpr.text == builtinName ->
-                    annExpr.replace(replacement)
+                    PyReplaceExpressionUtil.replaceExpression(annExpr, replacement)
             }
         }
     }
@@ -240,8 +235,6 @@ class UsageRewriter {
         wrapperTypeName: String,
         generator: PyElementGenerator,
     ) {
-        // Avoid double-wrapping when the argument is already wrapped with the
-        // custom type, e.g. Productid(Productid(123)).
         val existingCall = expr as? PyCallExpression
         if (existingCall != null) {
             val calleeText = existingCall.callee?.text
@@ -252,6 +245,6 @@ class UsageRewriter {
             LanguageLevel.getLatest(),
             "$wrapperTypeName(${expr.text})",
         )
-        expr.replace(wrapped)
+        PyReplaceExpressionUtil.replaceExpression(expr, wrapped)
     }
 }
