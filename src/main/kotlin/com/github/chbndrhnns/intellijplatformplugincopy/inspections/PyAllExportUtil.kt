@@ -35,7 +35,7 @@ object PyAllExportUtil {
         if (dunderAllAssignment != null) {
             val value = dunderAllAssignment.assignedValue
             if (value is PySequenceExpression) {
-                updateExistingDunderAll(project, dunderAllAssignment, value, name)
+                updateExistingDunderAll(project, value, name)
             }
             if (sourceModule != null) {
                 addOrUpdateImportForModuleSymbol(project, targetFile, dunderAllAssignment, sourceModule, name)
@@ -211,19 +211,23 @@ object PyAllExportUtil {
      */
     private fun updateExistingDunderAll(
         project: Project,
-        assignment: PyAssignmentStatement,
         sequence: PySequenceExpression,
         name: String,
     ) {
         val generator = PyElementGenerator.getInstance(project)
+        val languageLevel = LanguageLevel.forElement(sequence)
 
         val existingNames = getExportedNames(sequence)
-        if (existingNames.contains(name)) {
-            return
-        }
+        if (name in existingNames) return
 
-        val newItem = generator.createStringLiteralFromString(name, false)
         val firstElement = sequence.elements.firstOrNull()
+
+        val lit = generator.createStringLiteralFromString(name, false)
+        val newItem: PyExpression = generator.createExpressionFromText(
+            languageLevel,
+            lit.text,
+        )
+
         generator.insertItemIntoListRemoveRedundantCommas(
             sequence,
             firstElement,
