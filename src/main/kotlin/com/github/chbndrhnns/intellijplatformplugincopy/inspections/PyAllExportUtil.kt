@@ -27,7 +27,7 @@ object PyAllExportUtil {
         name: String,
         sourceModule: PyFile?,
     ) {
-        val dunderAllAssignment = findDunderAllAssignment(targetFile, name)
+        val dunderAllAssignment = findDunderAllAssignment(targetFile)
         if (dunderAllAssignment != null) {
             val value = dunderAllAssignment.assignedValue
             if (value is PySequenceExpression) {
@@ -45,7 +45,7 @@ object PyAllExportUtil {
         // we still need to add an import for the symbol from that module,
         // placing it after the freshly created __all__.
         if (sourceModule != null) {
-            val newDunderAll = findDunderAllAssignment(targetFile, name) ?: return
+            val newDunderAll = findDunderAllAssignment(targetFile) ?: return
             addOrUpdateImportForModuleSymbol(project, targetFile, newDunderAll, sourceModule, name)
         }
     }
@@ -67,24 +67,8 @@ object PyAllExportUtil {
 
         val moduleName = sourceModule.name.removeSuffix(".py")
 
-        // All names currently exported via __all__; may be useful when there
-        // are no existing re-export imports yet and this module is the first
-        // one being wired up.
-        val exportedNames: List<String> = (dunderAllAssignment.assignedValue as? PySequenceExpression)
-            ?.elements
-            ?.mapNotNull { (it as? PyStringLiteralExpression)?.stringValue }
-            ?.distinct()
-            ?: listOf(name)
-
         // Try to find an existing `from .<module> import ...` statement.
-        val existingImport = file.statements
-            .filterIsInstance<PyFromImportStatement>()
-            .firstOrNull { fromImport ->
-                val source = fromImport.importSource
-                // We want "from .module import ..." – a relative import
-                // whose referenced name matches the module name.
-                (fromImport.relativeLevel ?: 0) > 0 && source?.referencedName == moduleName
-            }
+        val existingImport = findRelativeImport(file, moduleName)
 
         if (existingImport != null) {
             // Merge the symbol into the existing import list if not already
@@ -110,7 +94,30 @@ object PyAllExportUtil {
         // No suitable import found – create a new one and insert it after
         // the __all__ assignment. We use a relative import so that it works
         // both in real projects and test data.
-        //
+
+        // All names currently exported via __all__; may be useful when there
+        // are no existing re-export imports yet and this module is the first
+        // one being wired up.
+        val exportedNames: List<String> = (dunderAllAssignment.assignedValue as? PySequenceExpression)
+            ?.let { getExportedNames(it) }
+            ?: listOf(name)
+
+        val importNames = resolveImportNamesForNewStatement(file, exportedNames, name)
+
+        val importStatement = generator.createFromText(
+            languageLevel,
+            PyFromImportStatement::class.java,
+            "from .$moduleName import ${importNames.joinToString(", ")}",
+        )
+
+        file.addAfter(importStatement, dunderAllAssignment)
+    }
+
+    private fun resolveImportNamesForNewStatement(
+        targetFile: PyFile,
+        exportedNames: List<String>,
+        nameToExport: String
+    ): List<String> {
         // IMPORTANT:
         // - When there are already other from-imports in this __init__.py,
         //   we must assume that __all__ aggregates symbols from multiple
@@ -122,19 +129,26 @@ object PyAllExportUtil {
         //   case it's safe (and preserves the previous behaviour expected by
         //   older tests) to create a combined import that mirrors all names
         //   currently present in __all__.
-        val hasAnyFromImports = file.statements.any { it is PyFromImportStatement }
-        val importNames = if (hasAnyFromImports) {
-            listOf(name)
-        } else {
-            (exportedNames + name).distinct().sorted()
-        }
-        val importStatement = generator.createFromText(
-            languageLevel,
-            PyFromImportStatement::class.java,
-            "from .$moduleName import ${importNames.joinToString(", ")}",
-        )
+        val hasAnyFromImports = targetFile.statements.any { it is PyFromImportStatement }
 
-        file.addAfter(importStatement, dunderAllAssignment)
+        // Case 1: Existing imports imply complex structure -> conservative import
+        if (hasAnyFromImports) {
+            return listOf(nameToExport)
+        }
+
+        // Case 2: No imports -> likely first wiring -> mirror all exported names
+        return (exportedNames + nameToExport).distinct().sorted()
+    }
+
+    private fun findRelativeImport(file: PyFile, moduleName: String): PyFromImportStatement? {
+        return file.statements
+            .filterIsInstance<PyFromImportStatement>()
+            .firstOrNull { fromImport ->
+                val source = fromImport.importSource
+                // We want "from .module import ..." – a relative import
+                // whose referenced name matches the module name.
+                (fromImport.relativeLevel ?: 0) > 0 && source?.referencedName == moduleName
+            }
     }
 
     private fun createNewDunderAll(file: PyFile, project: Project, name: String) {
@@ -147,6 +161,14 @@ object PyAllExportUtil {
             "__all__ = ['$name']",
         )
 
+        insertStatementAtModuleTop(project, file, assignment)
+    }
+
+    private fun insertStatementAtModuleTop(
+        project: Project,
+        file: PyFile,
+        statement: PyStatement
+    ) {
         // If the file has a module-level docstring, keep it at the very top
         // and insert __all__ *after* it with exactly one blank line in
         // between, so the layout becomes:
@@ -160,20 +182,17 @@ object PyAllExportUtil {
             val whitespace = parserFacade.createWhiteSpaceFromText("\n\n")
             val docstringOwner = (docstringExpr.parent.takeIf { it.parent == file } ?: docstringExpr)
             val wsElement = file.addAfter(whitespace, docstringOwner)
-            file.addAfter(assignment, wsElement)
-            return
-        }
-
-        // No module-level docstring – fall back to the original behaviour of
-        // inserting __all__ before the first top-level statement (or as the
-        // only statement in an otherwise empty file).
-        val statements = file.statements
-        val firstStatement = statements.firstOrNull()
-
-        if (firstStatement == null) {
-            file.add(assignment)
+            file.addAfter(statement, wsElement)
         } else {
-            file.addBefore(assignment, firstStatement)
+            // No module-level docstring – fall back to the original behaviour of
+            // inserting __all__ before the first top-level statement (or as the
+            // only statement in an otherwise empty file).
+            val firstStatement = file.statements.firstOrNull()
+            if (firstStatement == null) {
+                file.add(statement)
+            } else {
+                file.addBefore(statement, firstStatement)
+            }
         }
     }
 
@@ -190,7 +209,7 @@ object PyAllExportUtil {
     ) {
         val generator = PyElementGenerator.getInstance(project)
 
-        val existingNames = sequence.elements.mapNotNull { (it as? PyStringLiteralExpression)?.stringValue }
+        val existingNames = getExportedNames(sequence)
         if (existingNames.contains(name)) {
             return
         }
@@ -212,15 +231,13 @@ object PyAllExportUtil {
         )
     }
 
-    private fun findDunderAllAssignment(file: PyFile, name: String): PyAssignmentStatement? {
-        for (statement in file.statements) {
-            val assignment = statement as? PyAssignmentStatement ?: continue
-            for (target in assignment.targets) {
-                if (PyNames.ALL == target.name) {
-                    return assignment
-                }
-            }
-        }
-        return null
+    private fun getExportedNames(sequence: PySequenceExpression): List<String> {
+        return sequence.elements
+            .mapNotNull { (it as? PyStringLiteralExpression)?.stringValue }
+    }
+
+    private fun findDunderAllAssignment(file: PyFile): PyAssignmentStatement? {
+        val target = file.findTopLevelAttribute(PyNames.ALL)
+        return target?.parent as? PyAssignmentStatement
     }
 }
