@@ -28,3 +28,13 @@
     "NEW INSTRUCTION": "WHEN replacing code with multi-line Kotlin strings THEN use triple quotes and trimIndent"
 }
 
+[2025-12-01 23:04] - Updated by Junie - Error analysis
+{
+    "TYPE": "path error",
+    "TOOL": "run_test",
+    "ERROR": "Test data file not found at expected path",
+    "ROOT CAUSE": "Test data files were created outside the project root, so the test runner could not locate them under src/test/testData.",
+    "PROJECT NOTE": "Inspection tests load files from src/test/testData relative to the repository root; ensure created files live under that path within the project directory.",
+    "NEW INSTRUCTION": "WHEN test reports 'Cannot find source file' under testData THEN create or move files under project src/test/testData path"
+}
+

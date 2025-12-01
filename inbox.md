@@ -4,14 +4,6 @@
 
 - [ ] feat: Create run config using package mode
 - [ ] feat: How to enable module-level skip for pydunder inspection?
-- [ ] fix: Export newtype
-
-```python
-from typing import NewType
-
-MyStr = NewType("MyStr", str)
-```
-
 - [ ] fix: FP export: `from prance import BaseParse<caret>r`
 - [ ] feat: Prefer most specific import if same parent
 - [ ] Generate TypeEvalContext once, reuse
@@ -33,9 +25,9 @@ MyStr = NewType("MyStr", str)
 
 ## In Progress Tasks
 
-
 ## Completed Tasks (newest first)
 
+- [x] fix: Export newtype
 - [x] feat: Suggest most specific import if parent package is same
 - [x] feat: Suggest import from package instead of module if exported
 - [x] fix: Fixed depth of 10 when resolving references

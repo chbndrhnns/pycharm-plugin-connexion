@@ -38,3 +38,11 @@
     "NEW INSTRUCTION": "WHEN user requests to run tests THEN run full test suite and summarize results"
 }
 
+[2025-12-01 23:16] - Updated by Junie
+{
+    "TYPE": "new instructions",
+    "CATEGORY": "exports __all__",
+    "ERROR": "-",
+    "NEW INSTRUCTION": "WHEN defining typing.NewType alias THEN add alias name to module __all__ list"
+}
+

@@ -77,6 +77,31 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
         )
     }
 
+    fun testNewType() {
+        val modFile = myFixture.addFileToProject("pkg/_mod.py", """
+            from typing import NewType
+            MyStr = NewType("MyStr", str)
+        """.trimIndent())
+
+        myFixture.addFileToProject("pkg/__init__.py", """
+            from ._mod import MyStr
+        """.trimIndent())
+
+        myFixture.configureFromExistingVirtualFile(modFile.virtualFile)
+        myFixture.enableInspections(PyMissingInDunderAllInspection::class.java)
+
+        val fix = myFixture.getAllQuickFixes().find { it.familyName == "Add to __all__" }
+        assertTrue("Fix 'Add to __all__' not found", fix != null)
+
+        myFixture.launchAction(fix!!)
+
+        myFixture.checkResult("pkg/__init__.py", """
+            __all__ = ["MyStr"]
+
+            from ._mod import MyStr
+        """.trimIndent(), true)
+    }
+
     fun testAllowlistedTestFunction() {
         val testName = getTestName(false)
         myFixture.configureByFile("inspections/PyMissingInDunderAllInspection/$testName/__init__.py")
@@ -198,22 +223,6 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
             fixFamilyName = "Add to __all__",
             resultFileToCheck = "$basePath/$testName/__init__.py",
             expectedResultFile = "$basePath/${testName}_after/__init__.py"
-        )
-    }
-
-    fun testReproductionIssue() {
-        val testName = "ReproductionIssue"
-        val basePath = "inspections/PyMissingInDunderAllInspection/$testName"
-
-        myFixture.doMultiFileInspectionTest(
-            files = listOf("$basePath/__init__.py", "$basePath/_mob.py"),
-            inspection = PyMissingInDunderAllInspection::class.java,
-            targetFile = "$basePath/_mob.py",
-            checkHighlighting = false,
-            checkWeakWarnings = true,
-            fixFamilyName = "Add to __all__",
-            resultFileToCheck = "$basePath/__init__.py",
-            expectedResultFile = "inspections/PyMissingInDunderAllInspection/${testName}_after/__init__.py"
         )
     }
 }

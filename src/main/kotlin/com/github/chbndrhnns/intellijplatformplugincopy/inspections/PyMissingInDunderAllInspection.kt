@@ -9,9 +9,12 @@ import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.PsiNameIdentifierOwner
+import com.intellij.psi.util.QualifiedName
 import com.jetbrains.python.PyNames
+import com.jetbrains.python.codeInsight.typing.PyTypingTypeProvider
 import com.jetbrains.python.inspections.PyInspection
 import com.jetbrains.python.psi.*
+import com.jetbrains.python.psi.resolve.PyResolveUtil
 
 /**
  * Inspection that ensures public symbols are exported via a package's
@@ -115,7 +118,7 @@ class PyMissingInDunderAllInspection : PyInspection() {
             }
 
             // 1) Symbols defined directly in __init__.py
-            for (element in initFile.topLevelClasses + initFile.topLevelFunctions) {
+            for (element in initFile.topLevelClasses + initFile.topLevelFunctions + initFile.topLevelAttributes) {
                 if (!isExportable(element)) continue
                 if (isAllowlistedSymbol(element)) continue
 
@@ -187,7 +190,7 @@ class PyMissingInDunderAllInspection : PyInspection() {
                 else -> extractDunderAllNames(dunderAllAssignment) ?: return
             }
 
-            for (element in moduleFile.topLevelClasses + moduleFile.topLevelFunctions) {
+            for (element in moduleFile.topLevelClasses + moduleFile.topLevelFunctions + moduleFile.topLevelAttributes) {
                 if (!isExportable(element)) continue
                 if (isAllowlistedSymbol(element)) continue
 
@@ -242,11 +245,23 @@ class PyMissingInDunderAllInspection : PyInspection() {
                 }
             }
 
-        private fun isExportable(element: PyElement): Boolean =
-            element is PyClass ||
-                    element is PyFunction ||
-                    (element is PyTargetExpression && PyNames.ALL != element.name) ||
-                    element is PyTypeAliasStatement
+        private fun isExportable(element: PyElement): Boolean {
+            if (element is PyClass || element is PyFunction || element is PyTypeAliasStatement) return true
+            if (element is PyTargetExpression) {
+                if (PyNames.ALL == element.name) return false
+                val value = element.findAssignedValue()
+                if (value is PyCallExpression) {
+                    val callee = value.callee as? PyReferenceExpression
+                    if (callee != null) {
+                        val resolvedQNames = PyResolveUtil.resolveImportedElementQNameLocally(callee)
+                        if (QualifiedName.fromDottedString(PyTypingTypeProvider.NEW_TYPE) in resolvedQNames) {
+                            return true
+                        }
+                    }
+                }
+            }
+            return false
+        }
 
         private fun isAllowlistedModule(file: PyFile): Boolean {
             val nameWithoutExtension = file.name.removeSuffix(".py")
