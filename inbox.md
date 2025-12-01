@@ -2,6 +2,7 @@
 
 ## Pending Tasks
 
+- [ ] feat: Suggest import from package instead of module if exported
 - [ ] fix: FP export: `from prance import BaseParse<caret>r`
 - [ ] feat: Prefer most specific import if same parent
 - [ ] Generate TypeEvalContext once, reuse
