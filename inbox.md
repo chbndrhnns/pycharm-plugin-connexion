@@ -22,8 +22,7 @@
 
 ## In Progress Tasks
 
-- [ ] fix: Fixed depth of 10 when resolving references
-- [ ] Use PSI helpers to get loop variable
+- [-] fix: Fixed depth of 10 when resolving references
 - [ ] Use PSI helpers to find isinstance checks (look for more opportunities)
 
 ## Completed Tasks (newest first)

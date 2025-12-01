@@ -8,6 +8,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
+import com.jetbrains.python.PyNames
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.types.TypeEvalContext
 
@@ -91,7 +92,7 @@ class TargetDetector {
 
         val normalizedName = normalizeName(name, ref) ?: return null
 
-        val annotation = PsiTreeUtil.getParentOfType(ref, PyAnnotation::class.java, false) ?: return null
+        PsiTreeUtil.getParentOfType(ref, PyAnnotation::class.java, false) ?: return null
         val owner = PsiTreeUtil.getParentOfType(ref, PyAnnotationOwner::class.java, true)
 
         var dataclassField: PyTargetExpression? = null
@@ -208,9 +209,8 @@ class TargetDetector {
 
         // Do not offer inside isinstance(...) checks
         val call = PsiTreeUtil.getParentOfType(expr, PyCallExpression::class.java, false)
-        if (call != null) {
-            val calleeRef = call.callee as? PyReferenceExpression
-            if (calleeRef?.name == "isinstance") return null
+        if (call != null && call.isCalleeText(PyNames.ISINSTANCE)) {
+            return null
         }
 
         // Do not offer on loop variables (targets of a for-statement)
