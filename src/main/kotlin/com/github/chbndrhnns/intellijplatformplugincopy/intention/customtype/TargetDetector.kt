@@ -28,6 +28,10 @@ class TargetDetector {
 
     private fun tryFromVariableDefinition(leaf: PsiElement): AnnotationTarget? {
         val target = PsiTreeUtil.getParentOfType(leaf, PyTargetExpression::class.java, false) ?: return null
+
+        // Do not offer on loop variables (targets of a for-statement)
+        val forStmt = PsiTreeUtil.getParentOfType(target, PyForStatement::class.java, false)
+        if (forStmt != null && forStmt.forPart?.target == target) return null
         return createTargetFromDefinition(target)
     }
 
@@ -201,6 +205,17 @@ class TargetDetector {
         }
 
         if (isArgumentOfLibraryFunction(expr)) return null
+
+        // Do not offer inside isinstance(...) checks
+        val call = PsiTreeUtil.getParentOfType(expr, PyCallExpression::class.java, false)
+        if (call != null) {
+            val calleeRef = call.callee as? PyReferenceExpression
+            if (calleeRef?.name == "isinstance") return null
+        }
+
+        // Do not offer on loop variables (targets of a for-statement)
+        val forStmt = PsiTreeUtil.getParentOfType(expr, PyForStatement::class.java, false)
+        if (forStmt != null && forStmt.forPart?.target == expr) return null
 
         // Suppress the intention on implicit function-call results on the RHS of
         // assignments (e.g. ``val = do()``). In such cases users should adjust the

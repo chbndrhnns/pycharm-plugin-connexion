@@ -2,6 +2,7 @@
 
 ## Pending Tasks
 
+- [ ] feat: Prefer most specific import if same parent
 - [ ] Generate TypeEvalContext once, reuse
 - [ ] Copy pydantic mock?
 - [ ] test normal classes when introducing types
@@ -20,12 +21,14 @@
 
 ## In Progress Tasks
 
-- [ ] fix: Do not offer custom type in loop variable
-- [ ] fix: Do not offer custom type for isinstance checks
-- [ ] fix: Do not make available when parsing error in file
+- [ ] Use PSI helpers to get loop variable
+- [ ] Use PSI helpers to find isinstance checks (look for more opportunities)
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Do not offer custom type in loop variable
+- [x] fix: Do not offer custom type for isinstance checks
+- [x] fix: Do not make available when parsing error in file
 - [x] ignore_testParameterAnnotationUpdateWrapsCallSites
 - [x] Restore roots prefix
 - [x] fix: No wrap with Self

@@ -18,6 +18,7 @@ import com.intellij.openapi.util.Iconable
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiFile
+import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.PyFile
 import com.jetbrains.python.psi.PyStarArgument
 import javax.swing.Icon
@@ -54,6 +55,13 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         }
 
         val pyFile = file as? PyFile ?: return false
+
+        // Disable when the file contains parse errors; operating on
+        // broken PSI can yield incorrect edits or exceptions.
+        if (PsiTreeUtil.hasErrorElements(pyFile)) {
+            editor.putUserData(PLAN_KEY, null)
+            return false
+        }
 
         val elementAtCaret =
             PyTypeIntentions.findExpressionAtCaret(

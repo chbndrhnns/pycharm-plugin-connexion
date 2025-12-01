@@ -276,4 +276,39 @@ class BasicTest : TestBase() {
             renameTo = "Customstr"
         )
     }
+
+    fun testIntentionNotAvailable_InLoopVariable() {
+        myFixture.assertIntentionNotAvailable(
+            "a.py",
+            """
+            for it<caret>em in [1, 2, 3]:
+                pass
+            """,
+            "Introduce custom type"
+        )
+    }
+
+    fun testIntentionNotAvailable_InIsInstanceCheck() {
+        myFixture.assertIntentionNotAvailable(
+            "a.py",
+            """
+            def f(x):
+                return isinstance(x, i<caret>nt)
+            """,
+            "Introduce custom type"
+        )
+    }
+
+    fun testIntentionNotAvailable_WhenFileHasParseError() {
+        myFixture.assertIntentionNotAvailable(
+            "a.py",
+            """
+            def broken(:
+                pass
+
+            val: i<caret>nt = 123
+            """,
+            "Introduce custom type"
+        )
+    }
 }
