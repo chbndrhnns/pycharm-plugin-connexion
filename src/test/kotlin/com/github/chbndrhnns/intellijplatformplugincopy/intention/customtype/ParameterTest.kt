@@ -73,7 +73,7 @@ class ParameterTest : TestBase() {
         )
     }
 
-    fun ignore_testParameterAnnotationUpdateWrapsCallSites() {
+    fun testParameterAnnotationUpdateWrapsCallSites() {
         myFixture.doIntentionTest(
             "a.py",
             """

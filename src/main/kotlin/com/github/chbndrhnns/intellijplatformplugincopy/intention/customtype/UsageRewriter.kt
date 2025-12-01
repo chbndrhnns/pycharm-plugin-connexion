@@ -1,5 +1,9 @@
 // Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 
+import com.intellij.psi.SmartPointerManager
+import com.intellij.psi.SmartPsiElementPointer
+import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.resolve.PyResolveContext
@@ -153,6 +157,102 @@ class UsageRewriter {
                     updateParameterType(param, newTypeAnnotation)
                 }
             }
+        }
+    }
+
+    /**
+     * Wraps arguments at call sites when a function parameter type is updated.
+     */
+    fun wrapFunctionUsages(
+        function: PyFunction,
+        parameter: PyNamedParameter,
+        wrapperTypeName: String,
+        generator: PyElementGenerator
+    ) {
+        val paramName = parameter.name ?: return
+        // Limit search to the containing file for now (consistent with existing logic guarantees)
+        // For project-wide support, usage scope could be expanded.
+        val scope = GlobalSearchScope.fileScope(function.containingFile)
+        val references = ReferencesSearch.search(function, scope).findAll()
+
+        val resolveContext = PyResolveContext.defaultContext(TypeEvalContext.codeInsightFallback(function.project))
+
+        for (ref in references) {
+            val element = ref.element
+            val call = PsiTreeUtil.getParentOfType(element, PyCallExpression::class.java) ?: continue
+
+            // Ensure we are looking at the function call
+            if (call.callee?.reference?.resolve() != function) continue
+
+            val mappingList = call.multiMapArguments(resolveContext)
+            for (mapping in mappingList) {
+                for ((arg, paramWrapper) in mapping.mappedParameters) {
+                    if (paramWrapper.name == paramName) {
+                        val realArg = when (arg) {
+                            is PyKeywordArgument -> arg.valueExpression
+                            is PyStarArgument -> null
+                            else -> arg
+                        }
+                        if (realArg != null) {
+                            wrapArgumentExpressionIfNeeded(realArg, wrapperTypeName, generator)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * PHASE 1: Search for usages to wrap. Safe to run in Read Action / Background Thread.
+     */
+    fun findUsagesToWrap(
+        function: PyFunction,
+        parameter: PyNamedParameter
+    ): List<SmartPsiElementPointer<PyExpression>> {
+        val paramName = parameter.name ?: return emptyList()
+        val scope = GlobalSearchScope.fileScope(function.containingFile)
+        val references = ReferencesSearch.search(function, scope).findAll()
+
+        val resolveContext = PyResolveContext.defaultContext(TypeEvalContext.codeInsightFallback(function.project))
+        val pointerManager = SmartPointerManager.getInstance(function.project)
+        val results = mutableListOf<SmartPsiElementPointer<PyExpression>>()
+
+        for (ref in references) {
+            val element = ref.element
+            val call = PsiTreeUtil.getParentOfType(element, PyCallExpression::class.java) ?: continue
+
+            if (call.callee?.reference?.resolve() != function) continue
+
+            val mappingList = call.multiMapArguments(resolveContext)
+            for (mapping in mappingList) {
+                for ((arg, paramWrapper) in mapping.mappedParameters) {
+                    if (paramWrapper.name == paramName) {
+                        val realArg = when (arg) {
+                            is PyKeywordArgument -> arg.valueExpression
+                            is PyStarArgument -> null
+                            else -> arg
+                        }
+                        if (realArg != null) {
+                            results.add(pointerManager.createSmartPsiElementPointer(realArg))
+                        }
+                    }
+                }
+            }
+        }
+        return results
+    }
+
+    /**
+     * PHASE 2: Modify the found usages. Must run in Write Action.
+     */
+    fun wrapUsages(
+        usages: List<SmartPsiElementPointer<PyExpression>>,
+        wrapperTypeName: String,
+        generator: PyElementGenerator
+    ) {
+        for (ptr in usages) {
+            val element = ptr.element ?: continue
+            wrapArgumentExpressionIfNeeded(element, wrapperTypeName, generator)
         }
     }
 

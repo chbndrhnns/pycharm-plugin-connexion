@@ -2,10 +2,9 @@
 
 ## Pending Tasks
 
-- [ ] fix: Do not make available when parsing error in file
-- [ ] Copy pydantic mock
+- [ ] Generate TypeEvalContext once, reuse
+- [ ] Copy pydantic mock?
 - [ ] test normal classes when introducing types
-- [ ] ignore_testParameterAnnotationUpdateWrapsCallSites
 - [ ] feat: Support export of attributes
 - [ ] feat: Parse pytest identifier in search all dialog
 - [ ] feat: Copy selection with imports
@@ -20,6 +19,13 @@
 - [ ] Block list: Do not allow names from typing or collections.abc.
 
 ## In Progress Tasks
+
+- [ ] fix: Do not make available when parsing error in file
+- [ ] ignore_testParameterAnnotationUpdateWrapsCallSites
+    - write-03.md
+    - write-00.md
+    - write-01.md
+    - write-02.md
 
 ## Completed Tasks (newest first)
 
@@ -52,7 +58,7 @@ __all__ = ['PublicClass']
 def public_<
 
 
-    caret > function():
+caret > function():
 pass
 ```
 

@@ -1,10 +1,15 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import UsageRewriter
+import com.intellij.codeInsight.intention.preview.IntentionPreviewUtils
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.readAction
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
+import com.intellij.platform.ide.progress.runWithModalProgressBlocking
 import com.intellij.psi.SmartPointerManager
+import com.intellij.psi.SmartPsiElementPointer
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.PsiTreeUtil
@@ -36,114 +41,161 @@ class CustomTypeApplier(
         val pyFile = plan.sourceFile
         val builtinName = plan.builtinName
 
-        // If the builtin comes from a subscripted container annotation like
-        // ``dict[str, list[int]]``, carry over the full annotation text –
-        // including its generic arguments – into the base part of the
-        // generated class. This keeps container type parameters intact on the
-        // new custom container class instead of downgrading it to a plain
-        // ``dict`` / ``list`` / ``set``.
-        val builtinForClass = generator.determineBaseClassText(builtinName, plan.annotationRef)
+        // --- PHASE 1: Analysis & Search (Read / BGT) ---
 
-        val baseTypeName = naming.suggestTypeName(builtinName, plan.preferredClassName)
-
-        val pyGenerator = PyElementGenerator.getInstance(project)
-
-        // Decide which file should host the newly introduced custom type.
-        val targetFileForNewClass = insertionPointFinder.chooseFile(plan.field, plan.expression, pyFile)
-
-        // Generate the new class definition in the chosen module.
-        val newTypeName = naming.ensureUnique(targetFileForNewClass, baseTypeName)
-        val newClass = generator.insertClass(
-            targetFileForNewClass,
-            generator.createClass(project, newTypeName, builtinForClass),
-        )
-
-        // When the custom type is introduced in a different module than the
-        // current file (e.g. dataclass declaration vs usage site), make sure
-        // the usage file imports the new type so that wrapped calls resolve
-        // correctly and no circular import is introduced.
-        if (targetFileForNewClass != pyFile) {
-            val anchorElement = plan.expression ?: plan.annotationRef ?: return
-            imports.ensureImportedIfNeeded(pyFile, anchorElement, newClass)
-        }
-
-        // Replace the annotation reference or expression usage with the new type.
-        val newRefBase = pyGenerator.createExpressionFromText(LanguageLevel.getLatest(), newTypeName)
-
-        if (plan.annotationRef != null) {
+        // Identify if we are acting on a parameter and need to update call sites
+        val paramToUpdate: Pair<PyFunction, PyNamedParameter>? = if (plan.annotationRef != null) {
             val annRef = plan.annotationRef
+            val parameter = PsiTreeUtil.getParentOfType(annRef, PyNamedParameter::class.java)
+            if (parameter != null && parameter.name != null) {
+                val function = PsiTreeUtil.getParentOfType(parameter, PyFunction::class.java)
+                if (function != null) function to parameter else null
+            } else null
+        } else null
 
-            val assignedExpr = plan.assignedExpression
-            if (assignedExpr != null) {
-                // For annotated assignments (where we also have a right-hand
-                // side expression), we mirror the behaviour of simple
-                // annotated assignments: the declared type on the variable
-                // is updated to the custom type. We use rewriteAnnotation
-                // to handle both simple types, containers (stripping args),
-                // and unions (preserving other branches).
-                rewriter.rewriteAnnotation(annRef, newRefBase, builtinName)
-                // Only wrap the right-hand side when its inferred type
-                // corresponds to the builtin at the caret (the branch we are
-                // replacing). For union annotations like ``int | None`` with
-                // a default of ``None``, the RHS has type ``None`` so it will
-                // not be wrapped.
-                if (shouldWrapAssignedExpression(assignedExpr, builtinName)) {
-                    rewriter.wrapExpression(assignedExpr, newTypeName, pyGenerator)
+        val usagesToWrap: List<SmartPsiElementPointer<PyExpression>> = if (paramToUpdate != null) {
+            val (function, parameter) = paramToUpdate
+
+            // If on EDT (and not in preview/test), we must move to BGT for search
+            if (!isPreview && ApplicationManager.getApplication().isDispatchThread) {
+                runWithModalProgressBlocking(project, "Finding usages to update...") {
+                    readAction {
+                        rewriter.findUsagesToWrap(function, parameter)
+                    }
                 }
             } else {
-                // Non-assignment annotations (parameters, returns, dataclass
-                // fields, etc.) keep their existing container type arguments
-                // and only swap out the builtin name.
-                rewriter.rewriteAnnotation(annRef, newRefBase, builtinName)
+                // Already in BGT or allowed context (preview)
+                rewriter.findUsagesToWrap(function, parameter)
+            }
+        } else emptyList()
+
+        // --- PHASE 2: Execution (Write Action) ---
+
+        val executionBlock = {
+            // If the builtin comes from a subscripted container annotation like
+            // ``dict[str, list[int]]``, carry over the full annotation text –
+            // including its generic arguments – into the base part of the
+            // generated class. This keeps container type parameters intact on the
+            // new custom container class instead of downgrading it to a plain
+            // ``dict`` / ``list`` / ``set``.
+            val builtinForClass = generator.determineBaseClassText(builtinName, plan.annotationRef)
+
+            val baseTypeName = naming.suggestTypeName(builtinName, plan.preferredClassName)
+
+            val pyGenerator = PyElementGenerator.getInstance(project)
+
+            // Decide which file should host the newly introduced custom type.
+            val targetFileForNewClass = insertionPointFinder.chooseFile(plan.field, plan.expression, pyFile)
+
+            // Generate the new class definition in the chosen module.
+            val newTypeName = naming.ensureUnique(targetFileForNewClass, baseTypeName)
+            val newClass = generator.insertClass(
+                targetFileForNewClass,
+                generator.createClass(project, newTypeName, builtinForClass),
+            )
+
+            // When the custom type is introduced in a different module than the
+            // current file (e.g. dataclass declaration vs usage site), make sure
+            // the usage file imports the new type so that wrapped calls resolve
+            // correctly and no circular import is introduced.
+            if (targetFileForNewClass != pyFile) {
+                val anchorElement = plan.expression ?: plan.annotationRef
+                if (anchorElement != null) {
+                    imports.ensureImportedIfNeeded(pyFile, anchorElement, newClass)
+                }
+            }
+
+            // Replace the annotation reference or expression usage with the new type.
+            val newRefBase = pyGenerator.createExpressionFromText(LanguageLevel.getLatest(), newTypeName)
+
+            if (plan.annotationRef != null) {
+                val annRef = plan.annotationRef
+
+                val assignedExpr = plan.assignedExpression
+                if (assignedExpr != null) {
+                    // For annotated assignments (where we also have a right-hand
+                    // side expression), we mirror the behaviour of simple
+                    // annotated assignments: the declared type on the variable
+                    // is updated to the custom type. We use rewriteAnnotation
+                    // to handle both simple types, containers (stripping args),
+                    // and unions (preserving other branches).
+                    rewriter.rewriteAnnotation(annRef, newRefBase, builtinName)
+                    // Only wrap the right-hand side when its inferred type
+                    // corresponds to the builtin at the caret (the branch we are
+                    // replacing). For union annotations like ``int | None`` with
+                    // a default of ``None``, the RHS has type ``None`` so it will
+                    // not be wrapped.
+                    if (shouldWrapAssignedExpression(assignedExpr, builtinName)) {
+                        rewriter.wrapExpression(assignedExpr, newTypeName, pyGenerator)
+                    }
+                } else {
+                    // Non-assignment annotations (parameters, returns, dataclass
+                    // fields, etc.) keep their existing container type arguments
+                    // and only swap out the builtin name.
+                    rewriter.rewriteAnnotation(annRef, newRefBase, builtinName)
+                }
+
+                // Wrap call site usages (using found pointers from Phase 1)
+                if (usagesToWrap.isNotEmpty()) {
+                    rewriter.wrapUsages(usagesToWrap, newTypeName, pyGenerator)
+                }
+            }
+
+            if (plan.expression != null) {
+                val originalExpr = plan.expression
+
+                // When the intention is invoked from a call-site expression,
+                // also update the corresponding parameter annotation in the
+                // same scope (if any) so that the declared type matches the
+                // newly introduced custom type. This must happen *before*
+                // we rewrite the argument expression so that the PSI
+                // hierarchy for the original expression is still intact.
+                rewriter.updateParameterAnnotationFromCallSite(originalExpr, builtinName, newTypeName, pyGenerator)
+                rewriter.wrapExpression(originalExpr, newTypeName, pyGenerator)
+            }
+
+            val field = plan.field
+            if (field != null) {
+                // If we introduced the type from a call-site expression, there was
+                // no annotationRef to rewrite above. In that case, synchronise the
+                // dataclass field annotation now.
+                if (plan.annotationRef == null) {
+                    rewriter.syncDataclassFieldAnnotation(field, builtinName, newRefBase)
+                }
+
+                // Wrap usages in the *current* file where we invoked the
+                // intention. Cross-module wrapping is intentionally left to future
+                // enhancements; for now we only guarantee intra-file wrapping,
+                // while the custom type itself lives with the dataclass
+                // declaration.
+                rewriter.wrapDataclassConstructorUsages(pyFile, field, newTypeName, pyGenerator)
+
+                // Project-wide update: find all references to the dataclass across
+                // the project and wrap constructor arguments at those call sites.
+                if (!isPreview) {
+                    wrapDataclassConstructorUsagesProjectWide(project, field, newTypeName, newClass, pyGenerator)
+                }
+            }
+
+            // Only trigger inline rename when the new class was inserted into the
+            // same file that the user is currently editing *and* we did not
+            // already derive a semantic preferred class name from context. For
+            // names like ``ProductId`` that come from identifiers such as
+            // ``product_id``, we want to keep that name stable instead of letting
+            // the rename infrastructure adjust it (which may, for example,
+            // normalise it to ``Productid``). Inline rename remains available for
+            // generic names like ``CustomInt``.
+            if (!isPreview && targetFileForNewClass == pyFile && plan.preferredClassName == null) {
+                startInlineRename(project, editor, newClass, pyFile)
             }
         }
 
-        if (plan.expression != null) {
-            val originalExpr = plan.expression
-
-            // When the intention is invoked from a call-site expression,
-            // also update the corresponding parameter annotation in the
-            // same scope (if any) so that the declared type matches the
-            // newly introduced custom type. This must happen *before*
-            // we rewrite the argument expression so that the PSI
-            // hierarchy for the original expression is still intact.
-            rewriter.updateParameterAnnotationFromCallSite(originalExpr, builtinName, newTypeName, pyGenerator)
-            rewriter.wrapExpression(originalExpr, newTypeName, pyGenerator)
-        }
-
-        val field = plan.field
-        if (field != null) {
-            // If we introduced the type from a call-site expression, there was
-            // no annotationRef to rewrite above. In that case, synchronise the
-            // dataclass field annotation now.
-            if (plan.annotationRef == null) {
-                rewriter.syncDataclassFieldAnnotation(field, builtinName, newRefBase)
-            }
-
-            // Wrap usages in the *current* file where we invoked the
-            // intention. Cross-module wrapping is intentionally left to future
-            // enhancements; for now we only guarantee intra-file wrapping,
-            // while the custom type itself lives with the dataclass
-            // declaration.
-            rewriter.wrapDataclassConstructorUsages(pyFile, field, newTypeName, pyGenerator)
-
-            // Project-wide update: find all references to the dataclass across
-            // the project and wrap constructor arguments at those call sites.
-            if (!isPreview) {
-                wrapDataclassConstructorUsagesProjectWide(project, field, newTypeName, newClass, pyGenerator)
-            }
-        }
-
-        // Only trigger inline rename when the new class was inserted into the
-        // same file that the user is currently editing *and* we did not
-        // already derive a semantic preferred class name from context. For
-        // names like ``ProductId`` that come from identifiers such as
-        // ``product_id``, we want to keep that name stable instead of letting
-        // the rename infrastructure adjust it (which may, for example,
-        // normalise it to ``Productid``). Inline rename remains available for
-        // generic names like ``CustomInt``.
-        if (!isPreview && targetFileForNewClass == pyFile && plan.preferredClassName == null) {
-            startInlineRename(project, editor, newClass, pyFile)
+        if (isPreview) {
+            // IntentionPreviewUtils.write handles the "write action" simulation for the preview copy
+            // on the background thread without requiring EDT or causing deadlocks.
+            IntentionPreviewUtils.write<RuntimeException> { executionBlock() }
+        } else {
+            WriteCommandAction.runWriteCommandAction(project, "Introduce Custom Type", null, executionBlock, pyFile)
         }
     }
 

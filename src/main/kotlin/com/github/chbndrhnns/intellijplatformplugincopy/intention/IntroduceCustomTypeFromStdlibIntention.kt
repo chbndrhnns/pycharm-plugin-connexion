@@ -100,7 +100,7 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         return IntentionPreviewInfo.DIFF
     }
 
-    override fun startInWriteAction(): Boolean = true
+    override fun startInWriteAction(): Boolean = false
 
     private fun getPlan(editor: Editor, file: PsiFile): CustomTypePlan? {
         return editor.getUserData(PLAN_KEY) ?: run {

@@ -1,5 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.toolWindow
 
+import com.github.chbndrhnns.intellijplatformplugincopy.MyBundle
+import com.github.chbndrhnns.intellijplatformplugincopy.services.MyProjectService
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
@@ -8,8 +10,6 @@ import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.content.ContentFactory
-import com.github.chbndrhnns.intellijplatformplugincopy.MyBundle
-import com.github.chbndrhnns.intellijplatformplugincopy.services.MyProjectService
 import javax.swing.JButton
 
 
