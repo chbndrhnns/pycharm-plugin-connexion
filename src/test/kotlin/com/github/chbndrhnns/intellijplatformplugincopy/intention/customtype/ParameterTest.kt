@@ -1,11 +1,15 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
+import com.intellij.testFramework.PlatformTestUtil
+import com.intellij.ui.RenameDialogInterceptor
+import com.intellij.ui.UiInterceptors
 import fixtures.TestBase
 import fixtures.doIntentionTest
 
 class ParameterTest : TestBase() {
 
     fun testParameterDefaultValue_UnionType_UpdatesAnnotationAndWrapsValue() {
+        UiInterceptors.register(RenameDialogInterceptor("Customstr"))
         myFixture.doIntentionTest(
             "a.py",
             """
@@ -22,9 +26,11 @@ class ParameterTest : TestBase() {
             """,
             "Introduce custom type from str"
         )
+        PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
     }
 
     fun testParameterDefaultValue_SimpleType_UpdatesAnnotationAndWrapsValue() {
+        UiInterceptors.register(RenameDialogInterceptor("Customint"))
         myFixture.doIntentionTest(
             "a.py",
             """
@@ -41,9 +47,11 @@ class ParameterTest : TestBase() {
             """,
             "Introduce custom type from int"
         )
+        PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
     }
 
     fun testParameterAnnotationUpdatedWhenCustomTypeIntroducedOnArgument() {
+        UiInterceptors.register(RenameDialogInterceptor("Customstr"))
         myFixture.doIntentionTest(
             "a.py",
             """
@@ -68,9 +76,11 @@ class ParameterTest : TestBase() {
             """,
             "Introduce custom type from str"
         )
+        PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
     }
 
     fun ignore_testParameterAnnotationUpdateWrapsCallSites() {
+        UiInterceptors.register(RenameDialogInterceptor("Customstr"))
         myFixture.doIntentionTest(
             "a.py",
             """
@@ -93,6 +103,7 @@ class ParameterTest : TestBase() {
             """,
             "Introduce custom type from str"
         )
+        PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
     }
 
 }

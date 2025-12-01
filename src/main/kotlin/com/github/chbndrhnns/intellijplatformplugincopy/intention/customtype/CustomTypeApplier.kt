@@ -1,17 +1,15 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import UsageRewriter
-import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.actionSystem.DataContext
-import com.intellij.openapi.actionSystem.impl.SimpleDataContext
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiDocumentManager
+import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.refactoring.rename.RenameHandler
-import com.intellij.refactoring.rename.RenameHandlerRegistry
+import com.intellij.refactoring.rename.RenameDialog
+import com.intellij.util.SlowOperations
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.impl.PyBuiltinCache
 import com.jetbrains.python.psi.types.PyType
@@ -207,18 +205,16 @@ class CustomTypeApplier(
     }
 
     private fun startInlineRename(project: Project, editor: Editor, inserted: PyClass, pyFile: PyFile) {
-        val nameId = inserted.nameIdentifier ?: return
+        val insertedPtr = SmartPointerManager.getInstance(project).createSmartPsiElementPointer(inserted)
 
-        val document = editor.document
-        PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(document)
+        ApplicationManager.getApplication().invokeLater {
+            val element = insertedPtr.element ?: return@invokeLater
 
-        editor.caretModel.moveToOffset(nameId.textOffset)
-
-        val dataContext: DataContext = SimpleDataContext.getSimpleContext(CommonDataKeys.EDITOR, editor, null)
-        val handler: RenameHandler = RenameHandlerRegistry.getInstance().getRenameHandler(dataContext) ?: return
-
-        if (handler.isAvailableOnDataContext(dataContext)) {
-            handler.invoke(project, editor, pyFile, dataContext)
+            // Using a specific string helps track why this slow operation is allowed.
+            SlowOperations.knownIssue("Plugin: RenameDialog legacy constructor access").use {
+                val dialog = RenameDialog(project, element, null, editor)
+                dialog.show()
+            }
         }
     }
 }

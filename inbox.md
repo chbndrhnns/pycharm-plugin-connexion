@@ -2,6 +2,7 @@
 
 ## Pending Tasks
 
+- [ ] fix: Do not make available when parsing error in file
 - [ ] Copy pydantic mock
 - [ ] test normal classes when introducing types
 - [ ] ignore_testParameterAnnotationUpdateWrapsCallSites
