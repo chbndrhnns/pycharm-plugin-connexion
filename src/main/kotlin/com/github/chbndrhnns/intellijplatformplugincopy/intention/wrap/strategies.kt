@@ -1,13 +1,11 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.Elementwise
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.ElementwiseUnionChoice
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.Single
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.UnionChoice
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.*
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.CtorMatch
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedCtor
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedTypeInfo
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions
+import com.intellij.psi.PsiNamedElement
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.types.PyClassType
 import com.jetbrains.python.psi.types.TypeEvalContext
@@ -247,5 +245,53 @@ object UnwrapStrategy {
         }
 
         return true
+    }
+}
+
+class EnumStrategy : WrapStrategy {
+    override fun run(context: AnalysisContext): StrategyResult {
+        val expectedTypeInfo =
+            ExpectedTypeInfo.getExpectedTypeInfo(context.element, context.typeEval) ?: return StrategyResult.Continue
+        val expectedType = expectedTypeInfo.type as? PyClassType ?: return StrategyResult.Continue
+        val pyClass = expectedType.pyClass
+
+        if (!isEnum(pyClass, context.typeEval)) {
+            return StrategyResult.Continue
+        }
+
+        val literalValue = when (val element = context.element) {
+            is PyStringLiteralExpression -> element.stringValue
+            is PyNumericLiteralExpression -> element.longValue?.toString()
+            else -> null
+        } ?: return StrategyResult.Continue
+
+        var matchedVariant: String? = null
+        var matchedElement: PsiNamedElement? = null
+
+        for (attr in pyClass.classAttributes) {
+            val value = attr.findAssignedValue()
+            if (value is PyStringLiteralExpression && value.stringValue == literalValue) {
+                matchedVariant = attr.name
+                matchedElement = attr
+                break
+            }
+            if (value is PyNumericLiteralExpression && value.longValue?.toString() == literalValue) {
+                matchedVariant = attr.name
+                matchedElement = attr
+                break
+            }
+        }
+
+        if (matchedVariant != null) {
+            val variantName = "${pyClass.name}.${matchedVariant}"
+             return StrategyResult.Found(ReplaceWithVariant(context.element, variantName, matchedElement))
+        }
+
+        return StrategyResult.Skip("Enum variant not found")
+    }
+    
+    private fun isEnum(pyClass: PyClass, context: TypeEvalContext): Boolean {
+        if (pyClass.qualifiedName == "enum.Enum") return true
+        return pyClass.getAncestorClasses(context).any { it.qualifiedName == "enum.Enum" }
     }
 }

@@ -49,6 +49,18 @@ class WrapPreview(
         return buildDiffWithOptionalImport(file, element, text, itemCtorElement)
     }
 
+    fun buildVariant(
+        file: PsiFile,
+        element: PyExpression,
+        variantName: String,
+        variantElement: PsiNamedElement?
+    ): IntentionPreviewInfo {
+        val classElement = (variantElement as? PyTargetExpression)?.containingClass
+            ?: (variantElement?.parent as? PyClass)
+
+        return buildDiffWithOptionalImport(file, element, variantName, classElement)
+    }
+
     fun buildWrapAllItemsInLiteral(
         file: PsiFile,
         container: PyExpression,

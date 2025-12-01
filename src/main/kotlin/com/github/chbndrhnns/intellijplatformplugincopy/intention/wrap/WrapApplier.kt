@@ -104,4 +104,28 @@ class WrapApplier(
             }
         }
     }
+
+    fun applyVariant(
+        project: Project,
+        file: PsiFile,
+        element: PyExpression,
+        variantName: String,
+        variantElement: PsiNamedElement?
+    ) {
+        WriteCommandAction.runWriteCommandAction(project) {
+            // If variantElement is a class attribute, we need to import the class.
+            val containingClass = (variantElement as? PyTargetExpression)?.containingClass
+                ?: (variantElement?.parent as? PyClass)
+
+            if (containingClass != null) {
+                imports.ensureImportedIfNeeded(file, element as PyTypedElement, containingClass)
+            } else {
+                imports.ensureImportedIfNeeded(file, element as PyTypedElement, variantElement)
+            }
+
+            val generator = PyElementGenerator.getInstance(project)
+            val wrapped = generator.createExpressionFromText(LanguageLevel.getLatest(), variantName)
+            element.replace(wrapped)
+        }
+    }
 }

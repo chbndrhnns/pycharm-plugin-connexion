@@ -32,3 +32,9 @@ data class Elementwise(
     val itemCtorName: String,
     val itemCtorElement: PsiNamedElement?
 ) : WrapPlan
+
+data class ReplaceWithVariant(
+    override val element: PyExpression,
+    val variantName: String,
+    val variantElement: PsiNamedElement?
+) : WrapPlan

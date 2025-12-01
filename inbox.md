@@ -2,7 +2,7 @@
 
 ## Pending Tasks
 
-- [ ] Wrap for enum should use variant instead of calling
+- [ ] fix: FP export: `from prance import BaseParse<caret>r`
 - [ ] feat: Prefer most specific import if same parent
 - [ ] Generate TypeEvalContext once, reuse
 - [ ] Copy pydantic mock?
@@ -27,6 +27,7 @@
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Wrap for enum should use variant instead of calling
 - [x] fix: Do not offer custom type in loop variable
 - [x] fix: Do not offer custom type for isinstance checks
 - [x] fix: Do not make available when parsing error in file

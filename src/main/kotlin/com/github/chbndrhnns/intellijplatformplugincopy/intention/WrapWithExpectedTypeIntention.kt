@@ -75,6 +75,7 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
                 ?: "Wrap with expected type"
 
             is Elementwise -> "Wrap items with ${plan.itemCtorName}()"
+            is ReplaceWithVariant -> "Wrap with ${plan.variantName}"
         }
         return true
     }
@@ -133,6 +134,10 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
                     plan.itemCtorElement
                 )
             }
+
+            is ReplaceWithVariant -> {
+                applier.applyVariant(project, file, plan.element, plan.variantName, plan.variantElement)
+            }
         }
     }
 
@@ -156,6 +161,13 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
                 plan.container,
                 plan.itemCtorName,
                 plan.itemCtorElement
+            )
+
+            is ReplaceWithVariant -> previewBuilder.buildVariant(
+                file,
+                plan.element,
+                plan.variantName,
+                plan.variantElement
             )
         }
     }
