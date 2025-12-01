@@ -268,7 +268,7 @@ internal object ExpectedTypeInfo {
         val argIndex = argIndexOf(expr, argList)
         if (argIndex < 0) return null
 
-        val callee = resolvedCallee(call) ?: return null
+        val callee = resolvedCallee(call, ctx) ?: return null
 
         return when (callee) {
             is PyClass -> {
@@ -308,19 +308,11 @@ internal object ExpectedTypeInfo {
         return ref.getImplicitArgumentCount(function, resolveContext)
     }
 
-    private fun resolvedCallee(call: PyCallExpression): PsiElement? {
-        var resolved = (call.callee as? PyReferenceExpression)?.reference?.resolve()
-        var depth = 0
-        while (resolved is PyTargetExpression && depth < 10) {
-            val assignedValue = resolved.findAssignedValue()
-            if (assignedValue is PyReferenceExpression) {
-                resolved = assignedValue.reference.resolve()
-            } else {
-                break
-            }
-            depth++
-        }
-        return resolved
+    private fun resolvedCallee(call: PyCallExpression, ctx: TypeEvalContext): PsiElement? {
+        val reference = call.callee as? PyReferenceExpression ?: return null
+        val resolveContext = PyResolveContext.defaultContext(ctx)
+        val results = reference.multiFollowAssignmentsChain(resolveContext)
+        return results.firstOrNull()?.element
     }
 
     private fun argIndexOf(expr: PyExpression, argList: PyArgumentList): Int =
