@@ -20,15 +20,13 @@
 
 ## In Progress Tasks
 
+- [ ] fix: Do not offer custom type in loop variable
+- [ ] fix: Do not offer custom type for isinstance checks
 - [ ] fix: Do not make available when parsing error in file
-- [ ] ignore_testParameterAnnotationUpdateWrapsCallSites
-    - write-03.md
-    - write-00.md
-    - write-01.md
-    - write-02.md
 
 ## Completed Tasks (newest first)
 
+- [x] ignore_testParameterAnnotationUpdateWrapsCallSites
 - [x] Restore roots prefix
 - [x] fix: No wrap with Self
 
