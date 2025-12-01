@@ -6,7 +6,7 @@ import fixtures.TestBase
 class KwOnlyArgumentsSettingsToggleTest : TestBase() {
 
     fun testIntentionHiddenWhenDisabled() {
-        withPluginSettings({ it.copy(enablePopulateKwOnlyArgumentsIntention = false) }) {
+        withPluginSettings({ enablePopulateKwOnlyArgumentsIntention = false }) {
             myFixture.configureByText(
                 "a.py",
                 """
@@ -25,7 +25,7 @@ class KwOnlyArgumentsSettingsToggleTest : TestBase() {
     }
 
     fun testIntentionVisibleWhenEnabled() {
-        withPluginSettings({ it.copy(enablePopulateKwOnlyArgumentsIntention = true) }) {
+        withPluginSettings({ enablePopulateKwOnlyArgumentsIntention = true }) {
             myFixture.configureByText(
                 "a.py",
                 """

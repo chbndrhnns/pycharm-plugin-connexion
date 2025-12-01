@@ -6,7 +6,7 @@ import fixtures.TestBase
 class UnwrapSettingsToggleTest : TestBase() {
 
     fun testUnwrapIntentionHiddenWhenDisabled() {
-        withPluginSettings({ it.copy(enableUnwrapToExpectedTypeIntention = false) }) {
+        withPluginSettings({ enableUnwrapToExpectedTypeIntention = false }) {
             myFixture.configureByText(
                 "a.py",
                 """
@@ -25,7 +25,7 @@ class UnwrapSettingsToggleTest : TestBase() {
     }
 
     fun testUnwrapIntentionVisibleWhenEnabled() {
-        withPluginSettings({ it.copy(enableUnwrapToExpectedTypeIntention = true) }) {
+        withPluginSettings({ enableUnwrapToExpectedTypeIntention = true }) {
             myFixture.configureByText(
                 "a.py",
                 """

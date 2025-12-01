@@ -2,7 +2,6 @@
 
 ## Pending Tasks
 
-- [ ] feat: Suggest import from package instead of module if exported
 - [ ] fix: FP export: `from prance import BaseParse<caret>r`
 - [ ] feat: Prefer most specific import if same parent
 - [ ] Generate TypeEvalContext once, reuse
@@ -23,11 +22,12 @@
 
 ## In Progress Tasks
 
-- [-] fix: Fixed depth of 10 when resolving references
-- [ ] Use PSI helpers to find isinstance checks (look for more opportunities)
+- [x] feat: Suggest import from package instead of module if exported
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Fixed depth of 10 when resolving references
+- [x] Use PSI helpers to find isinstance checks (look for more opportunities)
 - [x] feat: Wrap when Indirect reference
 - [x] feat: Wrap for enum should use variant instead of calling
 - [x] fix: Do not offer custom type in loop variable

@@ -19,6 +19,7 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enablePyMissingInDunderAllInspection: Boolean = true,
         var enableCopyPackageContentAction: Boolean = true,
         var enableRestoreSourceRootPrefix: Boolean = true,
+        var enableRelativeImportPreference: Boolean = true,
     )
 
     private var myState = State()

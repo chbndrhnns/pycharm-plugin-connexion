@@ -6,7 +6,7 @@ import fixtures.TestBase
 class RequiredArgumentsSettingsToggleTest : TestBase() {
 
     fun testIntentionHiddenWhenDisabled() {
-        withPluginSettings({ it.copy(enablePopulateRequiredArgumentsIntention = false) }) {
+        withPluginSettings({ enablePopulateRequiredArgumentsIntention = false }) {
             myFixture.configureByText(
                 "a.py",
                 """
@@ -25,7 +25,7 @@ class RequiredArgumentsSettingsToggleTest : TestBase() {
     }
 
     fun testIntentionVisibleWhenEnabled() {
-        withPluginSettings({ it.copy(enablePopulateRequiredArgumentsIntention = true) }) {
+        withPluginSettings({ enablePopulateRequiredArgumentsIntention = true }) {
             myFixture.configureByText(
                 "a.py",
                 """

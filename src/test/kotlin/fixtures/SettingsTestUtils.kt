@@ -1,19 +1,24 @@
 package fixtures
 
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
+import com.intellij.util.xmlb.XmlSerializerUtil
 
 object SettingsTestUtils {
-    inline fun withPluginSettings(
-        crossinline transform: (PluginSettingsState.State) -> PluginSettingsState.State,
+
+    fun withPluginSettings(
+        configure: PluginSettingsState.State.() -> Unit,
         block: () -> Unit,
     ) {
         val svc = PluginSettingsState.instance()
-        val old = svc.state
+        // Create a deep copy of the state to restore later.
+        // XmlSerializerUtil is robust and handles @State classes automatically.
+        val oldState = XmlSerializerUtil.createCopy(svc.state)
         try {
-            svc.loadState(transform(old))
+            // Mutate the current state directly
+            svc.state.configure()
             block()
         } finally {
-            svc.loadState(old)
+            svc.loadState(oldState)
         }
     }
 }

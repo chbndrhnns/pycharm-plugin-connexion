@@ -7,7 +7,7 @@ import fixtures.TestBase
 class PyMissingInDunderAllSettingsToggleTest : TestBase() {
 
     fun testInspectionDisabledViaSettings() {
-        withPluginSettings({ it.copy(enablePyMissingInDunderAllInspection = false) }) {
+        withPluginSettings({ enablePyMissingInDunderAllInspection = false }) {
             myFixture.configureByFile("inspections/PyMissingInDunderAllInspection/SettingsDisabled/__init__.py")
 
             myFixture.enableInspections(PyMissingInDunderAllInspection::class.java)
@@ -16,7 +16,7 @@ class PyMissingInDunderAllSettingsToggleTest : TestBase() {
     }
 
     fun testInspectionEnabledViaSettings() {
-        withPluginSettings({ it.copy(enablePyMissingInDunderAllInspection = true) }) {
+        withPluginSettings({ enablePyMissingInDunderAllInspection = true }) {
             myFixture.configureByFile("inspections/PyMissingInDunderAllInspection/SettingsEnabled/__init__.py")
 
             myFixture.enableInspections(PyMissingInDunderAllInspection::class.java)

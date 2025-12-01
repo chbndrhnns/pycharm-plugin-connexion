@@ -6,7 +6,7 @@ import fixtures.TestBase
 class SettingsToggleTest : TestBase() {
 
     fun testIntentionHiddenWhenDisabled() {
-        withPluginSettings({ it.copy(enableIntroduceCustomTypeFromStdlibIntention = false) }) {
+        withPluginSettings({ enableIntroduceCustomTypeFromStdlibIntention = false }) {
             myFixture.configureByText(
                 "a.py",
                 """
@@ -23,7 +23,7 @@ class SettingsToggleTest : TestBase() {
     }
 
     fun testIntentionVisibleWhenEnabled() {
-        withPluginSettings({ it.copy(enableIntroduceCustomTypeFromStdlibIntention = true) }) {
+        withPluginSettings({ enableIntroduceCustomTypeFromStdlibIntention = true }) {
             myFixture.configureByText(
                 "a.py",
                 """

@@ -8,7 +8,7 @@ import fixtures.assertIntentionNotAvailable
 class SettingsToggleTest : TestBase() {
 
     fun testWrapIntentionHiddenWhenDisabled() {
-        withPluginSettings({ it.copy(enableWrapWithExpectedTypeIntention = false) }) {
+        withPluginSettings({ enableWrapWithExpectedTypeIntention = false }) {
             myFixture.assertIntentionNotAvailable(
                 "a.py",
                 """
@@ -21,7 +21,7 @@ class SettingsToggleTest : TestBase() {
     }
 
     fun testWrapIntentionVisibleWhenEnabled() {
-        withPluginSettings({ it.copy(enableWrapWithExpectedTypeIntention = true) }) {
+        withPluginSettings({ enableWrapWithExpectedTypeIntention = true }) {
             myFixture.assertIntentionAvailable(
                 "a.py",
                 """

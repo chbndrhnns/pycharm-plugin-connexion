@@ -33,6 +33,7 @@ abstract class TestBase : MyPlatformTestCase() {
                 enablePyMissingInDunderAllInspection = true,
                 enableCopyPackageContentAction = true,
                 enableRestoreSourceRootPrefix = true,
+                enableRelativeImportPreference = true,
             ),
         )
         val sdk = PythonMockSdk.create(LanguageLevel.PYTHON311, myFixture.tempDirFixture.getFile("/")!!)
