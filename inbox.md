@@ -22,11 +22,13 @@
 
 ## In Progress Tasks
 
+- [ ] fix: Fixed depth of 10 when resolving references
 - [ ] Use PSI helpers to get loop variable
 - [ ] Use PSI helpers to find isinstance checks (look for more opportunities)
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Wrap when Indirect reference
 - [x] feat: Wrap for enum should use variant instead of calling
 - [x] fix: Do not offer custom type in loop variable
 - [x] fix: Do not offer custom type for isinstance checks

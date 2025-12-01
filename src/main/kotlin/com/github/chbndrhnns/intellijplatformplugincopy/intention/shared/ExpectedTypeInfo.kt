@@ -308,8 +308,20 @@ internal object ExpectedTypeInfo {
         return ref.getImplicitArgumentCount(function, resolveContext)
     }
 
-    private fun resolvedCallee(call: PyCallExpression): PsiElement? =
-        (call.callee as? PyReferenceExpression)?.reference?.resolve()
+    private fun resolvedCallee(call: PyCallExpression): PsiElement? {
+        var resolved = (call.callee as? PyReferenceExpression)?.reference?.resolve()
+        var depth = 0
+        while (resolved is PyTargetExpression && depth < 10) {
+            val assignedValue = resolved.findAssignedValue()
+            if (assignedValue is PyReferenceExpression) {
+                resolved = assignedValue.reference.resolve()
+            } else {
+                break
+            }
+            depth++
+        }
+        return resolved
+    }
 
     private fun argIndexOf(expr: PyExpression, argList: PyArgumentList): Int =
         argList.arguments.indexOfFirst { it == expr || PsiTreeUtil.isAncestor(it, expr, false) }
