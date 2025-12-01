@@ -2,6 +2,7 @@
 
 ## Pending Tasks
 
+- [ ] Wrap for enum should use variant instead of calling
 - [ ] feat: Prefer most specific import if same parent
 - [ ] Generate TypeEvalContext once, reuse
 - [ ] Copy pydantic mock?
