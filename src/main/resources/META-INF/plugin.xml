@@ -90,6 +90,8 @@
     <extensions defaultExtensionNs="Pythonid">
         <canonicalPathProvider
                 implementation="com.github.chbndrhnns.intellijplatformplugincopy.imports.SourceRootPrefixProvider"/>
+        <canonicalPathProvider
+                implementation="com.github.chbndrhnns.intellijplatformplugincopy.imports.SpecificImportPathProvider"/>
         <importCandidateProvider
                 implementation="com.github.chbndrhnns.intellijplatformplugincopy.imports.RelativeImportCandidateProvider"/>
     </extensions>

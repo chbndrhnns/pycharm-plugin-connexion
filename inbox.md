@@ -2,6 +2,16 @@
 
 ## Pending Tasks
 
+- [ ] feat: Create run config using package mode
+- [ ] feat: How to enable module-level skip for pydunder inspection?
+- [ ] fix: Export newtype
+
+```python
+from typing import NewType
+
+MyStr = NewType("MyStr", str)
+```
+
 - [ ] fix: FP export: `from prance import BaseParse<caret>r`
 - [ ] feat: Prefer most specific import if same parent
 - [ ] Generate TypeEvalContext once, reuse
@@ -19,13 +29,15 @@
 - [ ] feat: Inspect dataclass subclasses for @dataclass decorator
 - [ ] Configure default base classes
 - [ ] Block list: Do not allow names from typing or collections.abc.
+- [ ] Suggest most specific import if parent package is same: Revisit test
 
 ## In Progress Tasks
 
-- [x] feat: Suggest import from package instead of module if exported
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Suggest most specific import if parent package is same
+- [x] feat: Suggest import from package instead of module if exported
 - [x] fix: Fixed depth of 10 when resolving references
 - [x] Use PSI helpers to find isinstance checks (look for more opportunities)
 - [x] feat: Wrap when Indirect reference
