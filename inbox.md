@@ -29,6 +29,7 @@
 
 ## Completed Tasks (newest first)
 
+- [x] Restore roots prefix
 - [x] fix: No wrap with Self
 
 ```python

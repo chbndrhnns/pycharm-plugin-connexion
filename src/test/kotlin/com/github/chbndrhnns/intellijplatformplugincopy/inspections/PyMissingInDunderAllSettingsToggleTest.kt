@@ -3,6 +3,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.inspections
 import fixtures.SettingsTestUtils.withPluginSettings
 import fixtures.TestBase
 
+//
 class PyMissingInDunderAllSettingsToggleTest : TestBase() {
 
     fun testInspectionDisabledViaSettings() {

@@ -15,7 +15,7 @@ abstract class TestBase : MyPlatformTestCase() {
         System.setProperty(
             "idea.python.helpers.path",
             Paths.get(PathManager.getHomePath(), "plugins", "python-ce", "helpers").toString()
-        );
+        )
         super.setUp()
         // Reset plugin settings to a known baseline after the IntelliJ test application is initialized
         val svc = PluginSettingsState.instance()
@@ -31,6 +31,8 @@ abstract class TestBase : MyPlatformTestCase() {
                 enablePopulateRequiredArgumentsIntention = true,
                 enablePopulateRecursiveArgumentsIntention = true,
                 enablePyMissingInDunderAllInspection = true,
+                enableCopyPackageContentAction = true,
+                enableRestoreSourceRootPrefix = true,
             ),
         )
         val sdk = PythonMockSdk.create(LanguageLevel.PYTHON311, myFixture.tempDirFixture.getFile("/")!!)

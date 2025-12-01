@@ -87,6 +87,11 @@
                 implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyPrivateModuleImportInspection"/>
     </extensions>
 
+    <extensions defaultExtensionNs="Pythonid">
+        <canonicalPathProvider
+                implementation="com.github.chbndrhnns.intellijplatformplugincopy.imports.SourceRootPrefixProvider"/>
+    </extensions>
+
     <actions>
         <action id="com.github.chbndrhnns.intellijplatformplugincopy.actions.CopyPackageContentAction"
                 class="com.github.chbndrhnns.intellijplatformplugincopy.actions.CopyPackageContentAction"

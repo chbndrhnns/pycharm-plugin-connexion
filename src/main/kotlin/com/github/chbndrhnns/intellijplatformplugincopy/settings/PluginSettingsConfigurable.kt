@@ -19,6 +19,7 @@ class PluginSettingsConfigurable : SearchableConfigurable {
     private lateinit var enablePopulateRecursiveArgsCb: JBCheckBox
     private lateinit var enableDunderAllInspectionCb: JBCheckBox
     private lateinit var enableCopyPackageContentCb: JBCheckBox
+    private lateinit var enableRestoreSourceRootPrefixCb: JBCheckBox
 
     override fun getId(): String = "com.github.chbndrhnns.intellijplatformplugincopy.settings"
     override fun getDisplayName(): String = "DDD Toolkit"
@@ -37,6 +38,7 @@ class PluginSettingsConfigurable : SearchableConfigurable {
         enablePopulateRecursiveArgsCb = JBCheckBox("Enable ‘Populate missing arguments recursively’ intention")
         enableDunderAllInspectionCb = JBCheckBox("Enable ‘__all__’ export inspection")
         enableCopyPackageContentCb = JBCheckBox("Enable ‘Copy Package Content’ context menu action")
+        enableRestoreSourceRootPrefixCb = JBCheckBox("Enable ‘Restore Source Root Prefix’ in imports")
         inner.add(enableWrapCb)
         inner.add(enableWrapItemsCb)
         inner.add(enableUnwrapCb)
@@ -47,6 +49,7 @@ class PluginSettingsConfigurable : SearchableConfigurable {
         inner.add(enablePopulateRecursiveArgsCb)
         inner.add(enableDunderAllInspectionCb)
         inner.add(enableCopyPackageContentCb)
+        inner.add(enableRestoreSourceRootPrefixCb)
         p.add(inner, BorderLayout.NORTH)
         panel = p
         return p
@@ -63,7 +66,8 @@ class PluginSettingsConfigurable : SearchableConfigurable {
                 (::enablePopulateRequiredArgsCb.isInitialized && enablePopulateRequiredArgsCb.isSelected != state.enablePopulateRequiredArgumentsIntention) ||
                 (::enablePopulateRecursiveArgsCb.isInitialized && enablePopulateRecursiveArgsCb.isSelected != state.enablePopulateRecursiveArgumentsIntention) ||
                 (::enableDunderAllInspectionCb.isInitialized && enableDunderAllInspectionCb.isSelected != state.enablePyMissingInDunderAllInspection) ||
-                (::enableCopyPackageContentCb.isInitialized && enableCopyPackageContentCb.isSelected != state.enableCopyPackageContentAction)
+                (::enableCopyPackageContentCb.isInitialized && enableCopyPackageContentCb.isSelected != state.enableCopyPackageContentAction) ||
+                (::enableRestoreSourceRootPrefixCb.isInitialized && enableRestoreSourceRootPrefixCb.isSelected != state.enableRestoreSourceRootPrefix)
     }
 
     override fun apply() {
@@ -79,6 +83,7 @@ class PluginSettingsConfigurable : SearchableConfigurable {
             enablePopulateRecursiveArgumentsIntention = enablePopulateRecursiveArgsCb.isSelected,
             enablePyMissingInDunderAllInspection = enableDunderAllInspectionCb.isSelected,
             enableCopyPackageContentAction = enableCopyPackageContentCb.isSelected,
+            enableRestoreSourceRootPrefix = enableRestoreSourceRootPrefixCb.isSelected,
         )
         svc.loadState(s)
     }
@@ -103,6 +108,8 @@ class PluginSettingsConfigurable : SearchableConfigurable {
             st.enablePyMissingInDunderAllInspection
         if (::enableCopyPackageContentCb.isInitialized) enableCopyPackageContentCb.isSelected =
             st.enableCopyPackageContentAction
+        if (::enableRestoreSourceRootPrefixCb.isInitialized) enableRestoreSourceRootPrefixCb.isSelected =
+            st.enableRestoreSourceRootPrefix
     }
 
     override fun disposeUIResources() {
