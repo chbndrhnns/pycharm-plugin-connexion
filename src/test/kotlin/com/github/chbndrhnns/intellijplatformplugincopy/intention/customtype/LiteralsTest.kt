@@ -25,7 +25,8 @@ class LiteralsTest : TestBase() {
 
             expect_str(Customstr("abc"))
             """,
-            "Introduce custom type from str"
+            "Introduce custom type from str",
+            renameTo = "Customstr"
         )
     }
 
@@ -48,7 +49,8 @@ class LiteralsTest : TestBase() {
 
             expect_str(Customstr("abc"))
             """,
-            "Introduce custom type from str"
+            "Introduce custom type from str",
+            renameTo = "Customstr"
         )
     }
 
@@ -65,7 +67,8 @@ class LiteralsTest : TestBase() {
 
             val = Customstr("str")
             """,
-            "Introduce custom type from str"
+            "Introduce custom type from str",
+            renameTo = "Customstr"
         )
     }
 
@@ -82,7 +85,8 @@ class LiteralsTest : TestBase() {
             
             val = Customfloat(4567.6)
             """,
-            "Introduce custom type from float"
+            "Introduce custom type from float",
+            renameTo = "Customfloat"
         )
     }
 

@@ -29,11 +29,11 @@ fun CodeInsightTestFixture.doInspectionTest(
     if (fixFamilyName != null) {
         val fixes = getAllQuickFixes()
         val fixesToApply = fixes.filter { it.familyName == fixFamilyName }
-        
+
         if (fixesToApply.isEmpty()) {
-             throw AssertionError("Fix '$fixFamilyName' not found. Available: ${fixes.map { it.familyName }}")
+            throw AssertionError("Fix '$fixFamilyName' not found. Available: ${fixes.map { it.familyName }}")
         }
-        
+
         fixesToApply.forEach { launchAction(it) }
 
         if (expectedResultFile != null) {
@@ -85,11 +85,11 @@ fun CodeInsightTestFixture.doMultiFileInspectionTest(
     if (fixFamilyName != null) {
         val fixes = getAllQuickFixes()
         val fixesToApply = fixes.filter { it.familyName == fixFamilyName }
-        
+
         if (fixesToApply.isEmpty()) {
-             throw AssertionError("Fix '$fixFamilyName' not found. Available: ${fixes.map { it.familyName }}")
+            throw AssertionError("Fix '$fixFamilyName' not found. Available: ${fixes.map { it.familyName }}")
         }
-        
+
         fixesToApply.forEach { launchAction(it) }
 
         if (expectedResultFile != null) {

@@ -18,7 +18,8 @@ class AnnotationTest : TestBase() {
             
             val: Customint | str | None = Customint(2)
             """,
-            "Introduce custom type from int"
+            "Introduce custom type from int",
+            renameTo = "Customint"
         )
     }
 
@@ -49,7 +50,8 @@ class AnnotationTest : TestBase() {
             
             f(Customstr("abc"))
             """,
-            "Introduce custom type from str"
+            "Introduce custom type from str",
+            renameTo = "Customstr"
         )
     }
 
@@ -66,7 +68,8 @@ class AnnotationTest : TestBase() {
             
             val: int | Customstr | None = Customstr("hello")
             """,
-            "Introduce custom type from str"
+            "Introduce custom type from str",
+            renameTo = "Customstr"
         )
     }
 }

@@ -54,7 +54,8 @@ class ContainerTypesTest : TestBase() {
             def do(arg: Customdict) -> None:
                 ...
             """,
-            "Introduce custom type from dict"
+            "Introduce custom type from dict",
+            renameTo = "Customdict"
         )
     }
 
@@ -73,7 +74,8 @@ class ContainerTypesTest : TestBase() {
                 def f(x: Customlist):
                     pass
             """,
-            "Introduce custom type from list"
+            "Introduce custom type from list",
+            renameTo = "Customlist"
         )
     }
 
@@ -100,7 +102,9 @@ class ContainerTypesTest : TestBase() {
                     "c": 3,
                 })
             """,
-            "Introduce custom type from dict"
+            "Introduce custom type from dict",
+            renameTo = "Customdict"
+
         )
     }
 }

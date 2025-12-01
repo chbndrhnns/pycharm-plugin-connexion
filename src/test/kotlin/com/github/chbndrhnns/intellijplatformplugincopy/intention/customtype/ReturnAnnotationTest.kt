@@ -20,7 +20,8 @@ class ReturnAnnotationTest : TestBase() {
             def get() -> Customint | str | None:
                 return Customint(123)
             """,
-            "Introduce custom type from int"
+            "Introduce custom type from int",
+            renameTo = "Customint"
         )
     }
 
@@ -39,7 +40,8 @@ class ReturnAnnotationTest : TestBase() {
             def get() -> int | Customstr | None:
                 return Customstr("hello")
             """,
-            "Introduce custom type from str"
+            "Introduce custom type from str",
+            renameTo = "Customstr"
         )
     }
 }

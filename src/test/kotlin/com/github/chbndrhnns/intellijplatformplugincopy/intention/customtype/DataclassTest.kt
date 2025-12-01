@@ -258,7 +258,8 @@ class DataclassTest : TestBase() {
             class C:
                 val: Customint | None = None
             """,
-            "Introduce custom type from int"
+            "Introduce custom type from int",
+            renameTo = "Customint"
         )
     }
 }

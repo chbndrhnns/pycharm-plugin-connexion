@@ -200,6 +200,7 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
             expectedResultFile = "$basePath/${testName}_after/__init__.py"
         )
     }
+
     fun testReproductionIssue() {
         val testName = "ReproductionIssue"
         val basePath = "inspections/PyMissingInDunderAllInspection/$testName"

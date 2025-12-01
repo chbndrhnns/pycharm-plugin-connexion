@@ -31,7 +31,8 @@ class BasicTest : TestBase() {
             def test_():
                 val: Customint = Customint(1234)
             """,
-            "Introduce custom type from int"
+            "Introduce custom type from int",
+            renameTo = "Customint"
         )
     }
 
@@ -51,7 +52,8 @@ class BasicTest : TestBase() {
             def f(x: Customint) -> None:
                 ...
             """,
-            "Introduce custom type from int"
+            "Introduce custom type from int",
+            renameTo = "Customint"
         )
     }
 
@@ -212,7 +214,8 @@ class BasicTest : TestBase() {
             
             val = dict({Customstr("a"): 1, "b": 2, "c": 3})
             """,
-            "Introduce custom type from str"
+            "Introduce custom type from str",
+            renameTo = "Customstr"
         )
     }
 
@@ -229,7 +232,8 @@ class BasicTest : TestBase() {
             
             abc: Customstr = Customstr("text")
             """,
-            "Introduce custom type from str"
+            "Introduce custom type from str",
+            renameTo = "Customstr"
         )
     }
 
@@ -248,7 +252,8 @@ class BasicTest : TestBase() {
             abc: Customstr = Customstr("text")
             s = f"{abc}"
             """,
-            "Introduce custom type from str"
+            "Introduce custom type from str",
+            renameTo = "Customstr"
         )
     }
 
@@ -267,7 +272,8 @@ class BasicTest : TestBase() {
             def do(a: Customstr):
                 return f"{a}"
             """,
-            "Introduce custom type from str"
+            "Introduce custom type from str",
+            renameTo = "Customstr"
         )
     }
 }

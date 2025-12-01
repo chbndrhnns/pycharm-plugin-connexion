@@ -1,15 +1,11 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
-import com.intellij.testFramework.PlatformTestUtil
-import com.intellij.ui.RenameDialogInterceptor
-import com.intellij.ui.UiInterceptors
 import fixtures.TestBase
 import fixtures.doIntentionTest
 
 class ParameterTest : TestBase() {
 
     fun testParameterDefaultValue_UnionType_UpdatesAnnotationAndWrapsValue() {
-        UiInterceptors.register(RenameDialogInterceptor("Customstr"))
         myFixture.doIntentionTest(
             "a.py",
             """
@@ -24,13 +20,12 @@ class ParameterTest : TestBase() {
             def do(val: int | Customstr | None = Customstr("2")): 
                 pass
             """,
-            "Introduce custom type from str"
+            "Introduce custom type from str",
+            renameTo = "Customstr"
         )
-        PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
     }
 
     fun testParameterDefaultValue_SimpleType_UpdatesAnnotationAndWrapsValue() {
-        UiInterceptors.register(RenameDialogInterceptor("Customint"))
         myFixture.doIntentionTest(
             "a.py",
             """
@@ -45,13 +40,12 @@ class ParameterTest : TestBase() {
             def do(val: Customint = Customint(1)): 
                 pass
             """,
-            "Introduce custom type from int"
+            "Introduce custom type from int",
+            renameTo = "Customint"
         )
-        PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
     }
 
     fun testParameterAnnotationUpdatedWhenCustomTypeIntroducedOnArgument() {
-        UiInterceptors.register(RenameDialogInterceptor("Customstr"))
         myFixture.doIntentionTest(
             "a.py",
             """
@@ -74,13 +68,12 @@ class ParameterTest : TestBase() {
                 def other(self):
                     self.do(Customstr("abc"))
             """,
-            "Introduce custom type from str"
+            "Introduce custom type from str",
+            renameTo = "Customstr"
         )
-        PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
     }
 
     fun ignore_testParameterAnnotationUpdateWrapsCallSites() {
-        UiInterceptors.register(RenameDialogInterceptor("Customstr"))
         myFixture.doIntentionTest(
             "a.py",
             """
@@ -101,9 +94,9 @@ class ParameterTest : TestBase() {
                 def other(self):
                     self.do(Customstr(str("abc")))
             """,
-            "Introduce custom type from str"
+            "Introduce custom type from str",
+            renameTo = "Customstr"
         )
-        PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
     }
 
 }
