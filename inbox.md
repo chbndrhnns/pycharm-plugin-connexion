@@ -2,10 +2,9 @@
 
 ## Pending Tasks
 
+- [ ] fix: make quick fix appear on whole import statement if single one? `from domain._other import MyStr`
 - [ ] feat: Create run config using package mode
-- [ ] feat: How to enable module-level skip for pydunder inspection?
 - [ ] fix: FP export: `from prance import BaseParse<caret>r`
-- [ ] feat: Prefer most specific import if same parent
 - [ ] Generate TypeEvalContext once, reuse
 - [ ] Copy pydantic mock?
 - [ ] test normal classes when introducing types
@@ -13,7 +12,6 @@
 - [ ] feat: Parse pytest identifier in search all dialog
 - [ ] feat: Copy selection with imports
 - [ ] Wrap default/default_factory after introducing custom type in dataclass/pydantic
-- [ ] Refactor document for exports
 - [ ] Make private/public
 - [ ] Render dataclass fields in preview
 - [ ] feat: Introduce parameter object
@@ -24,6 +22,8 @@
 - [ ] Suggest most specific import if parent package is same: Revisit test
 
 ## In Progress Tasks
+
+- [ ] feat: How to enable module-level skip for pydunder inspection?
 
 ## Completed Tasks (newest first)
 
