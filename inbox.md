@@ -20,16 +20,16 @@
 - [ ] feat: Convert fn to lambda
 - [ ] Configure default base classes
 - [ ] Block list: Do not allow names from typing or collections.abc.
-- [ ] Suggest most specific import if parent package is same: Revisit test
 
 ## In Progress Tasks
 
 - [ ] refactor: How do add class name to dataclass preview?
-- [ ] refactor: Better way for `isEnumAssignment`?
 - [ ] feat: How to enable module-level skip for pydunder inspection?
 
 ## Completed Tasks (newest first)
 
+- [x] Suggest most specific import if parent package is same: Revisit test
+- [x] refactor: Better way for `isEnumAssignment`?
 - [x] refactor: PyDataclassMissingInspection
 - [x] feat: Inspect dataclass subclasses for @dataclass decorator
 
