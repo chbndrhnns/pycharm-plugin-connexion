@@ -1,18 +1,13 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.imports
 
-import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.jetbrains.python.inspections.unresolvedReference.PyUnresolvedReferencesInspection
+import fixtures.SettingsTestUtils.withPluginSettings
 import fixtures.TestBase
 
 class SourceRootPrefixProviderTest : TestBase() {
 
     fun testRestoreSourceRootPrefix() {
-        // Ensure setting is enabled
-        val settings = PluginSettingsState.instance()
-        val originalState = settings.state
-        settings.loadState(originalState.copy(enableRestoreSourceRootPrefix = true))
-
-        try {
+        withPluginSettings({ enableRestoreSourceRootPrefix = true }) {
             // 1. Create structure using helper
             myFixture.addFileToProject("src/mypackage/module.py", "def foo(): pass")
             val mainPsi = myFixture.addFileToProject("src/main.py", "foo()")
@@ -41,8 +36,8 @@ class SourceRootPrefixProviderTest : TestBase() {
                     foo()""".trimIndent()
                 )
             }
-        } finally {
-            settings.loadState(originalState)
+
         }
+
     }
 }
