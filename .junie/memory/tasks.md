@@ -120,3 +120,15 @@ directly.",
 setup"
 }
 
+[2025-12-02 23:19] - Updated by Junie - Trajectory analysis
+{
+"PLAN QUALITY": "suboptimal",
+"REDUNDANT STEPS": "manual file browsing, incremental scrolling",
+"MISSING STEPS": "scan project, summarize findings, propose refactors",
+"BOTTLENECK": "Started with manual navigation instead of a repo-wide search.",
+"PROJECT NOTE": "createFromText usages clustered in inspections/PyAllExportUtil.kt and related QuickFix/intentions;
+these are prime PSI-only refactor targets.",
+"NEW INSTRUCTION": "WHEN needing PSI-vs-AST audit THEN grep repo for PyElementGenerator and createFromText, then
+summarize"
+}
+

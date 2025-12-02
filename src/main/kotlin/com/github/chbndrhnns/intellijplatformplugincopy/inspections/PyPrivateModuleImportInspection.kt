@@ -103,12 +103,7 @@ class PyPrivateModuleImportInspection : PyInspection() {
     }
 
     private fun findDunderAllNames(file: PyFile): Collection<String>? {
-        val dunderAllAssignment = file.statements
-            .asSequence()
-            .mapNotNull { it as? PyAssignmentStatement }
-            .firstOrNull { assignment ->
-                assignment.targets.any { target -> target.name == PyNames.ALL }
-            }
+        val dunderAllAssignment = (file.findTopLevelAttribute(PyNames.ALL)?.parent as? PyAssignmentStatement)
             ?: return emptyList()
 
         return when (val value = dunderAllAssignment.assignedValue) {

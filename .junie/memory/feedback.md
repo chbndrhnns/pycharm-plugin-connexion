@@ -63,3 +63,12 @@
 graph"
 }
 
+[2025-12-02 23:43] - Updated by Junie
+{
+"TYPE": "new instructions",
+"CATEGORY": "refactor scope",
+"ERROR": "-",
+"NEW INSTRUCTION": "WHEN refactor item \"Creating Import Statements from Text\" is in scope THEN skip it and leave
+import creation code unchanged"
+}
+

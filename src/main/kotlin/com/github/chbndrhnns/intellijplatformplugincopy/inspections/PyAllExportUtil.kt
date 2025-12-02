@@ -184,17 +184,13 @@ object PyAllExportUtil {
         file: PyFile,
         allStatementText: PyStatement, // e.g. "__all__ = ['a', 'b']"
     ) {
-        val generator = PyElementGenerator.getInstance(project)
-        val level = LanguageLevel.forElement(file)
-        val newStmt = generator.createFromText(level, PyStatement::class.java, allStatementText.text)
-
         // 1) Find module docstring (expression) and convert to its statement
         val docExpr = DocStringUtil.findDocStringExpression(file)
         val docStmt = PsiTreeUtil.getParentOfType(docExpr, PyStatement::class.java, /* strict = */ false)
         val inserted = when {
-            docStmt != null -> file.addAfter(newStmt, docStmt) as PyStatement
-            file.statements.isNotEmpty() -> file.addBefore(newStmt, file.statements.first()) as PyStatement
-            else -> file.add(newStmt) as PyStatement
+            docStmt != null -> file.addAfter(allStatementText, docStmt) as PyStatement
+            file.statements.isNotEmpty() -> file.addBefore(allStatementText, file.statements.first()) as PyStatement
+            else -> file.add(allStatementText) as PyStatement
         }
 
         // 2) Normalize spacing to exactly one blank line after the docstring
@@ -223,18 +219,13 @@ object PyAllExportUtil {
         name: String,
     ) {
         val generator = PyElementGenerator.getInstance(project)
-        val languageLevel = LanguageLevel.forElement(sequence)
 
         val existingNames = getExportedNames(sequence)
         if (name in existingNames) return
 
         val firstElement = sequence.elements.firstOrNull()
 
-        val lit = generator.createStringLiteralFromString(name, false)
-        val newItem: PyExpression = generator.createExpressionFromText(
-            languageLevel,
-            lit.text,
-        )
+        val newItem: PyExpression = generator.createStringLiteralFromString(name, false)
 
         generator.insertItemIntoListRemoveRedundantCommas(
             sequence,

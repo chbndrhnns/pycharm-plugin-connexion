@@ -3,7 +3,6 @@
 ## Pending Tasks
 
 - [ ] feat: Generate dataclass, basemodel
-- [ ] fix: make quick fix appear on whole import statement if single one? `from domain._other import MyStr`
 - [ ] feat: Create run config using package mode
 - [ ] Copy pydantic mock?
 - [ ] test normal classes when introducing types
@@ -11,19 +10,21 @@
 - [ ] feat: Parse pytest identifier in search all dialog
 - [ ] feat: Copy selection with imports
 - [ ] Wrap default/default_factory after introducing custom type in dataclass/pydantic
-- [ ] Make private/public
 - [ ] Render dataclass fields in preview
 - [ ] feat: Introduce parameter object
 - [ ] feat: Convert fn to lambda
-- [ ] Configure default base classes
 - [ ] Block list: Do not allow names from typing or collections.abc.
 
 ## In Progress Tasks
 
+- [ ] Configure default base classes
+- [ ] Make private/public
+- [ ] fix: make quick fix appear on whole import statement if single one? `from domain._other import MyStr`
 - [ ] feat: How to enable module-level skip for pydunder inspection?
 
 ## Completed Tasks (newest first)
 
+- [x] refactor: More PSI-based helpers
 - [x] fix: FP export: `from prance import BaseParse<caret>r`
 - [x] refactor:
   `com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyPrivateModuleImportInspection.buildVisitor`

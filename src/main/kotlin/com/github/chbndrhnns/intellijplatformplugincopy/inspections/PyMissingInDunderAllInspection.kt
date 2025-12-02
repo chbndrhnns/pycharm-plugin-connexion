@@ -293,15 +293,8 @@ class PyMissingInDunderAllInspection : PyInspection() {
             if (element is PsiNameIdentifierOwner) element.nameIdentifier else element
 
         private fun findDunderAllAssignment(file: PyFile): PyAssignmentStatement? {
-            for (statement in file.statements) {
-                val assignment = statement as? PyAssignmentStatement ?: continue
-                for (target in assignment.targets) {
-                    if (PyNames.ALL == target.name) {
-                        return assignment
-                    }
-                }
-            }
-            return null
+            val target = file.findTopLevelAttribute(PyNames.ALL)
+            return target?.parent as? PyAssignmentStatement
         }
 
         /**
