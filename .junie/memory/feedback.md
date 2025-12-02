@@ -46,3 +46,11 @@
     "NEW INSTRUCTION": "WHEN defining typing.NewType alias THEN add alias name to module __all__ list"
 }
 
+[2025-12-02 08:32] - Updated by Junie
+{
+"TYPE": "new instructions",
+"CATEGORY": "tests",
+"ERROR": "-",
+"NEW INSTRUCTION": "WHEN tests fail after runtime-oriented changes THEN update tests to align with current behavior"
+}
+

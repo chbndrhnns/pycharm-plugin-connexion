@@ -17,6 +17,23 @@
 - [ ] feat: Introduce parameter object
 - [ ] feat: Convert fn to lambda
 - [ ] feat: Inspect dataclass subclasses for @dataclass decorator
+
+```python
+import dataclasses
+
+
+@dataclasses.dataclass
+class Base: ...
+
+
+class Child(Base):
+    field: int
+
+
+def test_():
+    Child()
+```
+
 - [ ] Configure default base classes
 - [ ] Block list: Do not allow names from typing or collections.abc.
 - [ ] Suggest most specific import if parent package is same: Revisit test
@@ -27,6 +44,7 @@
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Filter usages by type annotations
 - [x] fix: Export newtype
 - [x] feat: Suggest most specific import if parent package is same
 - [x] feat: Suggest import from package instead of module if exported

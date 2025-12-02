@@ -85,6 +85,9 @@
                 enabledByDefault="true"
                 level="WARNING"
                 implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyPrivateModuleImportInspection"/>
+
+        <usageFilteringRuleProvider
+                implementation="com.github.chbndrhnns.intellijplatformplugincopy.usages.PyTypeAnnotationFilteringRuleProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="Pythonid">
@@ -104,6 +107,13 @@
 
             <!-- Add to the Project View context menu (right-click on a folder) -->
             <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="CopyReference"/>
+        </action>
+
+        <action id="Python.ShowTypeAnnotations"
+                class="com.intellij.openapi.actionSystem.EmptyAction"
+                text="Show Type Annotations"
+                description="Show references occurring within type hints"
+                icon="AllIcons.Nodes.Type">
         </action>
     </actions>
 </idea-plugin>

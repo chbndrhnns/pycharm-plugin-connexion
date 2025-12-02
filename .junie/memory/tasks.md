@@ -48,3 +48,14 @@
     "NEW INSTRUCTION": "WHEN destination file is pre-created THEN use its virtualFile.path in move processor"
 }
 
+[2025-12-02 07:53] - Updated by Junie - Trajectory analysis
+{
+"PLAN QUALITY": "near-optimal",
+"REDUNDANT STEPS": "register action",
+"MISSING STEPS": "add tests, run tests",
+"BOTTLENECK": "Tests were not created and executed early to drive implementation.",
+"PROJECT NOTE": "The filtering rule works without registering a UI action; tests can toggle via properties/util
+directly.",
+"NEW INSTRUCTION": "WHEN task mentions guided by tests THEN create failing test and run tests before implementation"
+}
+
