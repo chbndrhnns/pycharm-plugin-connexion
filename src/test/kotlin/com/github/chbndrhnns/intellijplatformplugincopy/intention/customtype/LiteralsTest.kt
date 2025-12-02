@@ -222,4 +222,18 @@ class LiteralsTest : TestBase() {
         val intentions = myFixture.filterAvailableIntentions("Introduce custom type from int")
         assertEmpty("Should not offer custom type introduction on class docstring", intentions)
     }
+
+    fun testClassDocstring_NotFirstStatement_DoesNotOfferCustomTypeIntention() {
+        myFixture.assertIntentionNotAvailable(
+            "a.py",
+            """
+            class EnumWithList: pass
+            
+            class MyVariant(str, EnumWithList):
+                __slots__ = ()
+                ""<caret>"Some documentation""${'"'}
+            """,
+            "Introduce custom type from str"
+        )
+    }
 }

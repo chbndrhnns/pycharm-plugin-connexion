@@ -44,6 +44,7 @@ def test_():
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Do not offer custom type on docstring
 - [x] feat: Filter usages by type annotations
 - [x] fix: Export newtype
 - [x] feat: Suggest most specific import if parent package is same
