@@ -3,6 +3,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.inspections
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInspection.LocalInspectionToolSession
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.psi.PsiElementVisitor
 import com.jetbrains.python.PyNames
 import com.jetbrains.python.inspections.PyInspection
@@ -42,6 +43,13 @@ class PyPrivateModuleImportInspection : PyInspection() {
         return object : PyElementVisitor() {
             override fun visitPyFile(node: PyFile) {
                 super.visitPyFile(node)
+
+                val vFile = node.virtualFile ?: return
+                val index = ProjectRootManager.getInstance(node.project).fileIndex
+                val isUserSource = index.isInSourceContent(vFile) &&
+                        !index.isInLibraryClasses(vFile) &&
+                        !index.isInLibrarySource(vFile)
+                if (!isUserSource) return
 
                 for (statement in node.statements) {
                     val fromImport = statement as? PyFromImportStatement ?: continue

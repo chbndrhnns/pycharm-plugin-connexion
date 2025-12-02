@@ -96,3 +96,14 @@ interpolation inside string templates.",
 "NEW INSTRUCTION": "WHEN writing file via heredoc containing $ or ${} THEN use <<'EOF' to disable expansion"
 }
 
+[2025-12-02 23:05] - Updated by Junie - Error analysis
+{
+"TYPE": "invalid args",
+"TOOL": "create",
+"ERROR": "Unresolved references: LightJavaCodeInsightFixtureTestCase, myFixture, module",
+"ROOT CAUSE": "The new test extended the wrong base class and used nonexistent fields for this project.",
+"PROJECT NOTE": "In this repo, test classes must extend fixtures.TestBase and use myFixture.module when adding
+libraries.",
+"NEW INSTRUCTION": "WHEN creating new test classes THEN extend fixtures.TestBase and use myFixture.module"
+}
+

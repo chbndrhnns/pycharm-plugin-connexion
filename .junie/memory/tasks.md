@@ -99,3 +99,24 @@ directly.",
 "NEW INSTRUCTION": "WHEN entrypoint analyzes in both isAvailable and invoke THEN pass one TypeEvalContext through"
 }
 
+[2025-12-02 22:55] - Updated by Junie - Trajectory analysis
+{
+"PLAN QUALITY": "near-optimal",
+"REDUNDANT STEPS": "broad search",
+"MISSING STEPS": "-",
+"BOTTLENECK": "Over-broad project search produced noisy results and added latency.",
+"PROJECT NOTE": "Extract a shared user-code gating utility and reuse it across inspections.",
+"NEW INSTRUCTION": "WHEN project search warns about too many results THEN refine query to target classes"
+}
+
+[2025-12-02 23:11] - Updated by Junie - Trajectory analysis
+{
+"PLAN QUALITY": "near-optimal",
+"REDUNDANT STEPS": "-",
+"MISSING STEPS": "run tests, modify inspections, run tests again, run all tests",
+"BOTTLENECK": "Using the wrong test base class caused immediate compile errors.",
+"PROJECT NOTE": "Tests in this repo should extend fixtures.TestBase and use myFixture.module.",
+"NEW INSTRUCTION": "WHEN test base class unresolved THEN Extend fixtures.TestBase and use myFixture.module for library
+setup"
+}
+

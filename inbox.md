@@ -2,6 +2,9 @@
 
 ## Pending Tasks
 
+- [ ] refactor:
+  `com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyPrivateModuleImportInspection.buildVisitor`
+    - Use either node.fromImports, node.importBlock or node.importtargets
 - [ ] feat: Generate dataclass, basemodel
 - [ ] fix: make quick fix appear on whole import statement if single one? `from domain._other import MyStr`
 - [ ] feat: Create run config using package mode

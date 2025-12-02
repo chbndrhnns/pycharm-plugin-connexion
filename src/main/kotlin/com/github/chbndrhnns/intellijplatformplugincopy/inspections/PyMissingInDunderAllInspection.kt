@@ -87,13 +87,14 @@ class PyMissingInDunderAllInspection : PyInspection() {
         }
 
         private fun isUserCodeFile(file: PyFile): Boolean {
-            val vFile = file.virtualFile ?: return true
+            val vFile = file.virtualFile ?: return false
             val project = file.project
             val index = ProjectRootManager.getInstance(project).fileIndex
 
-            // Only inspect files that are part of the project's own sources.
-            // This skips stdlib, installed packages and other library roots.
-            return index.isInContent(vFile)
+            // Only inspect files that are part of project source content and not library files
+            return index.isInSourceContent(vFile) &&
+                    !index.isInLibraryClasses(vFile) &&
+                    !index.isInLibrarySource(vFile)
         }
 
         /**
