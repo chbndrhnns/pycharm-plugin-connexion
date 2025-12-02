@@ -16,6 +16,7 @@ import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiFile
 import com.jetbrains.python.psi.PyQualifiedNameOwner
 import com.jetbrains.python.psi.PyStarArgument
+import com.jetbrains.python.psi.types.TypeEvalContext
 import javax.swing.Icon
 
 /**
@@ -60,7 +61,8 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
         }
 
         val analyzer = ExpectedTypeAnalyzer(project)
-        val plan = analyzer.analyzeAtCaret(editor, file) ?: run {
+        val context = TypeEvalContext.codeAnalysis(project, file)
+        val plan = analyzer.analyzeAtCaret(editor, file, context) ?: run {
             editor.putUserData(PLAN_KEY, null)
             lastText = "Wrap with expected type"
             return false
@@ -82,7 +84,8 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
 
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
         val analyzer = ExpectedTypeAnalyzer(project)
-        val plan = editor.getUserData(PLAN_KEY) ?: analyzer.analyzeAtCaret(editor, file) ?: return
+        val context = TypeEvalContext.userInitiated(project, file)
+        val plan = editor.getUserData(PLAN_KEY) ?: analyzer.analyzeAtCaret(editor, file, context) ?: return
 
         when (plan) {
             is UnionChoice -> {
@@ -146,8 +149,10 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
             return IntentionPreviewInfo.EMPTY
         }
         val analyzer = ExpectedTypeAnalyzer(project)
+        val context = TypeEvalContext.codeAnalysis(project, file)
         val plan =
-            editor.getUserData(PLAN_KEY) ?: analyzer.analyzeAtCaret(editor, file) ?: return IntentionPreviewInfo.EMPTY
+            editor.getUserData(PLAN_KEY) ?: analyzer.analyzeAtCaret(editor, file, context)
+            ?: return IntentionPreviewInfo.EMPTY
         return when (plan) {
             is UnionChoice -> IntentionPreviewInfo.EMPTY
             is ElementwiseUnionChoice -> IntentionPreviewInfo.EMPTY
@@ -177,7 +182,7 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
     /**
      * Render label for union choice popup items.
      * - If the symbol has a qualified name (classes, NewType aliases, functions, etc.),
-     *   include it in parentheses to disambiguate (e.g., `User (a.User)`, `One (a.One)`).
+     *   include it in parentheses to disambiguate (e.g., , ).
      * - Otherwise, fall back to the simple name.
      */
     private fun renderUnionLabel(ctor: ExpectedCtor): String {

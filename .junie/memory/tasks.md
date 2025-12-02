@@ -89,3 +89,13 @@ directly.",
 "NEW INSTRUCTION": "WHEN creating an intention test THEN confirm exact action text from the intention class"
 }
 
+[2025-12-02 22:33] - Updated by Junie - Trajectory analysis
+{
+"PLAN QUALITY": "near-optimal",
+"REDUNDANT STEPS": "list file structure,repeat search",
+"MISSING STEPS": "inspect all search results",
+"BOTTLENECK": "Contexts were recreated because top-level APIs didn’t accept a passed context.",
+"PROJECT NOTE": "For intentions, use codeAnalysis in isAvailable and userInitiated in invoke.",
+"NEW INSTRUCTION": "WHEN entrypoint analyzes in both isAvailable and invoke THEN pass one TypeEvalContext through"
+}
+

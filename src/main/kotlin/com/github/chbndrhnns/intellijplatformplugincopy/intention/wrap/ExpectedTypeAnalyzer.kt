@@ -18,8 +18,7 @@ class ExpectedTypeAnalyzer(private val project: Project) {
         GenericCtorStrategy()
     )
 
-    fun analyzeAtCaret(editor: Editor, file: PsiFile): WrapPlan? {
-        val context = TypeEvalContext.codeAnalysis(project, file)
+    fun analyzeAtCaret(editor: Editor, file: PsiFile, context: TypeEvalContext): WrapPlan? {
         val elementAtCaret = PyTypeIntentions.findExpressionAtCaret(editor, file) ?: return null
 
         // Do not offer wrapping on the variable name being defined/assigned to

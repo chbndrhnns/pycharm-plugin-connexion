@@ -18,14 +18,14 @@ import com.jetbrains.python.psi.types.TypeEvalContext
  */
 class TargetDetector {
 
-    fun find(editor: Editor, file: PyFile): Target? {
+    fun find(editor: Editor, file: PyFile, context: TypeEvalContext): Target? {
         val offset = editor.caretModel.offset
         val leaf = file.findElementAt(offset) ?: return null
 
         tryFromAnnotation(leaf)?.let { return it }
         tryFromVariableDefinition(leaf)?.let { return it }
         tryFromFStringReference(leaf)?.let { return it }
-        return tryFromExpression(editor, file, leaf)
+        return tryFromExpression(editor, file, leaf, context)
     }
 
     private fun tryFromVariableDefinition(leaf: PsiElement): AnnotationTarget? {
@@ -188,7 +188,12 @@ class TargetDetector {
         return resolved is PyFunction && assignment.targets.any { it == target }
     }
 
-    private fun tryFromExpression(editor: Editor, file: PyFile, leaf: PsiElement): ExpressionTarget? {
+    private fun tryFromExpression(
+        editor: Editor,
+        file: PyFile,
+        leaf: PsiElement,
+        ctx: TypeEvalContext
+    ): ExpressionTarget? {
         val exprFromCaret = PyTypeIntentions.findExpressionAtCaret(editor, file)
         // Refine target if the caret selected a container (like dict/list in a function call)
         // but we actually want the item inside it.
@@ -238,7 +243,7 @@ class TargetDetector {
         // or return type explicitly instead.
         if (isAssignmentTargetOfImplicitFunctionCall(expr)) return null
 
-        val ctx = TypeEvalContext.codeAnalysis(file.project, file)
+        // val ctx = TypeEvalContext.codeAnalysis(file.project, file)
 
         // 1. Determine the builtin type name (candidate)
         val builtinName = determineBuiltinType(expr, ctx) ?: return null

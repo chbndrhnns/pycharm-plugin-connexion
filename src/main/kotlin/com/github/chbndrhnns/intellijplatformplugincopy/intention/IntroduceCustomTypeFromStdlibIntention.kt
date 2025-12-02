@@ -21,6 +21,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.PyFile
 import com.jetbrains.python.psi.PyStarArgument
+import com.jetbrains.python.psi.types.TypeEvalContext
 import javax.swing.Icon
 
 /**
@@ -74,7 +75,8 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         }
 
         // Build and cache the plan first so we know the logical PSI target
-        val plan = planBuilder.build(editor, pyFile)
+        val context = TypeEvalContext.codeAnalysis(project, file)
+        val plan = planBuilder.build(editor, pyFile, context)
         editor.putUserData(PLAN_KEY, plan)
 
         if (plan == null) {
@@ -114,7 +116,8 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         return editor.getUserData(PLAN_KEY) ?: run {
             // Fallback if invoke is called without isAvailable (rare but possible in tests/scripts)
             val pyFile = file as? PyFile ?: return null
-            planBuilder.build(editor, pyFile)
+            val context = TypeEvalContext.codeAnalysis(file.project, file)
+            planBuilder.build(editor, pyFile, context)
         }
     }
 

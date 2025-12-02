@@ -5,6 +5,8 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.PyNames
 import com.jetbrains.python.psi.*
 
+import com.jetbrains.python.psi.types.TypeEvalContext
+
 /**
  * Encapsulates the logic for turning the low-level [Target] produced by
  * [TargetDetector] into a higher-level [CustomTypePlan] that the intention can
@@ -15,8 +17,8 @@ class PlanBuilder(
     private val naming: NameSuggester = NameSuggester(),
 ) {
 
-    fun build(editor: Editor, file: PyFile): CustomTypePlan? {
-        val detected = detector.find(editor, file) ?: return null
+    fun build(editor: Editor, file: PyFile, context: TypeEvalContext): CustomTypePlan? {
+        val detected = detector.find(editor, file, context) ?: return null
 
         if (shouldIgnoreTarget(detected)) {
             return null
@@ -123,7 +125,7 @@ class PlanBuilder(
         return IGNORED_SYMBOL_NAME_PREFIXES.any { prefix -> name.startsWith(prefix) }
     }
 
-    private fun isInsideDunderAll(expression: com.jetbrains.python.psi.PyExpression): Boolean {
+    private fun isInsideDunderAll(expression: PyExpression): Boolean {
         val sequence = PsiTreeUtil.getParentOfType(expression, PySequenceExpression::class.java, false)
             ?: return false
 

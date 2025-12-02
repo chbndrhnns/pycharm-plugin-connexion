@@ -53,7 +53,8 @@ class WrapItemsWithExpectedTypeIntention : IntentionAction, HighPriorityAction, 
             return false
         }
 
-        val plan = analyzeAtCaret(project, editor, file) ?: run {
+        val context = TypeEvalContext.codeAnalysis(project, file)
+        val plan = analyzeAtCaret(project, editor, file, context) ?: run {
             editor.putUserData(PLAN_KEY, null)
             return false
         }
@@ -73,7 +74,8 @@ class WrapItemsWithExpectedTypeIntention : IntentionAction, HighPriorityAction, 
     }
 
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
-        val plan = editor.getUserData(PLAN_KEY) ?: analyzeAtCaret(project, editor, file) ?: return
+        val context = TypeEvalContext.userInitiated(project, file)
+        val plan = editor.getUserData(PLAN_KEY) ?: analyzeAtCaret(project, editor, file, context) ?: return
 
         when (plan) {
             is ElementwiseUnionChoice -> {
@@ -107,8 +109,10 @@ class WrapItemsWithExpectedTypeIntention : IntentionAction, HighPriorityAction, 
     }
 
     override fun generatePreview(project: Project, editor: Editor, file: PsiFile): IntentionPreviewInfo {
+        val context = TypeEvalContext.codeAnalysis(project, file)
         val plan =
-            editor.getUserData(PLAN_KEY) ?: analyzeAtCaret(project, editor, file) ?: return IntentionPreviewInfo.EMPTY
+            editor.getUserData(PLAN_KEY) ?: analyzeAtCaret(project, editor, file, context)
+            ?: return IntentionPreviewInfo.EMPTY
         return when (plan) {
             is Elementwise -> {
                 val element = plan.element
@@ -136,8 +140,7 @@ class WrapItemsWithExpectedTypeIntention : IntentionAction, HighPriorityAction, 
 
     override fun startInWriteAction(): Boolean = true
 
-    private fun analyzeAtCaret(project: Project, editor: Editor, file: PsiFile): WrapPlan? {
-        val context = TypeEvalContext.codeAnalysis(project, file)
+    private fun analyzeAtCaret(project: Project, editor: Editor, file: PsiFile, context: TypeEvalContext): WrapPlan? {
         val elementAtCaret = PyTypeIntentions.findExpressionAtCaret(editor, file) ?: return null
 
         if (elementAtCaret is PyTargetExpression) return null

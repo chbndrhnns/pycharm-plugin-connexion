@@ -24,10 +24,10 @@ class PyDataclassMissingInspection : PyInspection() {
         session: LocalInspectionToolSession
     ): PsiElementVisitor {
         return object : PyElementVisitor() {
+            val context = TypeEvalContext.codeAnalysis(holder.project, holder.file)
+
             override fun visitPyClass(node: PyClass) {
                 super.visitPyClass(node)
-
-                val context = TypeEvalContext.codeAnalysis(node.project, node.containingFile)
 
                 // Use the standard helper to check if the class is already a dataclass
                 if (parseDataclassParameters(node, context) != null) return

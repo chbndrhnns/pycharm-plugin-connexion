@@ -21,11 +21,11 @@
 
 ## In Progress Tasks
 
-- [ ] Generate TypeEvalContext once, reuse
 - [ ] feat: How to enable module-level skip for pydunder inspection?
 
 ## Completed Tasks (newest first)
 
+- [x] Generate TypeEvalContext once, reuse
 - [x] fix: Do not rename assignment target when introducing custom type
 - [x] fix: populate nothing if arguments there already: `map(str, range(5))`
 - [x] fix: Do not offer populate... if only kwargs/args(?)

@@ -54,3 +54,12 @@
 "NEW INSTRUCTION": "WHEN tests fail after runtime-oriented changes THEN update tests to align with current behavior"
 }
 
+[2025-12-02 22:34] - Updated by Junie
+{
+"TYPE": "new instructions",
+"CATEGORY": "refactor",
+"ERROR": "-",
+"NEW INSTRUCTION": "WHEN working on inspections using TypeEvalContext THEN initialize once early and pass through call
+graph"
+}
+
