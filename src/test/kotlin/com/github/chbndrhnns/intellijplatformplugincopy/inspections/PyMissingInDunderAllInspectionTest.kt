@@ -78,14 +78,18 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
     }
 
     fun testNewType() {
-        val modFile = myFixture.addFileToProject("pkg/_mod.py", """
+        val modFile = myFixture.addFileToProject(
+            "pkg/_mod.py", """
             from typing import NewType
             MyStr = NewType("MyStr", str)
-        """.trimIndent())
+        """.trimIndent()
+        )
 
-        myFixture.addFileToProject("pkg/__init__.py", """
+        myFixture.addFileToProject(
+            "pkg/__init__.py", """
             from ._mod import MyStr
-        """.trimIndent())
+        """.trimIndent()
+        )
 
         myFixture.configureFromExistingVirtualFile(modFile.virtualFile)
         myFixture.enableInspections(PyMissingInDunderAllInspection::class.java)
@@ -95,11 +99,13 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
 
         myFixture.launchAction(fix!!)
 
-        myFixture.checkResult("pkg/__init__.py", """
+        myFixture.checkResult(
+            "pkg/__init__.py", """
             __all__ = ["MyStr"]
 
             from ._mod import MyStr
-        """.trimIndent(), true)
+        """.trimIndent(), true
+        )
     }
 
     fun testAllowlistedTestFunction() {

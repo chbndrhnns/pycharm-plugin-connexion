@@ -24,7 +24,7 @@ class SpecificImportPathProvider : PyCanonicalPathProvider {
         } else {
             symbol.containingFile ?: return null
         }
-        
+
         val virtualFile = fileSystemItem.virtualFile ?: return null
 
         // 2. Ensure we only modify behavior for project source files.
@@ -42,7 +42,7 @@ class SpecificImportPathProvider : PyCanonicalPathProvider {
         val parent = virtualFile.parent ?: return null
         val packageName = fileIndex.getPackageNameByDirectory(parent) ?: return null
         val fileName = virtualFile.nameWithoutExtension
-        
+
         // If we are in __init__.py, the specific path IS the package path, so let default logic handle it.
         if (fileName == "__init__") return null
 

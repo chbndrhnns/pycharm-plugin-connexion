@@ -1,7 +1,8 @@
 <html>
 <body>
 <p>
-    Suggests importing symbols from the public package export instead of a private implementation module when they are already exported via <code>__all__</code>.
+    Suggests importing symbols from the public package export instead of a private implementation module when they are
+    already exported via <code>__all__</code>.
 </p>
 <p>
     <b>Example:</b>
@@ -15,7 +16,8 @@ from ._lib import Client
 from .mypackage._lib import Client
 </code></pre>
 <p>
-    At the import in <code>cli.py</code> the inspection will offer a quick-fix to rewrite the import as <code>from .mypackage import Client</code>.
+    At the import in <code>cli.py</code> the inspection will offer a quick-fix to rewrite the import as <code>from
+    .mypackage import Client</code>.
 </p>
 </body>
 </html>
