@@ -2,13 +2,9 @@
 
 ## Pending Tasks
 
-- [ ] refactor:
-  `com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyPrivateModuleImportInspection.buildVisitor`
-    - Use either node.fromImports, node.importBlock or node.importtargets
 - [ ] feat: Generate dataclass, basemodel
 - [ ] fix: make quick fix appear on whole import statement if single one? `from domain._other import MyStr`
 - [ ] feat: Create run config using package mode
-- [ ] fix: FP export: `from prance import BaseParse<caret>r`
 - [ ] Copy pydantic mock?
 - [ ] test normal classes when introducing types
 - [ ] feat: Support export of attributes
@@ -28,6 +24,10 @@
 
 ## Completed Tasks (newest first)
 
+- [x] fix: FP export: `from prance import BaseParse<caret>r`
+- [x] refactor:
+  `com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyPrivateModuleImportInspection.buildVisitor`
+    - Use either node.fromImports, node.importBlock or node.importtargets
 - [x] Generate TypeEvalContext once, reuse
 - [x] fix: Do not rename assignment target when introducing custom type
 - [x] fix: populate nothing if arguments there already: `map(str, range(5))`

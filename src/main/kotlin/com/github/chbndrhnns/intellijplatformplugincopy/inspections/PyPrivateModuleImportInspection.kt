@@ -51,8 +51,8 @@ class PyPrivateModuleImportInspection : PyInspection() {
                         !index.isInLibrarySource(vFile)
                 if (!isUserSource) return
 
-                for (statement in node.statements) {
-                    val fromImport = statement as? PyFromImportStatement ?: continue
+                for (statement in node.fromImports) {
+                    val fromImport = statement ?: continue
                     checkFromImport(node, fromImport, holder)
                 }
             }
