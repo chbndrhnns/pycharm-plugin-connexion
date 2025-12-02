@@ -6,7 +6,6 @@
 - [ ] fix: make quick fix appear on whole import statement if single one? `from domain._other import MyStr`
 - [ ] feat: Create run config using package mode
 - [ ] fix: FP export: `from prance import BaseParse<caret>r`
-- [ ] Generate TypeEvalContext once, reuse
 - [ ] Copy pydantic mock?
 - [ ] test normal classes when introducing types
 - [ ] feat: Support export of attributes
@@ -22,10 +21,12 @@
 
 ## In Progress Tasks
 
+- [ ] Generate TypeEvalContext once, reuse
 - [ ] feat: How to enable module-level skip for pydunder inspection?
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Do not rename assignment target when introducing custom type
 - [x] fix: populate nothing if arguments there already: `map(str, range(5))`
 - [x] fix: Do not offer populate... if only kwargs/args(?)
 - [N] refactor: How do add class name to dataclass preview?

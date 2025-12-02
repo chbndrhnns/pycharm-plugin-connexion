@@ -196,10 +196,18 @@ class TargetDetector {
             PyTypeIntentions.findContainerItemAtCaret(editor, it)
         } ?: exprFromCaret
 
-        val expr = refinedExpr
+        var expr = refinedExpr
             ?: PsiTreeUtil.getParentOfType(leaf, PyStringLiteralExpression::class.java, false)
             ?: PsiTreeUtil.getParentOfType(leaf, PyNumericLiteralExpression::class.java, false)
             ?: return null
+
+        // If the caret is on the variable name (LHS of assignment), use the assigned value (RHS) instead.
+        if (expr is PyTargetExpression) {
+            val assignment = PsiTreeUtil.getParentOfType(expr, PyAssignmentStatement::class.java)
+            if (assignment != null && assignment.targets.contains(expr)) {
+                expr = assignment.assignedValue ?: return null
+            }
+        }
 
         // Do not offer custom type introduction on docstrings (module, function, or class)
         // or any standalone literals (expression statements) which are effectively comments/no-ops.

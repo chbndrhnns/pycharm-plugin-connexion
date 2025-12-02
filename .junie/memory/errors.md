@@ -49,3 +49,14 @@ log warning.",
 "NEW INSTRUCTION": "WHEN run_test logs missing test-log.properties THEN rerun tests and rely on final summary"
 }
 
+[2025-12-02 22:25] - Updated by Junie - Error analysis
+{
+"TYPE": "missing context",
+"TOOL": "run_test",
+"ERROR": "Intention not available at caret position",
+"ROOT CAUSE": "The caret was on the assignment variable name, where the intention is not offered.",
+"PROJECT NOTE": "This intention typically appears when the caret is on the RHS type usage (e.g., the constructor call)
+rather than the LHS variable identifier.",
+"NEW INSTRUCTION": "WHEN intention lookup returns not in available intentions THEN place caret on RHS type usage"
+}
+
