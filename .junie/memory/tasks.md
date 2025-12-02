@@ -69,3 +69,13 @@ directly.",
 "NEW INSTRUCTION": "WHEN tests are created or modified THEN run full test suite and summarize results"
 }
 
+[2025-12-02 22:16] - Updated by Junie - Trajectory analysis
+{
+"PLAN QUALITY": "suboptimal",
+"REDUNDANT STEPS": "edit multiple intention classes",
+"MISSING STEPS": "run full test suite, verify intention text, ask user",
+"BOTTLENECK": "No confirmed reproduction before planning code changes.",
+"PROJECT NOTE": "-",
+"NEW INSTRUCTION": "WHEN reproduction test passes unexpectedly THEN ask_user for exact code sample and intention text"
+}
+

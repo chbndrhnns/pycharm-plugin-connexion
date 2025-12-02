@@ -111,9 +111,9 @@ class PopulateRecursiveArgumentsIntention : IntentionAction, HighPriorityAction,
         if (depth > MAX_RECURSION_DEPTH) return GenerationResult(DEFAULT_FALLBACK_VALUE, emptySet())
         if (type == null) return GenerationResult(DEFAULT_FALLBACK_VALUE, emptySet())
 
-        return when {
-            type is PyUnionType -> generateUnionValue(type, context, depth, generator, languageLevel)
-            type is PyClassType && isDataclassClass(type.pyClass) -> generateDataclassValue(
+        return when (type) {
+            is PyUnionType -> generateUnionValue(type, context, depth, generator, languageLevel)
+            is PyClassType if isDataclassClass(type.pyClass) -> generateDataclassValue(
                 type.pyClass,
                 context,
                 depth,
@@ -231,6 +231,7 @@ class PopulateRecursiveArgumentsIntention : IntentionAction, HighPriorityAction,
             .filter { !it.isSelf }
             .filter { !it.isPositionalContainer && !it.isKeywordContainer }
             .filter { param -> !mapped.values.contains(param) }
+            .filter { it.name != null }
             .toList()
     }
 

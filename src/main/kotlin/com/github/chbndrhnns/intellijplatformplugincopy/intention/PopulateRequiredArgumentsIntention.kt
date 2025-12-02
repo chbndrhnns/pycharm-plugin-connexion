@@ -105,6 +105,7 @@ class PopulateRequiredArgumentsIntention : IntentionAction, HighPriorityAction, 
             .filter { !it.isPositionalContainer && !it.isKeywordContainer }
             .filter { param -> !mapped.values.contains(param) }
             .filter { param -> !param.hasDefaultValue() }
+            .filter { it.name != null }
             .toList()
     }
 }

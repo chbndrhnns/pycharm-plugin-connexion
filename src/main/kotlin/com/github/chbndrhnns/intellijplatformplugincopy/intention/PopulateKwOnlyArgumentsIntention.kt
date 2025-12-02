@@ -99,6 +99,7 @@ class PopulateKwOnlyArgumentsIntention : IntentionAction, HighPriorityAction, Du
             .filter { !it.isSelf }
             .filter { !it.isPositionalContainer && !it.isKeywordContainer }
             .filter { param -> !mapped.values.contains(param) }
+            .filter { it.name != null }
             .toList()
     }
 }
