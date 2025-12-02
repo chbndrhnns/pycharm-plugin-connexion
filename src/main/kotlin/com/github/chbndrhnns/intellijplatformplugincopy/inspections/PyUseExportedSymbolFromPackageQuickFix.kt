@@ -25,13 +25,24 @@ class PyUseExportedSymbolFromPackageQuickFix(
     override fun getFamilyName(): String = "Use exported symbol from package instead of private module"
 
     override fun applyFix(project: Project, element: PsiElement, updater: ModPsiUpdater) {
-        val importElement = element as? PyImportElement ?: return
-        val fromImport = importElement.parent as? PyFromImportStatement ?: return
+        // The problem may be anchored either at the individual PyImportElement
+        // or at the whole PyFromImportStatement. Support both.
+        val (fromImport, importElement) = when (element) {
+            is PyImportElement -> (element.parent as? PyFromImportStatement)?.let { it to element } ?: return
+            is PyFromImportStatement -> {
+                // Find the matching import element by the imported name this quick-fix was created for.
+                val match = element.importElements.firstOrNull { it.importedQName?.lastComponent == importedName }
+                    ?: return
+                element to match
+            }
+
+            else -> return
+        }
 
         val file = fromImport.containingFile as? PyFile ?: return
 
         val generator = PyElementGenerator.getInstance(project)
-        val languageLevel = com.jetbrains.python.psi.LanguageLevel.forElement(file)
+        val languageLevel = LanguageLevel.forElement(file)
 
         val importSource = fromImport.importSource ?: return
 

@@ -40,70 +40,61 @@
 
 [2025-12-02 22:05] - Updated by Junie - Error analysis
 {
-"TYPE": "env/setup",
-"TOOL": "run_test",
-"ERROR": "Missing j.u.l LogManager test-log.properties",
-"ROOT CAUSE": "IntelliJ test runtime expects a logging properties file in Gradle cache that is absent.",
-"PROJECT NOTE": "This IJ Platform EAP warning often appears but tests still run; rely on final summary, not the initial
-log warning.",
-"NEW INSTRUCTION": "WHEN run_test logs missing test-log.properties THEN rerun tests and rely on final summary"
+    "TYPE": "env/setup",
+    "TOOL": "run_test",
+    "ERROR": "Missing j.u.l LogManager test-log.properties",
+    "ROOT CAUSE": "IntelliJ test runtime expects a logging properties file in Gradle cache that is absent.",
+    "PROJECT NOTE": "This IJ Platform EAP warning often appears but tests still run; rely on final summary, not the initial log warning.",
+    "NEW INSTRUCTION": "WHEN run_test logs missing test-log.properties THEN rerun tests and rely on final summary"
 }
 
 [2025-12-02 22:25] - Updated by Junie - Error analysis
 {
-"TYPE": "missing context",
-"TOOL": "run_test",
-"ERROR": "Intention not available at caret position",
-"ROOT CAUSE": "The caret was on the assignment variable name, where the intention is not offered.",
-"PROJECT NOTE": "This intention typically appears when the caret is on the RHS type usage (e.g., the constructor call)
-rather than the LHS variable identifier.",
-"NEW INSTRUCTION": "WHEN intention lookup returns not in available intentions THEN place caret on RHS type usage"
+    "TYPE": "missing context",
+    "TOOL": "run_test",
+    "ERROR": "Intention not available at caret position",
+    "ROOT CAUSE": "The caret was on the assignment variable name, where the intention is not offered.",
+    "PROJECT NOTE": "This intention typically appears when the caret is on the RHS type usage (e.g., the constructor call) rather than the LHS variable identifier.",
+    "NEW INSTRUCTION": "WHEN intention lookup returns not in available intentions THEN place caret on RHS type usage"
 }
 
 [2025-12-02 22:44] - Updated by Junie - Error analysis
 {
-"TYPE": "build failure",
-"TOOL": "Gradle (:compileKotlin)",
-"ERROR": "Unresolved reference: TypeEvalContext; missing required args",
-"ROOT CAUSE": "WrapWithExpectedTypeIntention.kt uses TypeEvalContext without import and omits new context parameters in
-calls.",
-"PROJECT NOTE": "TypeEvalContext is in com.jetbrains.python.psi.types; ensure it is imported and a TypeEvalContext
-instance is created/passed to APIs whose signatures require it before running tests.",
-"NEW INSTRUCTION": "WHEN compileKotlin reports 'Unresolved reference' in Kotlin THEN add missing imports and update
-changed API parameters"
+    "TYPE": "build failure",
+    "TOOL": "Gradle (:compileKotlin)",
+    "ERROR": "Unresolved reference: TypeEvalContext; missing required args",
+    "ROOT CAUSE": "WrapWithExpectedTypeIntention.kt uses TypeEvalContext without import and omits new context parameters in calls.",
+    "PROJECT NOTE": "TypeEvalContext is in com.jetbrains.python.psi.types; ensure it is imported and a TypeEvalContext instance is created/passed to APIs whose signatures require it before running tests.",
+    "NEW INSTRUCTION": "WHEN compileKotlin reports 'Unresolved reference' in Kotlin THEN add missing imports and update changed API parameters"
 }
 
 [2025-12-02 22:44] - Updated by Junie - Error analysis
 {
-"TYPE": "build failure",
-"TOOL": "Gradle (:compileKotlin)",
-"ERROR": "Conflicting declarations: duplicate local 'context' variables",
-"ROOT CAUSE": "Automated text replacement introduced multiple TypeEvalContext declarations in the same scope.",
-"PROJECT NOTE": "In WrapWithExpectedTypeIntention.kt, declare a single TypeEvalContext per method and pass it to
-analyzer.analyzeAtCaret; remove duplicate 'context' vals added by bulk edits.",
-"NEW INSTRUCTION": "WHEN compileKotlin reports 'Conflicting declarations' for a variable THEN deduplicate variable
-declarations within scope"
+    "TYPE": "build failure",
+    "TOOL": "Gradle (:compileKotlin)",
+    "ERROR": "Conflicting declarations: duplicate local 'context' variables",
+    "ROOT CAUSE": "Automated text replacement introduced multiple TypeEvalContext declarations in the same scope.",
+    "PROJECT NOTE": "In WrapWithExpectedTypeIntention.kt, declare a single TypeEvalContext per method and pass it to analyzer.analyzeAtCaret; remove duplicate 'context' vals added by bulk edits.",
+    "NEW INSTRUCTION": "WHEN compileKotlin reports 'Conflicting declarations' for a variable THEN deduplicate variable declarations within scope"
 }
 
 [2025-12-02 22:47] - Updated by Junie - Error analysis
 {
-"TYPE": "invalid args",
-"TOOL": "bash",
-"ERROR": "zsh here-doc expansion caused 'number expected'",
-"ROOT CAUSE": "The heredoc was unquoted, so zsh expanded $/{} in Kotlin content and failed.",
-"PROJECT NOTE": "When writing Kotlin files via shell heredocs, use a single-quoted delimiter (<<'EOF') to avoid $
-interpolation inside string templates.",
-"NEW INSTRUCTION": "WHEN writing file via heredoc containing $ or ${} THEN use <<'EOF' to disable expansion"
+    "TYPE": "invalid args",
+    "TOOL": "bash",
+    "ERROR": "zsh here-doc expansion caused 'number expected'",
+    "ROOT CAUSE": "The heredoc was unquoted, so zsh expanded $/{} in Kotlin content and failed.",
+    "PROJECT NOTE": "When writing Kotlin files via shell heredocs, use a single-quoted delimiter (<<'EOF') to avoid $ interpolation inside string templates.",
+    "NEW INSTRUCTION": "WHEN writing file via heredoc containing $ or ${} THEN use <<'EOF' to disable expansion"
 }
 
 [2025-12-02 23:05] - Updated by Junie - Error analysis
 {
-"TYPE": "invalid args",
-"TOOL": "create",
-"ERROR": "Unresolved references: LightJavaCodeInsightFixtureTestCase, myFixture, module",
-"ROOT CAUSE": "The new test extended the wrong base class and used nonexistent fields for this project.",
-"PROJECT NOTE": "In this repo, test classes must extend fixtures.TestBase and use myFixture.module when adding
-libraries.",
-"NEW INSTRUCTION": "WHEN creating new test classes THEN extend fixtures.TestBase and use myFixture.module"
+    "TYPE": "invalid args",
+    "TOOL": "create",
+    "ERROR": "Unresolved references: LightJavaCodeInsightFixtureTestCase, myFixture, module",
+    "ROOT CAUSE": "The new test extended the wrong base class and used nonexistent fields for this project.",
+    "PROJECT NOTE": "In this repo, test classes must extend fixtures.TestBase and use myFixture.module when adding libraries.",
+    "NEW INSTRUCTION": "WHEN creating new test classes THEN extend fixtures.TestBase and use myFixture.module"
 }
 

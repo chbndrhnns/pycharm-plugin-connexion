@@ -61,74 +61,91 @@ directly.",
 
 [2025-12-02 22:05] - Updated by Junie - Trajectory analysis
 {
-"PLAN QUALITY": "near-optimal",
-"REDUNDANT STEPS": "broad search",
-"MISSING STEPS": "run full test suite, summarize results",
-"BOTTLENECK": "Lack of full-suite validation to detect regressions across intentions.",
-"PROJECT NOTE": "Intention action texts must match exactly in tests; keep strings consistent.",
-"NEW INSTRUCTION": "WHEN tests are created or modified THEN run full test suite and summarize results"
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "broad search",
+    "MISSING STEPS": "run full test suite, summarize results",
+    "BOTTLENECK": "Lack of full-suite validation to detect regressions across intentions.",
+    "PROJECT NOTE": "Intention action texts must match exactly in tests; keep strings consistent.",
+    "NEW INSTRUCTION": "WHEN tests are created or modified THEN run full test suite and summarize results"
 }
 
 [2025-12-02 22:16] - Updated by Junie - Trajectory analysis
 {
-"PLAN QUALITY": "suboptimal",
-"REDUNDANT STEPS": "edit multiple intention classes",
-"MISSING STEPS": "run full test suite, verify intention text, ask user",
-"BOTTLENECK": "No confirmed reproduction before planning code changes.",
-"PROJECT NOTE": "-",
-"NEW INSTRUCTION": "WHEN reproduction test passes unexpectedly THEN ask_user for exact code sample and intention text"
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "edit multiple intention classes",
+    "MISSING STEPS": "run full test suite, verify intention text, ask user",
+    "BOTTLENECK": "No confirmed reproduction before planning code changes.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN reproduction test passes unexpectedly THEN ask_user for exact code sample and intention text"
 }
 
 [2025-12-02 22:29] - Updated by Junie - Trajectory analysis
 {
-"PLAN QUALITY": "near-optimal",
-"REDUNDANT STEPS": "add test twice without verifying action text",
-"MISSING STEPS": "inspect intention action text, locate rewriter logic, run full tests, implement fix",
-"BOTTLENECK": "Incorrect intention action text caused the test to fail before reproducing the bug.",
-"PROJECT NOTE": "BasicTest.kt already covers assignment rewrite patterns; extend it for this case.",
-"NEW INSTRUCTION": "WHEN creating an intention test THEN confirm exact action text from the intention class"
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "add test twice without verifying action text",
+    "MISSING STEPS": "inspect intention action text, locate rewriter logic, run full tests, implement fix",
+    "BOTTLENECK": "Incorrect intention action text caused the test to fail before reproducing the bug.",
+    "PROJECT NOTE": "BasicTest.kt already covers assignment rewrite patterns; extend it for this case.",
+    "NEW INSTRUCTION": "WHEN creating an intention test THEN confirm exact action text from the intention class"
 }
 
 [2025-12-02 22:33] - Updated by Junie - Trajectory analysis
 {
-"PLAN QUALITY": "near-optimal",
-"REDUNDANT STEPS": "list file structure,repeat search",
-"MISSING STEPS": "inspect all search results",
-"BOTTLENECK": "Contexts were recreated because top-level APIs didn’t accept a passed context.",
-"PROJECT NOTE": "For intentions, use codeAnalysis in isAvailable and userInitiated in invoke.",
-"NEW INSTRUCTION": "WHEN entrypoint analyzes in both isAvailable and invoke THEN pass one TypeEvalContext through"
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "list file structure,repeat search",
+    "MISSING STEPS": "inspect all search results",
+    "BOTTLENECK": "Contexts were recreated because top-level APIs didn’t accept a passed context.",
+    "PROJECT NOTE": "For intentions, use codeAnalysis in isAvailable and userInitiated in invoke.",
+    "NEW INSTRUCTION": "WHEN entrypoint analyzes in both isAvailable and invoke THEN pass one TypeEvalContext through"
 }
 
 [2025-12-02 22:55] - Updated by Junie - Trajectory analysis
 {
-"PLAN QUALITY": "near-optimal",
-"REDUNDANT STEPS": "broad search",
-"MISSING STEPS": "-",
-"BOTTLENECK": "Over-broad project search produced noisy results and added latency.",
-"PROJECT NOTE": "Extract a shared user-code gating utility and reuse it across inspections.",
-"NEW INSTRUCTION": "WHEN project search warns about too many results THEN refine query to target classes"
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "broad search",
+    "MISSING STEPS": "-",
+    "BOTTLENECK": "Over-broad project search produced noisy results and added latency.",
+    "PROJECT NOTE": "Extract a shared user-code gating utility and reuse it across inspections.",
+    "NEW INSTRUCTION": "WHEN project search warns about too many results THEN refine query to target classes"
 }
 
 [2025-12-02 23:11] - Updated by Junie - Trajectory analysis
 {
-"PLAN QUALITY": "near-optimal",
-"REDUNDANT STEPS": "-",
-"MISSING STEPS": "run tests, modify inspections, run tests again, run all tests",
-"BOTTLENECK": "Using the wrong test base class caused immediate compile errors.",
-"PROJECT NOTE": "Tests in this repo should extend fixtures.TestBase and use myFixture.module.",
-"NEW INSTRUCTION": "WHEN test base class unresolved THEN Extend fixtures.TestBase and use myFixture.module for library
-setup"
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "run tests, modify inspections, run tests again, run all tests",
+    "BOTTLENECK": "Using the wrong test base class caused immediate compile errors.",
+    "PROJECT NOTE": "Tests in this repo should extend fixtures.TestBase and use myFixture.module.",
+    "NEW INSTRUCTION": "WHEN test base class unresolved THEN Extend fixtures.TestBase and use myFixture.module for library setup"
 }
 
 [2025-12-02 23:19] - Updated by Junie - Trajectory analysis
 {
-"PLAN QUALITY": "suboptimal",
-"REDUNDANT STEPS": "manual file browsing, incremental scrolling",
-"MISSING STEPS": "scan project, summarize findings, propose refactors",
-"BOTTLENECK": "Started with manual navigation instead of a repo-wide search.",
-"PROJECT NOTE": "createFromText usages clustered in inspections/PyAllExportUtil.kt and related QuickFix/intentions;
-these are prime PSI-only refactor targets.",
-"NEW INSTRUCTION": "WHEN needing PSI-vs-AST audit THEN grep repo for PyElementGenerator and createFromText, then
-summarize"
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "manual file browsing, incremental scrolling",
+    "MISSING STEPS": "scan project, summarize findings, propose refactors",
+    "BOTTLENECK": "Started with manual navigation instead of a repo-wide search.",
+    "PROJECT NOTE": "createFromText usages clustered in inspections/PyAllExportUtil.kt and related QuickFix/intentions; these are prime PSI-only refactor targets.",
+    "NEW INSTRUCTION": "WHEN needing PSI-vs-AST audit THEN grep repo for PyElementGenerator and createFromText, then summarize"
+}
+
+[2025-12-02 23:54] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "run tests",
+    "BOTTLENECK": "No test execution to validate the new anchor behavior.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN inspection code is modified THEN run project tests via bash"
+}
+
+[2025-12-03 00:03] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "open test data files",
+    "MISSING STEPS": "run full test suite",
+    "BOTTLENECK": "Correctly resolving the target import element when anchoring at statement level.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN modifying inspection registration or quick-fix applicability scope THEN Run full test suite and address failures before submitting."
 }
 

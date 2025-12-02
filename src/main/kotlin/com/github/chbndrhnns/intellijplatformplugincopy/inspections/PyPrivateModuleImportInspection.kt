@@ -87,12 +87,18 @@ class PyPrivateModuleImportInspection : PyInspection() {
             val name = importElement.importedQName?.lastComponent ?: continue
 
             if (dunderAllNames.contains(name)) {
+                // Anchor the quick-fix on the whole import statement so it is
+                // available when the caret is anywhere on the statement, not
+                // just on the imported name.
                 holder.registerProblem(
-                    importElement,
+                    fromImport,
                     "Symbol '$name' is exported from package __all__; import it from the package instead of the private module",
                     PyUseExportedSymbolFromPackageQuickFix(name),
                 )
             } else {
+                // For the "make public" quick-fix we keep the anchor on the
+                // individual imported element, as the change is specific to
+                // that symbol.
                 holder.registerProblem(
                     importElement,
                     "Symbol '$name' is not exported from package __all__ yet; make it public and import from the package",

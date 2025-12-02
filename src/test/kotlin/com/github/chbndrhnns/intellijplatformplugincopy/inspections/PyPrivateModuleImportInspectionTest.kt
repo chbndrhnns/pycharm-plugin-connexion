@@ -18,6 +18,19 @@ class PyPrivateModuleImportInspectionTest : TestBase() {
         )
     }
 
+    fun testUseExportedSymbolFromPackageQuickFix_OnWholeStatement() {
+        val path = "inspections/PyPrivateModuleImportInspection/UseExportedSymbolFromPackage_OnWholeStatement"
+        myFixture.doMultiFileInspectionTest(
+            files = listOf("$path/mypackage/__init__.py", "$path/mypackage/_lib.py", "$path/cli.py"),
+            inspection = PyPrivateModuleImportInspection::class.java,
+            targetFile = "$path/cli.py",
+            fixFamilyName = "Use exported symbol from package instead of private module",
+            resultFileToCheck = "$path/cli.py",
+            expectedResultFile = "$path/cli_after.py",
+            checkHighlighting = false
+        )
+    }
+
     fun testMakeSymbolPublicAndUseExportedSymbolQuickFix() {
         val path = "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol"
         myFixture.doMultiFileInspectionTest(

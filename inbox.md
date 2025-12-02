@@ -19,11 +19,11 @@
 
 - [ ] Configure default base classes
 - [ ] Make private/public
-- [ ] fix: make quick fix appear on whole import statement if single one? `from domain._other import MyStr`
 - [ ] feat: How to enable module-level skip for pydunder inspection?
 
 ## Completed Tasks (newest first)
 
+- [x] fix: make quick fix appear on whole import statement if single one? `from domain._other import MyStr`
 - [x] refactor: More PSI-based helpers
 - [x] fix: FP export: `from prance import BaseParse<caret>r`
 - [x] refactor:
