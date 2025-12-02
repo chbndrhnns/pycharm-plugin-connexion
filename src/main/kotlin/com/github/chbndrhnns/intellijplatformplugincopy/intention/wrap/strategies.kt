@@ -6,6 +6,7 @@ import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.Expecte
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedTypeInfo
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions
 import com.intellij.psi.PsiNamedElement
+import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.types.PyClassType
 import com.jetbrains.python.psi.types.TypeEvalContext
@@ -284,14 +285,72 @@ class EnumStrategy : WrapStrategy {
 
         if (matchedVariant != null) {
             val variantName = "${pyClass.name}.${matchedVariant}"
-             return StrategyResult.Found(ReplaceWithVariant(context.element, variantName, matchedElement))
+            return StrategyResult.Found(ReplaceWithVariant(context.element, variantName, matchedElement))
         }
 
         return StrategyResult.Skip("Enum variant not found")
     }
-    
+
     private fun isEnum(pyClass: PyClass, context: TypeEvalContext): Boolean {
         if (pyClass.qualifiedName == "enum.Enum") return true
         return pyClass.getAncestorClasses(context).any { it.qualifiedName == "enum.Enum" }
+    }
+}
+
+class EnumMemberDefinitionStrategy : WrapStrategy {
+    override fun run(context: AnalysisContext): StrategyResult {
+        val element = context.element
+        val parent = element.parent as? PyAssignmentStatement ?: return StrategyResult.Continue
+
+        // Ensure we are assigning to a target, and the element is the value
+        if (parent.assignedValue != element) return StrategyResult.Continue
+
+        // Ensure assignment is at class level (not in a function)
+        if (PsiTreeUtil.getParentOfType(parent, PyFunction::class.java) != null) {
+            return StrategyResult.Continue
+        }
+
+        // Check if we are inside a class
+        val pyClass = PsiTreeUtil.getParentOfType(parent, PyClass::class.java) ?: return StrategyResult.Continue
+
+        val typeEval = context.typeEval
+
+        val mixinType = resolveEnumMixinType(pyClass, typeEval) ?: return StrategyResult.Continue
+        val typeName = mixinType.name ?: return StrategyResult.Continue
+
+        if (!elementMatchesType(element, typeName, typeEval)) {
+            if (PyWrapHeuristics.isAlreadyWrappedWith(element, typeName, mixinType)) {
+                return StrategyResult.Skip("Already wrapped with $typeName")
+            }
+            return StrategyResult.Found(Single(element, typeName, mixinType))
+        }
+
+        return StrategyResult.Continue
+    }
+
+    private fun resolveEnumMixinType(pyClass: PyClass, context: TypeEvalContext): PyClass? {
+        if (!isEnum(pyClass, context)) return null
+
+        // Iterate over ancestors to find the first one that is not Enum and not object
+        // This identifies the "data type" mixed into the Enum
+        val ancestors = pyClass.getAncestorClasses(context)
+        for (cls in ancestors) {
+            if (cls.name == "object") continue
+            if (isEnum(cls, context)) continue
+
+            // Found non-Enum ancestor.
+            return cls
+        }
+        return null
+    }
+
+    private fun isEnum(pyClass: PyClass, context: TypeEvalContext): Boolean {
+        val qName = pyClass.qualifiedName
+        if (qName == "enum.Enum") return true
+        return pyClass.getAncestorClasses(context).any { it.qualifiedName == "enum.Enum" }
+    }
+
+    private fun elementMatchesType(element: PyExpression, typeName: String, context: TypeEvalContext): Boolean {
+        return PyTypeIntentions.elementDisplaysAsCtor(element, typeName, context) == CtorMatch.MATCHES
     }
 }

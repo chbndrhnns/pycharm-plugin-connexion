@@ -13,6 +13,7 @@ class ExpectedTypeAnalyzer(private val project: Project) {
         OuterContainerStrategy(),
         ContainerItemStrategy(),
         UnionStrategy(),
+        EnumMemberDefinitionStrategy(),
         EnumStrategy(),
         GenericCtorStrategy()
     )

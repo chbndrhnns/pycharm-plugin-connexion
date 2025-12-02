@@ -29,7 +29,7 @@ class WrapApplier(
             val unwrapped = PyPsiUtils.flattenParens(element) ?: element
 
             val wrappedText = when {
-                ctorName == "str" && unwrapped is PyNumericLiteralExpression -> "\"${unwrapped.text}\""
+                ctorName == "str" && unwrapped is PyNumericLiteralExpression && element.parent !is PyAssignmentStatement -> "\"${unwrapped.text}\""
                 ctorName == "list" && PyWrapHeuristics.isContainerExpression(unwrapped) -> "list(${element.text})"
                 ctorName == "list" -> "[${unwrapped.text}]"
                 else -> "$ctorName(${unwrapped.text})"
