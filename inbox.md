@@ -23,11 +23,11 @@
 
 ## In Progress Tasks
 
-- [ ] refactor: How do add class name to dataclass preview?
 - [ ] feat: How to enable module-level skip for pydunder inspection?
 
 ## Completed Tasks (newest first)
 
+- [N] refactor: How do add class name to dataclass preview?
 - [x] Suggest most specific import if parent package is same: Revisit test
 - [x] refactor: Better way for `isEnumAssignment`?
 - [x] refactor: PyDataclassMissingInspection
