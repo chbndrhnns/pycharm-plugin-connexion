@@ -2,6 +2,8 @@
 
 ## Pending Tasks
 
+- [ ] fix: Do not offer populate... if only kwargs/args(?)
+- [ ] feat: Generate dataclass, basemodel
 - [ ] fix: make quick fix appear on whole import statement if single one? `from domain._other import MyStr`
 - [ ] feat: Create run config using package mode
 - [ ] fix: FP export: `from prance import BaseParse<caret>r`
