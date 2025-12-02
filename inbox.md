@@ -16,7 +16,20 @@
 - [ ] Render dataclass fields in preview
 - [ ] feat: Introduce parameter object
 - [ ] feat: Convert fn to lambda
-- [ ] feat: Inspect dataclass subclasses for @dataclass decorator
+- [ ] Configure default base classes
+- [ ] Block list: Do not allow names from typing or collections.abc.
+- [ ] Suggest most specific import if parent package is same: Revisit test
+
+## In Progress Tasks
+
+- [ ] refactor: How do add class name to dataclass preview?
+- [ ] refactor: PyDataclassMissingInspection
+- [ ] refactor: Better way for `isEnumAssignment`?
+- [ ] feat: How to enable module-level skip for pydunder inspection?
+
+## Completed Tasks (newest first)
+
+- [x] feat: Inspect dataclass subclasses for @dataclass decorator
 
 ```python
 import dataclasses
@@ -33,17 +46,6 @@ class Child(Base):
 def test_():
     Child()
 ```
-
-- [ ] Configure default base classes
-- [ ] Block list: Do not allow names from typing or collections.abc.
-- [ ] Suggest most specific import if parent package is same: Revisit test
-
-## In Progress Tasks
-
-- [ ] refactor: Better way for `isEnumAssignment`?
-- [ ] feat: How to enable module-level skip for pydunder inspection?
-
-## Completed Tasks (newest first)
 
 - [x] fix: Do not offer custom type on docstring
 - [x] feat: Filter usages by type annotations

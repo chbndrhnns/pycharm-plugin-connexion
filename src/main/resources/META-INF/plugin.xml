@@ -86,6 +86,16 @@
                 level="WARNING"
                 implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyPrivateModuleImportInspection"/>
 
+        <localInspection
+                language="Python"
+                shortName="PyDataclassMissingInspection"
+                displayName="Subclass of a dataclass should also be decorated with @dataclass"
+                groupPath="Python"
+                groupName="Python"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyDataclassMissingInspection"/>
+
         <usageFilteringRuleProvider
                 implementation="com.github.chbndrhnns.intellijplatformplugincopy.usages.PyTypeAnnotationFilteringRuleProvider"/>
     </extensions>

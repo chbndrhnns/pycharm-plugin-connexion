@@ -1,0 +1,23 @@
+<html>
+<body>
+<p>Reports classes that inherit from a <code>@dataclass</code> but are not decorated with <code>@dataclass</code>
+    themselves.</p>
+<p>
+    When a class inherits from a dataclass, the dataclass machinery is not automatically applied to the subclass.
+    If the subclass defines new fields or requires dataclass behavior, it should also be decorated with
+    <code>@dataclass</code>.
+</p>
+<p><b>Example:</b></p>
+<pre><code>
+import dataclasses
+
+@dataclasses.dataclass
+class Base:
+    x: int
+
+# Warning: Subclass of a dataclass should also be decorated with @dataclass
+class Derived(Base):
+    y: int
+</code></pre>
+</body>
+</html>
