@@ -38,3 +38,14 @@
     "NEW INSTRUCTION": "WHEN test reports 'Cannot find source file' under testData THEN create or move files under project src/test/testData path"
 }
 
+[2025-12-02 22:05] - Updated by Junie - Error analysis
+{
+"TYPE": "env/setup",
+"TOOL": "run_test",
+"ERROR": "Missing j.u.l LogManager test-log.properties",
+"ROOT CAUSE": "IntelliJ test runtime expects a logging properties file in Gradle cache that is absent.",
+"PROJECT NOTE": "This IJ Platform EAP warning often appears but tests still run; rely on final summary, not the initial
+log warning.",
+"NEW INSTRUCTION": "WHEN run_test logs missing test-log.properties THEN rerun tests and rely on final summary"
+}
+

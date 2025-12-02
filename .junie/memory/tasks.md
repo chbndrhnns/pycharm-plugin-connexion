@@ -59,3 +59,13 @@ directly.",
 "NEW INSTRUCTION": "WHEN task mentions guided by tests THEN create failing test and run tests before implementation"
 }
 
+[2025-12-02 22:05] - Updated by Junie - Trajectory analysis
+{
+"PLAN QUALITY": "near-optimal",
+"REDUNDANT STEPS": "broad search",
+"MISSING STEPS": "run full test suite, summarize results",
+"BOTTLENECK": "Lack of full-suite validation to detect regressions across intentions.",
+"PROJECT NOTE": "Intention action texts must match exactly in tests; keep strings consistent.",
+"NEW INSTRUCTION": "WHEN tests are created or modified THEN run full test suite and summarize results"
+}
+

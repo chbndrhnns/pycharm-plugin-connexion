@@ -2,7 +2,6 @@
 
 ## Pending Tasks
 
-- [ ] fix: Do not offer populate... if only kwargs/args(?)
 - [ ] feat: Generate dataclass, basemodel
 - [ ] fix: make quick fix appear on whole import statement if single one? `from domain._other import MyStr`
 - [ ] feat: Create run config using package mode
@@ -23,10 +22,12 @@
 
 ## In Progress Tasks
 
+- [ ] fix: populate nothing if arguments there already: `map(str, range(5))`
 - [ ] feat: How to enable module-level skip for pydunder inspection?
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Do not offer populate... if only kwargs/args(?)
 - [N] refactor: How do add class name to dataclass preview?
 - [x] Suggest most specific import if parent package is same: Revisit test
 - [x] refactor: Better way for `isEnumAssignment`?
