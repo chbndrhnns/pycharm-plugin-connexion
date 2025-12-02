@@ -40,6 +40,7 @@ def test_():
 
 ## In Progress Tasks
 
+- [ ] refactor: Better way for `isEnumAssignment`?
 - [ ] feat: How to enable module-level skip for pydunder inspection?
 
 ## Completed Tasks (newest first)

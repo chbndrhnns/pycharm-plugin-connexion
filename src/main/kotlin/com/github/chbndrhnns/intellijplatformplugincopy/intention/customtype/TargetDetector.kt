@@ -234,12 +234,15 @@ class TargetDetector {
         // 1. Determine the builtin type name (candidate)
         val builtinName = determineBuiltinType(expr, ctx) ?: return null
 
+        // Check if assignment to enum variant
+        if (isEnumAssignment(expr, ctx)) return null
+
         // 2. Check if already wrapped
         if (isAlreadyWrappedInCustomType(expr)) return null
 
         // 3. Detect metadata (assignment, keyword arg, return annotation, dataclass field, parameter default)
         val keywordName = detectKeywordArgumentName(expr)
-        val assignmentInfo = if (keywordName == null) detectAssignmentName(expr, builtinName) else null
+        val assignmentInfo = if (keywordName == null) detectAssignmentName(expr, builtinName, ctx) else null
         val returnInfo =
             if (keywordName == null && assignmentInfo == null) detectReturnAnnotationInfo(expr, builtinName) else null
         val parameterInfo =
@@ -362,7 +365,11 @@ class TargetDetector {
             ?.keyword
     }
 
-    private fun detectAssignmentName(expr: PyExpression, builtinName: String): Pair<String?, PyExpression?>? {
+    private fun detectAssignmentName(
+        expr: PyExpression,
+        builtinName: String,
+        ctx: TypeEvalContext
+    ): Pair<String?, PyExpression?>? {
         val assignment = PsiTreeUtil.getParentOfType(expr, PyAssignmentStatement::class.java, false) ?: return null
 
         val firstTarget = assignment.targets.firstOrNull() as? PyTargetExpression
@@ -372,6 +379,15 @@ class TargetDetector {
         val annotationRef = findExpressionMatchingBuiltin(annotationValue, builtinName)
 
         return Pair(firstTarget?.name, annotationRef)
+    }
+
+    private fun isEnumAssignment(expr: PyExpression, ctx: TypeEvalContext): Boolean {
+        val assignment = PsiTreeUtil.getParentOfType(expr, PyAssignmentStatement::class.java, false) ?: return false
+        val firstTarget = assignment.targets.firstOrNull() as? PyTargetExpression ?: return false
+        val pyClass = PsiTreeUtil.getParentOfType(firstTarget, PyClass::class.java) ?: return false
+
+        return pyClass.qualifiedName == "enum.Enum" ||
+                pyClass.getAncestorClasses(ctx).any { it.qualifiedName == "enum.Enum" }
     }
 
     private fun hasConflictingDataclassType(dataclassField: PyTargetExpression): Boolean {
