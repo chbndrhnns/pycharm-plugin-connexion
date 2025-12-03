@@ -58,9 +58,15 @@ class PyIntroduceParameterObjectProcessor(private val function: PyFunction) {
     }
 
     private fun collectParameters(function: PyFunction): List<PyNamedParameter> {
-        return function.parameterList.parameters
+        val parameters = function.parameterList.parameters
             .filterIsInstance<PyNamedParameter>()
             .filter { !it.isSelf && !it.isPositionalContainer && !it.isKeywordContainer }
+
+        val isClassMethod = function.decoratorList?.findDecorator("classmethod") != null
+        if (isClassMethod && parameters.isNotEmpty() && parameters.first().name == "cls") {
+             return parameters.drop(1)
+        }
+        return parameters
     }
 
     private fun generateDataclassName(function: PyFunction): String {
@@ -85,7 +91,11 @@ class PyIntroduceParameterObjectProcessor(private val function: PyFunction) {
         for (p in params) {
             val ann = p.annotationValue
             val typeText = ann ?: "Any"
-            sb.append("    ${p.name}: $typeText\n")
+            sb.append("    ${p.name}: $typeText")
+            if (p.hasDefaultValue()) {
+                sb.append(" = ${p.defaultValueText}")
+            }
+            sb.append("\n")
         }
 
         val file = function.containingFile as PyFile
@@ -109,6 +119,7 @@ class PyIntroduceParameterObjectProcessor(private val function: PyFunction) {
         val generator = PyElementGenerator.getInstance(function.project)
         val languageLevel = LanguageLevel.forElement(function)
         val whitespace = PsiParserFacade.getInstance(function.project).createWhiteSpaceFromText("\n\n")
+        val importWhitespace = PsiParserFacade.getInstance(function.project).createWhiteSpaceFromText("\n")
         
         // Check if already imported
         // This is a bit manual, real plugin would use PyImportService or similar.
@@ -117,19 +128,20 @@ class PyIntroduceParameterObjectProcessor(private val function: PyFunction) {
         // Also need 'Any' if we used it
         if (!file.text.contains("from typing import Any")) { // Very naive check
              val importStmt = generator.createFromText(languageLevel, PyFromImportStatement::class.java, "from typing import Any")
-             // Add logic to insert properly... for now just top
-             file.addBefore(importStmt, file.firstChild)
-             file.addBefore(whitespace, file.firstChild)
+             val first = file.firstChild
+             val addedImport = file.addBefore(importStmt, first)
+             file.addAfter(importWhitespace, addedImport)
         }
 
         if (!file.text.contains("from dataclasses import dataclass")) {
             val importStmt = generator.createFromText(languageLevel, PyFromImportStatement::class.java, "from dataclasses import dataclass")
             if (file.importBlock.isNotEmpty()) {
                 file.addBefore(importStmt, file.importBlock.first())
-                file.addBefore(whitespace, file.importBlock.first())
+                file.addBefore(importWhitespace, file.importBlock.first())
             } else {
-                file.addBefore(importStmt, file.firstChild)
-                file.addBefore(whitespace, file.firstChild)
+                val first = file.firstChild
+                val addedImport = file.addBefore(importStmt, first)
+                file.addAfter(importWhitespace, addedImport)
             }
         }
     }
@@ -228,7 +240,7 @@ class PyIntroduceParameterObjectProcessor(private val function: PyFunction) {
             // We iterate over params and pick corresponding args.
             // If args count matches params count (assuming no defaults for MVP).
             
-            if (args.size != params.size) {
+            if (args.size > params.size) {
                 // Skipping complex cases for MVP
                 continue 
             }
@@ -251,6 +263,33 @@ class PyIntroduceParameterObjectProcessor(private val function: PyFunction) {
                     arg.delete()
                 }
                 argList.addArgument(newArgExpr as PyExpression)
+            }
+
+            // Handle cross-file import
+            val usageFile = element.containingFile
+            if (usageFile != function.containingFile && usageFile is PyFile) {
+                addImportToUsageFile(usageFile, function.containingFile.name, dataclassName)
+            }
+        }
+    }
+
+    private fun addImportToUsageFile(file: PyFile, sourceFileName: String, dataclassName: String) {
+        val moduleName = sourceFileName.removeSuffix(".py")
+        val importText = "from $moduleName import $dataclassName"
+
+        if (!file.text.contains(importText)) {
+            val generator = PyElementGenerator.getInstance(file.project)
+            val languageLevel = LanguageLevel.forElement(file)
+            val importStmt = generator.createFromText(languageLevel, PyFromImportStatement::class.java, importText)
+            val whitespace = PsiParserFacade.getInstance(file.project).createWhiteSpaceFromText("\n")
+
+            if (file.importBlock.isNotEmpty()) {
+                file.addBefore(importStmt, file.importBlock.first())
+                file.addBefore(whitespace, file.importBlock.first())
+            } else {
+                val first = file.firstChild
+                val added = file.addBefore(importStmt, first)
+                file.addAfter(whitespace, added)
             }
         }
     }

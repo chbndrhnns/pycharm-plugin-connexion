@@ -22,6 +22,7 @@
 ## In Progress Tasks
 
 - [-] feat: Introduce parameter object
+  - [ ] refactor: String and imports handling in PyIntroduceParameterObjectProcessor
 - [ ] Configure default base classes
 - [ ] feat: How to enable module-level skip for pydunder inspection?
 

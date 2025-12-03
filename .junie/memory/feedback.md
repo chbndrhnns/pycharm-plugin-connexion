@@ -110,3 +110,11 @@
     "NEW INSTRUCTION": "WHEN caret inside PyArgumentList during plan building THEN set targetElement to the argument list for blocking inspection checks"
 }
 
+[2025-12-03 21:56] - Updated by Junie
+{
+    "TYPE": "new instructions",
+    "CATEGORY": "parameter object refactor",
+    "ERROR": "-",
+    "NEW INSTRUCTION": "WHEN implementing parameter object refactoring THEN implement defaults, keyword args, cross-file imports, and class/static method handling"
+}
+
