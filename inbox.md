@@ -2,6 +2,7 @@
 
 ## Pending Tasks
 
+- [ ] feat: Do not show popup when populating required args only
 - [ ] fix: Offer populate if arg not complete
 
 ```python
