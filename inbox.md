@@ -23,6 +23,7 @@
 
 - [-] feat: Introduce parameter object
   - [ ] refactor: String and imports handling in PyIntroduceParameterObjectProcessor
+  - [ ] check if there is a better way for `addDataclassImport`
 - [ ] Configure default base classes
 - [ ] feat: How to enable module-level skip for pydunder inspection?
 

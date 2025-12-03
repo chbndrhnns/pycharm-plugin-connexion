@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject
 
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.PyImportService
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
@@ -12,6 +13,7 @@ import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.*
+import com.jetbrains.python.psi.stubs.PyFunctionNameIndex
 
 class PyIntroduceParameterObjectProcessor(private val function: PyFunction) {
 
@@ -47,10 +49,10 @@ class PyIntroduceParameterObjectProcessor(private val function: PyFunction) {
             addDataclassImport(function)
             
             // Update body
-            updateFunctionBody(project, function, dataclassName, params, paramUsages)
+            updateFunctionBody(project, function, params, paramUsages)
             
             // Update call sites
-            updateCallSites(project, function, dataclassName, params, functionUsages)
+            updateCallSites(project, function, dataclass, params, functionUsages)
 
             // Update function signature
             replaceFunctionSignature(project, function, dataclassName, params)
@@ -114,34 +116,29 @@ class PyIntroduceParameterObjectProcessor(private val function: PyFunction) {
     }
 
     private fun addDataclassImport(function: PyFunction) {
-        // Simplistic import addition for MVP
-        val file = function.containingFile as PyFile
-        val generator = PyElementGenerator.getInstance(function.project)
-        val languageLevel = LanguageLevel.forElement(function)
-        val whitespace = PsiParserFacade.getInstance(function.project).createWhiteSpaceFromText("\n\n")
-        val importWhitespace = PsiParserFacade.getInstance(function.project).createWhiteSpaceFromText("\n")
-        
-        // Check if already imported
-        // This is a bit manual, real plugin would use PyImportService or similar.
-        // "MVP: add from dataclasses import dataclass if not present."
-        
-        // Also need 'Any' if we used it
-        if (!file.text.contains("from typing import Any")) { // Very naive check
-             val importStmt = generator.createFromText(languageLevel, PyFromImportStatement::class.java, "from typing import Any")
-             val first = file.firstChild
-             val addedImport = file.addBefore(importStmt, first)
-             file.addAfter(importWhitespace, addedImport)
+        val file = function.containingFile as? PyFile ?: return
+        val project = function.project
+        val importService = PyImportService()
+
+        // Resolve and import 'typing.Any'
+        val anyClass = PyPsiFacade.getInstance(project).createClassByQName("typing.Any", function)
+        if (anyClass != null) {
+            importService.ensureImportedIfNeeded(file, function, anyClass)
         }
 
-        if (!file.text.contains("from dataclasses import dataclass")) {
-            val importStmt = generator.createFromText(languageLevel, PyFromImportStatement::class.java, "from dataclasses import dataclass")
-            if (file.importBlock.isNotEmpty()) {
-                file.addBefore(importStmt, file.importBlock.first())
-                file.addBefore(importWhitespace, file.importBlock.first())
-            } else {
-                val first = file.firstChild
-                val addedImport = file.addBefore(importStmt, first)
-                file.addAfter(importWhitespace, addedImport)
+        // Resolve and import 'dataclasses.dataclass'
+        val dataclassClass = PyPsiFacade.getInstance(project).createClassByQName("dataclasses.dataclass", function)
+        if (dataclassClass != null) {
+            importService.ensureImportedIfNeeded(file, function, dataclassClass)
+        } else {
+            // Fallback if stubbed as function
+            val dataclassFuncs = PyFunctionNameIndex.find("dataclass", project, GlobalSearchScope.allScope(project))
+            val dataclassFunc = dataclassFuncs.firstOrNull {
+                val name = it.containingFile.name
+                name == "dataclasses.py" || name == "dataclasses.pyi"
+            }
+            if (dataclassFunc != null) {
+                importService.ensureImportedIfNeeded(file, function, dataclassFunc)
             }
         }
     }
@@ -174,7 +171,6 @@ class PyIntroduceParameterObjectProcessor(private val function: PyFunction) {
     private fun updateFunctionBody(
         project: Project,
         function: PyFunction,
-        dataclassName: String,
         params: List<PyNamedParameter>,
         paramUsages: Map<PyNamedParameter, Collection<PsiReference>>
     ) {
@@ -199,12 +195,13 @@ class PyIntroduceParameterObjectProcessor(private val function: PyFunction) {
     private fun updateCallSites(
         project: Project,
         function: PyFunction,
-        dataclassName: String,
+        dataclass: PyClass,
         params: List<PyNamedParameter>,
         functionUsages: Collection<PsiReference>
     ) {
         val generator = PyElementGenerator.getInstance(project)
         val languageLevel = LanguageLevel.forElement(function)
+        val dataclassName = dataclass.name ?: return
 
         for (ref in functionUsages) {
             val element = ref.element
@@ -219,27 +216,7 @@ class PyIntroduceParameterObjectProcessor(private val function: PyFunction) {
             // Build new argument string: Dataclass(arg1, arg2...)
             val newArgs = StringBuilder()
             newArgs.append("$dataclassName(")
-            
-            val paramNames = params.map { it.name }
-            
-            // We need to map arguments to parameters.
-            // Since we filtered out self/cls, the params list matches the arguments 5.1 example style (simple function).
-            // If it's a method, implicit self is handled by call.
-            
-            // Map params indices to args.
-            // Problem: The call might have other arguments if we only selected a subset?
-            // But MVP selects ALL parameters except self.
-            
-            // So we replace ALL arguments with the dataclass instantiation?
-            // If 'self' is not in args (it is implicit), then args match params.
-            
-            // Wait, check if function is method.
-            // If method, call.arguments usually includes `self` if called as Class.method(self, ...)?
-            // No, `PyCallExpression.getArguments()` returns explicit arguments.
-            
-            // We iterate over params and pick corresponding args.
-            // If args count matches params count (assuming no defaults for MVP).
-            
+
             if (args.size > params.size) {
                 // Skipping complex cases for MVP
                 continue 
@@ -252,45 +229,24 @@ class PyIntroduceParameterObjectProcessor(private val function: PyFunction) {
             newArgs.append(")")
             
             val newArgExpr = generator.createExpressionFromText(languageLevel, newArgs.toString())
-            
-            // Replace arguments
-            // We want to replace the whole list of arguments with one argument.
-            // Simplest: remove all args, add new one.
-            
+
             val argList = call.argumentList
             if (argList != null) {
                 for (arg in args) {
                     arg.delete()
                 }
-                argList.addArgument(newArgExpr as PyExpression)
+                argList.addArgument(newArgExpr)
             }
 
             // Handle cross-file import
             val usageFile = element.containingFile
-            if (usageFile != function.containingFile && usageFile is PyFile) {
-                addImportToUsageFile(usageFile, function.containingFile.name, dataclassName)
+            if (usageFile != function.containingFile && usageFile is PyFile && element is PyTypedElement) {
+                addImportToUsageFile(usageFile, element, dataclass)
             }
         }
     }
 
-    private fun addImportToUsageFile(file: PyFile, sourceFileName: String, dataclassName: String) {
-        val moduleName = sourceFileName.removeSuffix(".py")
-        val importText = "from $moduleName import $dataclassName"
-
-        if (!file.text.contains(importText)) {
-            val generator = PyElementGenerator.getInstance(file.project)
-            val languageLevel = LanguageLevel.forElement(file)
-            val importStmt = generator.createFromText(languageLevel, PyFromImportStatement::class.java, importText)
-            val whitespace = PsiParserFacade.getInstance(file.project).createWhiteSpaceFromText("\n")
-
-            if (file.importBlock.isNotEmpty()) {
-                file.addBefore(importStmt, file.importBlock.first())
-                file.addBefore(whitespace, file.importBlock.first())
-            } else {
-                val first = file.firstChild
-                val added = file.addBefore(importStmt, first)
-                file.addAfter(whitespace, added)
-            }
-        }
+    private fun addImportToUsageFile(file: PyFile, anchor: PyTypedElement, dataclass: PyClass) {
+        PyImportService().ensureImportedIfNeeded(file, anchor, dataclass)
     }
 }

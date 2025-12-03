@@ -309,3 +309,13 @@ directly.",
     "NEW INSTRUCTION": "WHEN assessing feature coverage THEN open related tests and enumerate covered scenarios first"
 }
 
+[2025-12-03 22:23] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "search project, update function signature, run tests",
+    "BOTTLENECK": "Type mismatch introduced by changing updateCallSites parameter without updating its signature and usages.",
+    "PROJECT NOTE": "Ensure PyImportService usage aligns with PsiNamedElement types; updating method signatures requires adjusting all callers.",
+    "NEW INSTRUCTION": "WHEN modifying a method signature THEN search project and update all call sites"
+}
+

@@ -198,3 +198,13 @@
     "NEW INSTRUCTION": "WHEN search_replace reports 'No value passed for parameter' THEN update all call sites to supply required arguments"
 }
 
+[2025-12-03 22:23] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Argument type mismatch: passed PyClass where String expected",
+    "ROOT CAUSE": "Call site was updated to pass a PyClass but the method signature still expects a String.",
+    "PROJECT NOTE": "In PyIntroduceParameterObjectProcessor.kt, change updateCallSites to accept PyClass and update all invocations accordingly.",
+    "NEW INSTRUCTION": "WHEN argument type mismatch appears after refactor THEN update method signatures and all call sites"
+}
+
