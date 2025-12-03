@@ -199,3 +199,43 @@ directly.",
     "NEW INSTRUCTION": "WHEN tests are added or modified THEN run full test suite and summarize results"
 }
 
+[2025-12-03 13:54] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "create processor stub, register intention, run tests",
+    "BOTTLENECK": "Incorrect Python PSI API usage led to unresolved references and compile failures.",
+    "PROJECT NOTE": "Use PyNamedParameter.isSelf, isPositionalContainer, and isKeywordContainer; no isCls API.",
+    "NEW INSTRUCTION": "WHEN intention invoke references a new class THEN create a minimal compiling stub first"
+}
+
+[2025-12-03 14:00] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "revert change, reapply change",
+    "MISSING STEPS": "ensure files writable",
+    "BOTTLENECK": "Start-in-write fix triggered read-only file errors in processor writes.",
+    "PROJECT NOTE": "Intention lacks a description resource; add description per IntelliJ intention requirements.",
+    "NEW INSTRUCTION": "WHEN disabling startInWriteAction in an intention THEN ensure target files writable via ReadonlyStatusHandler"
+}
+
+[2025-12-03 14:04] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "verify resource path, run tests",
+    "BOTTLENECK": "Did not verify that directory name matches the Intention class used by IDE.",
+    "PROJECT NOTE": "Ensure the description folder name matches the intention action class short name (not the processor).",
+    "NEW INSTRUCTION": "WHEN creating intention description files THEN open intention class and verify description path name"
+}
+
+[2025-12-03 14:13] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "reformat, run tests",
+    "BOTTLENECK": "Dataclass insertion used a non-sibling anchor causing PSI addBefore assertion.",
+    "PROJECT NOTE": "When inserting into PyFile, anchor must be a direct child of the file.",
+    "NEW INSTRUCTION": "WHEN inserting before a method inside a class THEN ascend to file-level anchor and insert"
+}
+

@@ -1,0 +1,11 @@
+from dataclasses import dataclass
+
+@dataclass
+class CreateUserParams:
+    first_name: str
+    last_name: str
+    email: str
+    age: int
+
+def create_user(params: CreateUserParams) -> None:
+    print(params.first_name, params.last_name, params.email, params.age)

@@ -138,3 +138,33 @@
     "NEW INSTRUCTION": "WHEN type annotation resolves to typing.NewType alias THEN generate `<aliasName>(...)` as value"
 }
 
+[2025-12-03 13:50] - Updated by Junie - Error analysis
+{
+    "TYPE": "build failure",
+    "TOOL": "create",
+    "ERROR": "Unresolved references in new intention class",
+    "ROOT CAUSE": "The code used non-existent PyNamedParameter APIs and referenced a missing processor class.",
+    "PROJECT NOTE": "In this repo's Python PSI, PyNamedParameter lacks isCls; prefer isSelf and parameter.kind checks, and ensure referenced classes (e.g., PyIntroduceParameterObjectProcessor) are created before use.",
+    "NEW INSTRUCTION": "WHEN unresolved reference errors appear after creating a file THEN replace unsupported APIs and add missing classes"
+}
+
+[2025-12-03 13:58] - Updated by Junie - Error analysis
+{
+    "TYPE": "permission",
+    "TOOL": "run_test",
+    "ERROR": "Cannot modify a read-only file",
+    "ROOT CAUSE": "The processor writes to the target PyFile without ensuring it is writable via FileModificationService, so tests hit read-only VFS.",
+    "PROJECT NOTE": "Before inserting the dataclass into the target PyFile, call FileModificationService.getInstance().preparePsiElementForWrite(file) (or prepareFileForWrite(virtualFile)) and abort if it returns false.",
+    "NEW INSTRUCTION": "WHEN modifying a PsiFile content THEN ensure writability via FileModificationService before proceeding"
+}
+
+[2025-12-03 14:07] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "PyIntroduceParameterObjectProcessor.createDataclass",
+    "ERROR": "Anchor element parent mismatch during PsiFile.addBefore",
+    "ROOT CAUSE": "The anchor element used for insertion belongs to a different parent (class body) than the PsiFile receiving the new dataclass.",
+    "PROJECT NOTE": "When inserting a top-level dataclass, compute an anchor that is a direct child of the PyFile (e.g., first top-level statement or null to append), not an element from inside a class or method.",
+    "NEW INSTRUCTION": "WHEN adding PSI with addBefore/addAfter THEN use an anchor sharing the same parent"
+}
+

@@ -49,6 +49,11 @@
             <category>Arguments</category>
         </intentionAction>
 
+        <intentionAction>
+            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.PyIntroduceParameterObjectIntention</className>
+            <category>Refactorings</category>
+        </intentionAction>
+
         <!-- Deprecated populate intentions removed -->
 
         <applicationConfigurable

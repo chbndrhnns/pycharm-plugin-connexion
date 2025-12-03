@@ -51,12 +51,12 @@ assert M(period<caret>=)
 - [ ] feat: Copy selection with imports
 - [ ] Wrap default/default_factory after introducing custom type in dataclass/pydantic
 - [ ] Render dataclass fields in preview
-- [ ] feat: Introduce parameter object
 - [ ] feat: Convert fn to lambda
 - [ ] Block list: Do not allow names from typing or collections.abc.
 
 ## In Progress Tasks
 
+- [-] feat: Introduce parameter object
 - [ ] Configure default base classes
 - [ ] feat: How to enable module-level skip for pydunder inspection?
 
