@@ -1,36 +1,56 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject
 
+import com.intellij.openapi.application.readAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
+import com.intellij.platform.ide.progress.runWithModalProgressBlocking
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiParserFacade
+import com.intellij.psi.PsiReference
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.*
-import com.jetbrains.python.psi.impl.PyPsiUtils
-
-import com.intellij.psi.PsiParserFacade
 
 class PyIntroduceParameterObjectProcessor(private val function: PyFunction) {
 
     fun run() {
         val project = function.project
-        WriteCommandAction.writeCommandAction(project, function.containingFile).run<Throwable> {
-            val params = collectParameters(function)
-            if (params.isEmpty()) return@run
 
-            val dataclassName = generateDataclassName(function)
+        val params = collectParameters(function)
+        if (params.isEmpty()) return
+
+        val dataclassName = generateDataclassName(function)
+
+        var paramUsages: Map<PyNamedParameter, Collection<PsiReference>> = emptyMap()
+        var functionUsages: Collection<PsiReference> = emptyList()
+
+        runWithModalProgressBlocking(project, "Searching for usages...") {
+            readAction {
+                val pUsages = mutableMapOf<PyNamedParameter, Collection<PsiReference>>()
+                for (p in params) {
+                    if (p.name != null) {
+                        pUsages[p] =
+                            ReferencesSearch.search(p, GlobalSearchScope.fileScope(function.containingFile)).findAll()
+                    }
+                }
+                paramUsages = pUsages
+                functionUsages = ReferencesSearch.search(function, GlobalSearchScope.projectScope(project)).findAll()
+            }
+        }
+
+        WriteCommandAction.writeCommandAction(project, function.containingFile).run<Throwable> {
             val dataclass = createDataclass(project, function, dataclassName, params)
             
             // Add imports
             addDataclassImport(function)
             
             // Update body
-            updateFunctionBody(project, function, dataclassName, params)
+            updateFunctionBody(project, function, dataclassName, params, paramUsages)
             
             // Update call sites
-            updateCallSites(project, function, dataclassName, params)
+            updateCallSites(project, function, dataclassName, params, functionUsages)
 
             // Update function signature
             replaceFunctionSignature(project, function, dataclassName, params)
@@ -143,19 +163,20 @@ class PyIntroduceParameterObjectProcessor(private val function: PyFunction) {
         project: Project,
         function: PyFunction,
         dataclassName: String,
-        params: List<PyNamedParameter>
+        params: List<PyNamedParameter>,
+        paramUsages: Map<PyNamedParameter, Collection<PsiReference>>
     ) {
         val generator = PyElementGenerator.getInstance(project)
         
         // Find usages of parameters inside function body
         for (p in params) {
             val paramName = p.name ?: continue
-            val references = ReferencesSearch.search(p, GlobalSearchScope.fileScope(function.containingFile)).findAll()
+            val references = paramUsages[p] ?: continue
             
             for (ref in references) {
                 val element = ref.element
                 // Verify it's inside the function
-                if (PsiTreeUtil.isAncestor(function, element, true)) {
+                if (element.isValid && PsiTreeUtil.isAncestor(function, element, true)) {
                     val newExpr = generator.createExpressionFromText(LanguageLevel.forElement(function), "params.$paramName")
                     element.replace(newExpr)
                 }
@@ -167,14 +188,13 @@ class PyIntroduceParameterObjectProcessor(private val function: PyFunction) {
         project: Project,
         function: PyFunction,
         dataclassName: String,
-        params: List<PyNamedParameter>
+        params: List<PyNamedParameter>,
+        functionUsages: Collection<PsiReference>
     ) {
         val generator = PyElementGenerator.getInstance(project)
         val languageLevel = LanguageLevel.forElement(function)
-        
-        val references = ReferencesSearch.search(function, GlobalSearchScope.projectScope(project)).findAll()
-        
-        for (ref in references) {
+
+        for (ref in functionUsages) {
             val element = ref.element
             val call = PsiTreeUtil.getParentOfType(element, PyCallExpression::class.java) ?: continue
             if (call.callee != element && call.callee?.reference?.resolve() != function) continue

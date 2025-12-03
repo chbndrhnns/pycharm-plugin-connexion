@@ -249,3 +249,13 @@ directly.",
     "NEW INSTRUCTION": "WHEN whitespace-related test failure is suspected THEN run the specific test and inspect actual output"
 }
 
+[2025-12-03 14:57] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "scan project, run build",
+    "BOTTLENECK": "Signature changes were made without updating all internal callers, causing semantic errors.",
+    "PROJECT NOTE": "In IntelliJ plugins, run searches in background and confine edits to write actions.",
+    "NEW INSTRUCTION": "WHEN changing a function or method signature THEN search_project for callers and update them first"
+}
+

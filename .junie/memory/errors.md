@@ -188,3 +188,13 @@
     "NEW INSTRUCTION": "WHEN debug shows 'Actual content ends' right after last code line THEN remove trailing newline from expected text"
 }
 
+[2025-12-03 14:57] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "No value passed for newly added parameters",
+    "ROOT CAUSE": "Method signatures were changed to include paramUsages/functionUsages but call sites were not updated accordingly.",
+    "PROJECT NOTE": "When refactoring PyIntroduceParameterObjectProcessor to two phases (read/search then write), ensure run() computes usages in readAction and passes them to updateFunctionBody and updateCallSites.",
+    "NEW INSTRUCTION": "WHEN search_replace reports 'No value passed for parameter' THEN update all call sites to supply required arguments"
+}
+
