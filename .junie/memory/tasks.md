@@ -179,3 +179,23 @@ directly.",
     "NEW INSTRUCTION": "WHEN adding a settings-controlled feature THEN add unit tests for enabled/disabled behavior and run them"
 }
 
+[2025-12-03 13:31] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "add implementation sketch,design UI chooser details",
+    "MISSING STEPS": "-",
+    "BOTTLENECK": "Over-detailed implementation distracted from concise, high-level guidance.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN prompt asks for high-level suggestions without coding details THEN provide concise strategy and decision rules; omit implementation and UI specifics"
+}
+
+[2025-12-03 13:35] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "run full test suite",
+    "BOTTLENECK": "Partial test execution hid a failure specific to the new scenario.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN tests are added or modified THEN run full test suite and summarize results"
+}
+

@@ -118,3 +118,23 @@
     "NEW INSTRUCTION": "WHEN patch content shows ellipses or lacks *** End Patch THEN recreate a complete, well-formed patch before applying"
 }
 
+[2025-12-03 13:30] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "run_test",
+    "ERROR": "No tests found inside provided directory path",
+    "ROOT CAUSE": "run_test was called with a source folder path instead of a test target the runner recognizes.",
+    "PROJECT NOTE": "Run tests via the project root Gradle task or by specifying a test class name (e.g., testName=\"RecursiveArgumentsIntentionTest\"); do not pass src/test/kotlin as path.",
+    "NEW INSTRUCTION": "WHEN run_test outputs 'No tests found inside directory path' THEN rerun without path and specify the test class name"
+}
+
+[2025-12-03 13:31] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic bug",
+    "TOOL": "run_test",
+    "ERROR": "Test 'testNewTypeLeafPopulation' failed",
+    "ROOT CAUSE": "Value generator did not detect typing.NewType aliases and emitted raw ellipsis instead of Alias(...).",
+    "PROJECT NOTE": "In PopulateArgumentsService.generateValue, ensure NewType is detected (e.g., via PyTypingNewType or alias resolution) and produce AliasName(...); current PyClassLikeType branch may not cover actual NewType runtime type.",
+    "NEW INSTRUCTION": "WHEN type annotation resolves to typing.NewType alias THEN generate `<aliasName>(...)` as value"
+}
+

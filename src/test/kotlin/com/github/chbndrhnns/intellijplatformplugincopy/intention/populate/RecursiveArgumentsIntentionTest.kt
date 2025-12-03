@@ -49,7 +49,41 @@ class RecursiveArgumentsIntentionTest : TestBase() {
 
             """,
                 "Populate arguments..."
-        )
+            )
+        }
+    }
+
+    fun testNewTypeLeafPopulation() {
+        withPopulatePopupSelection(index = 2) {
+            myFixture.doIntentionTest(
+                "a.py",
+                """
+            from dataclasses import dataclass
+            from typing import NewType
+
+            MyStr = NewType("MyStr", str)
+
+            @dataclass
+            class Outer:
+                val: MyStr
+
+            a = Outer(<caret>)
+            """,
+                """
+            from dataclasses import dataclass
+            from typing import NewType
+
+            MyStr = NewType("MyStr", str)
+
+            @dataclass
+            class Outer:
+                val: MyStr
+
+            a = Outer(val=MyStr(...))
+
+            """,
+                "Populate arguments..."
+            )
         }
     }
 

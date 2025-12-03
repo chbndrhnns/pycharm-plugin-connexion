@@ -106,11 +106,8 @@ class PopulateArgumentsService {
         val argumentList = call.argumentList ?: return
         val languageLevel = LanguageLevel.forElement(file)
 
-        if (options.recursive) {
-            populateRecursively(project, file, argumentList, missing, context, generator, languageLevel)
-        } else {
-            populateSimple(argumentList, missing, generator, languageLevel)
-        }
+        // Always use the recursive generator which handles both nested dataclasses and leaf alias wrapping.
+        populateRecursively(project, file, call, argumentList, missing, context, generator, languageLevel)
     }
 
     private fun populateSimple(
@@ -129,16 +126,33 @@ class PopulateArgumentsService {
     private fun populateRecursively(
         project: Project,
         file: PyFile,
+        call: PyCallExpression,
         argumentList: PyArgumentList,
         missing: List<PyCallableParameter>,
         context: TypeEvalContext,
         generator: PyElementGenerator,
         languageLevel: LanguageLevel
     ) {
+        val calleeClass: PyClass? = (call.callee as? PyReferenceExpression)
+            ?.reference
+            ?.resolve()
+            ?.let { it as? PyClass }
+
         val paramData = missing.mapNotNull { param ->
             val name = param.name ?: return@mapNotNull null
             val type = param.getType(context)
-            val result = generateValue(type, context, 0, generator, languageLevel)
+            var result = generateValue(type, context, 0, generator, languageLevel)
+
+            // If we only have a leaf "..." and the dataclass field annotation is an alias
+            // (e.g. NewType), prefer wrapping with that alias at the top level too.
+            if (result.text == DEFAULT_FALLBACK_VALUE && calleeClass != null) {
+                val field = calleeClass.findClassAttribute(name, true, context)
+                val aliasName = (field?.annotation?.value as? PyReferenceExpression)?.name
+                if (!aliasName.isNullOrBlank() && !isBuiltinName(aliasName)) {
+                    result = GenerationResult("$aliasName(...)", emptySet())
+                }
+            }
+
             Triple(param, name, result)
         }
 
@@ -181,9 +195,13 @@ class PopulateArgumentsService {
                 if (isDataclassClass(type.pyClass)) {
                     generateDataclassValue(type.pyClass, context, depth, generator, languageLevel)
                 } else {
-                    GenerationResult(DEFAULT_FALLBACK_VALUE, emptySet())
+                    // Some providers represent typing.NewType/aliases as PyClassType but without a backing PyClass.
+                    val aliasLike = generateAliasFromClassType(type)
+                    aliasLike ?: GenerationResult(DEFAULT_FALLBACK_VALUE, emptySet())
                 }
             }
+
+            is PyClassLikeType -> generateAliasOrNewTypeValue(type)
             else -> GenerationResult(DEFAULT_FALLBACK_VALUE, emptySet())
         }
     }
@@ -215,12 +233,22 @@ class PopulateArgumentsService {
         val requiredImports = mutableSetOf<PyClass>()
         requiredImports.add(pyClass)
 
-        extractDataclassFields(pyClass, context).forEach { (name, fieldType) ->
-            val result = generateValue(fieldType, context, depth + 1, generator, languageLevel)
-            val valStr = result.text
+        extractDataclassFields(pyClass, context).forEach { field ->
+            val result = generateValue(field.type, context, depth + 1, generator, languageLevel)
+            var valStr = result.text
+
+            // If generation fell back to ellipsis for a leaf, but the annotation is an alias-like
+            // (e.g., NewType), prefer wrapping with that alias to produce Alias(...).
+            if (valStr == DEFAULT_FALLBACK_VALUE && !field.aliasName.isNullOrBlank()) {
+                val alias = field.aliasName
+                if (!isBuiltinName(alias!!)) {
+                    valStr = "$alias(...)"
+                }
+            }
+
             requiredImports.addAll(result.imports)
 
-            val kwArg = generator.createKeywordArgument(languageLevel, name, valStr)
+            val kwArg = generator.createKeywordArgument(languageLevel, field.name, valStr)
             argumentList.addArgument(kwArg)
         }
 
@@ -232,8 +260,8 @@ class PopulateArgumentsService {
 
     private fun extractDataclassFields(
         pyClass: PyClass, context: TypeEvalContext
-    ): List<Pair<String, PyType?>> {
-        val fields = mutableListOf<Pair<String, PyType?>>()
+    ): List<FieldSpec> {
+        val fields = mutableListOf<FieldSpec>()
 
         val initMethod = pyClass.findInitOrNew(false, context)
         if (initMethod != null) {
@@ -245,7 +273,8 @@ class PopulateArgumentsService {
                 if (field != null) {
                     name = resolveFieldAlias(pyClass, field, context, name)
                 }
-                fields.add(name to param.getType(context))
+                val aliasName = field?.annotation?.value?.let { (it as? PyReferenceExpression)?.name }
+                fields.add(FieldSpec(name, param.getType(context), aliasName))
             }
         } else {
             // Fallback for synthetic __init__
@@ -253,7 +282,8 @@ class PopulateArgumentsService {
                 if (attr.annotation != null) {
                     var name = attr.name ?: return@forEach
                     name = resolveFieldAlias(pyClass, attr, context, name)
-                    fields.add(name to context.getType(attr))
+                    val aliasName = (attr.annotation?.value as? PyReferenceExpression)?.name
+                    fields.add(FieldSpec(name, context.getType(attr), aliasName))
                 }
             }
         }
@@ -277,4 +307,41 @@ class PopulateArgumentsService {
         val text: String,
         val imports: Set<PyClass>
     )
+
+    /**
+     * For alias-like types (typing.NewType, typing.TypeAlias, forward refs resolved to class-like without a PyClass),
+     * generate a constructor-like call `Name(...)` so leaves are wrapped with an instance placeholder.
+     * Falls back to `...` for builtin types and unknown names.
+     */
+    private fun generateAliasOrNewTypeValue(type: PyClassLikeType): GenerationResult {
+        // Avoid builtins and sentinel-like names
+        val name = type.name ?: type.classQName?.substringAfterLast('.')
+        if (name.isNullOrBlank()) return GenerationResult(DEFAULT_FALLBACK_VALUE, emptySet())
+
+        if (isBuiltinName(name)) return GenerationResult(DEFAULT_FALLBACK_VALUE, emptySet())
+
+        // Prefer using the simple name; imports are not required for aliases defined in the same file.
+        return GenerationResult("$name(...)", emptySet())
+    }
+
+    private fun generateAliasFromClassType(type: PyClassType): GenerationResult? {
+        // If there is a real class behind it (e.g., builtin or user class), we don't treat it as alias here.
+        if (type.pyClass != null) return null
+
+        val name = type.name ?: type.classQName?.substringAfterLast('.')
+        if (name.isNullOrBlank()) return null
+
+        if (isBuiltinName(name)) return null
+
+        return GenerationResult("$name(...)", emptySet())
+    }
+
+    private fun isBuiltinName(name: String): Boolean {
+        val lower = name.lowercase()
+        return lower in setOf(
+            "int", "str", "float", "bool", "bytes", "list", "dict", "set", "tuple", "range", "complex"
+        )
+    }
+
+    private data class FieldSpec(val name: String, val type: PyType?, val aliasName: String?)
 }

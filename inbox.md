@@ -2,10 +2,10 @@
 
 ## Pending Tasks
 
+- [ ] feat: populate union (docs/populate/populate-union.md)
 - [ ] feat: Generate dataclass, basemodel
 - [ ] feat: Create run config using package mode
 - [ ] Copy pydantic mock?
-- [ ] test normal classes when introducing types
 - [ ] feat: Support export of attributes
 - [ ] feat: Parse pytest identifier in search all dialog
 - [ ] feat: Copy selection with imports
@@ -18,11 +18,12 @@
 ## In Progress Tasks
 
 - [ ] Configure default base classes
-- [ ] Make private/public
 - [ ] feat: How to enable module-level skip for pydunder inspection?
 
 ## Completed Tasks (newest first)
 
+- [x] test normal classes when introducing types
+- [x] Make private/public
 - [x] fix: make quick fix appear on whole import statement if single one? `from domain._other import MyStr`
 - [x] refactor: More PSI-based helpers
 - [x] fix: FP export: `from prance import BaseParse<caret>r`
