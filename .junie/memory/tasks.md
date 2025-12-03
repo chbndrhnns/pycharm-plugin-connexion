@@ -239,3 +239,13 @@ directly.",
     "NEW INSTRUCTION": "WHEN inserting before a method inside a class THEN ascend to file-level anchor and insert"
 }
 
+[2025-12-03 14:49] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "edit tests,add logging,rework change",
+    "MISSING STEPS": "run test,inspect diff",
+    "BOTTLENECK": "Edits were made before verifying the exact whitespace mismatch.",
+    "PROJECT NOTE": "Expected Python test outputs are newline-sensitive; trimIndent removes indentation but not trailing newline.",
+    "NEW INSTRUCTION": "WHEN whitespace-related test failure is suspected THEN run the specific test and inspect actual output"
+}
+

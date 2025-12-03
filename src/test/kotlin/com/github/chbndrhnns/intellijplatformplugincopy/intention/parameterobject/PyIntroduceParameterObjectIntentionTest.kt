@@ -34,7 +34,7 @@ class PyIntroduceParameterObjectIntentionTest : TestBase() {
             
             
             def main():
-                create_user(CreateUserParams("John", "Doe", "john@example.com", 30))""".trimIndent(),
+                create_user(CreateUserParams("John", "Doe", "john@example.com", 30))""".trimIndent() + "\n\n",
             "Introduce parameter object"
         )
     }
@@ -60,8 +60,7 @@ class PyIntroduceParameterObjectIntentionTest : TestBase() {
             
             class Class:
                 def do(self, params: DoParams):
-                    return {}
-            """.trimIndent(),
+                    return {}""".trimIndent() + "\n\n",
             "Introduce parameter object"
         )
     }

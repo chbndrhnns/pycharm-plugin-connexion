@@ -168,3 +168,23 @@
     "NEW INSTRUCTION": "WHEN adding PSI with addBefore/addAfter THEN use an anchor sharing the same parent"
 }
 
+[2025-12-03 14:42] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "FileComparisonFailedError: trailing whitespace/newline mismatch",
+    "ROOT CAUSE": "The produced file's trailing whitespace/newline does not match the expected .after file.",
+    "PROJECT NOTE": "doIntentionTest uses myFixture.checkResult which compares text strictly, including trailing spaces and final newline; expected files live under src/test/testData and must match exactly.",
+    "NEW INSTRUCTION": "WHEN FileComparisonFailedError in checkResult THEN match expected .after file whitespace exactly"
+}
+
+[2025-12-03 14:46] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Expected/actual differ due to final newline mismatch",
+    "ROOT CAUSE": "The expected .after text includes a trailing newline while the actual file does not.",
+    "PROJECT NOTE": "myFixture.checkResult compares exact text; the produced Python file currently has no final newline. Ensure the expected string in PyIntroduceParameterObjectIntentionTest.kt (after.trimIndent()) does not include a trailing blank line.",
+    "NEW INSTRUCTION": "WHEN debug shows 'Actual content ends' right after last code line THEN remove trailing newline from expected text"
+}
+
