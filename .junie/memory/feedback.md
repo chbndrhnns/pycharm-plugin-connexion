@@ -86,3 +86,27 @@
     "NEW INSTRUCTION": "WHEN performing PSI modifications in intentions or popup callbacks THEN wrap in WriteCommandAction.runWriteCommandAction(project)"
 }
 
+[2025-12-03 19:23] - Updated by Junie
+{
+    "TYPE": "new instructions",
+    "CATEGORY": "UI popup",
+    "ERROR": "-",
+    "NEW INSTRUCTION": "WHEN populating only required arguments THEN skip popup and perform action immediately"
+}
+
+[2025-12-03 21:07] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "populate recursion",
+    "ERROR": "Default set to non-recursive for direct required population",
+    "NEW INSTRUCTION": "WHEN executing PopulateRequiredArgumentsIntention THEN enable recursive population by default"
+}
+
+[2025-12-03 21:26] - Updated by Junie
+{
+    "TYPE": "new instructions",
+    "CATEGORY": "intention targeting",
+    "ERROR": "-",
+    "NEW INSTRUCTION": "WHEN caret inside PyArgumentList during plan building THEN set targetElement to the argument list for blocking inspection checks"
+}
+

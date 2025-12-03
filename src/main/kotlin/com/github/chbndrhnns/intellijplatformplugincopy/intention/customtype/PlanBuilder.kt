@@ -82,13 +82,18 @@ class PlanBuilder(
                 else -> target.dataclassField?.name?.let { naming.deriveBaseName(it) }
             }
 
+        // Consider blocking inspections on the argument value
+        // (e.g., PyTypeCheckerInspection). This prevents the intention from
+        // showing when the call-site argument has a type error.
+        val argumentList = PsiTreeUtil.getParentOfType(target.expression, PyArgumentList::class.java, false)
+
         return CustomTypePlan(
             builtinName = target.builtinName,
             annotationRef = target.annotationRef,
             expression = target.expression,
             preferredClassName = preferredName,
             field = target.dataclassField,
-            targetElement = target.dataclassField ?: target.annotationRef ?: target.expression,
+            targetElement = argumentList ?: target.dataclassField ?: target.annotationRef ?: target.expression,
             sourceFile = file,
         )
     }

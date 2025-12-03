@@ -156,6 +156,7 @@ class PopulateArgumentsIntentionTest : TestBase() {
                     z: int = 1
 
                 a = A(x=..., y=..., z=...)
+                
                 """.trimIndent()
             )
         }
@@ -195,6 +196,7 @@ class PopulateArgumentsIntentionTest : TestBase() {
                     z: int = 1
 
                 a = A(x=..., y=...)
+                
                 """.trimIndent()
             )
         }
@@ -228,6 +230,7 @@ class PopulateArgumentsIntentionTest : TestBase() {
                     pass
 
                 foo(1, b=..., c=...)
+                
                 """.trimIndent()
             )
         }
@@ -257,6 +260,7 @@ class PopulateArgumentsIntentionTest : TestBase() {
                         pass
 
                 C().foo(a=...)
+                
                 """.trimIndent()
             )
         }

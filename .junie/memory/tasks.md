@@ -259,3 +259,53 @@ directly.",
     "NEW INSTRUCTION": "WHEN changing a function or method signature THEN search_project for callers and update them first"
 }
 
+[2025-12-03 19:30] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "create new intention, add debug test",
+    "MISSING STEPS": "scan project, update existing intention, add tests, run tests",
+    "BOTTLENECK": "Misinterpreted feature as needing a new intention instead of skipping the chooser.",
+    "PROJECT NOTE": "In PopulateArgumentsIntention, if computed options collapse to one, call service directly instead of popupHost.showChooser.",
+    "NEW INSTRUCTION": "WHEN populate options resolve to single choice THEN execute that option directly and skip popup chooser"
+}
+
+[2025-12-03 21:16] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "search other unwrap intentions,search getWrapperCallInfo",
+    "MISSING STEPS": "apply patch,add tests,run tests,submit",
+    "BOTTLENECK": "No code changes were applied; only a descriptive answer was provided.",
+    "PROJECT NOTE": "Implement early return in CaretSelection.findExpressionAtCaret for PyKeywordArgument without value.",
+    "NEW INSTRUCTION": "WHEN bug cause is identified in a file THEN apply the patch and add a regression test"
+}
+
+[2025-12-03 21:20] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "-",
+    "BOTTLENECK": "No bottleneck; direct explanation was sufficient.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN task is conceptual Q&A without code changes THEN respond directly; do not invoke tools"
+}
+
+[2025-12-03 21:24] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "verify highlight range source, cross-check availability guard usage across code",
+    "BOTTLENECK": "Misaligned check between targetElement range and actual inspection highlight range.",
+    "PROJECT NOTE": "Focus on isAvailable/hasBlockingInspections and PlanBuilder targetElement selection.",
+    "NEW INSTRUCTION": "WHEN investigating intention visible with errors THEN compare targetElement range to highlight ranges"
+}
+
+[2025-12-03 21:37] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "list directory,scan project",
+    "MISSING STEPS": "review tests,trace availability conditions against tests",
+    "BOTTLENECK": "No coverage mapping against existing tests before concluding gaps.",
+    "PROJECT NOTE": "There is a PyIntroduceParameterObjectIntentionTest; use it to verify covered scenarios.",
+    "NEW INSTRUCTION": "WHEN assessing feature coverage THEN open related tests and enumerate covered scenarios first"
+}
+

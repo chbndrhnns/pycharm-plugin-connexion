@@ -19,4 +19,19 @@ class ArgumentListTest : TestBase() {
             "Introduce custom type"
         )
     }
+
+    fun testIntentionNotAvailable_WhenTypeErrorOnCallArgument() {
+        myFixture.assertIntentionNotAvailable(
+            "a.py",
+            """
+            def foo(a: str):
+                pass
+
+            def use():
+                foo(a=<caret>1)
+            """,
+            "Introduce custom type"
+        )
+    }
+
 }

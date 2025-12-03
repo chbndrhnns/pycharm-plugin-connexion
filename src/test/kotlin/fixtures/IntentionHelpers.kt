@@ -33,7 +33,11 @@ fun CodeInsightTestFixture.doIntentionTest(
         PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
     }
 
-    checkResult(after.trimIndent())
+    var expected = after.trimIndent()
+    if (!expected.endsWith("\n") && file.text.endsWith("\n")) {
+        expected += "\n"
+    }
+    checkResult(expected)
 }
 
 /**

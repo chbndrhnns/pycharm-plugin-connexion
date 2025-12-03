@@ -6,6 +6,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNamedElement
 import com.jetbrains.python.psi.PyCallExpression
 import com.jetbrains.python.psi.PyExpression
+import com.jetbrains.python.psi.PyKeywordArgument
 import com.jetbrains.python.psi.PyReferenceExpression
 import com.jetbrains.python.psi.PyTypedElement
 import com.jetbrains.python.psi.impl.PyPsiUtils
@@ -49,7 +50,11 @@ object PyTypeIntentions {
 
         val callee = call.callee as? PyReferenceExpression ?: return null
         val name = callee.name ?: return null
-        val inner = args[0] ?: return null
+        var inner = args[0] ?: return null
+
+        if (inner is PyKeywordArgument) {
+            inner = inner.valueExpression ?: return null
+        }
 
         return WrapperInfo(call, name, inner)
     }
