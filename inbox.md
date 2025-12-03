@@ -2,6 +2,46 @@
 
 ## Pending Tasks
 
+- [ ] fix: Offer populate if arg not complete
+
+```python
+import dataclasses
+from types import SimpleNamespace
+
+
+@dataclasses.dataclass
+class M:
+    period: SimpleNamespace
+
+
+assert M(period<caret>=)
+
+```
+
+- [ ] refactor: Add parameter object to refactoring menu
+- [ ] fix: Do not offer unwrap here
+
+```python
+    import dataclasses
+
+
+    class Bla:
+      def __init__(self, arg: str):
+        self.arg = arg
+    
+    
+    @dataclasses.dataclass
+    class M:
+      period: Bla
+    
+    
+    assert M(per<caret>iod=)
+
+
+```
+
+
+- [ ] fix: do not offer "use exported" if in private child package: `from .._bases import BaseBlaModel`
 - [ ] feat: populate union (docs/populate/populate-union.md)
 - [ ] feat: Generate dataclass, basemodel
 - [ ] feat: Create run config using package mode
