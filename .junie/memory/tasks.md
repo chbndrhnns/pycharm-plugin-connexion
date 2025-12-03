@@ -169,3 +169,13 @@ directly.",
     "NEW INSTRUCTION": "WHEN implementing options UI for unified intention THEN use JbPopupHost list popup"
 }
 
+[2025-12-03 13:25] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "add tests, run tests, verify plugin.xml",
+    "BOTTLENECK": "No validation via tests and no verification of configuration registration.",
+    "PROJECT NOTE": "Settings infrastructure exists; ensure the Configurable remains registered in plugin.xml.",
+    "NEW INSTRUCTION": "WHEN adding a settings-controlled feature THEN add unit tests for enabled/disabled behavior and run them"
+}
+

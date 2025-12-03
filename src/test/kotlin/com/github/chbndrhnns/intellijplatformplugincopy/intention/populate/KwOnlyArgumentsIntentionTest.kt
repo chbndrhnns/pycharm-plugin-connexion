@@ -3,103 +3,112 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.populate
 import fixtures.TestBase
 import fixtures.assertIntentionNotAvailable
 import fixtures.doIntentionTest
+import fixtures.withPopulatePopupSelection
 
 class KwOnlyArgumentsIntentionTest : TestBase() {
 
     fun testDataclassPopulation() {
-        myFixture.doIntentionTest(
-            "a.py",
-            """
-            from dataclasses import dataclass
+        withPopulatePopupSelection(index = 0) { // All arguments, non-recursive
+            myFixture.doIntentionTest(
+                "a.py",
+                """
+                from dataclasses import dataclass
 
-            @dataclass
-            class A:
-                x: int
-                y: int
-                z: int = 1
+                @dataclass
+                class A:
+                    x: int
+                    y: int
+                    z: int = 1
 
-            a = A(<caret>)
-            """,
-            """
-            from dataclasses import dataclass
+                a = A(<caret>)
+                """,
+                """
+                from dataclasses import dataclass
 
-            @dataclass
-            class A:
-                x: int
-                y: int
-                z: int = 1
+                @dataclass
+                class A:
+                    x: int
+                    y: int
+                    z: int = 1
 
-            a = A(x=..., y=..., z=...)
-            """,
-            "Populate missing arguments with '...'"
-        )
+                a = A(x=..., y=..., z=...)
+                """,
+                "Populate arguments..."
+            )
+        }
     }
 
     fun testKwOnlyMethods() {
-        myFixture.doIntentionTest(
-            "a.py",
-            """
-            class C:
-                def foo(self, *, a, b):
-                    pass
+        withPopulatePopupSelection(index = 0) {
+            myFixture.doIntentionTest(
+                "a.py",
+                """
+                class C:
+                    def foo(self, *, a, b):
+                        pass
 
-            C().foo(<caret>)
-            """,
-            """
-            class C:
-                def foo(self, *, a, b):
-                    pass
+                C().foo(<caret>)
+                """,
+                """
+                class C:
+                    def foo(self, *, a, b):
+                        pass
 
-            C().foo(a=..., b=...)
-            """,
-            "Populate missing arguments with '...'"
-        )
+                C().foo(a=..., b=...)
+                """,
+                "Populate arguments..."
+            )
+        }
     }
 
     fun testNestedClass() {
-        myFixture.doIntentionTest(
-            "a.py",
-            """
-            from dataclasses import dataclass
+        withPopulatePopupSelection(index = 0) {
+            myFixture.doIntentionTest(
+                "a.py",
+                """
+                from dataclasses import dataclass
 
-            class Outer:
-                @dataclass
-                class Inner:
-                    f: int
+                class Outer:
+                    @dataclass
+                    class Inner:
+                        f: int
 
-            Outer.Inner(<caret>)
-            """,
-            """
-            from dataclasses import dataclass
+                Outer.Inner(<caret>)
+                """,
+                """
+                from dataclasses import dataclass
 
-            class Outer:
-                @dataclass
-                class Inner:
-                    f: int
+                class Outer:
+                    @dataclass
+                    class Inner:
+                        f: int
 
-            Outer.Inner(f=...)
-            """,
-            "Populate missing arguments with '...'"
-        )
+                Outer.Inner(f=...)
+                """,
+                "Populate arguments..."
+            )
+        }
     }
 
     fun testPartialArguments() {
-        myFixture.doIntentionTest(
-            "a.py",
-            """
-            def foo(a, b, c):
-                pass
+        withPopulatePopupSelection(index = 0) {
+            myFixture.doIntentionTest(
+                "a.py",
+                """
+                def foo(a, b, c):
+                    pass
 
-            foo(1, <caret>)
-            """,
-            """
-            def foo(a, b, c):
-                pass
+                foo(1, <caret>)
+                """,
+                """
+                def foo(a, b, c):
+                    pass
 
-            foo(1, b=..., c=...)
-            """,
-            "Populate missing arguments with '...'"
-        )
+                foo(1, b=..., c=...)
+                """,
+                "Populate arguments..."
+            )
+        }
     }
 
     fun testPositionalOnlyFunctionCall_NoPopulateOffered() {
@@ -111,7 +120,7 @@ class KwOnlyArgumentsIntentionTest : TestBase() {
 
             sleep(1<caret>)
             """,
-            "Populate missing arguments with '...'"
+            "Populate arguments"
         )
     }
 }

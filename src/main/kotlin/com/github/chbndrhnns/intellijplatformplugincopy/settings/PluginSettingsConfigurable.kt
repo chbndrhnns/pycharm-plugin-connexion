@@ -14,9 +14,7 @@ class PluginSettingsConfigurable : SearchableConfigurable {
     private lateinit var enableUnwrapCb: JBCheckBox
     private lateinit var enableUnwrapItemsCb: JBCheckBox
     private lateinit var enableIntroduceCustomTypeCb: JBCheckBox
-    private lateinit var enablePopulateKwOnlyArgsCb: JBCheckBox
-    private lateinit var enablePopulateRequiredArgsCb: JBCheckBox
-    private lateinit var enablePopulateRecursiveArgsCb: JBCheckBox
+    private lateinit var enablePopulateArgumentsCb: JBCheckBox
     private lateinit var enableDunderAllInspectionCb: JBCheckBox
     private lateinit var enableCopyPackageContentCb: JBCheckBox
     private lateinit var enableRestoreSourceRootPrefixCb: JBCheckBox
@@ -34,9 +32,7 @@ class PluginSettingsConfigurable : SearchableConfigurable {
         enableUnwrapCb = JBCheckBox("Enable ‘Unwrap to expected type’ intention")
         enableUnwrapItemsCb = JBCheckBox("Enable ‘Unwrap items to expected type’ intention")
         enableIntroduceCustomTypeCb = JBCheckBox("Enable ‘Introduce custom type from stdlib’ intention")
-        enablePopulateKwOnlyArgsCb = JBCheckBox("Enable ‘Populate missing call arguments’ intention")
-        enablePopulateRequiredArgsCb = JBCheckBox("Enable ‘Populate missing required call arguments’ intention")
-        enablePopulateRecursiveArgsCb = JBCheckBox("Enable ‘Populate missing arguments recursively’ intention")
+        enablePopulateArgumentsCb = JBCheckBox("Enable ‘Populate arguments’ intention")
         enableDunderAllInspectionCb = JBCheckBox("Enable ‘__all__’ export inspection")
         enableCopyPackageContentCb = JBCheckBox("Enable ‘Copy Package Content’ context menu action")
         enableRestoreSourceRootPrefixCb = JBCheckBox("Enable ‘Restore Source Root Prefix’ in imports")
@@ -46,9 +42,7 @@ class PluginSettingsConfigurable : SearchableConfigurable {
         inner.add(enableUnwrapCb)
         inner.add(enableUnwrapItemsCb)
         inner.add(enableIntroduceCustomTypeCb)
-        inner.add(enablePopulateKwOnlyArgsCb)
-        inner.add(enablePopulateRequiredArgsCb)
-        inner.add(enablePopulateRecursiveArgsCb)
+        inner.add(enablePopulateArgumentsCb)
         inner.add(enableDunderAllInspectionCb)
         inner.add(enableCopyPackageContentCb)
         inner.add(enableRestoreSourceRootPrefixCb)
@@ -65,9 +59,7 @@ class PluginSettingsConfigurable : SearchableConfigurable {
                 (::enableUnwrapCb.isInitialized && enableUnwrapCb.isSelected != state.enableUnwrapToExpectedTypeIntention) ||
                 (::enableUnwrapItemsCb.isInitialized && enableUnwrapItemsCb.isSelected != state.enableUnwrapItemsToExpectedTypeIntention) ||
                 (::enableIntroduceCustomTypeCb.isInitialized && enableIntroduceCustomTypeCb.isSelected != state.enableIntroduceCustomTypeFromStdlibIntention) ||
-                (::enablePopulateKwOnlyArgsCb.isInitialized && enablePopulateKwOnlyArgsCb.isSelected != state.enablePopulateKwOnlyArgumentsIntention) ||
-                (::enablePopulateRequiredArgsCb.isInitialized && enablePopulateRequiredArgsCb.isSelected != state.enablePopulateRequiredArgumentsIntention) ||
-                (::enablePopulateRecursiveArgsCb.isInitialized && enablePopulateRecursiveArgsCb.isSelected != state.enablePopulateRecursiveArgumentsIntention) ||
+                (::enablePopulateArgumentsCb.isInitialized && enablePopulateArgumentsCb.isSelected != state.enablePopulateArgumentsIntention) ||
                 (::enableDunderAllInspectionCb.isInitialized && enableDunderAllInspectionCb.isSelected != state.enablePyMissingInDunderAllInspection) ||
                 (::enableCopyPackageContentCb.isInitialized && enableCopyPackageContentCb.isSelected != state.enableCopyPackageContentAction) ||
                 (::enableRestoreSourceRootPrefixCb.isInitialized && enableRestoreSourceRootPrefixCb.isSelected != state.enableRestoreSourceRootPrefix) ||
@@ -82,9 +74,7 @@ class PluginSettingsConfigurable : SearchableConfigurable {
             enableUnwrapToExpectedTypeIntention = enableUnwrapCb.isSelected,
             enableUnwrapItemsToExpectedTypeIntention = enableUnwrapItemsCb.isSelected,
             enableIntroduceCustomTypeFromStdlibIntention = enableIntroduceCustomTypeCb.isSelected,
-            enablePopulateKwOnlyArgumentsIntention = enablePopulateKwOnlyArgsCb.isSelected,
-            enablePopulateRequiredArgumentsIntention = enablePopulateRequiredArgsCb.isSelected,
-            enablePopulateRecursiveArgumentsIntention = enablePopulateRecursiveArgsCb.isSelected,
+            enablePopulateArgumentsIntention = enablePopulateArgumentsCb.isSelected,
             enablePyMissingInDunderAllInspection = enableDunderAllInspectionCb.isSelected,
             enableCopyPackageContentAction = enableCopyPackageContentCb.isSelected,
             enableRestoreSourceRootPrefix = enableRestoreSourceRootPrefixCb.isSelected,
@@ -103,12 +93,8 @@ class PluginSettingsConfigurable : SearchableConfigurable {
             st.enableUnwrapItemsToExpectedTypeIntention
         if (::enableIntroduceCustomTypeCb.isInitialized) enableIntroduceCustomTypeCb.isSelected =
             st.enableIntroduceCustomTypeFromStdlibIntention
-        if (::enablePopulateKwOnlyArgsCb.isInitialized) enablePopulateKwOnlyArgsCb.isSelected =
-            st.enablePopulateKwOnlyArgumentsIntention
-        if (::enablePopulateRequiredArgsCb.isInitialized) enablePopulateRequiredArgsCb.isSelected =
-            st.enablePopulateRequiredArgumentsIntention
-        if (::enablePopulateRecursiveArgsCb.isInitialized) enablePopulateRecursiveArgsCb.isSelected =
-            st.enablePopulateRecursiveArgumentsIntention
+        if (::enablePopulateArgumentsCb.isInitialized) enablePopulateArgumentsCb.isSelected =
+            st.enablePopulateArgumentsIntention
         if (::enableDunderAllInspectionCb.isInitialized) enableDunderAllInspectionCb.isSelected =
             st.enablePyMissingInDunderAllInspection
         if (::enableCopyPackageContentCb.isInitialized) enableCopyPackageContentCb.isSelected =

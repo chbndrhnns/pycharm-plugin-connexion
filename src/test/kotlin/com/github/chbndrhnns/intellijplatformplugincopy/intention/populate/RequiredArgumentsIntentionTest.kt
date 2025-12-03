@@ -3,105 +3,114 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.populate
 import fixtures.TestBase
 import fixtures.assertIntentionNotAvailable
 import fixtures.doIntentionTest
+import fixtures.withPopulatePopupSelection
 
 class RequiredArgumentsIntentionTest : TestBase() {
 
     fun testDataclassPopulation_OnlyRequiredFields() {
-        myFixture.doIntentionTest(
-            "a.py",
-            """
-            from dataclasses import dataclass
+        withPopulatePopupSelection(index = 1) { // Required only, non-recursive
+            myFixture.doIntentionTest(
+                "a.py",
+                """
+                from dataclasses import dataclass
 
-            @dataclass
-            class A:
-                x: int
-                y: int
-                z: int = 1
+                @dataclass
+                class A:
+                    x: int
+                    y: int
+                    z: int = 1
 
-            a = A(<caret>)
-            """,
-            """
-            from dataclasses import dataclass
+                a = A(<caret>)
+                """,
+                """
+                from dataclasses import dataclass
 
-            @dataclass
-            class A:
-                x: int
-                y: int
-                z: int = 1
+                @dataclass
+                class A:
+                    x: int
+                    y: int
+                    z: int = 1
 
-            a = A(x=..., y=...)
-            """,
-            "Populate required arguments with '...'"
-        )
+                a = A(x=..., y=...)
+                """,
+                "Populate arguments..."
+            )
+        }
     }
 
     fun testKwOnlyMethods_RequiredOnly() {
-        myFixture.doIntentionTest(
-            "a.py",
-            """
-            class C:
-                def foo(self, *, a, b=1):
-                    pass
+        withPopulatePopupSelection(index = 1) {
+            myFixture.doIntentionTest(
+                "a.py",
+                """
+                class C:
+                    def foo(self, *, a, b=1):
+                        pass
 
-            C().foo(<caret>)
-            """,
-            """
-            class C:
-                def foo(self, *, a, b=1):
-                    pass
+                C().foo(<caret>)
+                """,
+                """
+                class C:
+                    def foo(self, *, a, b=1):
+                        pass
 
-            C().foo(a=...)
-            """,
-            "Populate required arguments with '...'"
-        )
+                C().foo(a=...)
+                """,
+                "Populate arguments..."
+            )
+        }
     }
 
     fun testNestedClass_RequiredOnly() {
-        myFixture.doIntentionTest(
-            "a.py",
-            """
-            from dataclasses import dataclass
+        withPopulatePopupSelection(index = 1) {
+            myFixture.doIntentionTest(
+                "a.py",
+                """
+                from dataclasses import dataclass
 
-            class Outer:
-                @dataclass
-                class Inner:
-                    f: int
-                    g: int | None = None
+                class Outer:
+                    @dataclass
+                    class Inner:
+                        f: int
+                        g: int | None = None
 
-            Outer.Inner(<caret>)
-            """,
-            """
-            from dataclasses import dataclass
+                Outer.Inner(<caret>)
+                """,
+                """
+                from dataclasses import dataclass
 
-            class Outer:
-                @dataclass
-                class Inner:
-                    f: int
-                    g: int | None = None
+                class Outer:
+                    @dataclass
+                    class Inner:
+                        f: int
+                        g: int | None = None
 
-            Outer.Inner(f=...)
-            """,
-            "Populate required arguments with '...'"
-        )
+                Outer.Inner(f=...)
+                """,
+                "Populate arguments..."
+            )
+        }
     }
 
     fun testPartialArguments_OnlyMissingRequired() {
-        myFixture.doIntentionTest(
-            "a.py",
-            """
-            def foo(a, b, c=3):
-                pass
+        withPopulatePopupSelection(index = 1) {
+            myFixture.doIntentionTest(
+                "a.py",
+                """
+                def foo(a, b, c=3):
+                    pass
 
-            foo(1, <caret>)
-            """,
-            """
-            def foo(a, b, c=3):
-                pass
+                foo(1, <caret>)
+                """,
+                """
+                def foo(a, b, c=3):
+                    pass
 
-            foo(1, b=...)
-            """,
-            "Populate required arguments with '...'"
-        )
+                foo(1, b=...)
+                """,
+                "Populate arguments..."
+            )
+        }
     }
 
     fun testPositionalOnlyFunctionCall_NoPopulateOffered() {
@@ -113,7 +122,7 @@ class RequiredArgumentsIntentionTest : TestBase() {
 
             sleep(1<caret>)
             """,
-            "Populate required arguments with '...'"
+            "Populate arguments"
         )
     }
 }

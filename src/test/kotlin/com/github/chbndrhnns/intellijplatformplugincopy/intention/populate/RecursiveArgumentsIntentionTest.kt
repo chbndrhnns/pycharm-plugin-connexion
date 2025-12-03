@@ -3,11 +3,13 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.populate
 import fixtures.TestBase
 import fixtures.assertIntentionNotAvailable
 import fixtures.doIntentionTest
+import fixtures.withPopulatePopupSelection
 
 class RecursiveArgumentsIntentionTest : TestBase() {
 
     fun testRecursiveDataclassPopulation() {
-        myFixture.doIntentionTest(
+        withPopulatePopupSelection(index = 2) {
+            myFixture.doIntentionTest(
             "a.py",
             """
             from dataclasses import dataclass
@@ -46,12 +48,14 @@ class RecursiveArgumentsIntentionTest : TestBase() {
             a = A(b=B(c=C(x=..., z=...)))
 
             """,
-            "Populate missing arguments recursively"
+                "Populate arguments..."
         )
+        }
     }
 
     fun testMixedTypesPopulation() {
-        myFixture.doIntentionTest(
+        withPopulatePopupSelection(index = 2) {
+            myFixture.doIntentionTest(
             "a.py",
             """
             from dataclasses import dataclass
@@ -82,12 +86,14 @@ class RecursiveArgumentsIntentionTest : TestBase() {
             a = Node(leaf=Leaf(val=...), other=...)
 
             """,
-            "Populate missing arguments recursively"
+                "Populate arguments..."
         )
+        }
     }
 
     fun testUnionWithDataclass() {
-        myFixture.doIntentionTest(
+        withPopulatePopupSelection(index = 2) {
+            myFixture.doIntentionTest(
             "a.py",
             """
             from dataclasses import dataclass
@@ -118,12 +124,14 @@ class RecursiveArgumentsIntentionTest : TestBase() {
             e = E(d=D(v=...))
 
             """,
-            "Populate missing arguments recursively"
+                "Populate arguments..."
         )
+        }
     }
 
     fun testRecursionLimit() {
-        myFixture.doIntentionTest(
+        withPopulatePopupSelection(index = 2) {
+            myFixture.doIntentionTest(
             "a.py",
             """
             from dataclasses import dataclass
@@ -144,8 +152,9 @@ class RecursiveArgumentsIntentionTest : TestBase() {
             a = Rec(r=Rec(r=Rec(r=Rec(r=Rec(r=Rec(r=Rec(r=...)))))))
 
             """,
-            "Populate missing arguments recursively"
+                "Populate arguments..."
         )
+        }
     }
 
     fun testPositionalOnlyFunctionCall_NoPopulateOffered() {
@@ -157,7 +166,7 @@ class RecursiveArgumentsIntentionTest : TestBase() {
 
             sleep(1<caret>)
             """,
-            "Populate missing arguments recursively"
+            "Populate arguments"
         )
     }
 }

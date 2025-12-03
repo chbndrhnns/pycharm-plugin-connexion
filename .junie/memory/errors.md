@@ -108,3 +108,13 @@
     "NEW INSTRUCTION": "WHEN popup callback performs PSI modifications THEN wrap code in WriteCommandAction.runWriteCommandAction(project)"
 }
 
+[2025-12-03 13:05] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "apply_patch",
+    "ERROR": "Malformed patch: truncated content and missing end marker",
+    "ROOT CAUSE": "The patch for PluginSettingsState.kt was cut off with ellipses and lacked *** End Patch, making it unparsable.",
+    "PROJECT NOTE": "When editing PluginSettingsState, fully remove flags enablePopulateKwOnlyArgumentsIntention, enablePopulateRequiredArgumentsIntention, and enablePopulateRecursiveArgumentsIntention from State, apply/reset/copy, and any references.",
+    "NEW INSTRUCTION": "WHEN patch content shows ellipses or lacks *** End Patch THEN recreate a complete, well-formed patch before applying"
+}
+

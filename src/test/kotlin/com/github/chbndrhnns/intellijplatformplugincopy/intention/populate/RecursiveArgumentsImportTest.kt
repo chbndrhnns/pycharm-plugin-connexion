@@ -2,6 +2,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.populate
 
 import fixtures.TestBase
 import fixtures.doIntentionTest
+import fixtures.withPopulatePopupSelection
 
 class RecursiveArgumentsImportTest : TestBase() {
 
@@ -21,7 +22,8 @@ class RecursiveArgumentsImportTest : TestBase() {
             """.trimIndent()
         )
 
-        myFixture.doIntentionTest(
+        withPopulatePopupSelection(index = 2) {
+            myFixture.doIntentionTest(
             "main.py",
             """
             from dataclasses import dataclass
@@ -42,8 +44,9 @@ class RecursiveArgumentsImportTest : TestBase() {
                 m = Main(f=Other(val=...))
 
             """,
-            "Populate missing arguments recursively"
+            "Populate arguments..."
         )
+        }
     }
 
     fun testMissingImportAddedMore() {
@@ -70,7 +73,8 @@ class RecursiveArgumentsImportTest : TestBase() {
             """.trimIndent()
         )
 
-        myFixture.doIntentionTest(
+        withPopulatePopupSelection(index = 2) {
+            myFixture.doIntentionTest(
             "main.py",
             """
             from dataclasses import dataclass
@@ -91,7 +95,8 @@ class RecursiveArgumentsImportTest : TestBase() {
                 m = Main(b=B(c=C(x=..., z=...)))
 
             """,
-            "Populate missing arguments recursively"
+            "Populate arguments..."
         )
+        }
     }
 }

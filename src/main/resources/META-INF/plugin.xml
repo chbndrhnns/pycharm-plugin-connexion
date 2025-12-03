@@ -49,24 +49,7 @@
             <category>Arguments</category>
         </intentionAction>
 
-        <!-- Deprecated: kept for backward compatibility, will be removed in future release -->
-        <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.PopulateKwOnlyArgumentsIntention
-            </className>
-            <category>Arguments</category>
-        </intentionAction>
-
-        <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.PopulateRequiredArgumentsIntention
-            </className>
-            <category>Arguments</category>
-        </intentionAction>
-
-        <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.PopulateRecursiveArgumentsIntention
-            </className>
-            <category>Arguments</category>
-        </intentionAction>
+        <!-- Deprecated populate intentions removed -->
 
         <applicationConfigurable
                 displayName="DDD Toolkit"

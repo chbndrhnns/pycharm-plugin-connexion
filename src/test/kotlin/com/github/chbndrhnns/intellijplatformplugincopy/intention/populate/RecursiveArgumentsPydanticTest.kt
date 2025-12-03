@@ -2,13 +2,15 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.populate
 
 import fixtures.TestBase
 import fixtures.doIntentionTest
+import fixtures.withPopulatePopupSelection
 
 class RecursiveArgumentsPydanticTest : TestBase() {
 
     fun testPydanticAlias() {
         // We define a mock Pydantic structure. 
         // Note: effectively simulating what pydantic does for the type checker.
-        myFixture.doIntentionTest(
+        withPopulatePopupSelection(index = 2) {
+            myFixture.doIntentionTest(
             "a.py",
             """
             # Mimic basic Pydantic parts
@@ -41,14 +43,15 @@ class RecursiveArgumentsPydanticTest : TestBase() {
                 name: str = Field(alias="userName")
 
             u = User(userName=...)
-
             """,
-            "Populate missing arguments recursively"
+            "Populate arguments..."
         )
+        }
     }
 
     fun testPydanticAliasRecursive() {
-        myFixture.doIntentionTest(
+        withPopulatePopupSelection(index = 2) {
+            myFixture.doIntentionTest(
             "a.py",
             """
             from typing import dataclass_transform
@@ -87,7 +90,8 @@ class RecursiveArgumentsPydanticTest : TestBase() {
             o = Outer(inner=Inner(value=...))
 
             """,
-            "Populate missing arguments recursively"
+            "Populate arguments..."
         )
+        }
     }
 }

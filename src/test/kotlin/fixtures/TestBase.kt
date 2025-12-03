@@ -21,15 +21,12 @@ abstract class TestBase : MyPlatformTestCase() {
         val svc = PluginSettingsState.instance()
         svc.loadState(
             PluginSettingsState.State(
-                //
                 enableWrapWithExpectedTypeIntention = true,
                 enableWrapItemsWithExpectedTypeIntention = true,
                 enableUnwrapToExpectedTypeIntention = true,
                 enableUnwrapItemsToExpectedTypeIntention = true,
                 enableIntroduceCustomTypeFromStdlibIntention = true,
-                enablePopulateKwOnlyArgumentsIntention = true,
-                enablePopulateRequiredArgumentsIntention = true,
-                enablePopulateRecursiveArgumentsIntention = true,
+                enablePopulateArgumentsIntention = true,
                 enablePyMissingInDunderAllInspection = true,
                 enableCopyPackageContentAction = true,
                 enableRestoreSourceRootPrefix = true,

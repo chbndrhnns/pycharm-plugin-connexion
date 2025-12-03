@@ -15,8 +15,6 @@ import com.jetbrains.python.psi.types.*
 
 /**
  * Service that provides shared logic for populating call arguments.
- * Extracted from PopulateKwOnlyArgumentsIntention, PopulateRequiredArgumentsIntention,
- * and PopulateRecursiveArgumentsIntention.
  */
 class PopulateArgumentsService {
 
@@ -241,15 +239,13 @@ class PopulateArgumentsService {
         if (initMethod != null) {
             val callableType = context.getType(initMethod) as? PyCallableType
             val params = callableType?.getParameters(context)
-            if (params != null) {
-                params.filter { !it.isSelf && !it.isPositionalContainer && !it.isKeywordContainer }.forEach { param ->
-                    var name = param.name ?: return@forEach
-                    val field = pyClass.findClassAttribute(name, true, context) as? PyTargetExpression
-                    if (field != null) {
-                        name = resolveFieldAlias(pyClass, field, context, name)
-                    }
-                    fields.add(name to param.getType(context))
+            params?.filter { !it.isSelf && !it.isPositionalContainer && !it.isKeywordContainer }?.forEach { param ->
+                var name = param.name ?: return@forEach
+                val field = pyClass.findClassAttribute(name, true, context)
+                if (field != null) {
+                    name = resolveFieldAlias(pyClass, field, context, name)
                 }
+                fields.add(name to param.getType(context))
             }
         } else {
             // Fallback for synthetic __init__

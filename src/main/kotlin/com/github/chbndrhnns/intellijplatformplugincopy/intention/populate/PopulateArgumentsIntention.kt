@@ -7,12 +7,12 @@ import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Iconable
 import com.intellij.psi.PsiFile
-import com.intellij.openapi.command.WriteCommandAction
 import com.jetbrains.python.psi.PyFile
 import com.jetbrains.python.psi.types.TypeEvalContext
 import javax.swing.Icon
@@ -46,7 +46,7 @@ class PopulateArgumentsIntention : IntentionAction, HighPriorityAction, DumbAwar
     override fun getIcon(@Iconable.IconFlags flags: Int): Icon = AllIcons.Actions.IntentionBulb
 
     override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
-        if (!isEnabled()) return false
+        if (!PluginSettingsState.instance().state.enablePopulateArgumentsIntention) return false
         if (file !is PyFile) return false
 
         val call = service.findCallExpression(editor, file) ?: return false
@@ -56,6 +56,7 @@ class PopulateArgumentsIntention : IntentionAction, HighPriorityAction, DumbAwar
     }
 
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
+        if (!PluginSettingsState.instance().state.enablePopulateArgumentsIntention) return
         val pyFile = file as? PyFile ?: return
         val call = service.findCallExpression(editor, pyFile) ?: return
         val ctx = TypeEvalContext.userInitiated(project, pyFile)
@@ -86,19 +87,8 @@ class PopulateArgumentsIntention : IntentionAction, HighPriorityAction, DumbAwar
     }
 
     override fun generatePreview(project: Project, editor: Editor, file: PsiFile): IntentionPreviewInfo {
-        // Preview is not shown for popup-based intentions
         return IntentionPreviewInfo.EMPTY
     }
 
-    // Intention action itself doesn't perform writes; actual PSI changes happen
-    // inside the chooser callback wrapped in WriteCommandAction above.
     override fun startInWriteAction(): Boolean = false
-
-    private fun isEnabled(): Boolean {
-        val state = PluginSettingsState.instance().state
-        // Enable if any of the old populate intentions are enabled
-        return state.enablePopulateKwOnlyArgumentsIntention ||
-                state.enablePopulateRequiredArgumentsIntention ||
-                state.enablePopulateRecursiveArgumentsIntention
-    }
 }
