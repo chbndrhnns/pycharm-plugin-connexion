@@ -26,7 +26,11 @@ import javax.swing.Icon
  *
  * Optional parameters (those with default values) are left untouched so the
  * generated call stays minimal.
+ *
+ * @deprecated Use [com.github.chbndrhnns.intellijplatformplugincopy.intention.populate.PopulateArgumentsIntention] instead.
+ *             This intention is kept for backward compatibility and will be removed in a future release.
  */
+@Deprecated("Use PopulateArgumentsIntention instead", ReplaceWith("PopulateArgumentsIntention"))
 class PopulateRequiredArgumentsIntention : IntentionAction, HighPriorityAction, DumbAware, Iconable {
 
     private var text: String = "Populate required arguments with '...'"

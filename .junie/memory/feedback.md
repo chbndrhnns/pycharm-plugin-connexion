@@ -70,3 +70,19 @@
     "NEW INSTRUCTION": "WHEN refactor item \"Creating Import Statements from Text\" is in scope THEN skip it and leave import creation code unchanged"
 }
 
+[2025-12-03 11:58] - Updated by Junie
+{
+    "TYPE": "new instructions",
+    "CATEGORY": "UI popup",
+    "ERROR": "-",
+    "NEW INSTRUCTION": "WHEN implementing populate options UI THEN use JbPopupHost list popup pattern"
+}
+
+[2025-12-03 12:49] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "write actions",
+    "ERROR": "PSI modified outside write command/action",
+    "NEW INSTRUCTION": "WHEN performing PSI modifications in intentions or popup callbacks THEN wrap in WriteCommandAction.runWriteCommandAction(project)"
+}
+

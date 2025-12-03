@@ -1,17 +1,10 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.intention
+package com.github.chbndrhnns.intellijplatformplugincopy.intention.populate
 
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.isDataclassClass
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.isPositionalOnlyCallable
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.PyImportService
-import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
-import com.intellij.codeInsight.intention.HighPriorityAction
-import com.intellij.codeInsight.intention.IntentionAction
-import com.intellij.icons.AllIcons
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Iconable
-import com.intellij.psi.PsiFile
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.codeInsight.parseDataclassParameters
@@ -19,76 +12,145 @@ import com.jetbrains.python.codeInsight.resolveDataclassFieldParameters
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.resolve.PyResolveContext
 import com.jetbrains.python.psi.types.*
-import javax.swing.Icon
 
 /**
- * Intention that populates missing call arguments (including keyword-only parameters)
- * at the caret recursively for submodels (dataclasses, Pydantic models).
- *
- *     A(<caret>) -> A(b=B(c=...))
- *
- * @deprecated Use [com.github.chbndrhnns.intellijplatformplugincopy.intention.populate.PopulateArgumentsIntention] instead.
- *             This intention is kept for backward compatibility and will be removed in a future release.
+ * Service that provides shared logic for populating call arguments.
+ * Extracted from PopulateKwOnlyArgumentsIntention, PopulateRequiredArgumentsIntention,
+ * and PopulateRecursiveArgumentsIntention.
  */
-@Deprecated("Use PopulateArgumentsIntention instead", ReplaceWith("PopulateArgumentsIntention"))
-class PopulateRecursiveArgumentsIntention : IntentionAction, HighPriorityAction, DumbAware, Iconable {
+class PopulateArgumentsService {
 
-    private var text: String = "Populate missing arguments recursively"
     private val imports: PyImportService = PyImportService()
 
-    override fun getText(): String = text
-
-    override fun getFamilyName(): String = "Populate arguments"
-
-    override fun getIcon(@Iconable.IconFlags flags: Int): Icon = AllIcons.Actions.IntentionBulb
-
-    override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
-        if (!PluginSettingsState.instance().state.enablePopulateRecursiveArgumentsIntention) {
-            return false
-        }
-
-        if (file !is PyFile) return false
-
-        val call = findCallExpression(editor, file) ?: return false
-
-        val ctx = TypeEvalContext.codeAnalysis(project, file)
-
-        // Do not offer for positional-only function calls
-        if (isPositionalOnlyCallable(call)) return false
-
-        val missing = getMissingParameters(call, ctx)
-        return missing.isNotEmpty()
+    /**
+     * Finds the PyCallExpression at the current caret position.
+     */
+    fun findCallExpression(editor: Editor, file: PyFile): PyCallExpression? {
+        val offset = editor.caretModel.offset
+        val element = file.findElementAt(offset) ?: return null
+        return PsiTreeUtil.getParentOfType(element, PyCallExpression::class.java, /* strict = */ false)
     }
 
-    override fun invoke(project: Project, editor: Editor, file: PsiFile) {
-        val pyFile = file as? PyFile ?: return
-        val call = findCallExpression(editor, pyFile) ?: return
+    /**
+     * Returns all missing parameters for the given call expression.
+     */
+    fun getMissingParameters(call: PyCallExpression, context: TypeEvalContext): List<PyCallableParameter> {
+        val resolveContext = PyResolveContext.defaultContext(context)
+        val mappings = call.multiMapArguments(resolveContext)
+        if (mappings.isEmpty()) return emptyList()
 
-        val ctx = TypeEvalContext.userInitiated(project, pyFile)
-        val missing = getMissingParameters(call, ctx)
+        val mapping = mappings.first()
+        val callableType: PyCallableType = mapping.callableType ?: return emptyList()
+
+        val allParams = callableType.getParameters(context) ?: return emptyList()
+        val mapped = mapping.mappedParameters
+
+        return allParams
+            .asSequence()
+            .filter { !it.isSelf }
+            .filter { !it.isPositionalContainer && !it.isKeywordContainer }
+            .filter { param -> !mapped.values.contains(param) }
+            .filter { it.name != null }
+            .toList()
+    }
+
+    /**
+     * Returns only missing required parameters (those without default values).
+     */
+    fun getMissingRequiredParameters(call: PyCallExpression, context: TypeEvalContext): List<PyCallableParameter> {
+        return getMissingParameters(call, context).filter { !it.hasDefaultValue() }
+    }
+
+    /**
+     * Checks if the intention should be available for the given call.
+     */
+    fun isAvailable(call: PyCallExpression, context: TypeEvalContext): Boolean {
+        if (isPositionalOnlyCallable(call)) return false
+        return getMissingParameters(call, context).isNotEmpty()
+    }
+
+    /**
+     * Checks if recursive mode is applicable (i.e., any missing parameter has a dataclass type).
+     */
+    fun isRecursiveApplicable(call: PyCallExpression, context: TypeEvalContext): Boolean {
+        val missing = getMissingParameters(call, context)
+        return missing.any { param ->
+            val type = param.getType(context)
+            hasDataclassType(type, context)
+        }
+    }
+
+    private fun hasDataclassType(type: PyType?, context: TypeEvalContext): Boolean {
+        return when (type) {
+            is PyClassType -> isDataclassClass(type.pyClass)
+            is PyUnionType -> type.members.any { hasDataclassType(it, context) }
+            else -> false
+        }
+    }
+
+    /**
+     * Populates the call with missing arguments based on the given options.
+     */
+    fun populateArguments(
+        project: Project,
+        file: PyFile,
+        call: PyCallExpression,
+        options: PopulateOptions,
+        context: TypeEvalContext
+    ) {
+        val missing = when (options.mode) {
+            PopulateMode.ALL -> getMissingParameters(call, context)
+            PopulateMode.REQUIRED_ONLY -> getMissingRequiredParameters(call, context)
+        }
         if (missing.isEmpty()) return
 
         val generator = PyElementGenerator.getInstance(project)
         val argumentList = call.argumentList ?: return
-        val languageLevel = LanguageLevel.forElement(pyFile)
+        val languageLevel = LanguageLevel.forElement(file)
 
+        if (options.recursive) {
+            populateRecursively(project, file, argumentList, missing, context, generator, languageLevel)
+        } else {
+            populateSimple(argumentList, missing, generator, languageLevel)
+        }
+    }
+
+    private fun populateSimple(
+        argumentList: PyArgumentList,
+        missing: List<PyCallableParameter>,
+        generator: PyElementGenerator,
+        languageLevel: LanguageLevel
+    ) {
+        for (param in missing) {
+            val name = param.name ?: continue
+            val arg: PyKeywordArgument = generator.createKeywordArgument(languageLevel, name, "...")
+            argumentList.addArgument(arg)
+        }
+    }
+
+    private fun populateRecursively(
+        project: Project,
+        file: PyFile,
+        argumentList: PyArgumentList,
+        missing: List<PyCallableParameter>,
+        context: TypeEvalContext,
+        generator: PyElementGenerator,
+        languageLevel: LanguageLevel
+    ) {
         val paramData = missing.mapNotNull { param ->
             val name = param.name ?: return@mapNotNull null
-            val type = param.getType(ctx)
-            val result = generateValue(type, ctx, 0, generator, languageLevel)
+            val type = param.getType(context)
+            val result = generateValue(type, context, 0, generator, languageLevel)
             Triple(param, name, result)
         }
 
-        // First, create placeholder keyword arguments for all missing params to ensure
-        // we always insert arguments in a stable way, even if valueExpr creation fails.
+        // First, create placeholder keyword arguments for all missing params
         for ((_, name, _) in paramData) {
             val kwArg = generator.createKeywordArgument(languageLevel, name, "None")
             argumentList.addArgument(kwArg)
         }
 
-        // Then, replace placeholder values and ensure any referenced dataclass types
-        // are imported using the shared PyImportService logic, reusing existing
-        // relative imports like "from .models import Main" where possible.
+        // Then, replace placeholder values and ensure imports
         for ((_, name, result) in paramData) {
             val kwArg = argumentList.arguments.filterIsInstance<PyKeywordArgument>().find { it.keyword == name }
             if (kwArg != null) {
@@ -97,7 +159,7 @@ class PopulateRecursiveArgumentsIntention : IntentionAction, HighPriorityAction,
 
                 // Ensure imports for all classes used in generation
                 for (cls in result.imports) {
-                    imports.ensureImportedIfNeeded(pyFile, replaced, cls)
+                    imports.ensureImportedIfNeeded(file, replaced, cls)
                 }
             }
         }
@@ -117,14 +179,13 @@ class PopulateRecursiveArgumentsIntention : IntentionAction, HighPriorityAction,
 
         return when (type) {
             is PyUnionType -> generateUnionValue(type, context, depth, generator, languageLevel)
-            is PyClassType if isDataclassClass(type.pyClass) -> generateDataclassValue(
-                type.pyClass,
-                context,
-                depth,
-                generator,
-                languageLevel
-            )
-
+            is PyClassType -> {
+                if (isDataclassClass(type.pyClass)) {
+                    generateDataclassValue(type.pyClass, context, depth, generator, languageLevel)
+                } else {
+                    GenerationResult(DEFAULT_FALLBACK_VALUE, emptySet())
+                }
+            }
             else -> GenerationResult(DEFAULT_FALLBACK_VALUE, emptySet())
         }
     }
@@ -209,34 +270,6 @@ class PopulateRecursiveArgumentsIntention : IntentionAction, HighPriorityAction,
         val dataclassParams = parseDataclassParameters(pyClass, context) ?: return originalName
         val fieldParams = resolveDataclassFieldParameters(pyClass, dataclassParams, field, context)
         return fieldParams?.alias ?: originalName
-    }
-
-    override fun startInWriteAction(): Boolean = true
-
-    private fun findCallExpression(editor: Editor, file: PyFile): PyCallExpression? {
-        val offset = editor.caretModel.offset
-        val element = file.findElementAt(offset) ?: return null
-        return PsiTreeUtil.getParentOfType(element, PyCallExpression::class.java, /* strict = */ false)
-    }
-
-    private fun getMissingParameters(call: PyCallExpression, context: TypeEvalContext): List<PyCallableParameter> {
-        val resolveContext = PyResolveContext.defaultContext(context)
-        val mappings = call.multiMapArguments(resolveContext)
-        if (mappings.isEmpty()) return emptyList()
-
-        val mapping = mappings.first()
-        val callableType: PyCallableType = mapping.callableType ?: return emptyList()
-
-        val allParams = callableType.getParameters(context) ?: return emptyList()
-        val mapped = mapping.mappedParameters
-
-        return allParams
-            .asSequence()
-            .filter { !it.isSelf }
-            .filter { !it.isPositionalContainer && !it.isKeywordContainer }
-            .filter { param -> !mapped.values.contains(param) }
-            .filter { it.name != null }
-            .toList()
     }
 
     companion object {

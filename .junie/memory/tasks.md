@@ -149,3 +149,23 @@ directly.",
     "NEW INSTRUCTION": "WHEN modifying inspection registration or quick-fix applicability scope THEN Run full test suite and address failures before submitting."
 }
 
+[2025-12-03 11:57] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "ask user, prototype UI",
+    "BOTTLENECK": "Uncertain UI modality between floating toolbar and list popup.",
+    "PROJECT NOTE": "Existing PopupHost/JbPopupHost can be reused for the options selector.",
+    "NEW INSTRUCTION": "WHEN UI choice impacts implementation path THEN ask user to confirm floating toolbar or list popup preference"
+}
+
+[2025-12-03 12:10] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "design floating toolbar",
+    "MISSING STEPS": "implement JbPopupHost options popup, wire popup into unified intention invoke, update plugin.xml to register unified intention, deprecate old intentions, add UI tests with FakePopupHost, run tests",
+    "BOTTLENECK": "UI approach ambiguity delayed concrete JbPopupHost implementation.",
+    "PROJECT NOTE": "Repo already uses a PopupHost/JbPopupHost pattern; reuse that abstraction.",
+    "NEW INSTRUCTION": "WHEN implementing options UI for unified intention THEN use JbPopupHost list popup"
+}
+

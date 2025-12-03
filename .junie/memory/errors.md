@@ -98,3 +98,13 @@
     "NEW INSTRUCTION": "WHEN creating new test classes THEN extend fixtures.TestBase and use myFixture.module"
 }
 
+[2025-12-03 12:49] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid context",
+    "TOOL": "PopulateArgumentsService.populateArguments",
+    "ERROR": "PSI modified outside command/write action via popup callback",
+    "ROOT CAUSE": "The popup selection handler performs PSI writes without wrapping them in a WriteCommandAction/command.",
+    "PROJECT NOTE": "In the unified PopulateArgumentsIntention using JbPopupHost, wrap argument insertion in WriteCommandAction.runWriteCommandAction(project) inside the popup callback; startInWriteAction on the Intention doesn't cover async callbacks.",
+    "NEW INSTRUCTION": "WHEN popup callback performs PSI modifications THEN wrap code in WriteCommandAction.runWriteCommandAction(project)"
+}
+

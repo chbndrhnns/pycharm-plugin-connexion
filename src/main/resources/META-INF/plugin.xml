@@ -44,6 +44,13 @@
         </intentionAction>
 
         <intentionAction>
+            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.populate.PopulateArgumentsIntention
+            </className>
+            <category>Arguments</category>
+        </intentionAction>
+
+        <!-- Deprecated: kept for backward compatibility, will be removed in future release -->
+        <intentionAction>
             <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.PopulateKwOnlyArgumentsIntention
             </className>
             <category>Arguments</category>

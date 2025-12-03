@@ -23,7 +23,11 @@ import javax.swing.Icon
  * parameters) at the caret with placeholder ellipsis values, e.g.
  *
  *     A(<caret>) -> A(x=..., y=...)
+ *
+ * @deprecated Use [com.github.chbndrhnns.intellijplatformplugincopy.intention.populate.PopulateArgumentsIntention] instead.
+ *             This intention is kept for backward compatibility and will be removed in a future release.
  */
+@Deprecated("Use PopulateArgumentsIntention instead", ReplaceWith("PopulateArgumentsIntention"))
 class PopulateKwOnlyArgumentsIntention : IntentionAction, HighPriorityAction, DumbAware, Iconable {
 
     private var text: String = "Populate missing arguments with '...'"
