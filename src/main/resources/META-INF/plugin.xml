@@ -56,6 +56,18 @@
 
         <!-- Deprecated populate intentions removed -->
 
+        <intentionAction>
+            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.visibility.PyMakePublicIntention
+            </className>
+            <category>Visibility</category>
+        </intentionAction>
+
+        <intentionAction>
+            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.visibility.PyMakePrivateIntention
+            </className>
+            <category>Visibility</category>
+        </intentionAction>
+
         <applicationConfigurable
                 displayName="DDD Toolkit"
                 id="com.github.chbndrhnns.intellijplatformplugincopy.settings"
