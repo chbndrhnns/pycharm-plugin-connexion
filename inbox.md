@@ -2,6 +2,8 @@
 
 ## Pending Tasks
 
+- [ ] feat: Replace expected with actual test outcome
+- [ ] fix: investigate strange `.trimIndent() + "\n\n",` in testMethodIntroduceParameterObject
 - [ ] feat: Do not show popup when populating required args only
 - [ ] fix: Offer populate if arg not complete
 
