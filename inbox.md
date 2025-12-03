@@ -4,7 +4,6 @@
 
 - [ ] feat: Replace expected with actual test outcome
 - [ ] fix: investigate strange `.trimIndent() + "\n\n",` in testMethodIntroduceParameterObject
-- [ ] feat: Do not show popup when populating required args only
 - [ ] fix: Offer populate if arg not complete
 
 ```python
@@ -65,6 +64,7 @@ assert M(period<caret>=)
 
 ## Completed Tasks (newest first)
 
+- [N] feat: Do not show popup when populating required args only
 - [x] test normal classes when introducing types
 - [x] Make private/public
 - [x] fix: make quick fix appear on whole import statement if single one? `from domain._other import MyStr`
