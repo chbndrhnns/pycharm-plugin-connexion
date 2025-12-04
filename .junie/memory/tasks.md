@@ -369,3 +369,13 @@ directly.",
     "NEW INSTRUCTION": "WHEN a new test is added THEN run that single test to confirm it fails"
 }
 
+[2025-12-04 13:03] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "run full test suite, submit changes",
+    "BOTTLENECK": "Skipped running the full test suite to catch regressions before submitting.",
+    "PROJECT NOTE": "Ensure underscore filtering is applied consistently in required-only parameter paths too.",
+    "NEW INSTRUCTION": "WHEN targeted tests pass after implementing a fix THEN run the full test suite and summarize"
+}
+

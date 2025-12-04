@@ -248,3 +248,13 @@
     "NEW INSTRUCTION": "WHEN preparing expected 'after' text THEN remove trailing blank lines and final newline additions"
 }
 
+[2025-12-04 12:59] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Expected and actual text do not match",
+    "ROOT CAUSE": "PopulateArguments still includes underscore-prefixed parameters, but tests expect them ignored.",
+    "PROJECT NOTE": "In PopulateArgumentsService (e.g., getMissingParameters/population pipeline), filter out parameters/fields whose names start with '_' (also for dataclass constructor fields) while preserving self/cls logic.",
+    "NEW INSTRUCTION": "WHEN generating argument list THEN skip parameters with names starting with \"_\""
+}
+

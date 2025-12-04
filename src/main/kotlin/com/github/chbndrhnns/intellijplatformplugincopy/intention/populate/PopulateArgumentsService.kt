@@ -49,6 +49,7 @@ class PopulateArgumentsService {
             .filter { !it.isPositionalContainer && !it.isKeywordContainer }
             .filter { param -> !mapped.values.contains(param) }
             .filter { it.name != null }
+            .filter { !it.name!!.startsWith("_") }
             .toList()
     }
 
