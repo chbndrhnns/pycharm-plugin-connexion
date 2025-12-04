@@ -359,3 +359,13 @@ directly.",
     "NEW INSTRUCTION": "WHEN tests fail with 'Introduce parameter object' not in THEN update availability and parameter collection for *, /, *args, **kwargs"
 }
 
+[2025-12-04 12:40] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "add ad-hoc println debugging",
+    "MISSING STEPS": "run new test before change, remove debug code",
+    "BOTTLENECK": "Skipped running the newly added test before implementing the fix.",
+    "PROJECT NOTE": "Tests likely compare exact output formatting; ensure expected text matches generated imports and spacing.",
+    "NEW INSTRUCTION": "WHEN a new test is added THEN run that single test to confirm it fails"
+}
+

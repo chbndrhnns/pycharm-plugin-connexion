@@ -95,8 +95,32 @@ class PyIntroduceParameterObjectProcessor(
     private fun generateDataclassName(function: PyFunction): String {
         val name = function.name ?: "Params"
         // simple snake_case to CamelCase conversion for MVP
-        return name.split('_')
+        val baseName = name.split('_')
             .joinToString("") { it.replaceFirstChar { char -> char.uppercase() } } + "Params"
+
+        val file = function.containingFile as? PyFile ?: return baseName
+
+        var candidate = baseName
+        var index = 1
+        while (isNameTaken(file, candidate)) {
+            candidate = baseName + index
+            index++
+        }
+        return candidate
+    }
+
+    private fun isNameTaken(file: PyFile, name: String): Boolean {
+        if (file.findTopLevelClass(name) != null) return true
+        if (file.findTopLevelFunction(name) != null) return true
+        if (file.findTopLevelAttribute(name) != null) return true
+
+        for (stmt in file.importBlock) {
+            for (element in stmt.importElements) {
+                val visibleName = element.asName ?: element.importedQName?.lastComponent
+                if (visibleName == name) return true
+            }
+        }
+        return false
     }
 
     private fun createDataclass(
@@ -123,7 +147,7 @@ class PyIntroduceParameterObjectProcessor(
 
         val file = function.containingFile as PyFile
         val newClass = generator.createFromText(languageLevel, PyClass::class.java, sb.toString())
-        
+
         // Insert before function's top-level container
         var anchor: PsiElement = function
         while (anchor.parent != file && anchor.parent != null) {
@@ -132,7 +156,7 @@ class PyIntroduceParameterObjectProcessor(
 
         val added = file.addBefore(newClass, anchor) as PyClass
         file.addBefore(PsiParserFacade.getInstance(project).createWhiteSpaceFromText("\n\n\n"), anchor)
-        
+
         return added
     }
 

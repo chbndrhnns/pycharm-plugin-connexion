@@ -21,11 +21,14 @@
 
 ## In Progress Tasks
 
+- [ ] feat: When populating parameters, ignore any starting with an underscore
+- [ ] feat: When populating parameters, offer the quickfix only when inside the parentheses
 - [-] feat: Introduce parameter object (docs/parameter-object/state.md)
   - [ ] refactor: String and imports handling in PyIntroduceParameterObjectProcessor
   - [ ] check if there is a better way for `addDataclassImport`
   - [x] Deal with union types and annotated and forward refs
-  - [-] Deal with *args, **kwargs, *, / correctly
+  - [x] Deal with *args, **kwargs, *, / correctly
+  - [x] fix: no name conflicts if same class name exists
   - [ ] refactor: updateCallSites
 - [ ] Configure default base classes
 - [ ] feat: How to enable module-level skip for pydunder inspection?

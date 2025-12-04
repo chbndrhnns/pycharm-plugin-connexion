@@ -228,3 +228,23 @@
     "NEW INSTRUCTION": "WHEN mapping call-site arguments for a method with first param self/cls THEN skip that parameter in positional mapping"
 }
 
+[2025-12-04 12:34] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Expected/actual text mismatch in test result",
+    "ROOT CAUSE": "The processor doesn't detect dataclass name collisions and fails to suffix an index, producing a conflicting name.",
+    "PROJECT NOTE": "Implement collision-safe naming in PyIntroduceParameterObjectProcessor.kt (e.g., generateDataclassName): check current file scope and imports for the target name; if taken, append 1, 2, ... until unique.",
+    "NEW INSTRUCTION": "WHEN existing class with generated dataclass name in scope THEN append increasing index until the name is unique"
+}
+
+[2025-12-04 12:35] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Expected/actual text mismatch",
+    "ROOT CAUSE": "The expected 'after' text includes extra trailing newline(s), causing strict comparison failure.",
+    "PROJECT NOTE": "myFixture.checkResult compares text exactly; avoid appending extra blank lines in expected strings for doIntentionTest.",
+    "NEW INSTRUCTION": "WHEN preparing expected 'after' text THEN remove trailing blank lines and final newline additions"
+}
+
