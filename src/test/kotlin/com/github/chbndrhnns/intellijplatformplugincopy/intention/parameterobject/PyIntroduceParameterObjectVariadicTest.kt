@@ -1,20 +1,12 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject
 
-import com.intellij.openapi.ui.DialogWrapper
-import com.intellij.ui.UiInterceptors
 import fixtures.TestBase
 import fixtures.doIntentionTest
 
 class PyIntroduceParameterObjectVariadicTest : TestBase() {
 
     fun testArgs() {
-        UiInterceptors.register(object :
-            UiInterceptors.UiInterceptor<IntroduceParameterObjectDialog>(IntroduceParameterObjectDialog::class.java) {
-            override fun doIntercept(component: IntroduceParameterObjectDialog) {
-                component.close(DialogWrapper.OK_EXIT_CODE)
-            }
-        })
-        try {
+        withMockIntroduceParameterObjectDialog {
             myFixture.doIntentionTest(
                 "a.py",
                 """
@@ -44,19 +36,11 @@ class PyIntroduceParameterObjectVariadicTest : TestBase() {
                 """.trimIndent() + "\n\n",
                 "Introduce parameter object"
             )
-        } finally {
-            UiInterceptors.clear()
         }
     }
     
     fun testKwargs() {
-        UiInterceptors.register(object :
-            UiInterceptors.UiInterceptor<IntroduceParameterObjectDialog>(IntroduceParameterObjectDialog::class.java) {
-            override fun doIntercept(component: IntroduceParameterObjectDialog) {
-                component.close(DialogWrapper.OK_EXIT_CODE)
-            }
-        })
-        try {
+        withMockIntroduceParameterObjectDialog {
             myFixture.doIntentionTest(
                 "a.py",
                 """
@@ -86,19 +70,11 @@ class PyIntroduceParameterObjectVariadicTest : TestBase() {
                 """.trimIndent() + "\n\n",
                 "Introduce parameter object"
             )
-        } finally {
-            UiInterceptors.clear()
         }
     }
 
     fun testKwOnlySeparator() {
-        UiInterceptors.register(object :
-            UiInterceptors.UiInterceptor<IntroduceParameterObjectDialog>(IntroduceParameterObjectDialog::class.java) {
-            override fun doIntercept(component: IntroduceParameterObjectDialog) {
-                component.close(DialogWrapper.OK_EXIT_CODE)
-            }
-        })
-        try {
+        withMockIntroduceParameterObjectDialog {
             myFixture.doIntentionTest(
                 "a.py",
                 """
@@ -128,19 +104,11 @@ class PyIntroduceParameterObjectVariadicTest : TestBase() {
                 """.trimIndent() + "\n\n",
                 "Introduce parameter object"
             )
-        } finally {
-            UiInterceptors.clear()
         }
     }
 
      fun testPositionalOnlySeparator() {
-        UiInterceptors.register(object :
-            UiInterceptors.UiInterceptor<IntroduceParameterObjectDialog>(IntroduceParameterObjectDialog::class.java) {
-            override fun doIntercept(component: IntroduceParameterObjectDialog) {
-                component.close(DialogWrapper.OK_EXIT_CODE)
-            }
-        })
-        try {
+         withMockIntroduceParameterObjectDialog {
             myFixture.doIntentionTest(
                 "a.py",
                 """
@@ -170,8 +138,6 @@ class PyIntroduceParameterObjectVariadicTest : TestBase() {
                  """.trimIndent() + "\n\n",
                 "Introduce parameter object"
             )
-        } finally {
-            UiInterceptors.clear()
         }
     }
 }

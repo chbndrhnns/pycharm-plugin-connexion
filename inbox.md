@@ -28,7 +28,7 @@
   - [ ] Add to Refactoring this context menu
   - [ ] Use kwargs by default for dataclass
   - [ ] fix: investigate strange `.trimIndent() + "\n\n",` in testMethodIntroduceParameterObject
-  - [ ] Refactor tests to include the interceptor
+  - [x] Refactor tests to include the interceptor
   - [x] Deal with union types and annotated and forward refs
   - [x] Deal with *args, **kwargs, *, / correctly
   - [x] fix: no name conflicts if same class name exists

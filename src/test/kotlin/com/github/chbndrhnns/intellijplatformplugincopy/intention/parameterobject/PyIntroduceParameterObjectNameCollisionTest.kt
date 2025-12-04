@@ -1,20 +1,12 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject
 
-import com.intellij.openapi.ui.DialogWrapper
-import com.intellij.ui.UiInterceptors
 import fixtures.TestBase
 import fixtures.doIntentionTest
 
 class PyIntroduceParameterObjectNameCollisionTest : TestBase() {
 
     fun testCollisionWithLocalClass() {
-        UiInterceptors.register(object :
-            UiInterceptors.UiInterceptor<IntroduceParameterObjectDialog>(IntroduceParameterObjectDialog::class.java) {
-            override fun doIntercept(component: IntroduceParameterObjectDialog) {
-                component.close(DialogWrapper.OK_EXIT_CODE)
-            }
-        })
-        try {
+        withMockIntroduceParameterObjectDialog {
             myFixture.doIntentionTest(
                 "a.py",
                 """
@@ -44,19 +36,11 @@ class PyIntroduceParameterObjectNameCollisionTest : TestBase() {
                 """.trimIndent() + "\n\n",
                 "Introduce parameter object"
             )
-        } finally {
-            UiInterceptors.clear()
         }
     }
 
     fun testCollisionWithImportedClass() {
-        UiInterceptors.register(object :
-            UiInterceptors.UiInterceptor<IntroduceParameterObjectDialog>(IntroduceParameterObjectDialog::class.java) {
-            override fun doIntercept(component: IntroduceParameterObjectDialog) {
-                component.close(DialogWrapper.OK_EXIT_CODE)
-            }
-        })
-        try {
+        withMockIntroduceParameterObjectDialog {
             myFixture.doIntentionTest(
                 "a.py",
                 """
@@ -83,8 +67,6 @@ class PyIntroduceParameterObjectNameCollisionTest : TestBase() {
                 """.trimIndent() + "\n\n",
                 "Introduce parameter object"
             )
-        } finally {
-            UiInterceptors.clear()
         }
     }
 }

@@ -1,20 +1,12 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject
 
-import com.intellij.openapi.ui.DialogWrapper
-import com.intellij.ui.UiInterceptors
 import fixtures.TestBase
 import fixtures.doIntentionTest
 
 class PyIntroduceParameterObjectTypesTest : TestBase() {
 
     fun testUnionType() {
-        UiInterceptors.register(object :
-            UiInterceptors.UiInterceptor<IntroduceParameterObjectDialog>(IntroduceParameterObjectDialog::class.java) {
-            override fun doIntercept(component: IntroduceParameterObjectDialog) {
-                component.close(DialogWrapper.OK_EXIT_CODE)
-            }
-        })
-        try {
+        withMockIntroduceParameterObjectDialog {
             myFixture.doIntentionTest(
                 "a.py",
                 """
@@ -39,19 +31,11 @@ class PyIntroduceParameterObjectTypesTest : TestBase() {
                 """.trimIndent() + "\n",
                 "Introduce parameter object"
             )
-        } finally {
-            UiInterceptors.clear()
         }
     }
 
     fun testAnnotatedType() {
-        UiInterceptors.register(object :
-            UiInterceptors.UiInterceptor<IntroduceParameterObjectDialog>(IntroduceParameterObjectDialog::class.java) {
-            override fun doIntercept(component: IntroduceParameterObjectDialog) {
-                component.close(DialogWrapper.OK_EXIT_CODE)
-            }
-        })
-        try {
+        withMockIntroduceParameterObjectDialog {
             myFixture.doIntentionTest(
                 "a.py",
                 """
@@ -76,19 +60,11 @@ class PyIntroduceParameterObjectTypesTest : TestBase() {
                 """.trimIndent() + "\n",
                 "Introduce parameter object"
             )
-        } finally {
-            UiInterceptors.clear()
         }
     }
 
     fun testForwardReferenceString() {
-        UiInterceptors.register(object :
-            UiInterceptors.UiInterceptor<IntroduceParameterObjectDialog>(IntroduceParameterObjectDialog::class.java) {
-            override fun doIntercept(component: IntroduceParameterObjectDialog) {
-                component.close(DialogWrapper.OK_EXIT_CODE)
-            }
-        })
-        try {
+        withMockIntroduceParameterObjectDialog {
             myFixture.doIntentionTest(
                 "a.py",
                 """
@@ -116,8 +92,6 @@ class PyIntroduceParameterObjectTypesTest : TestBase() {
                 """.trimIndent() + "\n",
                 "Introduce parameter object"
             )
-        } finally {
-            UiInterceptors.clear()
         }
     }
 
@@ -134,16 +108,8 @@ class PyIntroduceParameterObjectTypesTest : TestBase() {
         myFixture.configureByText("a.py", before)
         val intention = myFixture.findSingleIntention("Introduce parameter object")
 
-        UiInterceptors.register(object :
-            UiInterceptors.UiInterceptor<IntroduceParameterObjectDialog>(IntroduceParameterObjectDialog::class.java) {
-            override fun doIntercept(component: IntroduceParameterObjectDialog) {
-                component.close(DialogWrapper.OK_EXIT_CODE)
-            }
-        })
-        try {
+        withMockIntroduceParameterObjectDialog {
             myFixture.launchAction(intention)
-        } finally {
-            UiInterceptors.clear()
         }
 
         myFixture.checkResult(

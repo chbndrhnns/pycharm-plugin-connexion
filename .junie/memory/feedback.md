@@ -174,3 +174,11 @@
     "NEW INSTRUCTION": "WHEN creating or updating IntroduceParameterObject tests THEN use myFixture.checkResult to assert generated code"
 }
 
+[2025-12-04 21:11] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "tests refactor",
+    "ERROR": "Missed refactoring in two test classes",
+    "NEW INSTRUCTION": "WHEN adding shared dialog interceptor helper THEN replace duplicated interceptors in all parameter object tests"
+}
+

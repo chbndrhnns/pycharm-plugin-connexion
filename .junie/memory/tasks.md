@@ -439,3 +439,23 @@ directly.",
     "NEW INSTRUCTION": "WHEN modifying method signatures or parameters THEN search project and update all definitions and call sites immediately"
 }
 
+[2025-12-04 21:09] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "search project",
+    "MISSING STEPS": "cleanup imports",
+    "BOTTLENECK": "Helper placed in feature package reduces reuse and consistency across tests.",
+    "PROJECT NOTE": "Place shared test utilities under fixtures to align with existing helpers.",
+    "NEW INSTRUCTION": "WHEN multiple tests duplicate UiInterceptors for IntroduceParameterObjectDialog THEN create fixtures helper and replace per-test interceptors across files"
+}
+
+[2025-12-04 21:14] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "scan project, update remaining tests",
+    "BOTTLENECK": "No project-wide search to enumerate all affected tests before refactoring.",
+    "PROJECT NOTE": "Also refactor PyIntroduceParameterObjectIntentionTest and PyIntroduceParameterObjectNameCollisionTest to use the shared helper.",
+    "NEW INSTRUCTION": "WHEN task involves refactoring duplicated test setup THEN run search_project to find and refactor all tests"
+}
+
