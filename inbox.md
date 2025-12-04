@@ -2,6 +2,9 @@
 
 ## Pending Tasks
 
+- [ ] wrap: Do not offer t.Final -> Wrap with Typevar
+- [ ] roots: adopt when moving files
+- [ ] roots: mark as unresolved reference without
 - [ ] commit: if it fails for hooks, add option keep selection of files
 - [ ] feat: Disable if python < 3.11
 - [ ] feat: Treat references as PSI elements, pytest.mark.filterwarnings, patch()
@@ -24,14 +27,13 @@
 ## In Progress Tasks
 
 - [ ] refactor: PopulateArgumentsService
-- [x] fix: Populate should perform imports for leaf node types
 - [-] feat: Introduce parameter object (docs/parameter-object/state.md)
   - [ ] refactor: String and imports handling in PyIntroduceParameterObjectProcessor
   - [ ] check if there is a better way for `addDataclassImport`
   - [ ] refactor: updateCallSites
   - [ ] Add to Refactoring this context menu
-  - [ ] Use kwargs by default for dataclass
   - [ ] fix: investigate strange `.trimIndent() + "\n\n",` in testMethodIntroduceParameterObject
+  - [x] Use kwargs by default for dataclass
   - [x] Refactor tests to include the interceptor
   - [x] Deal with union types and annotated and forward refs
   - [x] Deal with *args, **kwargs, *, / correctly
@@ -42,6 +44,7 @@
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Populate should perform imports for leaf node types
 - [x] feat: When populating parameters, offer the quickfix only when inside the parentheses
 - [x] feat: When populating parameters, ignore any starting with an underscore
 - [N] feat: Do not show popup when populating required args only
