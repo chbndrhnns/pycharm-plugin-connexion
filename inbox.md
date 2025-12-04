@@ -21,6 +21,8 @@
 
 ## In Progress Tasks
 
+- [ ] refactor: PopulateArgumentsService
+- [x] fix: Populate should perform imports for leaf node types
 - [-] feat: Introduce parameter object (docs/parameter-object/state.md)
   - [ ] refactor: String and imports handling in PyIntroduceParameterObjectProcessor
   - [ ] check if there is a better way for `addDataclassImport`

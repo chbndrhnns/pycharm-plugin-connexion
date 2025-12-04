@@ -459,3 +459,13 @@ directly.",
     "NEW INSTRUCTION": "WHEN task involves refactoring duplicated test setup THEN run search_project to find and refactor all tests"
 }
 
+[2025-12-04 21:23] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "refactor data structures,add unused helpers",
+    "MISSING STEPS": "scan project,check service API,run build,run tests",
+    "BOTTLENECK": "Changed imports element type without updating all consumers and import service usage.",
+    "PROJECT NOTE": "Verify PyImportService.ensureImportedIfNeeded signature and supported element types before refactoring.",
+    "NEW INSTRUCTION": "WHEN generating value uses alias name like MyStr(...) THEN resolve alias to PsiNamedElement and call PyImportService.ensureImportedIfNeeded"
+}
+

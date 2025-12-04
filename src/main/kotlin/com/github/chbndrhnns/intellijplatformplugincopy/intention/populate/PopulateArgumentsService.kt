@@ -5,6 +5,7 @@ import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.isPosit
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.PyImportService
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.codeInsight.parseDataclassParameters
@@ -240,7 +241,7 @@ class PopulateArgumentsService {
         val callExpr = generator.createExpressionFromText(languageLevel, "$className()") as? PyCallExpression
         val argumentList = callExpr?.argumentList ?: return GenerationResult(DEFAULT_FALLBACK_VALUE, emptySet())
 
-        val requiredImports = mutableSetOf<PyClass>()
+        val requiredImports = mutableSetOf<PsiNamedElement>()
         requiredImports.add(pyClass)
 
         extractDataclassFields(pyClass, context).forEach { field ->
@@ -253,6 +254,9 @@ class PopulateArgumentsService {
                 val alias = field.aliasName
                 if (!isBuiltinName(alias!!)) {
                     valStr = "$alias(...)"
+                    if (field.aliasElement != null) {
+                        requiredImports.add(field.aliasElement)
+                    }
                 }
             }
 
@@ -272,6 +276,7 @@ class PopulateArgumentsService {
         pyClass: PyClass, context: TypeEvalContext
     ): List<FieldSpec> {
         val fields = mutableListOf<FieldSpec>()
+        val resolveContext = PyResolveContext.defaultContext(context)
 
         val initMethod = pyClass.findInitOrNew(false, context)
         if (initMethod != null) {
@@ -283,8 +288,13 @@ class PopulateArgumentsService {
                 if (field != null) {
                     name = resolveFieldAlias(pyClass, field, context, name)
                 }
-                val aliasName = field?.annotation?.value?.let { (it as? PyReferenceExpression)?.name }
-                fields.add(FieldSpec(name, param.getType(context), aliasName))
+                val annotationValue = field?.annotation?.value
+                val aliasName = annotationValue?.let { (it as? PyReferenceExpression)?.name }
+                val aliasElement = (annotationValue as? PyReferenceExpression)
+                    ?.getReference(resolveContext)
+                    ?.multiResolve(false)
+                    ?.firstOrNull()?.element as? PsiNamedElement
+                fields.add(FieldSpec(name, param.getType(context), aliasName, aliasElement))
             }
         } else {
             // Fallback for synthetic __init__
@@ -292,8 +302,13 @@ class PopulateArgumentsService {
                 if (attr.annotation != null) {
                     var name = attr.name ?: return@forEach
                     name = resolveFieldAlias(pyClass, attr, context, name)
-                    val aliasName = (attr.annotation?.value as? PyReferenceExpression)?.name
-                    fields.add(FieldSpec(name, context.getType(attr), aliasName))
+                    val annotationValue = attr.annotation?.value
+                    val aliasName = (annotationValue as? PyReferenceExpression)?.name
+                    val aliasElement = (annotationValue as? PyReferenceExpression)
+                        ?.getReference(resolveContext)
+                        ?.multiResolve(false)
+                        ?.firstOrNull()?.element as? PsiNamedElement
+                    fields.add(FieldSpec(name, context.getType(attr), aliasName, aliasElement))
                 }
             }
         }
@@ -315,7 +330,7 @@ class PopulateArgumentsService {
 
     private data class GenerationResult(
         val text: String,
-        val imports: Set<PyClass>
+        val imports: Set<PsiNamedElement>
     )
 
     /**
@@ -353,5 +368,10 @@ class PopulateArgumentsService {
         )
     }
 
-    private data class FieldSpec(val name: String, val type: PyType?, val aliasName: String?)
+    private data class FieldSpec(
+        val name: String,
+        val type: PyType?,
+        val aliasName: String?,
+        val aliasElement: PsiNamedElement? = null
+    )
 }
