@@ -158,3 +158,19 @@
     "NEW INSTRUCTION": "WHEN function has @property or @overload decorator THEN do not exclude it from intention availability checks"
 }
 
+[2025-12-04 15:34] - Updated by Junie
+{
+    "TYPE": "new instructions",
+    "CATEGORY": "test mode handling",
+    "ERROR": "-",
+    "NEW INSTRUCTION": "WHEN processor references ApplicationManager.isUnitTestMode THEN remove branching and require explicit configuration input"
+}
+
+[2025-12-04 15:44] - Updated by Junie
+{
+    "TYPE": "new instructions",
+    "CATEGORY": "tests",
+    "ERROR": "-",
+    "NEW INSTRUCTION": "WHEN creating or updating IntroduceParameterObject tests THEN use myFixture.checkResult to assert generated code"
+}
+

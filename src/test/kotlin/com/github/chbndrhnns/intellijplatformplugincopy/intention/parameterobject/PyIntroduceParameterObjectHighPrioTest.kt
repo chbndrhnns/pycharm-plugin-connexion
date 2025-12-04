@@ -1,5 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject
 
+import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.ui.UiInterceptors
 import fixtures.TestBase
 import fixtures.doIntentionTest
 
@@ -16,7 +18,18 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
         
         myFixture.configureByText("a.py", before)
         val intention = myFixture.findSingleIntention("Introduce parameter object")
-        myFixture.launchAction(intention)
+
+        UiInterceptors.register(object :
+            UiInterceptors.UiInterceptor<IntroduceParameterObjectDialog>(IntroduceParameterObjectDialog::class.java) {
+            override fun doIntercept(component: IntroduceParameterObjectDialog) {
+                component.close(DialogWrapper.OK_EXIT_CODE)
+            }
+        })
+        try {
+            myFixture.launchAction(intention)
+        } finally {
+            UiInterceptors.clear()
+        }
         
         val after = myFixture.file.text
         
@@ -25,7 +38,7 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
             from typing import Any
             
             
-            @dataclass
+            @dataclass(frozen=True, slots=True)
             class CreateUserParams:
                 first_name: Any
                 last_name: Any = "Doe"
@@ -43,34 +56,44 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
     }
 
     fun testKeywordArgumentsAtCallSite() {
-        myFixture.doIntentionTest(
-            "a.py",
-            """
-            def create_<caret>user(first_name, last_name):
-                print(first_name, last_name)
-            
-            def main():
-                create_user(first_name="John", last_name="Doe")
-            """.trimIndent(),
-            """
-            from dataclasses import dataclass
-            from typing import Any
-            
-            
-            @dataclass
-            class CreateUserParams:
-                first_name: Any
-                last_name: Any
-            
-            
-            def create_user(params: CreateUserParams):
-                print(params.first_name, params.last_name)
-            
-            
-            def main():
-                create_user(CreateUserParams(first_name="John", last_name="Doe"))""".trimIndent() + "\n",
-            "Introduce parameter object"
-        )
+        UiInterceptors.register(object :
+            UiInterceptors.UiInterceptor<IntroduceParameterObjectDialog>(IntroduceParameterObjectDialog::class.java) {
+            override fun doIntercept(component: IntroduceParameterObjectDialog) {
+                component.close(DialogWrapper.OK_EXIT_CODE)
+            }
+        })
+        try {
+            myFixture.doIntentionTest(
+                "a.py",
+                """
+                def create_<caret>user(first_name, last_name):
+                    print(first_name, last_name)
+                
+                def main():
+                    create_user(first_name="John", last_name="Doe")
+                """.trimIndent(),
+                """
+                from dataclasses import dataclass
+                from typing import Any
+                
+                
+                @dataclass(frozen=True, slots=True)
+                class CreateUserParams:
+                    first_name: Any
+                    last_name: Any
+                
+                
+                def create_user(params: CreateUserParams):
+                    print(params.first_name, params.last_name)
+                
+                
+                def main():
+                    create_user(CreateUserParams(first_name="John", last_name="Doe"))""".trimIndent() + "\n",
+                "Introduce parameter object"
+            )
+        } finally {
+            UiInterceptors.clear()
+        }
     }
 
     fun testClassMethod() {
@@ -86,7 +109,18 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
             
         myFixture.configureByText("a.py", before)
         val intention = myFixture.findSingleIntention("Introduce parameter object")
-        myFixture.launchAction(intention)
+
+        UiInterceptors.register(object :
+            UiInterceptors.UiInterceptor<IntroduceParameterObjectDialog>(IntroduceParameterObjectDialog::class.java) {
+            override fun doIntercept(component: IntroduceParameterObjectDialog) {
+                component.close(DialogWrapper.OK_EXIT_CODE)
+            }
+        })
+        try {
+            myFixture.launchAction(intention)
+        } finally {
+            UiInterceptors.clear()
+        }
 
         myFixture.checkResult(
             """
@@ -94,7 +128,7 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
             from typing import Any
 
 
-            @dataclass
+            @dataclass(frozen=True, slots=True)
             class CreateUserParams:
                 name: Any
                 age: Any
@@ -114,37 +148,47 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
     }
     
     fun testStaticMethod() {
-        myFixture.doIntentionTest(
-            "a.py",
-            """
-            class Utils:
-                @staticmethod
-                def hel<caret>per(x, y):
-                    print(x, y)
-            
-            def main():
-                Utils.helper(1, 2)
-            """.trimIndent(),
-            """
-            from dataclasses import dataclass
-            from typing import Any
+        UiInterceptors.register(object :
+            UiInterceptors.UiInterceptor<IntroduceParameterObjectDialog>(IntroduceParameterObjectDialog::class.java) {
+            override fun doIntercept(component: IntroduceParameterObjectDialog) {
+                component.close(DialogWrapper.OK_EXIT_CODE)
+            }
+        })
+        try {
+            myFixture.doIntentionTest(
+                "a.py",
+                """
+                class Utils:
+                    @staticmethod
+                    def hel<caret>per(x, y):
+                        print(x, y)
+                
+                def main():
+                    Utils.helper(1, 2)
+                """.trimIndent(),
+                """
+                from dataclasses import dataclass
+                from typing import Any
 
 
-            @dataclass
-            class HelperParams:
-                x: Any
-                y: Any
-            
-            
-            class Utils:
-                @staticmethod
-                def helper(params: HelperParams):
-                    print(params.x, params.y)
-            
-            
-            def main():
-                Utils.helper(HelperParams(x=1, y=2))""".trimIndent() + "\n",
-            "Introduce parameter object"
-        )
+                @dataclass(frozen=True, slots=True)
+                class HelperParams:
+                    x: Any
+                    y: Any
+                
+                
+                class Utils:
+                    @staticmethod
+                    def helper(params: HelperParams):
+                        print(params.x, params.y)
+                
+                
+                def main():
+                    Utils.helper(HelperParams(x=1, y=2))""".trimIndent() + "\n",
+                "Introduce parameter object"
+            )
+        } finally {
+            UiInterceptors.clear()
+        }
     }
 }

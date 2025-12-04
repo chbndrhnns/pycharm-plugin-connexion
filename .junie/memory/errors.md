@@ -288,3 +288,13 @@
     "NEW INSTRUCTION": "WHEN IDE logs '$injected$.psi.File is requested on EDT' THEN set getActionUpdateThread to BGT and move PSI lookups off EDT"
 }
 
+[2025-12-04 15:23] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Passed extra arguments to unchanged methods",
+    "ROOT CAUSE": "Call sites were updated to include new parameters, but method definitions were not adjusted.",
+    "PROJECT NOTE": "In PyIntroduceParameterObjectProcessor.kt, update createDataclass, updateFunctionBody, and replaceFunctionSignature to accept frozen, slots, and parameterName as added at call sites.",
+    "NEW INSTRUCTION": "WHEN call site arity exceeds method parameters THEN update method signatures and implementations accordingly"
+}
+

@@ -1,92 +1,124 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject
 
+import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.ui.UiInterceptors
 import fixtures.TestBase
 import fixtures.doIntentionTest
 
 class PyIntroduceParameterObjectTypesTest : TestBase() {
 
     fun testUnionType() {
-        myFixture.doIntentionTest(
-            "a.py",
-            """
-            from typing import Union
-            
-            def pro<caret>cess(val: Union[int, str], count: int):
-                print(val, count)
-            """.trimIndent(),
-            """
-            from dataclasses import dataclass
-            from typing import Union, Any
-            
-            
-            @dataclass
-            class ProcessParams:
-                val: Union[int, str]
-                count: int
-            
-            
-            def process(params: ProcessParams):
-                print(params.val, params.count)
-            """.trimIndent() + "\n",
-            "Introduce parameter object"
-        )
+        UiInterceptors.register(object :
+            UiInterceptors.UiInterceptor<IntroduceParameterObjectDialog>(IntroduceParameterObjectDialog::class.java) {
+            override fun doIntercept(component: IntroduceParameterObjectDialog) {
+                component.close(DialogWrapper.OK_EXIT_CODE)
+            }
+        })
+        try {
+            myFixture.doIntentionTest(
+                "a.py",
+                """
+                from typing import Union
+                
+                def pro<caret>cess(val: Union[int, str], count: int):
+                    print(val, count)
+                """.trimIndent(),
+                """
+                from dataclasses import dataclass
+                from typing import Union, Any
+                
+                
+                @dataclass(frozen=True, slots=True)
+                class ProcessParams:
+                    val: Union[int, str]
+                    count: int
+                
+                
+                def process(params: ProcessParams):
+                    print(params.val, params.count)
+                """.trimIndent() + "\n",
+                "Introduce parameter object"
+            )
+        } finally {
+            UiInterceptors.clear()
+        }
     }
 
     fun testAnnotatedType() {
-        myFixture.doIntentionTest(
-            "a.py",
-            """
-            from typing import Annotated
-            
-            def pro<caret>cess(val: Annotated[int, "meta"], count: int):
-                print(val, count)
-            """.trimIndent(),
-            """
-            from dataclasses import dataclass
-            from typing import Annotated, Any
-            
-            
-            @dataclass
-            class ProcessParams:
-                val: Annotated[int, "meta"]
-                count: int
-            
-            
-            def process(params: ProcessParams):
-                print(params.val, params.count)
-            """.trimIndent() + "\n",
-            "Introduce parameter object"
-        )
+        UiInterceptors.register(object :
+            UiInterceptors.UiInterceptor<IntroduceParameterObjectDialog>(IntroduceParameterObjectDialog::class.java) {
+            override fun doIntercept(component: IntroduceParameterObjectDialog) {
+                component.close(DialogWrapper.OK_EXIT_CODE)
+            }
+        })
+        try {
+            myFixture.doIntentionTest(
+                "a.py",
+                """
+                from typing import Annotated
+                
+                def pro<caret>cess(val: Annotated[int, "meta"], count: int):
+                    print(val, count)
+                """.trimIndent(),
+                """
+                from dataclasses import dataclass
+                from typing import Annotated, Any
+                
+                
+                @dataclass(frozen=True, slots=True)
+                class ProcessParams:
+                    val: Annotated[int, "meta"]
+                    count: int
+                
+                
+                def process(params: ProcessParams):
+                    print(params.val, params.count)
+                """.trimIndent() + "\n",
+                "Introduce parameter object"
+            )
+        } finally {
+            UiInterceptors.clear()
+        }
     }
 
     fun testForwardReferenceString() {
-        myFixture.doIntentionTest(
-            "a.py",
-            """
-            def pro<caret>cess(user: "User", count: int):
-                print(user, count)
+        UiInterceptors.register(object :
+            UiInterceptors.UiInterceptor<IntroduceParameterObjectDialog>(IntroduceParameterObjectDialog::class.java) {
+            override fun doIntercept(component: IntroduceParameterObjectDialog) {
+                component.close(DialogWrapper.OK_EXIT_CODE)
+            }
+        })
+        try {
+            myFixture.doIntentionTest(
+                "a.py",
+                """
+                def pro<caret>cess(user: "User", count: int):
+                    print(user, count)
+                    
+                class User: ...
+                """.trimIndent(),
+                """
+                from dataclasses import dataclass
+                from typing import Any
                 
-            class User: ...
-            """.trimIndent(),
-            """
-            from dataclasses import dataclass
-            from typing import Any
-            
-            
-            @dataclass
-            class ProcessParams:
-                user: "User"
-                count: int
-            
-            
-            def process(params: ProcessParams):
-                print(params.user, params.count)
-            
-            
-            class User: ...
-            """.trimIndent() + "\n",
-            "Introduce parameter object"
-        )
+                
+                @dataclass(frozen=True, slots=True)
+                class ProcessParams:
+                    user: "User"
+                    count: int
+                
+                
+                def process(params: ProcessParams):
+                    print(params.user, params.count)
+                
+                
+                class User: ...
+                """.trimIndent() + "\n",
+                "Introduce parameter object"
+            )
+        } finally {
+            UiInterceptors.clear()
+        }
     }
 
     fun testForwardReferenceFutureAnnotations() {
@@ -101,7 +133,18 @@ class PyIntroduceParameterObjectTypesTest : TestBase() {
 
         myFixture.configureByText("a.py", before)
         val intention = myFixture.findSingleIntention("Introduce parameter object")
-        myFixture.launchAction(intention)
+
+        UiInterceptors.register(object :
+            UiInterceptors.UiInterceptor<IntroduceParameterObjectDialog>(IntroduceParameterObjectDialog::class.java) {
+            override fun doIntercept(component: IntroduceParameterObjectDialog) {
+                component.close(DialogWrapper.OK_EXIT_CODE)
+            }
+        })
+        try {
+            myFixture.launchAction(intention)
+        } finally {
+            UiInterceptors.clear()
+        }
 
         myFixture.checkResult(
             """
@@ -111,7 +154,7 @@ class PyIntroduceParameterObjectTypesTest : TestBase() {
             from typing import Any
 
 
-            @dataclass
+            @dataclass(frozen=True, slots=True)
             class ProcessParams:
                 user: User
                 count: int

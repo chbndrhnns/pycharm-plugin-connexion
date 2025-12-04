@@ -1,0 +1,11 @@
+package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject
+
+import com.jetbrains.python.psi.PyNamedParameter
+
+data class IntroduceParameterObjectSettings(
+    val selectedParameters: List<PyNamedParameter>,
+    val className: String,
+    val parameterName: String,
+    val generateFrozen: Boolean = true,
+    val generateSlots: Boolean = true
+)

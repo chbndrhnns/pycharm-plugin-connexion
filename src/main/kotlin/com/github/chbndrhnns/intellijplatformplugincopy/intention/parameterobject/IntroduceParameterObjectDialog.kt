@@ -12,10 +12,15 @@ import javax.swing.JPanel
 
 class IntroduceParameterObjectDialog(
     project: Project,
-    private val parameters: List<PyNamedParameter>
+    parameters: List<PyNamedParameter>,
+    defaultClassName: String
 ) : DialogWrapper(project) {
 
     private val checkBoxList = CheckBoxList<PyNamedParameter>()
+    private val classNameField = javax.swing.JTextField(defaultClassName)
+    private val parameterNameField = javax.swing.JTextField("params")
+    private val frozenCheckBox = javax.swing.JCheckBox("Frozen", true)
+    private val slotsCheckBox = javax.swing.JCheckBox("Slots", true)
 
     init {
         title = "Introduce Parameter Object"
@@ -28,12 +33,24 @@ class IntroduceParameterObjectDialog(
 
     override fun createCenterPanel(): JComponent {
         val panel = JPanel(BorderLayout())
-        panel.add(JLabel("Select parameters to extract:"), BorderLayout.NORTH)
+
+        val configPanel = JPanel(java.awt.GridLayout(4, 2))
+        configPanel.add(JLabel("Class Name:"))
+        configPanel.add(classNameField)
+        configPanel.add(JLabel("Parameter Name:"))
+        configPanel.add(parameterNameField)
+        configPanel.add(JLabel("Dataclass Options:"))
+        val optionsPanel = JPanel(java.awt.FlowLayout(java.awt.FlowLayout.LEFT))
+        optionsPanel.add(frozenCheckBox)
+        optionsPanel.add(slotsCheckBox)
+        configPanel.add(optionsPanel)
+
+        panel.add(configPanel, BorderLayout.NORTH)
         panel.add(JBScrollPane(checkBoxList), BorderLayout.CENTER)
         return panel
     }
 
-    fun getSelectedParameters(): List<PyNamedParameter> {
+    fun getSettings(): IntroduceParameterObjectSettings {
         val selected = mutableListOf<PyNamedParameter>()
         for (i in 0 until checkBoxList.itemsCount) {
             val item = checkBoxList.getItemAt(i)
@@ -41,6 +58,13 @@ class IntroduceParameterObjectDialog(
                 selected.add(item)
             }
         }
-        return selected
+
+        return IntroduceParameterObjectSettings(
+            selectedParameters = selected,
+            className = classNameField.text,
+            parameterName = parameterNameField.text,
+            generateFrozen = frozenCheckBox.isSelected,
+            generateSlots = slotsCheckBox.isSelected
+        )
     }
 }

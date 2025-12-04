@@ -5,9 +5,7 @@
 - [ ] feat: Treat references as PSI elements, pytest.mark.filterwarnings, patch()
 - [ ] refactor: How to find if the caret is inside parentheses? `[PopulateArgumentsService.findCallExpression`
 - [ ] feat: Replace expected with actual test outcome
-- [ ] fix: investigate strange `.trimIndent() + "\n\n",` in testMethodIntroduceParameterObject
 - [ ] Research why this magic is required: `fixtures.IntentionHelpersKt.doIntentionTest`
-- [ ] refactor: Add parameter object to refactoring menu
 - [ ] fix: do not offer "use exported" if in private child package: `from .._bases import BaseBlaModel`
 - [ ] feat: populate union (docs/populate/populate-union.md)
 - [ ] feat: Generate dataclass, basemodel
@@ -28,6 +26,9 @@
   - [ ] check if there is a better way for `addDataclassImport`
   - [ ] refactor: updateCallSites
   - [ ] Add to Refactoring this context menu
+  - [ ] Use kwargs by default for dataclass
+  - [ ] fix: investigate strange `.trimIndent() + "\n\n",` in testMethodIntroduceParameterObject
+  - [ ] Refactor tests to include the interceptor
   - [x] Deal with union types and annotated and forward refs
   - [x] Deal with *args, **kwargs, *, / correctly
   - [x] fix: no name conflicts if same class name exists

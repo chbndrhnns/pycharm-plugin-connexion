@@ -1,7 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject
 
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.PyImportService
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
@@ -20,7 +19,7 @@ import com.jetbrains.python.psi.types.TypeEvalContext
 
 class PyIntroduceParameterObjectProcessor(
     private val function: PyFunction,
-    private val paramSelector: ((List<PyNamedParameter>) -> List<PyNamedParameter>?)? = null
+    private val configSelector: ((List<PyNamedParameter>, String) -> IntroduceParameterObjectSettings?)? = null
 ) {
 
     fun run() {
@@ -29,22 +28,25 @@ class PyIntroduceParameterObjectProcessor(
         val allParams = collectParameters(function)
         if (allParams.isEmpty()) return
 
-        val params = if (paramSelector != null) {
-            paramSelector.invoke(allParams)
-        } else if (ApplicationManager.getApplication().isUnitTestMode) {
-            allParams
+        val defaultClassName = generateDataclassName(function)
+
+        val settings = if (configSelector != null) {
+            configSelector.invoke(allParams, defaultClassName)
         } else {
-            val dialog = IntroduceParameterObjectDialog(project, allParams)
-            if (dialog.showAndGet()) {
-                dialog.getSelectedParameters()
+            val dialog = IntroduceParameterObjectDialog(project, allParams, defaultClassName)
+            dialog.show()
+            if (dialog.isOK) {
+                dialog.getSettings()
             } else {
                 return
             }
         }
 
-        if (params.isNullOrEmpty()) return
+        if (settings == null || settings.selectedParameters.isEmpty()) return
 
-        val dataclassName = generateDataclassName(function)
+        val params = settings.selectedParameters
+        val dataclassName = settings.className
+        val parameterName = settings.parameterName
 
         var paramUsages: Map<PyNamedParameter, Collection<PsiReference>> = emptyMap()
         var functionUsages: Collection<PsiReference> = emptyList()
@@ -66,19 +68,26 @@ class PyIntroduceParameterObjectProcessor(
         WriteCommandAction.writeCommandAction(project, function.containingFile)
             .withName("Introduce Parameter Object")
             .run<Throwable> {
-            val dataclass = createDataclass(project, function, dataclassName, params)
+                val dataclass = createDataclass(
+                    project,
+                    function,
+                    dataclassName,
+                    params,
+                    settings.generateFrozen,
+                    settings.generateSlots
+                )
             
             // Add imports
             addDataclassImport(function)
             
             // Update body
-            updateFunctionBody(project, function, params, paramUsages)
+                updateFunctionBody(project, function, params, paramUsages, parameterName)
             
             // Update call sites
             updateCallSites(project, function, dataclass, params, functionUsages)
 
             // Update function signature
-            replaceFunctionSignature(project, function, dataclassName, params)
+                replaceFunctionSignature(project, function, dataclassName, params, parameterName)
         }
     }
 
@@ -129,13 +138,24 @@ class PyIntroduceParameterObjectProcessor(
         project: Project,
         function: PyFunction,
         className: String,
-        params: List<PyNamedParameter>
+        params: List<PyNamedParameter>,
+        generateFrozen: Boolean,
+        generateSlots: Boolean
     ): PyClass {
         val generator = PyElementGenerator.getInstance(project)
         val languageLevel = LanguageLevel.forElement(function)
 
         val sb = StringBuilder()
-        sb.append("@dataclass\n")
+        val decoratorArgs = mutableListOf<String>()
+        if (generateFrozen) decoratorArgs.add("frozen=True")
+        if (generateSlots) decoratorArgs.add("slots=True")
+
+        if (decoratorArgs.isNotEmpty()) {
+            sb.append("@dataclass(${decoratorArgs.joinToString(", ")})\n")
+        } else {
+            sb.append("@dataclass\n")
+        }
+
         sb.append("class $className:\n")
         for (p in params) {
             val ann = p.annotationValue
@@ -201,12 +221,13 @@ class PyIntroduceParameterObjectProcessor(
         project: Project,
         function: PyFunction,
         dataclassName: String,
-        params: List<PyNamedParameter>
+        params: List<PyNamedParameter>,
+        parameterName: String
     ) {
         val generator = PyElementGenerator.getInstance(project)
         val languageLevel = LanguageLevel.forElement(function)
 
-        val newParamText = "params: $dataclassName"
+        val newParamText = "$parameterName: $dataclassName"
         val firstExtractedParam = params.first()
 
         val newParamsList = mutableListOf<String>()
@@ -248,7 +269,8 @@ class PyIntroduceParameterObjectProcessor(
         project: Project,
         function: PyFunction,
         params: List<PyNamedParameter>,
-        paramUsages: Map<PyNamedParameter, Collection<PsiReference>>
+        paramUsages: Map<PyNamedParameter, Collection<PsiReference>>,
+        parameterName: String
     ) {
         val generator = PyElementGenerator.getInstance(project)
         
@@ -261,7 +283,10 @@ class PyIntroduceParameterObjectProcessor(
                 val element = ref.element
                 // Verify it's inside the function
                 if (element.isValid && PsiTreeUtil.isAncestor(function, element, true)) {
-                    val newExpr = generator.createExpressionFromText(LanguageLevel.forElement(function), "params.$paramName")
+                    val newExpr = generator.createExpressionFromText(
+                        LanguageLevel.forElement(function),
+                        "$parameterName.$paramName"
+                    )
                     element.replace(newExpr)
                 }
             }

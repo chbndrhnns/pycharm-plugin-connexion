@@ -1,5 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject
 
+import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.ui.UiInterceptors
 import fixtures.TestBase
 
 class PyIntroduceParameterObjectCasesTest : TestBase() {
@@ -21,7 +23,7 @@ class PyIntroduceParameterObjectCasesTest : TestBase() {
             from typing import Any
             
             
-            @dataclass
+            @dataclass(frozen=True, slots=True)
             class FetchDataParams:
                 url: Any
                 timeout: Any = 10
@@ -38,7 +40,18 @@ class PyIntroduceParameterObjectCasesTest : TestBase() {
 
         myFixture.configureByText("a.py", before)
         val intention = myFixture.findSingleIntention("Introduce parameter object")
-        myFixture.launchAction(intention)
+
+        UiInterceptors.register(object :
+            UiInterceptors.UiInterceptor<IntroduceParameterObjectDialog>(IntroduceParameterObjectDialog::class.java) {
+            override fun doIntercept(component: IntroduceParameterObjectDialog) {
+                component.close(DialogWrapper.OK_EXIT_CODE)
+            }
+        })
+        try {
+            myFixture.launchAction(intention)
+        } finally {
+            UiInterceptors.clear()
+        }
         myFixture.checkResult(expected)
     }
 
@@ -56,13 +69,24 @@ class PyIntroduceParameterObjectCasesTest : TestBase() {
 
         myFixture.configureByText("a.py", text)
         val intention = myFixture.findSingleIntention("Introduce parameter object")
-        myFixture.launchAction(intention)
+
+        UiInterceptors.register(object :
+            UiInterceptors.UiInterceptor<IntroduceParameterObjectDialog>(IntroduceParameterObjectDialog::class.java) {
+            override fun doIntercept(component: IntroduceParameterObjectDialog) {
+                component.close(DialogWrapper.OK_EXIT_CODE)
+            }
+        })
+        try {
+            myFixture.launchAction(intention)
+        } finally {
+            UiInterceptors.clear()
+        }
         myFixture.checkResult("""
             from dataclasses import dataclass
             from typing import Any
 
 
-            @dataclass
+            @dataclass(frozen=True, slots=True)
             class PropParams:
                 value: Any
                 extra: Any
@@ -93,13 +117,24 @@ class PyIntroduceParameterObjectCasesTest : TestBase() {
 
         myFixture.configureByText("a.py", text)
         val intention = myFixture.findSingleIntention("Introduce parameter object")
-        myFixture.launchAction(intention)
+
+        UiInterceptors.register(object :
+            UiInterceptors.UiInterceptor<IntroduceParameterObjectDialog>(IntroduceParameterObjectDialog::class.java) {
+            override fun doIntercept(component: IntroduceParameterObjectDialog) {
+                component.close(DialogWrapper.OK_EXIT_CODE)
+            }
+        })
+        try {
+            myFixture.launchAction(intention)
+        } finally {
+            UiInterceptors.clear()
+        }
         myFixture.checkResult("""
             from dataclasses import dataclass
             from typing import overload, Any
 
 
-            @dataclass
+            @dataclass(frozen=True, slots=True)
             class ProcessParams:
                 a: int
                 b: int
@@ -135,7 +170,18 @@ class PyIntroduceParameterObjectCasesTest : TestBase() {
 
         myFixture.configureByText("a.py", before)
         val intention = myFixture.findSingleIntention("Introduce parameter object")
-        myFixture.launchAction(intention)
+
+        UiInterceptors.register(object :
+            UiInterceptors.UiInterceptor<IntroduceParameterObjectDialog>(IntroduceParameterObjectDialog::class.java) {
+            override fun doIntercept(component: IntroduceParameterObjectDialog) {
+                component.close(DialogWrapper.OK_EXIT_CODE)
+            }
+        })
+        try {
+            myFixture.launchAction(intention)
+        } finally {
+            UiInterceptors.clear()
+        }
         
         myFixture.checkResult("""
             from dataclasses import dataclass
@@ -143,7 +189,7 @@ class PyIntroduceParameterObjectCasesTest : TestBase() {
 
 
             def outer():
-                @dataclass
+                @dataclass(frozen=True, slots=True)
                 class InnerParams:
                     a: Any
                     b: Any
