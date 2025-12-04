@@ -319,3 +319,13 @@ directly.",
     "NEW INSTRUCTION": "WHEN modifying a method signature THEN search project and update all call sites"
 }
 
+[2025-12-03 22:40] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "scroll code,create document",
+    "MISSING STEPS": "inspect diffs,locate existing docs,update existing doc,validate against code",
+    "BOTTLENECK": "No concrete diff analysis to drive precise documentation changes.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN updating docs from commits THEN run git show -n 2 and update existing docs"
+}
+
