@@ -21,7 +21,7 @@
 
 ## In Progress Tasks
 
-- [-] feat: Introduce parameter object
+- [-] feat: Introduce parameter object (docs/parameter-object/state.md)
   - [ ] refactor: String and imports handling in PyIntroduceParameterObjectProcessor
   - [ ] check if there is a better way for `addDataclassImport`
 - [ ] Configure default base classes
