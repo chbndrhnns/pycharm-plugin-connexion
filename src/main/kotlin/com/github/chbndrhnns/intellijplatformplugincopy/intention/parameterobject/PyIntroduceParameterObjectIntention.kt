@@ -18,6 +18,8 @@ class PyIntroduceParameterObjectIntention : PsiElementBaseIntentionAction() {
     override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean {
         val function = PsiTreeUtil.getParentOfType(element, PyFunction::class.java) ?: return false
         
+        if (function.containingFile.name.endsWith(".pyi")) return false
+
         val parameters = function.parameterList.parameters
             .filterIsInstance<PyNamedParameter>()
             .filter { !it.isSelf && !it.isPositionalContainer && !it.isKeywordContainer }

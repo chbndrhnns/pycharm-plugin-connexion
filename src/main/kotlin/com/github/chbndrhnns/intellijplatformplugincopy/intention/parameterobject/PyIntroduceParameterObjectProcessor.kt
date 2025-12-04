@@ -150,16 +150,23 @@ class PyIntroduceParameterObjectProcessor(
         val file = function.containingFile as PyFile
         val newClass = generator.createFromText(languageLevel, PyClass::class.java, sb.toString())
 
-        // Insert before function's top-level container
-        var anchor: PsiElement = function
-        while (anchor.parent != file && anchor.parent != null) {
-            anchor = anchor.parent
+        val containingClass = function.containingClass
+        if (containingClass != null) {
+            // Method in class -> Global scope (File level)
+            var anchor: PsiElement = function
+            while (anchor.parent != file && anchor.parent != null) {
+                anchor = anchor.parent
+            }
+            val added = file.addBefore(newClass, anchor) as PyClass
+            file.addBefore(PsiParserFacade.getInstance(project).createWhiteSpaceFromText("\n\n\n"), anchor)
+            return added
+        } else {
+            // Function (Top-level or Nested) -> Local scope (Same level)
+            val parent = function.parent
+            val added = parent.addBefore(newClass, function) as PyClass
+            parent.addBefore(PsiParserFacade.getInstance(project).createWhiteSpaceFromText("\n\n\n"), function)
+            return added
         }
-
-        val added = file.addBefore(newClass, anchor) as PyClass
-        file.addBefore(PsiParserFacade.getInstance(project).createWhiteSpaceFromText("\n\n\n"), anchor)
-
-        return added
     }
 
     private fun addDataclassImport(function: PyFunction) {

@@ -150,3 +150,11 @@
     "NEW INSTRUCTION": "WHEN registering a refactoring action THEN also add it to RefactoringPopupGroup to show in Refactor This"
 }
 
+[2025-12-04 14:53] - Updated by Junie
+{
+    "TYPE": "new instructions",
+    "CATEGORY": "intention availability",
+    "ERROR": "-",
+    "NEW INSTRUCTION": "WHEN function has @property or @overload decorator THEN do not exclude it from intention availability checks"
+}
+
