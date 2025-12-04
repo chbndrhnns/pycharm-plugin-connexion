@@ -28,7 +28,7 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
             from typing import Any
             
             
-            @dataclass(frozen=True, slots=True)
+            @dataclass(frozen=True, slots=True, kw_only=True)
             class CreateUserParams:
                 first_name: Any
                 last_name: Any = "Doe"
@@ -61,7 +61,7 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
                 from typing import Any
                 
                 
-                @dataclass(frozen=True, slots=True)
+                @dataclass(frozen=True, slots=True, kw_only=True)
                 class CreateUserParams:
                     first_name: Any
                     last_name: Any
@@ -102,7 +102,7 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
             from typing import Any
 
 
-            @dataclass(frozen=True, slots=True)
+            @dataclass(frozen=True, slots=True, kw_only=True)
             class CreateUserParams:
                 name: Any
                 age: Any
@@ -139,7 +139,7 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
                 from typing import Any
                 
                 
-                @dataclass(frozen=True, slots=True)
+                @dataclass(frozen=True, slots=True, kw_only=True)
                 class HelperParams:
                     x: Any
                     y: Any

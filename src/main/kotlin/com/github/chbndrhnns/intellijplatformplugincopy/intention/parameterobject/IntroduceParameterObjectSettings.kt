@@ -7,5 +7,6 @@ data class IntroduceParameterObjectSettings(
     val className: String,
     val parameterName: String,
     val generateFrozen: Boolean = true,
-    val generateSlots: Boolean = true
+    val generateSlots: Boolean = true,
+    val generateKwOnly: Boolean = true
 )

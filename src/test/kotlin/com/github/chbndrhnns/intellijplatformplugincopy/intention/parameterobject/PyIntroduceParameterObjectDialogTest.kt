@@ -38,7 +38,7 @@ class PyIntroduceParameterObjectDialogTest : TestBase() {
             from typing import Any
             
             
-            @dataclass(frozen=True, slots=True)
+            @dataclass(frozen=True, slots=True, kw_only=True)
             class MyFuncParams:
                 b: Any
                 c: Any
@@ -86,7 +86,7 @@ class PyIntroduceParameterObjectDialogTest : TestBase() {
             from typing import Any
             
             
-            @dataclass(frozen=True, slots=True)
+            @dataclass(frozen=True, slots=True, kw_only=True)
             class MyFuncParams:
                 a: Any
                 c: Any
@@ -122,7 +122,8 @@ class PyIntroduceParameterObjectDialogTest : TestBase() {
                 className = "MyCustomParams",
                 parameterName = "my_params",
                 generateFrozen = false,
-                generateSlots = false
+                generateSlots = false,
+                generateKwOnly = false
             )
         }
 
@@ -180,7 +181,7 @@ class PyIntroduceParameterObjectDialogTest : TestBase() {
             from typing import Any
 
 
-            @dataclass(frozen=True, slots=True)
+            @dataclass(frozen=True, slots=True, kw_only=True)
             class FrozenParams:
                 a: Any
 

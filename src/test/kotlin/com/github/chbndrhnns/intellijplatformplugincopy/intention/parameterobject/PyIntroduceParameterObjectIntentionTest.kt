@@ -22,7 +22,7 @@ class PyIntroduceParameterObjectIntentionTest : TestBase() {
                 from typing import Any
                 
                 
-                @dataclass(frozen=True, slots=True)
+                @dataclass(frozen=True, slots=True, kw_only=True)
                 class CreateUserParams:
                     first_name: Any
                     last_name: Any
@@ -56,7 +56,7 @@ class PyIntroduceParameterObjectIntentionTest : TestBase() {
                 from typing import Any
                 
                 
-                @dataclass(frozen=True, slots=True)
+                @dataclass(frozen=True, slots=True, kw_only=True)
                 class DoParams:
                     arg1: Any
                     arg2: Any

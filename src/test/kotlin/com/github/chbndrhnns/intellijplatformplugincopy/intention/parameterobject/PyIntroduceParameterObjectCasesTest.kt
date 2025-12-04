@@ -21,7 +21,7 @@ class PyIntroduceParameterObjectCasesTest : TestBase() {
             from typing import Any
             
             
-            @dataclass(frozen=True, slots=True)
+            @dataclass(frozen=True, slots=True, kw_only=True)
             class FetchDataParams:
                 url: Any
                 timeout: Any = 10
@@ -68,7 +68,7 @@ class PyIntroduceParameterObjectCasesTest : TestBase() {
             from typing import Any
 
 
-            @dataclass(frozen=True, slots=True)
+            @dataclass(frozen=True, slots=True, kw_only=True)
             class PropParams:
                 value: Any
                 extra: Any
@@ -108,7 +108,7 @@ class PyIntroduceParameterObjectCasesTest : TestBase() {
             from typing import overload, Any
 
 
-            @dataclass(frozen=True, slots=True)
+            @dataclass(frozen=True, slots=True, kw_only=True)
             class ProcessParams:
                 a: int
                 b: int
@@ -155,7 +155,7 @@ class PyIntroduceParameterObjectCasesTest : TestBase() {
 
 
             def outer():
-                @dataclass(frozen=True, slots=True)
+                @dataclass(frozen=True, slots=True, kw_only=True)
                 class InnerParams:
                     a: Any
                     b: Any

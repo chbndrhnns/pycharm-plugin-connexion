@@ -21,6 +21,7 @@ class IntroduceParameterObjectDialog(
     private val parameterNameField = javax.swing.JTextField("params")
     private val frozenCheckBox = javax.swing.JCheckBox("Frozen", true)
     private val slotsCheckBox = javax.swing.JCheckBox("Slots", true)
+    private val kwOnlyCheckBox = javax.swing.JCheckBox("kw_only", true)
 
     init {
         title = "Introduce Parameter Object"
@@ -43,6 +44,7 @@ class IntroduceParameterObjectDialog(
         val optionsPanel = JPanel(java.awt.FlowLayout(java.awt.FlowLayout.LEFT))
         optionsPanel.add(frozenCheckBox)
         optionsPanel.add(slotsCheckBox)
+        optionsPanel.add(kwOnlyCheckBox)
         configPanel.add(optionsPanel)
 
         panel.add(configPanel, BorderLayout.NORTH)
@@ -64,7 +66,8 @@ class IntroduceParameterObjectDialog(
             className = classNameField.text,
             parameterName = parameterNameField.text,
             generateFrozen = frozenCheckBox.isSelected,
-            generateSlots = slotsCheckBox.isSelected
+            generateSlots = slotsCheckBox.isSelected,
+            generateKwOnly = kwOnlyCheckBox.isSelected
         )
     }
 }

@@ -2,6 +2,8 @@
 
 ## Pending Tasks
 
+- [ ] commit: if it fails for hooks, add option keep selection of files
+- [ ] feat: Disable if python < 3.11
 - [ ] feat: Treat references as PSI elements, pytest.mark.filterwarnings, patch()
 - [ ] refactor: How to find if the caret is inside parentheses? `[PopulateArgumentsService.findCallExpression`
 - [ ] feat: Replace expected with actual test outcome

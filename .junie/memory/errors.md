@@ -338,3 +338,13 @@
     "NEW INSTRUCTION": "WHEN generating container with one sample element THEN append a trailing comma after the element"
 }
 
+[2025-12-04 21:41] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "rename_element",
+    "ERROR": "Rename conflicts: class shadowed by constructor",
+    "ROOT CAUSE": "Tried renaming the class to the same name at its declaration, which is unnecessary and triggers conflict detection.",
+    "PROJECT NOTE": "To add a new setting (e.g., generateKwOnly) update IntroduceParameterObjectSettings data class content directly; no rename is required.",
+    "NEW INSTRUCTION": "WHEN attempting to change class members THEN modify file content via apply_patch instead of rename_element"
+}
+

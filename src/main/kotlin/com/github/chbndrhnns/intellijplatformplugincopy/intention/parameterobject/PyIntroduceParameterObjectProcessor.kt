@@ -74,7 +74,8 @@ class PyIntroduceParameterObjectProcessor(
                     dataclassName,
                     params,
                     settings.generateFrozen,
-                    settings.generateSlots
+                    settings.generateSlots,
+                    settings.generateKwOnly
                 )
             
             // Add imports
@@ -140,7 +141,8 @@ class PyIntroduceParameterObjectProcessor(
         className: String,
         params: List<PyNamedParameter>,
         generateFrozen: Boolean,
-        generateSlots: Boolean
+        generateSlots: Boolean,
+        generateKwOnly: Boolean
     ): PyClass {
         val generator = PyElementGenerator.getInstance(project)
         val languageLevel = LanguageLevel.forElement(function)
@@ -149,6 +151,7 @@ class PyIntroduceParameterObjectProcessor(
         val decoratorArgs = mutableListOf<String>()
         if (generateFrozen) decoratorArgs.add("frozen=True")
         if (generateSlots) decoratorArgs.add("slots=True")
+        if (generateKwOnly) decoratorArgs.add("kw_only=True")
 
         if (decoratorArgs.isNotEmpty()) {
             sb.append("@dataclass(${decoratorArgs.joinToString(", ")})\n")

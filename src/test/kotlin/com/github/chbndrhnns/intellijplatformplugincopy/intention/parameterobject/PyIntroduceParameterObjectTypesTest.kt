@@ -20,7 +20,7 @@ class PyIntroduceParameterObjectTypesTest : TestBase() {
                 from typing import Union, Any
                 
                 
-                @dataclass(frozen=True, slots=True)
+                @dataclass(frozen=True, slots=True, kw_only=True)
                 class ProcessParams:
                     val: Union[int, str]
                     count: int
@@ -49,7 +49,7 @@ class PyIntroduceParameterObjectTypesTest : TestBase() {
                 from typing import Annotated, Any
                 
                 
-                @dataclass(frozen=True, slots=True)
+                @dataclass(frozen=True, slots=True, kw_only=True)
                 class ProcessParams:
                     val: Annotated[int, "meta"]
                     count: int
@@ -78,7 +78,7 @@ class PyIntroduceParameterObjectTypesTest : TestBase() {
                 from typing import Any
                 
                 
-                @dataclass(frozen=True, slots=True)
+                @dataclass(frozen=True, slots=True, kw_only=True)
                 class ProcessParams:
                     user: "User"
                     count: int
@@ -120,7 +120,7 @@ class PyIntroduceParameterObjectTypesTest : TestBase() {
             from typing import Any
 
 
-            @dataclass(frozen=True, slots=True)
+            @dataclass(frozen=True, slots=True, kw_only=True)
             class ProcessParams:
                 user: User
                 count: int

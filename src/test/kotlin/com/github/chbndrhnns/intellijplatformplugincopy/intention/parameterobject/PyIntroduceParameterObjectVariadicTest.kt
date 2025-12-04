@@ -21,7 +21,7 @@ class PyIntroduceParameterObjectVariadicTest : TestBase() {
                 from typing import Any
                 
                 
-                @dataclass(frozen=True, slots=True)
+                @dataclass(frozen=True, slots=True, kw_only=True)
                 class FooParams:
                     a: Any
                     b: Any
@@ -55,7 +55,7 @@ class PyIntroduceParameterObjectVariadicTest : TestBase() {
                 from typing import Any
                 
                 
-                @dataclass(frozen=True, slots=True)
+                @dataclass(frozen=True, slots=True, kw_only=True)
                 class FooParams:
                     a: Any
                     b: Any
@@ -89,7 +89,7 @@ class PyIntroduceParameterObjectVariadicTest : TestBase() {
                 from typing import Any
                 
                 
-                @dataclass(frozen=True, slots=True)
+                @dataclass(frozen=True, slots=True, kw_only=True)
                 class FooParams:
                     a: Any
                     b: Any
@@ -123,7 +123,7 @@ class PyIntroduceParameterObjectVariadicTest : TestBase() {
                  from typing import Any
                 
                 
-                 @dataclass(frozen=True, slots=True)
+                 @dataclass(frozen=True, slots=True, kw_only=True)
                  class FooParams:
                      a: Any
                      b: Any

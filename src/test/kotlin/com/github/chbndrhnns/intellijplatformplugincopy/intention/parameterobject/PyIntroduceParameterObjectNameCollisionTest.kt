@@ -25,7 +25,7 @@ class PyIntroduceParameterObjectNameCollisionTest : TestBase() {
                     pass
     
                 
-                @dataclass(frozen=True, slots=True)
+                @dataclass(frozen=True, slots=True, kw_only=True)
                 class CreateUserParams1:
                     first_name: Any
                     last_name: Any
@@ -56,7 +56,7 @@ class PyIntroduceParameterObjectNameCollisionTest : TestBase() {
                 from other import CreateUserParams
                 
                 
-                @dataclass(frozen=True, slots=True)
+                @dataclass(frozen=True, slots=True, kw_only=True)
                 class CreateUserParams1:
                     first_name: Any
                     last_name: Any
