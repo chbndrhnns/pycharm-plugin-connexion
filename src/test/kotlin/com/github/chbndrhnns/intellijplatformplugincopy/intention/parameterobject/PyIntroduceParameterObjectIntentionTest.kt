@@ -34,7 +34,8 @@ class PyIntroduceParameterObjectIntentionTest : TestBase() {
             
             
             def main():
-                create_user(CreateUserParams("John", "Doe", "john@example.com", 30))""".trimIndent() + "\n\n",
+                create_user(CreateUserParams(first_name="John", last_name="Doe", email="john@example.com", age=30))
+            """.trimIndent() + "\n\n",
             "Introduce parameter object"
         )
     }

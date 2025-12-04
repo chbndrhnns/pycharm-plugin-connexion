@@ -24,7 +24,7 @@
 - [-] feat: Introduce parameter object (docs/parameter-object/state.md)
   - [ ] refactor: String and imports handling in PyIntroduceParameterObjectProcessor
   - [ ] check if there is a better way for `addDataclassImport`
-  - [ ] Deal with union types and annotated and forward refs
+  - [x] Deal with union types and annotated and forward refs
 - [ ] Configure default base classes
 - [ ] feat: How to enable module-level skip for pydunder inspection?
 

@@ -340,3 +340,13 @@ directly.",
 verifying partial extraction"
 }
 
+[2025-12-04 11:34] - Updated by Junie - Trajectory analysis
+{
+"PLAN QUALITY": "near-optimal",
+"REDUNDANT STEPS": "-",
+"MISSING STEPS": "run tests, implement logic, verify fixes",
+"BOTTLENECK": "No test run prevented feedback loop for required logic changes.",
+"PROJECT NOTE": "-",
+"NEW INSTRUCTION": "WHEN new tests are added or changed THEN run all tests and report failures"
+}
+
