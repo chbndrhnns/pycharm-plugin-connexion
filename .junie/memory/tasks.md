@@ -469,3 +469,13 @@ directly.",
     "NEW INSTRUCTION": "WHEN generating value uses alias name like MyStr(...) THEN resolve alias to PsiNamedElement and call PyImportService.ensureImportedIfNeeded"
 }
 
+[2025-12-04 21:37] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "add debug logging",
+    "MISSING STEPS": "inspect test failure diff,validate popup selection index,align expected formatting policy",
+    "BOTTLENECK": "The agent did not inspect the failing test diff to adjust implementation or expectations.",
+    "PROJECT NOTE": "Existing intention tests typically expect no trailing comma for single-element containers.",
+    "NEW INSTRUCTION": "WHEN test fails with FileComparisonFailedError THEN open diff and adjust expectations or formatting"
+}
+

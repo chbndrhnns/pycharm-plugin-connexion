@@ -202,6 +202,7 @@ class PopulateArgumentsService {
 
         return when (type) {
             is PyUnionType -> generateUnionValue(type, context, depth, generator, languageLevel)
+            is PyCollectionType -> generateCollectionValue(type, context, depth, generator, languageLevel)
             is PyClassType -> {
                 if (isDataclassClass(type.pyClass)) {
                     generateDataclassValue(type.pyClass, context, depth, generator, languageLevel)
@@ -215,6 +216,28 @@ class PopulateArgumentsService {
             is PyClassLikeType -> generateAliasOrNewTypeValue(type)
             else -> GenerationResult(DEFAULT_FALLBACK_VALUE, emptySet())
         }
+    }
+
+    private fun generateCollectionValue(
+        type: PyCollectionType,
+        context: TypeEvalContext,
+        depth: Int,
+        generator: PyElementGenerator,
+        languageLevel: LanguageLevel
+    ): GenerationResult {
+        val name = type.name
+        val elementTypes = type.elementTypes
+
+        if (name == "list" || name == "List" || name == "set" || name == "Set") {
+            val elementType = elementTypes.firstOrNull()
+            if (elementType != null) {
+                val result = generateValue(elementType, context, depth + 1, generator, languageLevel)
+                val text = if (name == "list" || name == "List") "[${result.text}]" else "{${result.text}}"
+                return GenerationResult(text, result.imports)
+            }
+        }
+
+        return GenerationResult(DEFAULT_FALLBACK_VALUE, emptySet())
     }
 
     private fun generateUnionValue(
@@ -350,11 +373,13 @@ class PopulateArgumentsService {
     }
 
     private fun generateAliasFromClassType(type: PyClassType): GenerationResult? {
-        // If there is a real class behind it (e.g., builtin or user class), we don't treat it as alias here.
-        if (type.pyClass != null) return null
-
         val name = type.name ?: type.classQName?.substringAfterLast('.')
         if (name.isNullOrBlank()) return null
+
+        // If there is a real class behind it (e.g., builtin or user class), we don't treat it as alias here.
+        // Unless the name differs from the class name (e.g. NewType("MyStr", str)), in which case it's likely a wrapper/alias we want to preserve.
+        val pyClass = type.pyClass
+        if (pyClass != null && pyClass.name == name) return null
 
         if (isBuiltinName(name)) return null
 
