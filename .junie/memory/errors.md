@@ -258,3 +258,23 @@
     "NEW INSTRUCTION": "WHEN generating argument list THEN skip parameters with names starting with \"_\""
 }
 
+[2025-12-04 13:06] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Intention not offered inside parentheses",
+    "ROOT CAUSE": "findCallExpression does not resolve the PyCallExpression when caret is within PyArgumentList, so the intention list is empty.",
+    "PROJECT NOTE": "Update PopulateArgumentsService.findCallExpression to locate the PSI element at caret, climb to PyArgumentList, then its parent PyCallExpression; when caret is in PyArgumentList set targetElement to the argument list to satisfy blocking inspection checks.",
+    "NEW INSTRUCTION": "WHEN caret is inside PyArgumentList and no intention found THEN resolve call from PyArgumentList and return it"
+}
+
+[2025-12-04 13:15] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "create",
+    "ERROR": "File already exists at path",
+    "ROOT CAUSE": "Attempted to create an existing file instead of updating its contents.",
+    "PROJECT NOTE": "docs/parameter-object/state.md already exists; update it using apply_patch or search_replace.",
+    "NEW INSTRUCTION": "WHEN create reports file already exists THEN update the file using apply_patch instead"
+}
+

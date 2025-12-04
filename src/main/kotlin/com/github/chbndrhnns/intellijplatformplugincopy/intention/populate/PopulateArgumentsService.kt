@@ -26,7 +26,16 @@ class PopulateArgumentsService {
     fun findCallExpression(editor: Editor, file: PyFile): PyCallExpression? {
         val offset = editor.caretModel.offset
         val element = file.findElementAt(offset) ?: return null
-        return PsiTreeUtil.getParentOfType(element, PyCallExpression::class.java, /* strict = */ false)
+        val call =
+            PsiTreeUtil.getParentOfType(element, PyCallExpression::class.java, /* strict = */ false) ?: return null
+
+        val argumentList = call.argumentList ?: return null
+        val textRange = argumentList.textRange ?: return null
+
+        if (offset > textRange.startOffset && offset < textRange.endOffset) {
+            return call
+        }
+        return null
     }
 
     /**

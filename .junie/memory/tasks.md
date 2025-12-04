@@ -379,3 +379,23 @@ directly.",
     "NEW INSTRUCTION": "WHEN targeted tests pass after implementing a fix THEN run the full test suite and summarize"
 }
 
+[2025-12-04 13:08] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "open plugin.xml,open settings file",
+    "MISSING STEPS": "implement availability check,rerun tests",
+    "BOTTLENECK": "No code change implemented to restrict availability to caret inside argument list.",
+    "PROJECT NOTE": "Dataclass tests require from dataclasses import dataclass in fixtures.",
+    "NEW INSTRUCTION": "WHEN caret-position behavior is required THEN add argument-list caret check in availability logic"
+}
+
+[2025-12-04 13:16] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "delete file",
+    "MISSING STEPS": "open file,edit file,review doc,submit changes",
+    "BOTTLENECK": "Recreating the doc without reviewing led to risk of lost or truncated content.",
+    "PROJECT NOTE": "docs/parameter-object/state.md already existed; prefer in-place edits to preserve content.",
+    "NEW INSTRUCTION": "WHEN modifying an existing documentation file THEN open it, edit in place, and submit"
+}
+

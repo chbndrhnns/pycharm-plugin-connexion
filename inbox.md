@@ -2,6 +2,7 @@
 
 ## Pending Tasks
 
+- [ ] refactor: How to find if the caret is inside parentheses? `[PopulateArgumentsService.findCallExpression`
 - [ ] feat: Replace expected with actual test outcome
 - [ ] fix: investigate strange `.trimIndent() + "\n\n",` in testMethodIntroduceParameterObject
 - [ ] Research why this magic is required: `fixtures.IntentionHelpersKt.doIntentionTest`
@@ -21,7 +22,6 @@
 
 ## In Progress Tasks
 
-- [ ] feat: When populating parameters, ignore any starting with an underscore
 - [ ] feat: When populating parameters, offer the quickfix only when inside the parentheses
 - [-] feat: Introduce parameter object (docs/parameter-object/state.md)
   - [ ] refactor: String and imports handling in PyIntroduceParameterObjectProcessor
@@ -35,6 +35,7 @@
 
 ## Completed Tasks (newest first)
 
+- [x] feat: When populating parameters, ignore any starting with an underscore
 - [N] feat: Do not show popup when populating required args only
 - [x] test normal classes when introducing types
 - [x] Make private/public

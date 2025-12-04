@@ -1,28 +1,16 @@
 ### Analysis: Uncovered Cases for Parameter Object Refactoring
 
-Based on my analysis of the current implementation (`PyIntroduceParameterObjectIntention.kt`, `PyIntroduceParameterObjectProcessor.kt`) and the documentation (`mwe-parameter-object.md`), here are the cases **not yet covered**:
-
----
-
-### Parameter Types Not Supported
-
-| Case | Current Behavior | Notes |
-|------|------------------|-------|
-| **Parameters with default values** | Refactoring disabled (`hasDefaultValue()` check) | Should support generating dataclass fields with `field(default=...)` |
-| **`*args` / `**kwargs`** | Refactoring disabled | Could be preserved alongside the parameter object |
-| **Keyword-only arguments** | Not explicitly handled | Parameters after `*` in signature |
-| **Positional-only arguments** | Not handled | Python 3.8+ `def f(a, /, b)` syntax |
+Based on the current implementation and recent updates, several key gaps have been addressed. However, the following
+cases remain **not yet covered** or require further improvement:
 
 ---
 
 ### Call Site Patterns Not Supported
 
-| Case | Current Behavior | Notes |
-|------|------------------|-------|
-| **Keyword arguments** | Skipped (args count mismatch) | `create_user(first_name="John", ...)` |
-| **Mixed positional/keyword** | Skipped | Common in real code |
-| **Star unpacking** | Not handled | `create_user(*args)` or `create_user(**data)` |
-| **Partial arguments (using defaults)** | Skipped | When fewer args than params |
+| Case               | Current Behavior      | Notes                                                                                            |
+|--------------------|-----------------------|--------------------------------------------------------------------------------------------------|
+| **Star unpacking** | Not handled correctly | `create_user(*args)` where `args` maps to named parameters is not resolved to individual fields. |
+| **Dynamic calls**  | Cannot handle         | `getattr(obj, 'method')(...)`                                                                    |
 
 ---
 
@@ -41,49 +29,38 @@ Based on my analysis of the current implementation (`PyIntroduceParameterObjectI
 
 ### Dataclass Generation Gaps
 
-| Case | Current Behavior | Notes |
-|------|------------------|-------|
-| **Type annotations** | Uses `Any` if missing | Works but could infer types |
-| **Complex type annotations** | Copied as-is | Forward references, generics may break |
-| **Dataclass name conflicts** | No uniqueness check | Could clash with existing symbols |
-| **Alternative containers** | Only `@dataclass` | Could offer Pydantic `BaseModel`, `NamedTuple`, `TypedDict` |
-| **Frozen/slots options** | Not offered | `@dataclass(frozen=True, slots=True)` |
-| **Field metadata** | Not supported | `field(default_factory=list)` patterns |
-
----
-
-### Import Handling Gaps
-
-| Case | Current Behavior | Notes |
-|------|------------------|-------|
-| **`typing.Any` import** | Always added | Even when not needed (if all params have annotations) |
+| Case                         | Current Behavior             | Notes                                                       |
+|------------------------------|------------------------------|-------------------------------------------------------------|
+| **Type annotations**         | `typing.Any` always imported | Import added even if not used (redundant)                   |
+| **Complex type annotations** | Copied as-is                 | Forward references, generics may break if context changes   |
+| **Alternative containers**   | Only `@dataclass`            | Could offer Pydantic `BaseModel`, `NamedTuple`, `TypedDict` |
+| **Frozen/slots options**     | Not offered                  | `@dataclass(frozen=True, slots=True)`                       |
+| **Field metadata**           | Not supported                | `field(default_factory=list)` patterns                      |
 
 ---
 
 ### UI/UX Features Not Implemented
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| **Parameter selection dialog** | Not implemented | Currently selects ALL parameters |
-| **Custom dataclass name** | Not offered | Always auto-generated |
-| **Custom parameter object variable name** | Hardcoded `params` | No user choice |
-| **Preview changes** | Not implemented | Standard refactoring preview |
-| **Undo grouping** | Basic | Could be improved |
-| **Refactor menu integration** | Intention only | Not in `Refactor | ...` menu |
+| Feature                                   | Status             | Notes                                                             |
+|-------------------------------------------|--------------------|-------------------------------------------------------------------|
+| **Custom dataclass name**                 | Not offered        | Always auto-generated (though conflict resolution is implemented) |
+| **Custom parameter object variable name** | Hardcoded `params` | No user choice                                                    |
+| **Preview changes**                       | Not implemented    | Standard refactoring preview                                      |
+| **Undo grouping**                         | Basic              | Could be improved                                                 |
+| **Refactor menu integration**             | Intention only     | Not in `Refactor                                                  | ...` menu |
 
 ---
 
 ### Edge Cases & Robustness
 
-| Case | Current Behavior | Notes |
-|------|------------------|-------|
-| **Single parameter** | Disabled (< 2 params) | Correct behavior |
-| **Read-only files** | Not checked | Could fail silently |
-| **Syntax errors in file** | Not checked | May crash or produce invalid code |
-| **Parameter name `params`** | Conflict possible | If existing param named `params` |
-| **Recursive functions** | Not tested | Self-calls should be updated |
-| **Decorators on function** | Not preserved/checked | May affect behavior |
-| **Docstrings** | Not updated | Parameter docs become stale |
+| Case                        | Current Behavior      | Notes                                                                         |
+|-----------------------------|-----------------------|-------------------------------------------------------------------------------|
+| **Read-only files**         | Not checked           | Could fail silently                                                           |
+| **Syntax errors in file**   | Not checked           | May crash or produce invalid code                                             |
+| **Parameter name `params`** | Conflict possible     | If existing param named `params` (variable name conflict)                     |
+| **Recursive functions**     | Not tested            | Self-calls should be updated                                                  |
+| **Decorators on function**  | Not preserved/checked | May affect behavior (except `@classmethod`/`@staticmethod` which are handled) |
+| **Docstrings**              | Not updated           | Parameter docs become stale                                                   |
 
 ---
 
@@ -92,25 +69,25 @@ Based on my analysis of the current implementation (`PyIntroduceParameterObjectI
 | Case | Current Behavior | Notes |
 |------|------------------|-------|
 | **Re-exported functions** | Not handled | `from module import func` patterns |
-| **Dynamic calls** | Cannot handle | `getattr(obj, 'method')(...)` |
 | **Test files** | Treated same as production | May want different handling |
 
 ---
 
 ### Summary of Priority Gaps
 
-**High Priority (Common real-world cases):**
-1. Parameters with default values
-2. Keyword arguments at call sites
-3. Parameter selection UI
+**High Priority:**
 
-**Medium Priority (Nice to have):**
-1. Alternative container types (Pydantic, NamedTuple)
-2. Dataclass name conflict resolution
-3. Preview dialog
+1. **`typing.Any` import cleanup**: Avoid adding unused imports.
+2. **Docstring updates**: Essential for maintaining code quality.
+3. **Parameter name conflict**: Handle case where a parameter is already named `params`.
 
-**Low Priority (Edge cases):**
-1. Positional-only parameters
-2. Star unpacking at call sites
-3. Docstring updates
-4. Stub file handling
+**Medium Priority:**
+
+1. **Alternative container types**: Pydantic support would be valuable.
+2. **Refactor menu integration**: Improve discoverability.
+3. **Preview dialog**: Standard refactoring experience.
+
+**Low Priority:**
+
+1. **Star unpacking at call sites**: Rare for named parameters.
+2. **Stub file handling**: specialized use case.
