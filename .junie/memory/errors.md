@@ -208,3 +208,23 @@
     "NEW INSTRUCTION": "WHEN argument type mismatch appears after refactor THEN update method signatures and all call sites"
 }
 
+[2025-12-04 11:49] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic bug",
+    "TOOL": "run_test",
+    "ERROR": "Intention not offered for variadic/separator signatures",
+    "ROOT CAUSE": "The Introduce Parameter Object processor excludes *args/**kwargs/*/ parameters, so the intention is not available and expected transformations fail.",
+    "PROJECT NOTE": "In PyIntroduceParameterObjectProcessor.collectParameters and signature rewriting, variadic params and separators are filtered out; keep them intact while grouping only selected normal parameters into the dataclass.",
+    "NEW INSTRUCTION": "WHEN function has *args, **kwargs, * or / THEN preserve them and still offer the intention"
+}
+
+[2025-12-04 12:30] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic bug",
+    "TOOL": "run_test",
+    "ERROR": "Classmethod call arguments mapped to 'cls'",
+    "ROOT CAUSE": "updateCallSites maps the first call-site argument to the first formal parameter, not skipping the implicit receiver ('cls' for classmethod), so arguments shift and params/dataclass get misplaced.",
+    "PROJECT NOTE": "When reconstructing call arguments, treat 'self' and 'cls' as implicit for bound calls and exclude them from positional mapping and from the extracted set.",
+    "NEW INSTRUCTION": "WHEN mapping call-site arguments for a method with first param self/cls THEN skip that parameter in positional mapping"
+}
+

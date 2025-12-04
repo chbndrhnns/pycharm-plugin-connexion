@@ -331,22 +331,31 @@ directly.",
 
 [2025-12-04 09:48] - Updated by Junie - Trajectory analysis
 {
-"PLAN QUALITY": "suboptimal",
-"REDUNDANT STEPS": "-",
-"MISSING STEPS": "add tests, wire intention, complete refactor",
-"BOTTLENECK": "Call-site update for partial extraction was started but left incomplete.",
-"PROJECT NOTE": "Use the processor's injected paramSelector to test partial extraction without showing UI.",
-"NEW INSTRUCTION": "WHEN adding UI-driven selection for refactoring THEN create unit tests using injected selector
-verifying partial extraction"
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "add tests, wire intention, complete refactor",
+    "BOTTLENECK": "Call-site update for partial extraction was started but left incomplete.",
+    "PROJECT NOTE": "Use the processor's injected paramSelector to test partial extraction without showing UI.",
+    "NEW INSTRUCTION": "WHEN adding UI-driven selection for refactoring THEN create unit tests using injected selector verifying partial extraction"
 }
 
 [2025-12-04 11:34] - Updated by Junie - Trajectory analysis
 {
-"PLAN QUALITY": "near-optimal",
-"REDUNDANT STEPS": "-",
-"MISSING STEPS": "run tests, implement logic, verify fixes",
-"BOTTLENECK": "No test run prevented feedback loop for required logic changes.",
-"PROJECT NOTE": "-",
-"NEW INSTRUCTION": "WHEN new tests are added or changed THEN run all tests and report failures"
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "run tests, implement logic, verify fixes",
+    "BOTTLENECK": "No test run prevented feedback loop for required logic changes.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN new tests are added or changed THEN run all tests and report failures"
+}
+
+[2025-12-04 11:54] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "update availability, implement logic, run full test suite",
+    "BOTTLENECK": "Intention not available because variadic/separator params are filtered out.",
+    "PROJECT NOTE": "collectParameters excludes *args/**kwargs and separators; replaceFunctionSignature/updateCallSites must preserve them.",
+    "NEW INSTRUCTION": "WHEN tests fail with 'Introduce parameter object' not in THEN update availability and parameter collection for *, /, *args, **kwargs"
 }
 

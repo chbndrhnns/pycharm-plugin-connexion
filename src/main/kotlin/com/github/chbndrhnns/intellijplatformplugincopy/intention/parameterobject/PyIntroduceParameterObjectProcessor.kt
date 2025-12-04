@@ -14,7 +14,9 @@ import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.*
+import com.jetbrains.python.psi.resolve.PyResolveContext
 import com.jetbrains.python.psi.stubs.PyFunctionNameIndex
+import com.jetbrains.python.psi.types.TypeEvalContext
 
 class PyIntroduceParameterObjectProcessor(
     private val function: PyFunction,
@@ -186,12 +188,25 @@ class PyIntroduceParameterObjectProcessor(
             }
         }
 
-        val newSignature = "def foo(${newParamsList.joinToString(", ")}): pass"
+        // Cleanup dangling * or * before **kwargs
+        val cleanedParams = mutableListOf<String>()
+        for (i in newParamsList.indices) {
+            val param = newParamsList[i]
+            if (param == "*") {
+                // Remove if last
+                if (i == newParamsList.lastIndex) continue
+
+                // Remove if next is **kwargs
+                val next = newParamsList[i + 1]
+                if (next.startsWith("**")) continue
+            }
+            cleanedParams.add(param)
+        }
+
+        val newSignature = "def foo(${cleanedParams.joinToString(", ")}): pass"
         val dummyFunc = generator.createFromText(languageLevel, PyFunction::class.java, newSignature)
 
-        if (dummyFunc != null) {
-            function.parameterList.replace(dummyFunc.parameterList)
-        }
+        function.parameterList.replace(dummyFunc.parameterList)
         
         CodeStyleManager.getInstance(project).reformat(function.containingFile)
     }
@@ -231,11 +246,13 @@ class PyIntroduceParameterObjectProcessor(
         val languageLevel = LanguageLevel.forElement(function)
         val dataclassName = dataclass.name ?: return
 
-        val allParams = collectParameters(function)
+        val allParams = function.parameterList.parameters.toList()
         if (allParams.isEmpty()) return
 
         // We assume the first extracted parameter defines the position of the new 'params' argument.
         val firstExtractedParam = params.firstOrNull() ?: return
+
+        val resolveContext = PyResolveContext.defaultContext(TypeEvalContext.codeAnalysis(project, function.containingFile))
 
         for (ref in functionUsages) {
             val element = ref.element
@@ -244,21 +261,80 @@ class PyIntroduceParameterObjectProcessor(
 
             val args = call.argumentList?.arguments ?: continue
 
+            val markedCallee = call.multiResolveCallee(resolveContext).firstOrNull()
+            val implicitOffset = markedCallee?.implicitOffset ?: 0
+
             // Manual argument mapping
-            val paramToArg = mutableMapOf<PyNamedParameter, PyExpression>()
-            var positionalIndex = 0
+            val paramToArgs = mutableMapOf<PyParameter, MutableList<String>>()
+
+            fun findParam(name: String): PyNamedParameter? {
+                return allParams.filterIsInstance<PyNamedParameter>().find { it.name == name }
+            }
+
+            val kwargsParam = allParams.filterIsInstance<PyNamedParameter>().find { it.isKeywordContainer }
+            val argsParam = allParams.filterIsInstance<PyNamedParameter>().find { it.isPositionalContainer }
+
+            var positionalIndex = implicitOffset
+            var seenStar = false
 
             for (arg in args) {
                 if (arg is PyKeywordArgument) {
                     val keyword = arg.keyword
-                    val param = allParams.find { it.name == keyword }
-                    if (param != null) {
-                        paramToArg[param] = arg
+                    if (keyword != null) {
+                        val param = findParam(keyword)
+                        if (param != null && !param.isKeywordContainer && !param.isPositionalContainer) {
+                            paramToArgs.computeIfAbsent(param) { mutableListOf() }
+                                .add(arg.valueExpression?.text ?: "None")
+                        } else {
+                            if (kwargsParam != null) {
+                                paramToArgs.computeIfAbsent(kwargsParam) { mutableListOf() }.add(arg.text)
+                            }
+                        }
+                    }
+                } else if (arg.text.startsWith("**")) {
+                    if (kwargsParam != null) {
+                        paramToArgs.computeIfAbsent(kwargsParam) { mutableListOf() }.add(arg.text)
+                    }
+                } else if (arg.text.startsWith("*")) {
+                    // Treat *args expansion as positional if we have *args param
+                    if (argsParam != null) {
+                        paramToArgs.computeIfAbsent(argsParam) { mutableListOf() }.add(arg.text)
                     }
                 } else {
                     // Positional
-                    if (positionalIndex < allParams.size) {
-                        paramToArg[allParams[positionalIndex]] = arg
+                    var mapped = false
+                    while (positionalIndex < allParams.size) {
+                        val p = allParams[positionalIndex]
+
+                        if (p is PySingleStarParameter) {
+                            seenStar = true
+                            positionalIndex++
+                            continue
+                        }
+                        if (p is PySlashParameter) {
+                            positionalIndex++
+                            continue
+                        }
+
+                        if (p is PyNamedParameter) {
+                            if (p.isPositionalContainer) {
+                                seenStar = true
+                                paramToArgs.computeIfAbsent(p) { mutableListOf() }.add(arg.text)
+                                break
+                            }
+                            if (p.isKeywordContainer) {
+                                positionalIndex++
+                                continue
+                            }
+                            if (seenStar) { // Keyword-only, skip
+                                positionalIndex++
+                                continue
+                            }
+
+                            paramToArgs.computeIfAbsent(p) { mutableListOf() }.add(arg.text)
+                            positionalIndex++
+                            break
+                        }
                         positionalIndex++
                     }
                 }
@@ -272,17 +348,10 @@ class PyIntroduceParameterObjectProcessor(
             // Build Dataclass constructor arguments
             var firstDcArg = true
             for (p in params) {
-                val arg = paramToArg[p]
-                if (arg != null) {
+                val argTexts = paramToArgs[p]
+                if (argTexts != null && argTexts.isNotEmpty()) {
                     if (!firstDcArg) dataclassArgsList.append(", ")
-
-                    val valueText = if (arg is PyKeywordArgument) {
-                        arg.valueExpression?.text ?: "None"
-                    } else {
-                        arg.text
-                    }
-
-                    dataclassArgsList.append("${p.name}=$valueText")
+                    dataclassArgsList.append("${p.name}=${argTexts.first()}")
                     firstDcArg = false
                 }
             }
@@ -298,21 +367,29 @@ class PyIntroduceParameterObjectProcessor(
                 }
 
                 if (p in params) {
-                    // Extracted.
+                    // Extracted
                 } else {
-                    // Not extracted.
-                    val arg = paramToArg[p]
-                    if (arg != null) {
-                        if (!firstFuncArg) newArgsList.append(", ")
-                        newArgsList.append(arg.text)
-                        firstFuncArg = false
+                    if (p is PySlashParameter || p is PySingleStarParameter) continue
+
+                    val argTexts = paramToArgs[p]
+                    if (argTexts != null) {
+                        for (txt in argTexts) {
+                            if (!firstFuncArg) newArgsList.append(", ")
+                            newArgsList.append(txt)
+                            firstFuncArg = false
+                        }
                     }
                 }
             }
 
             // Replace arguments
-            val newArgExpr = generator.createExpressionFromText(languageLevel, "f($newArgsList)").let {
-                (it as PyCallExpression).argumentList
+            val newArgExpr = try {
+                val exprText = "f($newArgsList)"
+                generator.createExpressionFromText(languageLevel, exprText).let {
+                    (it as PyCallExpression).argumentList
+                }
+            } catch (e: Exception) {
+                null
             }
 
             if (newArgExpr != null) {

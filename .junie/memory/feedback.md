@@ -120,10 +120,17 @@
 
 [2025-12-04 11:18] - Updated by Junie
 {
-"TYPE": "correction",
-"CATEGORY": "parameter object refactor",
-"ERROR": "Missing comma in generated argument list",
-"NEW INSTRUCTION": "WHEN updating call sites during parameter object refactor THEN build PyArgumentList via PSI ensuring
-proper commas"
+    "TYPE": "correction",
+    "CATEGORY": "parameter object refactor",
+    "ERROR": "Missing comma in generated argument list",
+    "NEW INSTRUCTION": "WHEN updating call sites during parameter object refactor THEN build PyArgumentList via PSI ensuring proper commas"
+}
+
+[2025-12-04 12:27] - Updated by Junie
+{
+    "TYPE": "new instructions",
+    "CATEGORY": "tests execution",
+    "ERROR": "-",
+    "NEW INSTRUCTION": "WHEN modifying parameter object refactor logic THEN run PyIntroduceParameterObjectHighPrioTest#testClassMethod and summarize results"
 }
 

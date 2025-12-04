@@ -24,9 +24,6 @@ class PyIntroduceParameterObjectIntention : PsiElementBaseIntentionAction() {
 
         if (parameters.size < 2) return false
         
-        // Check for *args / **kwargs presence
-        if (function.parameterList.parameters.filterIsInstance<PyNamedParameter>().any { it.isPositionalContainer || it.isKeywordContainer }) return false
-        
         return true
     }
 

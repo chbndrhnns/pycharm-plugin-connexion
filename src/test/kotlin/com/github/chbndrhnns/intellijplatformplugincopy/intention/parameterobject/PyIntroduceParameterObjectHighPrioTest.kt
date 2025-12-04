@@ -87,10 +87,9 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
         myFixture.configureByText("a.py", before)
         val intention = myFixture.findSingleIntention("Introduce parameter object")
         myFixture.launchAction(intention)
-        
-        val after = myFixture.file.text
-        
-        val expected = """
+
+        myFixture.checkResult(
+            """
             from dataclasses import dataclass
             from typing import Any
 
@@ -99,18 +98,19 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
             class CreateUserParams:
                 name: Any
                 age: Any
-            
-            
+
+
             class UserFactory:
                 @classmethod
                 def create_user(cls, params: CreateUserParams):
                     print(cls, params.name, params.age)
-            
-            
+
+
             def main():
-                UserFactory.create_user(CreateUserParams(name="John", age=30))""".trimIndent() + "\n"
-                
-        assertEquals(expected, after)
+                UserFactory.create_user(CreateUserParams(name="John", age=30))
+
+        """.trimIndent()
+        )
     }
     
     fun testStaticMethod() {
