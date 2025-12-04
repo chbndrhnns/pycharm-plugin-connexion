@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject
 
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.PyImportService
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
@@ -15,13 +16,31 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.stubs.PyFunctionNameIndex
 
-class PyIntroduceParameterObjectProcessor(private val function: PyFunction) {
+class PyIntroduceParameterObjectProcessor(
+    private val function: PyFunction,
+    private val paramSelector: ((List<PyNamedParameter>) -> List<PyNamedParameter>?)? = null
+) {
 
     fun run() {
         val project = function.project
 
-        val params = collectParameters(function)
-        if (params.isEmpty()) return
+        val allParams = collectParameters(function)
+        if (allParams.isEmpty()) return
+
+        val params = if (paramSelector != null) {
+            paramSelector.invoke(allParams)
+        } else if (ApplicationManager.getApplication().isUnitTestMode) {
+            allParams
+        } else {
+            val dialog = IntroduceParameterObjectDialog(project, allParams)
+            if (dialog.showAndGet()) {
+                dialog.getSelectedParameters()
+            } else {
+                return
+            }
+        }
+
+        if (params.isNullOrEmpty()) return
 
         val dataclassName = generateDataclassName(function)
 
@@ -151,20 +170,29 @@ class PyIntroduceParameterObjectProcessor(private val function: PyFunction) {
     ) {
         val generator = PyElementGenerator.getInstance(project)
         val languageLevel = LanguageLevel.forElement(function)
-        
-        // Create new parameter
-        val newParam = generator.createParameter("params", null, dataclassName, languageLevel)
-        
-        // Insert new parameter at the position of the first removed parameter
-        val firstParam = params.first()
-        function.parameterList.addBefore(newParam, firstParam)
-        
-        // Remove old parameters
-        for (p in params) {
-            p.delete()
+
+        val newParamText = "params: $dataclassName"
+        val firstExtractedParam = params.first()
+
+        val newParamsList = mutableListOf<String>()
+
+        for (p in function.parameterList.parameters) {
+            if (p in params) {
+                if (p == firstExtractedParam) {
+                    newParamsList.add(newParamText)
+                }
+            } else {
+                newParamsList.add(p.text)
+            }
+        }
+
+        val newSignature = "def foo(${newParamsList.joinToString(", ")}): pass"
+        val dummyFunc = generator.createFromText(languageLevel, PyFunction::class.java, newSignature)
+
+        if (dummyFunc != null) {
+            function.parameterList.replace(dummyFunc.parameterList)
         }
         
-        // Clean up commas and spaces
         CodeStyleManager.getInstance(project).reformat(function.containingFile)
     }
 
@@ -203,39 +231,92 @@ class PyIntroduceParameterObjectProcessor(private val function: PyFunction) {
         val languageLevel = LanguageLevel.forElement(function)
         val dataclassName = dataclass.name ?: return
 
+        val allParams = collectParameters(function)
+        if (allParams.isEmpty()) return
+
+        // We assume the first extracted parameter defines the position of the new 'params' argument.
+        val firstExtractedParam = params.firstOrNull() ?: return
+
         for (ref in functionUsages) {
             val element = ref.element
             val call = PsiTreeUtil.getParentOfType(element, PyCallExpression::class.java) ?: continue
             if (call.callee != element && call.callee?.reference?.resolve() != function) continue
-            
+
             val args = call.argumentList?.arguments ?: continue
-            
-            // For MVP we assume positional only and order matches.
-            // "MVP: only allow simple positional arguments."
-            
-            // Build new argument string: Dataclass(arg1, arg2...)
-            val newArgs = StringBuilder()
-            newArgs.append("$dataclassName(")
 
-            if (args.size > params.size) {
-                // Skipping complex cases for MVP
-                continue 
-            }
-            
-            for ((i, arg) in args.withIndex()) {
-                if (i > 0) newArgs.append(", ")
-                newArgs.append(arg.text)
-            }
-            newArgs.append(")")
-            
-            val newArgExpr = generator.createExpressionFromText(languageLevel, newArgs.toString())
+            // Manual argument mapping
+            val paramToArg = mutableMapOf<PyNamedParameter, PyExpression>()
+            var positionalIndex = 0
 
-            val argList = call.argumentList
-            if (argList != null) {
-                for (arg in args) {
-                    arg.delete()
+            for (arg in args) {
+                if (arg is PyKeywordArgument) {
+                    val keyword = arg.keyword
+                    val param = allParams.find { it.name == keyword }
+                    if (param != null) {
+                        paramToArg[param] = arg
+                    }
+                } else {
+                    // Positional
+                    if (positionalIndex < allParams.size) {
+                        paramToArg[allParams[positionalIndex]] = arg
+                        positionalIndex++
+                    }
                 }
-                argList.addArgument(newArgExpr)
+            }
+
+            val newArgsList = StringBuilder()
+            val dataclassArgsList = StringBuilder()
+
+            dataclassArgsList.append("$dataclassName(")
+
+            // Build Dataclass constructor arguments
+            var firstDcArg = true
+            for (p in params) {
+                val arg = paramToArg[p]
+                if (arg != null) {
+                    if (!firstDcArg) dataclassArgsList.append(", ")
+
+                    val valueText = if (arg is PyKeywordArgument) {
+                        arg.valueExpression?.text ?: "None"
+                    } else {
+                        arg.text
+                    }
+
+                    dataclassArgsList.append("${p.name}=$valueText")
+                    firstDcArg = false
+                }
+            }
+            dataclassArgsList.append(")")
+
+            // Build new Function call arguments
+            var firstFuncArg = true
+            for (p in allParams) {
+                if (p == firstExtractedParam) {
+                    if (!firstFuncArg) newArgsList.append(", ")
+                    newArgsList.append(dataclassArgsList)
+                    firstFuncArg = false
+                }
+
+                if (p in params) {
+                    // Extracted.
+                } else {
+                    // Not extracted.
+                    val arg = paramToArg[p]
+                    if (arg != null) {
+                        if (!firstFuncArg) newArgsList.append(", ")
+                        newArgsList.append(arg.text)
+                        firstFuncArg = false
+                    }
+                }
+            }
+
+            // Replace arguments
+            val newArgExpr = generator.createExpressionFromText(languageLevel, "f($newArgsList)").let {
+                (it as PyCallExpression).argumentList
+            }
+
+            if (newArgExpr != null) {
+                call.argumentList?.replace(newArgExpr)
             }
 
             // Handle cross-file import

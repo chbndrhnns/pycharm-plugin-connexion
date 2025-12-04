@@ -329,3 +329,14 @@ directly.",
     "NEW INSTRUCTION": "WHEN updating docs from commits THEN run git show -n 2 and update existing docs"
 }
 
+[2025-12-04 09:48] - Updated by Junie - Trajectory analysis
+{
+"PLAN QUALITY": "suboptimal",
+"REDUNDANT STEPS": "-",
+"MISSING STEPS": "add tests, wire intention, complete refactor",
+"BOTTLENECK": "Call-site update for partial extraction was started but left incomplete.",
+"PROJECT NOTE": "Use the processor's injected paramSelector to test partial extraction without showing UI.",
+"NEW INSTRUCTION": "WHEN adding UI-driven selection for refactoring THEN create unit tests using injected selector
+verifying partial extraction"
+}
+

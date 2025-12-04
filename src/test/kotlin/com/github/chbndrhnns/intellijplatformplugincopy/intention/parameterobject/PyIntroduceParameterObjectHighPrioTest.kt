@@ -37,7 +37,7 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
             
             
             def main():
-                create_user(CreateUserParams("John"))""".trimIndent() + "\n"
+                create_user(CreateUserParams(first_name="John"))""".trimIndent() + "\n"
         
         assertEquals(expected, after)
     }
@@ -108,7 +108,7 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
             
             
             def main():
-                UserFactory.create_user(CreateUserParams("John", 30))""".trimIndent() + "\n"
+                UserFactory.create_user(CreateUserParams(name="John", age=30))""".trimIndent() + "\n"
                 
         assertEquals(expected, after)
     }
@@ -143,7 +143,7 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
             
             
             def main():
-                Utils.helper(HelperParams(1, 2))""".trimIndent() + "\n",
+                Utils.helper(HelperParams(x=1, y=2))""".trimIndent() + "\n",
             "Introduce parameter object"
         )
     }
