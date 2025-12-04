@@ -63,7 +63,9 @@ class PyIntroduceParameterObjectProcessor(
             }
         }
 
-        WriteCommandAction.writeCommandAction(project, function.containingFile).run<Throwable> {
+        WriteCommandAction.writeCommandAction(project, function.containingFile)
+            .withName("Introduce Parameter Object")
+            .run<Throwable> {
             val dataclass = createDataclass(project, function, dataclassName, params)
             
             // Add imports

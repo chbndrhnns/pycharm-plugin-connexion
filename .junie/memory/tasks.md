@@ -399,3 +399,23 @@ directly.",
     "NEW INSTRUCTION": "WHEN modifying an existing documentation file THEN open it, edit in place, and submit"
 }
 
+[2025-12-04 14:02] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "run tests (unsupported tool)",
+    "MISSING STEPS": "run high-priority test",
+    "BOTTLENECK": "Used an unavailable test tool and skipped the specified test run.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN special instruction names tests to run THEN run Gradle tests via bash and summarize"
+}
+
+[2025-12-04 14:20] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "update plugin.xml, verify action availability",
+    "BOTTLENECK": "Action not registered in RefactoringQuickList group.",
+    "PROJECT NOTE": "Add an <add-to-group group-id=\"RefactoringQuickList\"/> entry for the action in plugin.xml.",
+    "NEW INSTRUCTION": "WHEN plugin.xml lacks RefactoringQuickList registration THEN add add-to-group RefactoringQuickList entry"
+}
+

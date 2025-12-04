@@ -120,5 +120,12 @@
                 description="Show references occurring within type hints"
                 icon="AllIcons.Nodes.Type">
         </action>
+
+        <action id="com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.PyIntroduceParameterObjectAction"
+                class="com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.PyIntroduceParameterObjectAction"
+                text="Introduce Parameter Object..."
+                description="Introduces a parameter object for the current function">
+            <add-to-group group-id="RefactoringMenu" anchor="last"/>
+        </action>
     </actions>
 </idea-plugin>

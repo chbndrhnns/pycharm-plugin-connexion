@@ -278,3 +278,13 @@
     "NEW INSTRUCTION": "WHEN create reports file already exists THEN update the file using apply_patch instead"
 }
 
+[2025-12-04 14:08] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid context",
+    "TOOL": "PyIntroduceParameterObjectAction.update",
+    "ERROR": "PSI requested on EDT in update()",
+    "ROOT CAUSE": "The action's update() queries injected PSI from DataContext on the EDT, violating ActionUpdateThread rules.",
+    "PROJECT NOTE": "In PyIntroduceParameterObjectAction, override getActionUpdateThread() to return ActionUpdateThread.BGT and ensure PSI/data lookups happen in update() under BGT only; avoid injected PSI requests on EDT.",
+    "NEW INSTRUCTION": "WHEN IDE logs '$injected$.psi.File is requested on EDT' THEN set getActionUpdateThread to BGT and move PSI lookups off EDT"
+}
+

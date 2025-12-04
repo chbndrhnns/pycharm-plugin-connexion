@@ -134,3 +134,19 @@
     "NEW INSTRUCTION": "WHEN modifying parameter object refactor logic THEN run PyIntroduceParameterObjectHighPrioTest#testClassMethod and summarize results"
 }
 
+[2025-12-04 14:06] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "action threading",
+    "ERROR": "PSI/injected data requested on EDT during update",
+    "NEW INSTRUCTION": "WHEN AnAction.update reads PSI_FILE or PSI elements THEN override getActionUpdateThread to return BGT"
+}
+
+[2025-12-04 14:19] - Updated by Junie
+{
+    "TYPE": "new instructions",
+    "CATEGORY": "UI action registration",
+    "ERROR": "-",
+    "NEW INSTRUCTION": "WHEN registering a refactoring action THEN also add it to RefactoringPopupGroup to show in Refactor This"
+}
+

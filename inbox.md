@@ -22,19 +22,21 @@
 
 ## In Progress Tasks
 
-- [ ] feat: When populating parameters, offer the quickfix only when inside the parentheses
 - [-] feat: Introduce parameter object (docs/parameter-object/state.md)
   - [ ] refactor: String and imports handling in PyIntroduceParameterObjectProcessor
   - [ ] check if there is a better way for `addDataclassImport`
+  - [ ] refactor: updateCallSites
+  - [ ] Add to Refactoring this context menu
   - [x] Deal with union types and annotated and forward refs
   - [x] Deal with *args, **kwargs, *, / correctly
   - [x] fix: no name conflicts if same class name exists
-  - [ ] refactor: updateCallSites
+  - [x] Add to Refactoring menu
 - [ ] Configure default base classes
 - [ ] feat: How to enable module-level skip for pydunder inspection?
 
 ## Completed Tasks (newest first)
 
+- [x] feat: When populating parameters, offer the quickfix only when inside the parentheses
 - [x] feat: When populating parameters, ignore any starting with an underscore
 - [N] feat: Do not show popup when populating required args only
 - [x] test normal classes when introducing types
