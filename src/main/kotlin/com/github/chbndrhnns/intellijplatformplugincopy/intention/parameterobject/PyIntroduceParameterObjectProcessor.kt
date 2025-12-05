@@ -12,9 +12,9 @@ import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.PsiTreeUtil
+import com.jetbrains.python.codeInsight.imports.AddImportHelper
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.resolve.PyResolveContext
-import com.jetbrains.python.psi.stubs.PyFunctionNameIndex
 import com.jetbrains.python.psi.types.TypeEvalContext
 
 class PyIntroduceParameterObjectProcessor(
@@ -78,16 +78,9 @@ class PyIntroduceParameterObjectProcessor(
                     settings.generateKwOnly
                 )
             
-            // Add imports
             addDataclassImport(function)
-            
-            // Update body
                 updateFunctionBody(project, function, params, paramUsages, parameterName)
-            
-            // Update call sites
             updateCallSites(project, function, dataclass, params, functionUsages)
-
-            // Update function signature
                 replaceFunctionSignature(project, function, dataclassName, params, parameterName)
         }
     }
@@ -147,77 +140,92 @@ class PyIntroduceParameterObjectProcessor(
         val generator = PyElementGenerator.getInstance(project)
         val languageLevel = LanguageLevel.forElement(function)
 
-        val sb = StringBuilder()
+        // 1. Basic class shell generation (class ClassName: pass)
+        val pyClass = generator.createFromText(languageLevel, PyClass::class.java, "class $className:\n")
+
+        // 2. @dataclass decorator creation and addition
         val decoratorArgs = mutableListOf<String>()
         if (generateFrozen) decoratorArgs.add("frozen=True")
         if (generateSlots) decoratorArgs.add("slots=True")
         if (generateKwOnly) decoratorArgs.add("kw_only=True")
 
-        if (decoratorArgs.isNotEmpty()) {
-            sb.append("@dataclass(${decoratorArgs.joinToString(", ")})\n")
+        val decoratorText = if (decoratorArgs.isNotEmpty()) {
+            "@dataclass(${decoratorArgs.joinToString(", ")})"
         } else {
-            sb.append("@dataclass\n")
+            "@dataclass"
         }
 
-        sb.append("class $className:\n")
+        // Decorator list creation
+        val decoratorList = generator.createDecoratorList(decoratorText)
+
+        // Add decorator before class definition ('class' keyword)
+        // pyClass.firstChild is usually the 'class' keyword.
+        val classKeyword = pyClass.firstChild
+        pyClass.addBefore(decoratorList, classKeyword)
+        // Add a newline between the decorator and the class definition
+        pyClass.addBefore(generator.createNewLine(), classKeyword)
+
+        // 3. Add Attribute (Field)
+        val statementList = pyClass.statementList
+        // Remove the initially generated 'pass' statement
+        statementList.statements.firstOrNull()?.delete()
+
         for (p in params) {
             val ann = p.annotationValue
             val typeText = ann ?: "Any"
-            sb.append("    ${p.name}: $typeText")
-            if (p.hasDefaultValue()) {
-                sb.append(" = ${p.defaultValueText}")
-            }
-            sb.append("\n")
+
+            // Text generation for each field (e.g., name: str = "default")
+            val fieldText = StringBuilder().apply {
+                append(p.name)
+                append(": ")
+                append(typeText)
+                if (p.defaultValue != null) {
+                    append(" = ")
+                    append(p.defaultValueText)
+                }
+            }.toString()
+
+            // Statement PSI Element Creation and Addition to Class Body
+            val fieldStatement = generator.createFromText(languageLevel, PyStatement::class.java, fieldText)
+            statementList.add(fieldStatement)
         }
 
-        val file = function.containingFile as PyFile
-        val newClass = generator.createFromText(languageLevel, PyClass::class.java, sb.toString())
-
+        // 4. Insert the generated class into the actual PSI tree
+        val file = function.containingFile
         val containingClass = function.containingClass
-        if (containingClass != null) {
-            // Method in class -> Global scope (File level)
-            var anchor: PsiElement = function
-            while (anchor.parent != file && anchor.parent != null) {
-                anchor = anchor.parent
-            }
-            val added = file.addBefore(newClass, anchor) as PyClass
-            file.addBefore(PsiParserFacade.getInstance(project).createWhiteSpaceFromText("\n\n\n"), anchor)
-            return added
-        } else {
-            // Function (Top-level or Nested) -> Local scope (Same level)
-            val parent = function.parent
-            val added = parent.addBefore(newClass, function) as PyClass
-            parent.addBefore(PsiParserFacade.getInstance(project).createWhiteSpaceFromText("\n\n\n"), function)
-            return added
-        }
-    }
 
+        // Determine Insertion Position (Anchor)
+        val anchor: PsiElement = if (containingClass != null) {
+            // If it is an in-class method: move to file level (Global scope)
+            var temp: PsiElement = function
+            while (temp.parent != file && temp.parent != null) {
+                temp = temp.parent
+            }
+            temp
+        } else {
+            // If it is a top-level or nested function: same level (Local scope)
+            function
+        }
+
+        val parent = anchor.parent
+        val addedClass = parent.addBefore(pyClass, anchor) as PyClass
+
+        // Add blank line before class definition
+        parent.addBefore(PsiParserFacade.getInstance(project).createWhiteSpaceFromText("\n\n\n"), anchor)
+
+        // 5. Run code formatting (automatic indentation and style cleanup)
+        return CodeStyleManager.getInstance(project).reformat(addedClass) as PyClass
+    }
     private fun addDataclassImport(function: PyFunction) {
         val file = function.containingFile as? PyFile ?: return
-        val project = function.project
-        val importService = PyImportService()
 
-        // Resolve and import 'typing.Any'
-        val anyClass = PyPsiFacade.getInstance(project).createClassByQName("typing.Any", function)
-        if (anyClass != null) {
-            importService.ensureImportedIfNeeded(file, function, anyClass)
-        }
+        AddImportHelper.addOrUpdateFromImportStatement(
+            file, "typing", "Any", null, AddImportHelper.ImportPriority.BUILTIN, function
+        )
 
-        // Resolve and import 'dataclasses.dataclass'
-        val dataclassClass = PyPsiFacade.getInstance(project).createClassByQName("dataclasses.dataclass", function)
-        if (dataclassClass != null) {
-            importService.ensureImportedIfNeeded(file, function, dataclassClass)
-        } else {
-            // Fallback if stubbed as function
-            val dataclassFuncs = PyFunctionNameIndex.find("dataclass", project, GlobalSearchScope.allScope(project))
-            val dataclassFunc = dataclassFuncs.firstOrNull {
-                val name = it.containingFile.name
-                name == "dataclasses.py" || name == "dataclasses.pyi"
-            }
-            if (dataclassFunc != null) {
-                importService.ensureImportedIfNeeded(file, function, dataclassFunc)
-            }
-        }
+        AddImportHelper.addOrUpdateFromImportStatement(
+            file, "dataclasses", "dataclass", null, AddImportHelper.ImportPriority.BUILTIN, function
+        )
     }
 
     private fun replaceFunctionSignature(
@@ -363,7 +371,6 @@ class PyIntroduceParameterObjectProcessor(
                     }
                 } else {
                     // Positional
-                    var mapped = false
                     while (positionalIndex < allParams.size) {
                         val p = allParams[positionalIndex]
 
