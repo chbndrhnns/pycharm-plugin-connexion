@@ -238,41 +238,46 @@ class PyIntroduceParameterObjectProcessor(
         val generator = PyElementGenerator.getInstance(project)
         val languageLevel = LanguageLevel.forElement(function)
 
-        val newParamText = "$parameterName: $dataclassName"
-        val firstExtractedParam = params.first()
+        // Create the new parameter: "parameterName: dataclassName"
+        val newParam = generator.createParameter(parameterName, null, dataclassName, languageLevel)
 
-        val newParamsList = mutableListOf<String>()
+        val firstParamToReplace = params.firstOrNull()
 
-        for (p in function.parameterList.parameters) {
-            if (p in params) {
-                if (p == firstExtractedParam) {
-                    newParamsList.add(newParamText)
+        // 1. Replace the first occurrence and delete the others
+        // We iterate over the function's actual parameters to maintain order
+        for (param in function.parameterList.parameters) {
+            if (param in params) {
+                if (param == firstParamToReplace) {
+                    param.replace(newParam)
+                } else {
+                    param.delete()
                 }
-            } else {
-                newParamsList.add(p.text)
             }
         }
 
-        // Cleanup dangling * or * before **kwargs
-        val cleanedParams = mutableListOf<String>()
-        for (i in newParamsList.indices) {
-            val param = newParamsList[i]
-            if (param == "*") {
-                // Remove if last
-                if (i == newParamsList.lastIndex) continue
+        // 2. Cleanup dangling * or * before **kwargs
+        // Fetch the parameters again as the PSI tree has been modified
+        val currentParams = function.parameterList.parameters
+        for (i in currentParams.indices) {
+            val param = currentParams[i]
 
-                // Remove if next is **kwargs
-                val next = newParamsList[i + 1]
-                if (next.startsWith("**")) continue
+            // Check for independent '*' parameter (PySingleStarParameter)
+            if (param is PySingleStarParameter) {
+                val isLast = i == currentParams.lastIndex
+
+                // Check if the next parameter is **kwargs
+                val nextIsKwArgs = if (!isLast) {
+                    val next = currentParams[i + 1]
+                    next is PyNamedParameter && next.isKeywordContainer
+                } else {
+                    false
+                }
+
+                if (isLast || nextIsKwArgs) {
+                    param.delete()
+                }
             }
-            cleanedParams.add(param)
         }
-
-        val newSignature = "def foo(${cleanedParams.joinToString(", ")}): pass"
-        val dummyFunc = generator.createFromText(languageLevel, PyFunction::class.java, newSignature)
-
-        function.parameterList.replace(dummyFunc.parameterList)
-        
         CodeStyleManager.getInstance(project).reformat(function.containingFile)
     }
 
