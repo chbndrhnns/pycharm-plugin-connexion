@@ -1,6 +1,5 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject
 
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.PyImportService
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
@@ -345,106 +344,45 @@ class PyIntroduceParameterObjectProcessor(
             val call = PsiTreeUtil.getParentOfType(element, PyCallExpression::class.java) ?: continue
             if (call.callee != element && call.callee?.reference?.resolve() != function) continue
 
-            val args = call.argumentList?.arguments ?: continue
+            // 1. Use PSI helper to map arguments to parameters
+            val mapping = call.multiMapArguments(resolveContext).firstOrNull {
+                it.callableType?.callable == function
+            } ?: continue
 
-            val markedCallee = call.multiResolveCallee(resolveContext).firstOrNull()
-            val implicitOffset = markedCallee?.implicitOffset ?: 0
-
-            // Manual argument mapping
-            val paramToArgs = mutableMapOf<PyParameter, MutableList<String>>()
-
-            fun findParam(name: String): PyNamedParameter? {
-                return allParams.filterIsInstance<PyNamedParameter>().find { it.name == name }
-            }
-
-            val kwargsParam = allParams.filterIsInstance<PyNamedParameter>().find { it.isKeywordContainer }
-            val argsParam = allParams.filterIsInstance<PyNamedParameter>().find { it.isPositionalContainer }
-
-            var positionalIndex = implicitOffset
-            var seenStar = false
-
-            for (arg in args) {
-                if (arg is PyKeywordArgument) {
-                    val keyword = arg.keyword
-                    if (keyword != null) {
-                        val param = findParam(keyword)
-                        if (param != null && !param.isKeywordContainer && !param.isPositionalContainer) {
-                            paramToArgs.computeIfAbsent(param) { mutableListOf() }
-                                .add(arg.valueExpression?.text ?: "None")
-                        } else {
-                            if (kwargsParam != null) {
-                                paramToArgs.computeIfAbsent(kwargsParam) { mutableListOf() }.add(arg.text)
-                            }
-                        }
-                    }
-                } else if (arg.text.startsWith("**")) {
-                    if (kwargsParam != null) {
-                        paramToArgs.computeIfAbsent(kwargsParam) { mutableListOf() }.add(arg.text)
-                    }
-                } else if (arg.text.startsWith("*")) {
-                    // Treat *args expansion as positional if we have *args param
-                    if (argsParam != null) {
-                        paramToArgs.computeIfAbsent(argsParam) { mutableListOf() }.add(arg.text)
-                    }
-                } else {
-                    // Positional
-                    while (positionalIndex < allParams.size) {
-                        val p = allParams[positionalIndex]
-
-                        if (p is PySingleStarParameter) {
-                            seenStar = true
-                            positionalIndex++
-                            continue
-                        }
-                        if (p is PySlashParameter) {
-                            positionalIndex++
-                            continue
-                        }
-
-                        if (p is PyNamedParameter) {
-                            if (p.isPositionalContainer) {
-                                seenStar = true
-                                paramToArgs.computeIfAbsent(p) { mutableListOf() }.add(arg.text)
-                                break
-                            }
-                            if (p.isKeywordContainer) {
-                                positionalIndex++
-                                continue
-                            }
-                            if (seenStar) { // Keyword-only, skip
-                                positionalIndex++
-                                continue
-                            }
-
-                            paramToArgs.computeIfAbsent(p) { mutableListOf() }.add(arg.text)
-                            positionalIndex++
-                            break
-                        }
-                        positionalIndex++
-                    }
-                }
-            }
+            // Group arguments by the parameter they are mapped to
+            val paramToArgs = mapping.mappedParameters.entries
+                .groupBy({ it.value.parameter }, { it.key })
 
             val newArgsList = StringBuilder()
             val dataclassArgsList = StringBuilder()
 
             dataclassArgsList.append("$dataclassName(")
 
-            // Build Dataclass constructor arguments
+            // 2. Build Dataclass constructor arguments
             var firstDcArg = true
             for (p in params) {
-                val argTexts = paramToArgs[p]
-                if (argTexts != null && argTexts.isNotEmpty()) {
+                val args = paramToArgs[p]
+                if (!args.isNullOrEmpty()) {
+                    val argExpr = args.first()
+
+                    // If the argument is a keyword argument (name=value), we only want the value.
+                    val argText = if (argExpr is PyKeywordArgument) {
+                        argExpr.valueExpression?.text ?: "None"
+                    } else {
+                        argExpr.text
+                    }
+
                     if (!firstDcArg) dataclassArgsList.append(", ")
-                    dataclassArgsList.append("${p.name}=${argTexts.first()}")
+                    dataclassArgsList.append("${p.name}=$argText")
                     firstDcArg = false
                 }
             }
             dataclassArgsList.append(")")
 
-            // Build new Function call arguments
+            // 3. Build new Function call arguments
             var firstFuncArg = true
             for (p in allParams) {
+                // Insert the new Dataclass argument at the position of the first extracted parameter
                 if (p == firstExtractedParam) {
                     if (!firstFuncArg) newArgsList.append(", ")
                     newArgsList.append(dataclassArgsList)
@@ -452,44 +390,40 @@ class PyIntroduceParameterObjectProcessor(
                 }
 
                 if (p in params) {
-                    // Extracted
+                    // Parameter is extracted, so we skip adding its original argument here
+                    continue
                 } else {
+                    // Skip separators and implicit parameters
                     if (p is PySlashParameter || p is PySingleStarParameter) continue
 
-                    val argTexts = paramToArgs[p]
-                    if (argTexts != null) {
-                        for (txt in argTexts) {
+                    val args = paramToArgs[p]
+                    if (args != null) {
+                        for (arg in args) {
                             if (!firstFuncArg) newArgsList.append(", ")
-                            newArgsList.append(txt)
+                            // For remaining arguments, we keep them as is (including keyword name if present)
+                            newArgsList.append(arg.text)
                             firstFuncArg = false
                         }
                     }
                 }
             }
 
-            // Replace arguments
-            val newArgExpr = try {
-                val exprText = "f($newArgsList)"
-                generator.createExpressionFromText(languageLevel, exprText).let {
-                    (it as PyCallExpression).argumentList
-                }
+            // 4. Replace arguments using Generator
+            val newArgListElement = try {
+                generator.createArgumentList(languageLevel, "($newArgsList)")
             } catch (e: Exception) {
                 null
             }
 
-            if (newArgExpr != null) {
-                call.argumentList?.replace(newArgExpr)
+            if (newArgListElement != null) {
+                call.argumentList?.replace(newArgListElement)
             }
 
-            // Handle cross-file import
+            // 5. Handle cross-file import
             val usageFile = element.containingFile
-            if (usageFile != function.containingFile && usageFile is PyFile && element is PyTypedElement) {
-                addImportToUsageFile(usageFile, element, dataclass)
+            if (usageFile != function.containingFile && usageFile is PyFile && element is PyElement) {
+                AddImportHelper.addImport(dataclass, usageFile, element)
             }
         }
-    }
-
-    private fun addImportToUsageFile(file: PyFile, anchor: PyTypedElement, dataclass: PyClass) {
-        PyImportService().ensureImportedIfNeeded(file, anchor, dataclass)
     }
 }
