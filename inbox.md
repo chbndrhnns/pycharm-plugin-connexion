@@ -47,9 +47,9 @@ def test_():
 
 - [ ] refactor: PopulateArgumentsService
 - [-] feat: Introduce parameter object (docs/parameter-object/state.md)
-  - [ ] refactor: String and imports handling in PyIntroduceParameterObjectProcessor
-  - [ ] check if there is a better way for `addDataclassImport`
-  - [ ] refactor: updateCallSites
+  - [x] refactor: String and imports handling in PyIntroduceParameterObjectProcessor
+  - [x] check if there is a better way for `addDataclassImport`
+  - [x] refactor: updateCallSites
   - [ ] Add to Refactoring this context menu
   - [ ] fix: investigate strange `.trimIndent() + "\n\n",` in testMethodIntroduceParameterObject
   - [x] Use kwargs by default for dataclass
