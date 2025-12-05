@@ -16,6 +16,7 @@ import com.jetbrains.python.codeInsight.imports.AddImportHelper
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.resolve.PyResolveContext
 import com.jetbrains.python.psi.types.TypeEvalContext
+import com.jetbrains.python.refactoring.PyReplaceExpressionUtil
 
 class PyIntroduceParameterObjectProcessor(
     private val function: PyFunction,
@@ -289,21 +290,32 @@ class PyIntroduceParameterObjectProcessor(
         parameterName: String
     ) {
         val generator = PyElementGenerator.getInstance(project)
-        
-        // Find usages of parameters inside function body
+
         for (p in params) {
             val paramName = p.name ?: continue
             val references = paramUsages[p] ?: continue
-            
+
             for (ref in references) {
                 val element = ref.element
-                // Verify it's inside the function
-                if (element.isValid && PsiTreeUtil.isAncestor(function, element, true)) {
-                    val newExpr = generator.createExpressionFromText(
-                        LanguageLevel.forElement(function),
-                        "$parameterName.$paramName"
-                    )
-                    element.replace(newExpr)
+
+                // Ensure we are replacing code (reference expression), not docstrings or comments
+                if (element is PyReferenceExpression &&
+                    element.isValid &&
+                    PsiTreeUtil.isAncestor(function, element, true)
+                ) {
+
+                    val languageLevel = LanguageLevel.forElement(element)
+                    val newExprText = "$parameterName.$paramName"
+                    val newExpr = generator.createExpressionFromText(languageLevel, newExprText)
+
+                    // Handle precedence: Wrap in parentheses if the new expression
+                    // has lower precedence than the context requires.
+                    if (PyReplaceExpressionUtil.isNeedParenthesis(element, newExpr)) {
+                        val parenthesized = generator.createExpressionFromText(languageLevel, "($newExprText)")
+                        element.replace(parenthesized)
+                    } else {
+                        element.replace(newExpr)
+                    }
                 }
             }
         }
