@@ -2,6 +2,25 @@
 
 ## Pending Tasks
 
+- [ ] fix: do not offer introduce type on import statement (constant,eg)
+- [ ] fix: populate arguments creates extra spaces when used on decorator
+- [ ] fix: introduce type fails for `MY_CONSTANT: Final[str] = "VALUE"`
+- [ ] feat: Copy names of failed tests
+- [ ] fix: ignore conftest when suggesting __all__
+- [ ] feat: quick fix to remove unresolved import from __all__
+- [ ] fix: do not offer introduce custom type on string annotation
+- [ ] feat: Turn into type checking import
+- [ ] https://youtrack.jetbrains.com/issue/PY-85543]
+- [ ] Offer unwrap here
+
+```python
+def test_():
+  val: int = 1
+  return int(val)
+```
+
+- [ ] feat: Transform between dict access .get and []
+- [ ] unwrap: do not offer here `access_level: str = group_access.get("access_level")`
 - [ ] wrap: Do not offer t.Final -> Wrap with Typevar
 - [ ] roots: adopt when moving files
 - [ ] roots: mark as unresolved reference without
