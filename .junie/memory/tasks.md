@@ -479,3 +479,13 @@ directly.",
     "NEW INSTRUCTION": "WHEN test fails with FileComparisonFailedError THEN open diff and adjust expectations or formatting"
 }
 
+[2025-12-05 18:00] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "run related tests",
+    "BOTTLENECK": "Discriminating string aliases from resolvable symbols in value generation.",
+    "PROJECT NOTE": "Pydantic Field(alias=\"...\") yields a string; never treat it as callable.",
+    "NEW INSTRUCTION": "WHEN changing PyValueGenerator value-wrapping or alias handling THEN run populate intention tests to detect regressions"
+}
+

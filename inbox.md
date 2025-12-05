@@ -45,7 +45,7 @@ def test_():
 
 ## In Progress Tasks
 
-- [ ] refactor: PopulateArgumentsService
+- [x] refactor: PopulateArgumentsService
 - [-] feat: Introduce parameter object (docs/parameter-object/state.md)
   - [x] refactor: String and imports handling in PyIntroduceParameterObjectProcessor
   - [x] check if there is a better way for `addDataclassImport`
@@ -59,8 +59,7 @@ def test_():
   - [x] fix: no name conflicts if same class name exists
   - [x] Add to Refactoring menu
 - [ ] Configure default base classes
-- [ ] feat: How to enable module-level skip for pydunder inspection?
-
+- 
 ## Completed Tasks (newest first)
 
 - [x] fix: Populate should perform imports for leaf node types

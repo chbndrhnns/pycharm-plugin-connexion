@@ -1,100 +1,58 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.populate
 
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.isDataclassClass
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.isPositionalOnlyCallable
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.PyImportService
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.codeStyle.CodeStyleManager
-import com.intellij.psi.util.PsiTreeUtil
-import com.jetbrains.python.codeInsight.parseDataclassParameters
-import com.jetbrains.python.codeInsight.resolveDataclassFieldParameters
 import com.jetbrains.python.psi.*
-import com.jetbrains.python.psi.resolve.PyResolveContext
-import com.jetbrains.python.psi.types.*
+import com.jetbrains.python.psi.types.PyCallableParameter
+import com.jetbrains.python.psi.types.TypeEvalContext
 
 /**
- * Service that provides shared logic for populating call arguments.
+ * Service that orchestrates the population of call arguments with placeholder values.
+ * Delegates specific responsibilities to focused helper classes.
  */
 class PopulateArgumentsService {
 
     private val imports: PyImportService = PyImportService()
+    private val callFinder = PyCallExpressionFinder()
+    private val parameterAnalyzer = PyParameterAnalyzer()
+    private val fieldExtractor = PyDataclassFieldExtractor()
+    private val valueGenerator = PyValueGenerator(fieldExtractor)
 
     /**
      * Finds the PyCallExpression at the current caret position.
      */
     fun findCallExpression(editor: Editor, file: PyFile): PyCallExpression? {
-        val offset = editor.caretModel.offset
-        val element = file.findElementAt(offset) ?: return null
-        val call =
-            PsiTreeUtil.getParentOfType(element, PyCallExpression::class.java, /* strict = */ false) ?: return null
-
-        val argumentList = call.argumentList ?: return null
-        val textRange = argumentList.textRange ?: return null
-
-        if (offset > textRange.startOffset && offset < textRange.endOffset) {
-            return call
-        }
-        return null
+        return callFinder.findCallExpression(editor, file)
     }
 
     /**
      * Returns all missing parameters for the given call expression.
      */
     fun getMissingParameters(call: PyCallExpression, context: TypeEvalContext): List<PyCallableParameter> {
-        val resolveContext = PyResolveContext.defaultContext(context)
-        val mappings = call.multiMapArguments(resolveContext)
-        if (mappings.isEmpty()) return emptyList()
-
-        val mapping = mappings.first()
-        val callableType: PyCallableType = mapping.callableType ?: return emptyList()
-
-        val allParams = callableType.getParameters(context) ?: return emptyList()
-        val mapped = mapping.mappedParameters
-
-        return allParams
-            .asSequence()
-            .filter { !it.isSelf }
-            .filter { !it.isPositionalContainer && !it.isKeywordContainer }
-            .filter { param -> !mapped.values.contains(param) }
-            .filter { it.name != null }
-            .filter { !it.name!!.startsWith("_") }
-            .toList()
+        return parameterAnalyzer.getMissingParameters(call, context)
     }
 
     /**
      * Returns only missing required parameters (those without default values).
      */
     fun getMissingRequiredParameters(call: PyCallExpression, context: TypeEvalContext): List<PyCallableParameter> {
-        return getMissingParameters(call, context).filter { !it.hasDefaultValue() }
+        return parameterAnalyzer.getMissingRequiredParameters(call, context)
     }
 
     /**
      * Checks if the intention should be available for the given call.
      */
     fun isAvailable(call: PyCallExpression, context: TypeEvalContext): Boolean {
-        if (isPositionalOnlyCallable(call)) return false
-        return getMissingParameters(call, context).isNotEmpty()
+        return parameterAnalyzer.isAvailable(call, context)
     }
 
     /**
      * Checks if recursive mode is applicable (i.e., any missing parameter has a dataclass type).
      */
     fun isRecursiveApplicable(call: PyCallExpression, context: TypeEvalContext): Boolean {
-        val missing = getMissingParameters(call, context)
-        return missing.any { param ->
-            val type = param.getType(context)
-            hasDataclassType(type, context)
-        }
-    }
-
-    private fun hasDataclassType(type: PyType?, context: TypeEvalContext): Boolean {
-        return when (type) {
-            is PyClassType -> isDataclassClass(type.pyClass)
-            is PyUnionType -> type.members.any { hasDataclassType(it, context) }
-            else -> false
-        }
+        return parameterAnalyzer.isRecursiveApplicable(call, context)
     }
 
     /**
@@ -121,19 +79,6 @@ class PopulateArgumentsService {
         populateRecursively(project, file, call, argumentList, missing, context, generator, languageLevel)
     }
 
-    private fun populateSimple(
-        argumentList: PyArgumentList,
-        missing: List<PyCallableParameter>,
-        generator: PyElementGenerator,
-        languageLevel: LanguageLevel
-    ) {
-        for (param in missing) {
-            val name = param.name ?: continue
-            val arg: PyKeywordArgument = generator.createKeywordArgument(languageLevel, name, "...")
-            argumentList.addArgument(arg)
-        }
-    }
-
     private fun populateRecursively(
         project: Project,
         file: PyFile,
@@ -152,15 +97,15 @@ class PopulateArgumentsService {
         val paramData = missing.mapNotNull { param ->
             val name = param.name ?: return@mapNotNull null
             val type = param.getType(context)
-            var result = generateValue(type, context, 0, generator, languageLevel)
+            var result = valueGenerator.generateValue(type, context, 0, generator, languageLevel)
 
             // If we only have a leaf "..." and the dataclass field annotation is an alias
             // (e.g. NewType), prefer wrapping with that alias at the top level too.
-            if (result.text == DEFAULT_FALLBACK_VALUE && calleeClass != null) {
+            if (result.text == "..." && calleeClass != null) {
                 val field = calleeClass.findClassAttribute(name, true, context)
                 val aliasName = (field?.annotation?.value as? PyReferenceExpression)?.name
                 if (!aliasName.isNullOrBlank() && !isBuiltinName(aliasName)) {
-                    result = GenerationResult("$aliasName(...)", emptySet())
+                    result = PyValueGenerator.GenerationResult("$aliasName(...)", emptySet())
                 }
             }
 
@@ -190,213 +135,10 @@ class PopulateArgumentsService {
         CodeStyleManager.getInstance(project).reformat(argumentList)
     }
 
-    private fun generateValue(
-        type: PyType?,
-        context: TypeEvalContext,
-        depth: Int,
-        generator: PyElementGenerator,
-        languageLevel: LanguageLevel
-    ): GenerationResult {
-        if (depth > MAX_RECURSION_DEPTH) return GenerationResult(DEFAULT_FALLBACK_VALUE, emptySet())
-        if (type == null) return GenerationResult(DEFAULT_FALLBACK_VALUE, emptySet())
-
-        return when (type) {
-            is PyUnionType -> generateUnionValue(type, context, depth, generator, languageLevel)
-            is PyCollectionType -> generateCollectionValue(type, context, depth, generator, languageLevel)
-            is PyClassType -> {
-                if (isDataclassClass(type.pyClass)) {
-                    generateDataclassValue(type.pyClass, context, depth, generator, languageLevel)
-                } else {
-                    // Some providers represent typing.NewType/aliases as PyClassType but without a backing PyClass.
-                    val aliasLike = generateAliasFromClassType(type)
-                    aliasLike ?: GenerationResult(DEFAULT_FALLBACK_VALUE, emptySet())
-                }
-            }
-
-            is PyClassLikeType -> generateAliasOrNewTypeValue(type)
-            else -> GenerationResult(DEFAULT_FALLBACK_VALUE, emptySet())
-        }
-    }
-
-    private fun generateCollectionValue(
-        type: PyCollectionType,
-        context: TypeEvalContext,
-        depth: Int,
-        generator: PyElementGenerator,
-        languageLevel: LanguageLevel
-    ): GenerationResult {
-        val name = type.name
-        val elementTypes = type.elementTypes
-
-        if (name == "list" || name == "List" || name == "set" || name == "Set") {
-            val elementType = elementTypes.firstOrNull()
-            if (elementType != null) {
-                val result = generateValue(elementType, context, depth + 1, generator, languageLevel)
-                val text = if (name == "list" || name == "List") "[${result.text}]" else "{${result.text}}"
-                return GenerationResult(text, result.imports)
-            }
-        }
-
-        return GenerationResult(DEFAULT_FALLBACK_VALUE, emptySet())
-    }
-
-    private fun generateUnionValue(
-        type: PyUnionType,
-        context: TypeEvalContext,
-        depth: Int,
-        generator: PyElementGenerator,
-        languageLevel: LanguageLevel
-    ): GenerationResult {
-        return type.members.find { memberType ->
-            (memberType as? PyClassType)?.pyClass?.let { isDataclassClass(it) } == true
-        }?.let { generateValue(it, context, depth, generator, languageLevel) }
-            ?: GenerationResult(DEFAULT_FALLBACK_VALUE, emptySet())
-    }
-
-    private fun generateDataclassValue(
-        pyClass: PyClass,
-        context: TypeEvalContext,
-        depth: Int,
-        generator: PyElementGenerator,
-        languageLevel: LanguageLevel
-    ): GenerationResult {
-        val className = pyClass.name ?: return GenerationResult(DEFAULT_FALLBACK_VALUE, emptySet())
-        val callExpr = generator.createExpressionFromText(languageLevel, "$className()") as? PyCallExpression
-        val argumentList = callExpr?.argumentList ?: return GenerationResult(DEFAULT_FALLBACK_VALUE, emptySet())
-
-        val requiredImports = mutableSetOf<PsiNamedElement>()
-        requiredImports.add(pyClass)
-
-        extractDataclassFields(pyClass, context).forEach { field ->
-            val result = generateValue(field.type, context, depth + 1, generator, languageLevel)
-            var valStr = result.text
-
-            // If generation fell back to ellipsis for a leaf, but the annotation is an alias-like
-            // (e.g., NewType), prefer wrapping with that alias to produce Alias(...).
-            if (valStr == DEFAULT_FALLBACK_VALUE && !field.aliasName.isNullOrBlank()) {
-                val alias = field.aliasName
-                if (!isBuiltinName(alias!!)) {
-                    valStr = "$alias(...)"
-                    if (field.aliasElement != null) {
-                        requiredImports.add(field.aliasElement)
-                    }
-                }
-            }
-
-            requiredImports.addAll(result.imports)
-
-            val kwArg = generator.createKeywordArgument(languageLevel, field.name, valStr)
-            argumentList.addArgument(kwArg)
-        }
-
-        return if (argumentList.arguments.isNotEmpty())
-            GenerationResult(callExpr!!.text, requiredImports)
-        else
-            GenerationResult(DEFAULT_FALLBACK_VALUE, emptySet())
-    }
-
-    private fun extractDataclassFields(
-        pyClass: PyClass, context: TypeEvalContext
-    ): List<FieldSpec> {
-        val fields = mutableListOf<FieldSpec>()
-        val resolveContext = PyResolveContext.defaultContext(context)
-
-        val initMethod = pyClass.findInitOrNew(false, context)
-        if (initMethod != null) {
-            val callableType = context.getType(initMethod) as? PyCallableType
-            val params = callableType?.getParameters(context)
-            params?.filter { !it.isSelf && !it.isPositionalContainer && !it.isKeywordContainer }?.forEach { param ->
-                var name = param.name ?: return@forEach
-                val field = pyClass.findClassAttribute(name, true, context)
-                if (field != null) {
-                    name = resolveFieldAlias(pyClass, field, context, name)
-                }
-                val annotationValue = field?.annotation?.value
-                val aliasName = annotationValue?.let { (it as? PyReferenceExpression)?.name }
-                val aliasElement = (annotationValue as? PyReferenceExpression)
-                    ?.getReference(resolveContext)
-                    ?.multiResolve(false)
-                    ?.firstOrNull()?.element as? PsiNamedElement
-                fields.add(FieldSpec(name, param.getType(context), aliasName, aliasElement))
-            }
-        } else {
-            // Fallback for synthetic __init__
-            pyClass.classAttributes.forEach { attr ->
-                if (attr.annotation != null) {
-                    var name = attr.name ?: return@forEach
-                    name = resolveFieldAlias(pyClass, attr, context, name)
-                    val annotationValue = attr.annotation?.value
-                    val aliasName = (annotationValue as? PyReferenceExpression)?.name
-                    val aliasElement = (annotationValue as? PyReferenceExpression)
-                        ?.getReference(resolveContext)
-                        ?.multiResolve(false)
-                        ?.firstOrNull()?.element as? PsiNamedElement
-                    fields.add(FieldSpec(name, context.getType(attr), aliasName, aliasElement))
-                }
-            }
-        }
-        return fields
-    }
-
-    private fun resolveFieldAlias(
-        pyClass: PyClass, field: PyTargetExpression, context: TypeEvalContext, originalName: String
-    ): String {
-        val dataclassParams = parseDataclassParameters(pyClass, context) ?: return originalName
-        val fieldParams = resolveDataclassFieldParameters(pyClass, dataclassParams, field, context)
-        return fieldParams?.alias ?: originalName
-    }
-
-    companion object {
-        private const val MAX_RECURSION_DEPTH = 5
-        private const val DEFAULT_FALLBACK_VALUE = "..."
-    }
-
-    private data class GenerationResult(
-        val text: String,
-        val imports: Set<PsiNamedElement>
-    )
-
-    /**
-     * For alias-like types (typing.NewType, typing.TypeAlias, forward refs resolved to class-like without a PyClass),
-     * generate a constructor-like call `Name(...)` so leaves are wrapped with an instance placeholder.
-     * Falls back to `...` for builtin types and unknown names.
-     */
-    private fun generateAliasOrNewTypeValue(type: PyClassLikeType): GenerationResult {
-        // Avoid builtins and sentinel-like names
-        val name = type.name ?: type.classQName?.substringAfterLast('.')
-        if (name.isNullOrBlank()) return GenerationResult(DEFAULT_FALLBACK_VALUE, emptySet())
-
-        if (isBuiltinName(name)) return GenerationResult(DEFAULT_FALLBACK_VALUE, emptySet())
-
-        // Prefer using the simple name; imports are not required for aliases defined in the same file.
-        return GenerationResult("$name(...)", emptySet())
-    }
-
-    private fun generateAliasFromClassType(type: PyClassType): GenerationResult? {
-        val name = type.name ?: type.classQName?.substringAfterLast('.')
-        if (name.isNullOrBlank()) return null
-
-        // If there is a real class behind it (e.g., builtin or user class), we don't treat it as alias here.
-        // Unless the name differs from the class name (e.g. NewType("MyStr", str)), in which case it's likely a wrapper/alias we want to preserve.
-        val pyClass = type.pyClass
-        if (pyClass != null && pyClass.name == name) return null
-
-        if (isBuiltinName(name)) return null
-
-        return GenerationResult("$name(...)", emptySet())
-    }
-
     private fun isBuiltinName(name: String): Boolean {
         val lower = name.lowercase()
         return lower in setOf(
             "int", "str", "float", "bool", "bytes", "list", "dict", "set", "tuple", "range", "complex"
         )
     }
-
-    private data class FieldSpec(
-        val name: String,
-        val type: PyType?,
-        val aliasName: String?,
-        val aliasElement: PsiNamedElement? = null
-    )
 }
