@@ -139,5 +139,12 @@
                 description="Introduces a parameter object for the current function">
             <add-to-group group-id="RefactoringMenu" anchor="last"/>
         </action>
+
+        <action id="com.github.chbndrhnns.intellijplatformplugincopy.refactoring.IntroduceParameterObjectRefactoringAction"
+                class="com.github.chbndrhnns.intellijplatformplugincopy.refactoring.IntroduceParameterObjectRefactoringAction"
+                text="Introduce Parameter Object..."
+                description="Introduces a parameter object for the current function">
+            <add-to-group group-id="RefactoringMenu" anchor="last"/>
+        </action>
     </actions>
 </idea-plugin>
