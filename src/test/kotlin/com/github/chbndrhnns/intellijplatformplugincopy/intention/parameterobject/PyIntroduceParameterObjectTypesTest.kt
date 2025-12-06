@@ -28,7 +28,7 @@ class PyIntroduceParameterObjectTypesTest : TestBase() {
                 
                 def process(params: ProcessParams):
                     print(params.val, params.count)
-                """.trimIndent() + "\n",
+                """.trimIndent(),
                 "Introduce parameter object"
             )
         }
@@ -57,7 +57,7 @@ class PyIntroduceParameterObjectTypesTest : TestBase() {
                 
                 def process(params: ProcessParams):
                     print(params.val, params.count)
-                """.trimIndent() + "\n",
+                """.trimIndent(),
                 "Introduce parameter object"
             )
         }
@@ -89,7 +89,7 @@ class PyIntroduceParameterObjectTypesTest : TestBase() {
                 
                 
                 class User: ...
-                """.trimIndent() + "\n",
+                """.trimIndent(),
                 "Introduce parameter object"
             )
         }

@@ -33,7 +33,7 @@ class PyIntroduceParameterObjectNameCollisionTest : TestBase() {
                 
                 def create_user(params: CreateUserParams1):
                     print(params.first_name, params.last_name)
-                """.trimIndent() + "\n\n",
+                """.trimIndent(),
                 "Introduce parameter object"
             )
         }
@@ -64,7 +64,7 @@ class PyIntroduceParameterObjectNameCollisionTest : TestBase() {
                 
                 def create_user(params: CreateUserParams1):
                     print(params.first_name, params.last_name)
-                """.trimIndent() + "\n\n",
+                """.trimIndent(),
                 "Introduce parameter object"
             )
         }

@@ -72,7 +72,7 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
                 
                 
                 def main():
-                    create_user(CreateUserParams(first_name="John", last_name="Doe"))""".trimIndent() + "\n",
+                    create_user(CreateUserParams(first_name="John", last_name="Doe"))""".trimIndent(),
                 "Introduce parameter object"
             )
         }
@@ -152,7 +152,7 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
                 
                 
                 def main():
-                    Utils.helper(HelperParams(x=1, y=2))""".trimIndent() + "\n",
+                    Utils.helper(HelperParams(x=1, y=2))""".trimIndent(),
                 "Introduce parameter object"
             )
         }

@@ -33,7 +33,7 @@ class PyIntroduceParameterObjectVariadicTest : TestBase() {
                 
                 def main():
                     foo(FooParams(a=1, b=2), 3, 4)
-                """.trimIndent() + "\n\n",
+                """.trimIndent(),
                 "Introduce parameter object"
             )
         }
@@ -67,7 +67,7 @@ class PyIntroduceParameterObjectVariadicTest : TestBase() {
                 
                 def main():
                     foo(FooParams(a=1, b=2), x=3)
-                """.trimIndent() + "\n\n",
+                """.trimIndent(),
                 "Introduce parameter object"
             )
         }
@@ -101,7 +101,7 @@ class PyIntroduceParameterObjectVariadicTest : TestBase() {
                 
                 def main():
                     foo(FooParams(a=1, b=2))
-                """.trimIndent() + "\n\n",
+                """.trimIndent(),
                 "Introduce parameter object"
             )
         }
@@ -135,7 +135,7 @@ class PyIntroduceParameterObjectVariadicTest : TestBase() {
                 
                  def main():
                      foo(FooParams(a=1, b=2))
-                 """.trimIndent() + "\n\n",
+                 """.trimIndent(),
                 "Introduce parameter object"
             )
         }
