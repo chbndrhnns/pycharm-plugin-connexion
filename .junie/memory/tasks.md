@@ -489,3 +489,23 @@ directly.",
     "NEW INSTRUCTION": "WHEN changing PyValueGenerator value-wrapping or alias handling THEN run populate intention tests to detect regressions"
 }
 
+[2025-12-06 08:02] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "inspect intention infrastructure,review test patterns,repeat status updates without new actions",
+    "MISSING STEPS": "implement intention,add tests,register intention,run tests",
+    "BOTTLENECK": "Stuck in analysis loop without moving to code and tests.",
+    "PROJECT NOTE": "Intention tests use inline doIntentionTest; prefer Kotlin tests over external testData.",
+    "NEW INSTRUCTION": "WHEN same plan is logged twice consecutively THEN create intention skeleton and a failing test"
+}
+
+[2025-12-06 08:12] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "register intention, run tests, add intention description",
+    "BOTTLENECK": "Implementation proceeded without registering the intention or running tests early.",
+    "PROJECT NOTE": "IntelliJ intentions require plugin.xml registration; tests will not find the action until registered.",
+    "NEW INSTRUCTION": "WHEN creating a new intention class THEN add plugin.xml registration and run tests immediately"
+}
+

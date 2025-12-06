@@ -348,3 +348,13 @@
     "NEW INSTRUCTION": "WHEN attempting to change class members THEN modify file content via apply_patch instead of rename_element"
 }
 
+[2025-12-06 08:01] - Updated by Junie - Error analysis
+{
+    "TYPE": "path error",
+    "TOOL": "search_project",
+    "ERROR": "Searched in non-existent directory outside project root",
+    "ROOT CAUSE": "The search path used '/Users/jo/src/test' which is not inside the repository root and does not exist.",
+    "PROJECT NOTE": "Use the repository root '/Users/jo/src/pycharm-ddd-toolkit'; test sources are under src/test/kotlin and testData under src/test/testData.",
+    "NEW INSTRUCTION": "WHEN search_project reports directory does not exist THEN retry using a path under the project root"
+}
+

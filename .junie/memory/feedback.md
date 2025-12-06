@@ -182,3 +182,11 @@
     "NEW INSTRUCTION": "WHEN adding shared dialog interceptor helper THEN replace duplicated interceptors in all parameter object tests"
 }
 
+[2025-12-06 08:19] - Updated by Junie
+{
+    "TYPE": "new instructions",
+    "CATEGORY": "intention description",
+    "ERROR": "-",
+    "NEW INSTRUCTION": "WHEN adding or registering an intention action THEN add intentionDescriptions resources with description.html and before/after example files"
+}
+

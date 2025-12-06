@@ -1,0 +1,2 @@
+d = {'key': 'value'}
+value = d.get('key')
