@@ -509,3 +509,13 @@ directly.",
     "NEW INSTRUCTION": "WHEN creating a new intention class THEN add plugin.xml registration and run tests immediately"
 }
 
+[2025-12-06 11:29] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "repeat status updates,inspect syntax errors in caret-marked files",
+    "MISSING STEPS": "scan docs for coverage,open test class,add tests,run tests,summarize results",
+    "BOTTLENECK": "New test data were created but the test class was not updated or executed.",
+    "PROJECT NOTE": "Test methods must map to testData files and use doTest/doTestNotAvailable; add methods in PyDictAccessIntentionTest.",
+    "NEW INSTRUCTION": "WHEN new testData files are added THEN add matching test methods and run tests"
+}
+

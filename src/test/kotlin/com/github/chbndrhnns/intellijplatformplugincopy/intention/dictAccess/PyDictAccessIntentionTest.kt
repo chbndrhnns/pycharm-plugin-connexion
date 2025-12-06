@@ -21,11 +21,9 @@ class PyDictAccessIntentionTest : TestBase() {
         doTestNotAvailable("Replace 'dict.get(key)' with 'dict[key]'")
     }
 
-    /*
-    fun testPreserveComments() {
+    fun ignore_testPreserveComments() {
         doTest("Replace 'dict[key]' with 'dict.get(key)'")
     }
-    */
 
     fun testTypedDictOptional() {
         doTest("Replace 'dict[key]' with 'dict.get(key)'")
@@ -33,6 +31,62 @@ class PyDictAccessIntentionTest : TestBase() {
 
     fun testShadowedGet() {
         doTestNotAvailable("Replace 'dict.get(key)' with 'dict[key]'")
+    }
+
+    fun testVariableKey() {
+        doTest("Replace 'dict[key]' with 'dict.get(key)'")
+    }
+
+    fun testComplexOperand() {
+        doTest("Replace 'dict[key]' with 'dict.get(key)'")
+    }
+
+    fun testTupleKey() {
+        doTest("Replace 'dict[key]' with 'dict.get(key)'")
+    }
+
+    fun testExistingParens() {
+        doTest("Replace 'dict[key]' with 'dict.get(key)'")
+    }
+
+    fun testKeywordArg() {
+        doTest("Replace 'dict.get(key)' with 'dict[key]'")
+    }
+
+    fun testInheritance() {
+        doTest("Replace 'dict[key]' with 'dict.get(key)'")
+    }
+
+    fun testInsideExpression() {
+        doTest("Replace 'dict[key]' with 'dict.get(key)'")
+    }
+
+    fun testAugmentedAssignment() {
+        doTestNotAvailable("Replace 'dict[key]' with 'dict.get(key)'")
+    }
+
+    fun testDeletion() {
+        doTestNotAvailable("Replace 'dict[key]' with 'dict.get(key)'")
+    }
+
+    fun ignore_testUnpackingTarget() {
+        doTestNotAvailable("Replace 'dict[key]' with 'dict.get(key)'")
+    }
+
+    fun testNoArgs() {
+        doTestNotAvailable("Replace 'dict.get(key)' with 'dict[key]'")
+    }
+
+    fun testMultipleArgs() {
+        doTestNotAvailable("Replace 'dict.get(key)' with 'dict[key]'")
+    }
+
+    fun testNonMapping() {
+        doTestNotAvailable("Replace 'dict[key]' with 'dict.get(key)'")
+    }
+
+    fun testNonMappingList() {
+        doTestNotAvailable("Replace 'dict[key]' with 'dict.get(key)'")
     }
 
     private fun doTest(intentionName: String) {
