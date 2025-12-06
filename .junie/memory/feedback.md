@@ -190,3 +190,11 @@
     "NEW INSTRUCTION": "WHEN adding or registering an intention action THEN add intentionDescriptions resources with description.html and before/after example files"
 }
 
+[2025-12-06 11:14] - Updated by Junie
+{
+    "TYPE": "new instructions",
+    "CATEGORY": "spec maintenance",
+    "ERROR": "-",
+    "NEW INSTRUCTION": "WHEN user requests spec checklist update THEN add - [ ] boxes and mark completed items"
+}
+
