@@ -4,6 +4,7 @@ import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
+import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.PyNames
 import com.jetbrains.python.PyTokenTypes
@@ -61,7 +62,7 @@ class PyDictAccessIntention : PsiElementBaseIntentionAction() {
             parent = current.parent
         }
         if (parent is PyAssignmentStatement) {
-            return parent.targets.any { it == current }
+            return parent.targets.any { it == current || it == element }
         }
         if (parent is PyAugAssignmentStatement) {
             return parent.target == current
@@ -96,7 +97,8 @@ class PyDictAccessIntention : PsiElementBaseIntentionAction() {
 
                 val newText = "${operand.text}.get($content)"
                 val expression = generator.createExpressionFromText(LanguageLevel.forElement(element), newText)
-                subscription.replace(expression)
+                val newElement = subscription.replace(expression)
+                CodeStyleManager.getInstance(project).reformat(newElement)
             }
             return
         }
@@ -125,7 +127,8 @@ class PyDictAccessIntention : PsiElementBaseIntentionAction() {
 
             val newText = "${qualifier.text}[$content]"
             val expression = generator.createExpressionFromText(LanguageLevel.forElement(element), newText)
-            call.replace(expression)
+            val newElement = call.replace(expression)
+            CodeStyleManager.getInstance(project).reformat(newElement)
         }
     }
 }

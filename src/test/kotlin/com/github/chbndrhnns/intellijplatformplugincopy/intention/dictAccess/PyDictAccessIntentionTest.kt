@@ -21,7 +21,7 @@ class PyDictAccessIntentionTest : TestBase() {
         doTestNotAvailable("Replace 'dict.get(key)' with 'dict[key]'")
     }
 
-    fun ignore_testPreserveComments() {
+    fun testPreserveComments() {
         doTest("Replace 'dict[key]' with 'dict.get(key)'")
     }
 
@@ -69,7 +69,7 @@ class PyDictAccessIntentionTest : TestBase() {
         doTestNotAvailable("Replace 'dict[key]' with 'dict.get(key)'")
     }
 
-    fun ignore_testUnpackingTarget() {
+    fun testUnpackingTarget() {
         doTestNotAvailable("Replace 'dict[key]' with 'dict.get(key)'")
     }
 

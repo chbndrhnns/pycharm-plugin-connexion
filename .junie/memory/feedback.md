@@ -198,3 +198,19 @@
     "NEW INSTRUCTION": "WHEN user requests spec checklist update THEN add - [ ] boxes and mark completed items"
 }
 
+[2025-12-06 11:32] - Updated by Junie
+{
+    "TYPE": "new instructions",
+    "CATEGORY": "tests debugging",
+    "ERROR": "-",
+    "NEW INSTRUCTION": "WHEN test run reports failing tests THEN investigate failures and fix code or test data"
+}
+
+[2025-12-06 11:52] - Updated by Junie
+{
+    "TYPE": "new instructions",
+    "CATEGORY": "code formatting",
+    "ERROR": "-",
+    "NEW INSTRUCTION": "WHEN performing PSI code transformations in intentions THEN reformat changed elements via CodeStyleManager"
+}
+
