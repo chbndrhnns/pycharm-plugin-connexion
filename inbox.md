@@ -29,7 +29,7 @@ def test_():
 
 - [ ] roots: adopt when moving files
 - [ ] roots: mark as unresolved reference without
-- [ ] commit: if it fails for hooks, add option keep selection of files
+- [ ] commit: if it fails for hooks, add option keep selection of files (docs/keep-commit-selection/spec.md)
 - [ ] feat: Treat references as PSI elements, pytest.mark.filterwarnings, patch()
 - [ ] refactor: How to find if the caret is inside parentheses? `[PopulateArgumentsService.findCallExpression`
 - [ ] feat: Replace expected with actual test outcome
