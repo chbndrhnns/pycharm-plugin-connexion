@@ -5,9 +5,11 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
+import com.jetbrains.python.PyNames
 import com.jetbrains.python.PyTokenTypes
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.types.PyABCUtil
+import com.jetbrains.python.psi.types.PyType
 import com.jetbrains.python.psi.types.TypeEvalContext
 
 class PyDictGetToTryExceptIntention : PsiElementBaseIntentionAction() {
@@ -16,94 +18,123 @@ class PyDictGetToTryExceptIntention : PsiElementBaseIntentionAction() {
     override fun isAvailable(project: Project, editor: Editor, element: PsiElement): Boolean {
         val call = PsiTreeUtil.getParentOfType(element, PyCallExpression::class.java) ?: return false
         val callee = call.callee as? PyReferenceExpression ?: return false
+        if (callee.referencedName != "get") return false
 
-        if (callee.name != "get") return false
-        val qualifier = callee.qualifier ?: return false
+        val dictExpr = callee.qualifier ?: return false
 
-        // Need at least key and default arguments
-        val args = call.arguments
-        if (args.size < 2) return false
-
-        val keyArg = args[0]
-        val defaultArg = args[1]
+        // Resolve args (positional or keywords)
+        val (_, defaultArg) = getKeyAndDefaultArgs(call) ?: return false
         if (!isSafeDefault(defaultArg)) return false
 
         val context = TypeEvalContext.codeAnalysis(project, element.containingFile)
-        val type = context.getType(qualifier)
-        if (type == null || !PyABCUtil.isSubtype(type, com.jetbrains.python.PyNames.MAPPING, context)) return false
+        val dictType: PyType? = context.getType(dictExpr)
+        if (dictType == null || !PyABCUtil.isSubtype(dictType, PyNames.MAPPING, context)) return false
 
-        val parent = call.parent
-        when (parent) {
+        // Only when call is the full assigned value (single target) or full return expression
+        return when (val parent = call.parent) {
             is PyAssignmentStatement -> {
                 if (parent.assignedValue != call) return false
                 if (parent.targets.size != 1) return false
                 text = "Replace 'dict.get(key, default)' with try/except KeyError"
-                return true
+                true
             }
-
             is PyReturnStatement -> {
                 if (parent.expression != call) return false
                 text = "Replace 'dict.get(key, default)' with try/except KeyError"
-                return true
+                true
             }
 
-            else -> return false
+            else -> false
         }
     }
 
     override fun invoke(project: Project, editor: Editor, element: PsiElement) {
         val call = PsiTreeUtil.getParentOfType(element, PyCallExpression::class.java) ?: return
         val callee = call.callee as? PyReferenceExpression ?: return
-        val qualifier = callee.qualifier ?: return
-        val args = call.arguments
-        if (args.size < 2) return
+        val dictExpr = callee.qualifier ?: return
 
-        val keyArg = args[0]
-        val defaultArg = args[1]
+        val (keyArg, defaultArg) = getKeyAndDefaultArgs(call) ?: return
 
-        val parent = call.parent
         val generator = PyElementGenerator.getInstance(project)
+        val level = LanguageLevel.forElement(element)
 
         val keyText = extractKeyText(keyArg)
         val defaultText = defaultArg.text
-        val dictText = qualifier.text
+        val dictText = dictExpr.text
 
-        val newStatementText = when (parent) {
+        val parent = call.parent
+        val newText = when (parent) {
             is PyAssignmentStatement -> {
                 val targetText = parent.targets.first().text
-                listOf(
-                    "try:",
-                    "    $targetText = $dictText[$keyText]",
-                    "except KeyError:",
-                    "    $targetText = $defaultText"
-                ).joinToString("\n")
+                // Keep it tight and indentation-safe; IDE will reformat
+                """
+        try:
+            $targetText = $dictText[$keyText]
+        except KeyError:
+            $targetText = $defaultText
+        """.trimIndent()
             }
-
             is PyReturnStatement -> {
-                listOf(
-                    "try:",
-                    "    return $dictText[$keyText]",
-                    "except KeyError:",
-                    "    return $defaultText"
-                ).joinToString("\n")
+                """
+        try:
+            return $dictText[$keyText]
+        except KeyError:
+            return $defaultText
+        """.trimIndent()
             }
-
             else -> return
         }
 
-        val newStatement =
-            generator.createFromText(LanguageLevel.forElement(element), PyStatement::class.java, newStatementText)
-        parent.replace(newStatement)
+        val newStmt = generator.createFromText(level, PyStatement::class.java, newText)
+        parent.replace(newStmt)
+    }
+
+    private fun getKeyAndDefaultArgs(call: PyCallExpression): Pair<PyExpression, PyExpression>? {
+        val args = call.arguments
+        if (args.isEmpty()) return null
+
+        // Keyword extraction when present
+        var keyArg: PyExpression? = null
+        var defaultArg: PyExpression? = null
+
+        for (arg in args) {
+            when (arg) {
+                is PyKeywordArgument -> {
+                    when (arg.keyword) {
+                        "key" -> keyArg = arg.valueExpression
+                        "default" -> defaultArg = arg.valueExpression
+                    }
+                }
+            }
+        }
+
+        // Fallback to positional semantics of dict.get
+        if (keyArg == null) keyArg = args.firstOrNull { it !is PyKeywordArgument }
+        if (defaultArg == null) {
+            val positionals = args.filterIsInstance<PyExpression>().filter { it !is PyKeywordArgument }
+            if (positionals.size >= 2) defaultArg = positionals[1]
+        }
+
+        // Need both arguments present
+        val k = keyArg ?: return null
+        val d = defaultArg ?: return null
+        return k to d
     }
 
     private fun extractKeyText(keyArg: PyExpression): String {
-        if (keyArg is PyTupleExpression && keyArg.node.findChildByType(PyTokenTypes.LPAR) == null) {
-            return "(${keyArg.text})"
-        }
-        return keyArg.text
+        // Preserve parentheses for tuple keys written without explicit parens (e.g., a, b)
+        return if (keyArg is PyTupleExpression && keyArg.node.findChildByType(PyTokenTypes.LPAR) == null) {
+            "(${keyArg.text})"
+        } else keyArg.text
     }
 
-    private fun isSafeDefault(expr: PyExpression): Boolean {
-        return expr is PyLiteralExpression || expr is PyReferenceExpression
+    private fun isSafeDefault(expr: PyExpression?): Boolean {
+        if (expr == null) return false
+        return when (expr) {
+            is PyLiteralExpression -> true // numbers, strings, None, True/False
+            is PyReferenceExpression -> true // simple name or dotted attr like module.CONST
+            is PySubscriptionExpression -> expr.operand is PyReferenceExpression // e.g. CONSTS["x"]
+            else -> false
+        }
     }
 }
