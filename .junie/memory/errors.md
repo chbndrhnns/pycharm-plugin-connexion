@@ -797,3 +797,14 @@
     "PROJECT NOTE": "In IntelliJ Platform, NavigationItem.navigate(boolean requestFocus) returns Unit; do not compare its result.",
     "NEW INSTRUCTION": "WHEN processSelectedItem uses NavigationItem.navigate return value THEN call navigate(true) and return true without comparison"
 }
+
+[2025-12-09 00:14] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "run_test",
+    "ERROR": "Missing test-log.properties for j.u.l.LogManager",
+    "ROOT CAUSE": "The test JVM expects a java.util.logging configuration file at a non-existent path.",
+    "PROJECT NOTE": "Provide a JUL config under src/test/resources/test-log.properties and set system property java.util.logging.config.file to it in the Gradle test task.",
+    "NEW INSTRUCTION": "WHEN run_test reports missing test-log.properties THEN set java.util.logging.config.file to a valid resource path"
+}
+
