@@ -256,12 +256,22 @@ class TargetDetector {
 
         // 3. Detect metadata (assignment, keyword arg, return annotation, dataclass field, parameter default)
         val keywordName = detectKeywordArgumentName(expr)
-        val assignmentInfo = if (keywordName == null) detectAssignmentName(expr, builtinName, ctx) else null
+
+        val dictionaryKeyInfo =
+            if (keywordName == null)
+                detectDictionaryKeyInfo(expr, builtinName) else null
+
+        val assignmentInfo =
+            if (keywordName == null && dictionaryKeyInfo == null) detectAssignmentName(expr, builtinName, ctx) else null
         val returnInfo =
-            if (keywordName == null && assignmentInfo == null) detectReturnAnnotationInfo(expr, builtinName) else null
+            if (keywordName == null && dictionaryKeyInfo == null && assignmentInfo == null) detectReturnAnnotationInfo(
+                expr,
+                builtinName
+            ) else null
         val parameterInfo =
-            if (keywordName == null && assignmentInfo == null && returnInfo == null)
+            if (keywordName == null && dictionaryKeyInfo == null && assignmentInfo == null && returnInfo == null)
                 detectParameterDefaultInfo(expr, builtinName) else null
+
         val dataclassField = findDataclassFieldForExpression(expr)
 
         // Check dataclass field type conflict
@@ -272,12 +282,56 @@ class TargetDetector {
         return ExpressionTarget(
             builtinName = builtinName,
             expression = expr,
-            annotationRef = assignmentInfo?.second ?: returnInfo?.second ?: parameterInfo?.second,
+            annotationRef = assignmentInfo?.second ?: returnInfo?.second ?: parameterInfo?.second
+            ?: dictionaryKeyInfo?.second,
             keywordName = keywordName,
-            assignmentName = assignmentInfo?.first,
+            assignmentName = assignmentInfo?.first ?: dictionaryKeyInfo?.first,
             parameterName = parameterInfo?.first,
             dataclassField = dataclassField,
         )
+    }
+
+    private fun detectDictionaryKeyInfo(
+        expr: PyExpression,
+        builtinName: String
+    ): Pair<String?, PyExpression?>? {
+        val subscription = PsiTreeUtil.getParentOfType(expr, PySubscriptionExpression::class.java, true) ?: return null
+        val indexExpression = subscription.indexExpression ?: return null
+
+        if (!PsiTreeUtil.isAncestor(indexExpression, expr, false)) return null
+
+        val operand = subscription.operand
+        val reference = operand as? PyReferenceExpression ?: return null
+        val resolved = reference.reference.resolve()
+
+        val annotation = when (resolved) {
+            is PyTargetExpression -> resolved.annotation
+            is PyNamedParameter -> resolved.annotation
+            else -> null
+        } ?: return null
+
+        val annotationValue = annotation.value as? PySubscriptionExpression
+            ?: run {
+                return null
+            }
+
+        val indexExpr = annotationValue.indexExpression ?: return null
+
+        val keyTypeExpr = if (indexExpr is PyTupleExpression) {
+            indexExpr.elements.firstOrNull()
+        } else {
+            indexExpr
+        }
+
+        val matchRef = findExpressionMatchingBuiltin(keyTypeExpr, builtinName) ?: return null
+
+        val name = when (resolved) {
+            is PyTargetExpression -> resolved.name
+            is PyNamedParameter -> resolved.name
+            else -> null
+        }
+
+        return Pair(name, matchRef)
     }
 
     private fun detectReturnAnnotationInfo(

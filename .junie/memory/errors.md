@@ -398,3 +398,53 @@
     "NEW INSTRUCTION": "WHEN caret is inside function/class but not on name identifier THEN return intention not available"
 }
 
+[2025-12-08 12:30] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle",
+    "ERROR": "FileComparisonFailedError: expected annotation change not applied",
+    "ROOT CAUSE": "The custom type introduction wrapped the literal but did not update dict key type annotation.",
+    "PROJECT NOTE": "Extend CustomTypeApplier/UsageRewriter to propagate replacements into generic annotations (e.g., dict[key, val]) when usage is a subscript key; add/update logic in customtype/UsageRewriter.kt and PlanBuilder to locate and rewrite the corresponding annotation node.",
+    "NEW INSTRUCTION": "WHEN caret inside string literal used as dict key THEN update dict key annotation to custom type and wrap the literal"
+}
+
+[2025-12-08 12:32] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle (:test)",
+    "ERROR": "FileComparisonFailedError: expected/actual text mismatch",
+    "ROOT CAUSE": "The intention updated the literal usage but did not update the dict key type in the annotation, so the produced file differed from the expected 'after' text.",
+    "PROJECT NOTE": "myFixture.doIntentionTest compares file text exactly; both usage and related annotations must be updated to match expected output.",
+    "NEW INSTRUCTION": "WHEN caret is on a dict key in a subscript THEN resolve container annotation key type and update it"
+}
+
+[2025-12-08 12:33] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle",
+    "ERROR": "FileComparisonFailedError in ReproductionTest",
+    "ROOT CAUSE": "The intention failed to update the dict key type annotation because target detection did not map a subscription key usage to the key type in the annotated dict.",
+    "PROJECT NOTE": "Update TargetDetector (src/main/kotlin/.../customtype/TargetDetector.kt) to detect when the caret is on a dict key (PySubscriptionExpression.indexExpression) and link to the key type in the variable's annotation (dict[K, V] or Mapping[K, V]).",
+    "NEW INSTRUCTION": "WHEN expression is index of PySubscriptionExpression THEN resolve container annotation and select key type reference"
+}
+
+[2025-12-08 12:33] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle :test",
+    "ERROR": "FileComparisonFailedError in ReproductionTest",
+    "ROOT CAUSE": "The actual file content after intention did not match the expected text.",
+    "PROJECT NOTE": "Open build/reports/tests/test/index.html to view the exact diff; doIntentionTest compares text exactly, including whitespace.",
+    "NEW INSTRUCTION": "WHEN Gradle reports FileComparisonFailedError THEN open HTML test report to inspect diff"
+}
+
+[2025-12-08 12:36] - Updated by Junie - Error analysis
+{
+    "TYPE": "tool failure",
+    "TOOL": "get_file_structure",
+    "ERROR": "File structure parsing failed for Kotlin file",
+    "ROOT CAUSE": "The file structure tool cannot parse Kotlin files in this context; use direct open instead.",
+    "PROJECT NOTE": "Kotlin sources under src/main/kotlin are reliably readable via the open tool; get_file_structure may not support them.",
+    "NEW INSTRUCTION": "WHEN get_file_structure reports 'not possible to display' THEN open the file using open to inspect content"
+}
+

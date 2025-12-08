@@ -3,13 +3,6 @@
 ## Pending Tasks
 
 - [ ] feat: populate with argument names that exist in the current scope
-- [ ] fix: Update annotation when introducing custom type
-
-```python
-d: dict[str, int] = {}
-val = d["<caret>abc"]
-```
-
 - [ ] fix: cancel introduce type rename dialog still keeps it
 - [ ] feat: Convert dict with default to try/except case
 - [ ] fix: do not offer introduce type on import statement (constant,eg)
@@ -60,6 +53,12 @@ def test_():
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Update annotation when introducing custom type
+
+```python
+d: dict[str, int] = {}
+val = d["<caret>abc"]
+```
 - [x] fix: Make visibility intention only available on names 
 - [x] feat: Copy build number
 - [x] feat: Introduce parameter object (docs/parameter-object/state.md)
