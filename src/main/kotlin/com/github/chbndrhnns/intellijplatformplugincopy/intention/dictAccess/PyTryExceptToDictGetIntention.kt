@@ -8,6 +8,8 @@ import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.PyNames
 import com.jetbrains.python.psi.*
+import com.jetbrains.python.psi.impl.PyBuiltinCache
+import com.jetbrains.python.psi.impl.PyPsiUtils
 import com.jetbrains.python.psi.types.PyABCUtil
 import com.jetbrains.python.psi.types.TypeEvalContext
 
@@ -41,19 +43,30 @@ class PyTryExceptToDictGetIntention : PsiElementBaseIntentionAction() {
         val generator = PyElementGenerator.getInstance(project)
 
         // Build arguments for .get()
-        // If default is "None" literally, we can omit it.
-        val defaultText = info.default.text
-        val args = if (defaultText == "None") {
-            info.key.text
+        // Handle Tuple keys: d[1, 2] -> d.get((1, 2))
+        // If key is a tuple without parens, we must add them.
+        val keyText = if (info.key is PyTupleExpression && !info.key.text.startsWith("(")) {
+            "(${info.key.text})"
         } else {
-            "${info.key.text}, $defaultText"
+            info.key.text
+        }
+
+        // Handle complex dict expressions: (a + b)[k] -> (a + b).get(k)
+        // If dict expression has lower precedence than dot access, wrap in parens.
+        val dictText = if (needParentheses(info.dict)) "(${info.dict.text})" else info.dict.text
+
+        val defaultText = info.default.text
+        val args = if (defaultText == PyNames.NONE) {
+            keyText
+        } else {
+            "$keyText, $defaultText"
         }
 
         // Build the new statement text
         val newStatementText = if (info.isReturn) {
-            "return ${info.dict.text}.get($args)"
+            "return $dictText.get($args)"
         } else {
-            "${info.target.text} = ${info.dict.text}.get($args)"
+            "${info.target.text} = $dictText.get($args)"
         }
 
         val newStatement =
@@ -70,8 +83,14 @@ class PyTryExceptToDictGetIntention : PsiElementBaseIntentionAction() {
         CodeStyleManager.getInstance(project).reformat(replaced)
     }
 
+    private fun needParentheses(element: PyExpression): Boolean {
+        val flat = PyPsiUtils.flattenParens(element)
+        return !(flat is PyReferenceExpression || flat is PyCallExpression ||
+                flat is PyLiteralExpression || flat is PySubscriptionExpression)
+    }
+
     data class ExtractionInfo(
-        val target: PsiElement, // The variable or return keyword logic is handled by isReturn flag
+        val target: PsiElement,
         val dict: PyExpression,
         val key: PyExpression,
         val default: PyExpression,
@@ -88,9 +107,10 @@ class PyTryExceptToDictGetIntention : PsiElementBaseIntentionAction() {
         if (tryExcept.elsePart != null || tryExcept.finallyPart != null) return null
 
         // Exception class must be KeyError
-        val exceptClass = exceptPart.exceptClass ?: return null
-        if (exceptClass.text != "KeyError") return null
-        if (exceptClass !is PyReferenceExpression) return null
+        val exceptClass = exceptPart.exceptClass as? PyReferenceExpression ?: return null
+        val resolvedClass = exceptClass.reference.resolve()
+        val keyErrorClass = PyBuiltinCache.getInstance(exceptPart).getClass("KeyError")
+        if (resolvedClass == null || resolvedClass != keyErrorClass) return null
 
         // Try part has exactly one statement
         val tryStmts = tryExcept.tryPart.statementList.statements
@@ -133,7 +153,7 @@ class PyTryExceptToDictGetIntention : PsiElementBaseIntentionAction() {
 
         // Check Mapping type
         val context = TypeEvalContext.codeAnalysis(tryExcept.project, tryExcept.containingFile)
-        val dictType = context.getType(dict)
+        val dictType = context.getType(dict!!)
         if (dictType == null || !PyABCUtil.isSubtype(dictType, PyNames.MAPPING, context)) {
             // If type inference fails, we assume it's not a mapping.
             return null
@@ -144,7 +164,7 @@ class PyTryExceptToDictGetIntention : PsiElementBaseIntentionAction() {
         if (exceptStmts.size != 1) return null
         val exceptStmt = exceptStmts[0]
 
-        var defaultExpr: PyExpression? = null
+        var defaultExpr: PyExpression?
         var isPassCase = false
 
         if (isReturn) {
@@ -188,15 +208,13 @@ class PyTryExceptToDictGetIntention : PsiElementBaseIntentionAction() {
 
     private fun isValidSubscription(sub: PySubscriptionExpression): Boolean {
         // Rule: The subscription operand must be a simple reference or call, not another subscription.
-        val operand = sub.operand
+        // Nested subscriptions (d[k1][k2]) change semantics because KeyError in first lookup is not caught by .get(k2)
+        val operand = PyPsiUtils.flattenParens(sub.operand)
         return operand !is PySubscriptionExpression
     }
 
     private fun isSafeDefault(expr: PyExpression): Boolean {
         // Rule: Only support defaults that are literals (strings, numbers, None) or simple references (variables).
-        if (expr is PyNumericLiteralExpression) return true
-        if (expr is PyLiteralExpression) return true
-        if (expr is PyReferenceExpression) return true
-        return false
+        return expr is PyLiteralExpression || expr is PyReferenceExpression
     }
 }
