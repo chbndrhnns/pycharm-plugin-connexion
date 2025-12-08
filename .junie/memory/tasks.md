@@ -649,3 +649,13 @@ directly.",
     "NEW INSTRUCTION": "WHEN IntentionPreviewUtils.isIntentionPreviewActive() is true THEN perform PSI edits via IntentionPreviewUtils.write and bypass WriteCommandAction"
 }
 
+[2025-12-08 23:02] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "broad search",
+    "MISSING STEPS": "run tests, submit",
+    "BOTTLENECK": "No test run after applying the code change to verify the fix.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN code or tests are modified THEN run target tests and summarize outcomes"
+}
+

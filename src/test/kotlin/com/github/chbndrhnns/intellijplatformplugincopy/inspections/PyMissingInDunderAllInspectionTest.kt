@@ -108,6 +108,36 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
         )
     }
 
+    fun testTopLevelAttribute() {
+        val modFile = myFixture.addFileToProject(
+            "pkg/_mod.py", """
+            my_attr = "abc"
+        """.trimIndent()
+        )
+
+        myFixture.addFileToProject(
+            "pkg/__init__.py", """
+            from ._mod import my_attr
+        """.trimIndent()
+        )
+
+        myFixture.configureFromExistingVirtualFile(modFile.virtualFile)
+        myFixture.enableInspections(PyMissingInDunderAllInspection::class.java)
+
+        val fix = myFixture.getAllQuickFixes().find { it.familyName == "Add to __all__" }
+        assertTrue("Fix 'Add to __all__' not found", fix != null)
+
+        myFixture.launchAction(fix!!)
+
+        myFixture.checkResult(
+            "pkg/__init__.py", """
+            __all__ = ["my_attr"]
+
+            from ._mod import my_attr
+        """.trimIndent(), true
+        )
+    }
+
     fun testAllowlistedTestFunction() {
         val testName = getTestName(false)
         myFixture.configureByFile("inspections/PyMissingInDunderAllInspection/$testName/__init__.py")

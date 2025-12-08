@@ -1,43 +1,3 @@
-[2025-12-02 22:47] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "bash",
-    "ERROR": "zsh here-doc expansion caused 'number expected'",
-    "ROOT CAUSE": "The heredoc was unquoted, so zsh expanded $/{} in Kotlin content and failed.",
-    "PROJECT NOTE": "When writing Kotlin files via shell heredocs, use a single-quoted delimiter (<<'EOF') to avoid $ interpolation inside string templates.",
-    "NEW INSTRUCTION": "WHEN writing file via heredoc containing $ or ${} THEN use <<'EOF' to disable expansion"
-}
-
-[2025-12-02 23:05] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "create",
-    "ERROR": "Unresolved references: LightJavaCodeInsightFixtureTestCase, myFixture, module",
-    "ROOT CAUSE": "The new test extended the wrong base class and used nonexistent fields for this project.",
-    "PROJECT NOTE": "In this repo, test classes must extend fixtures.TestBase and use myFixture.module when adding libraries.",
-    "NEW INSTRUCTION": "WHEN creating new test classes THEN extend fixtures.TestBase and use myFixture.module"
-}
-
-[2025-12-03 12:49] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid context",
-    "TOOL": "PopulateArgumentsService.populateArguments",
-    "ERROR": "PSI modified outside command/write action via popup callback",
-    "ROOT CAUSE": "The popup selection handler performs PSI writes without wrapping them in a WriteCommandAction/command.",
-    "PROJECT NOTE": "In the unified PopulateArgumentsIntention using JbPopupHost, wrap argument insertion in WriteCommandAction.runWriteCommandAction(project) inside the popup callback; startInWriteAction on the Intention doesn't cover async callbacks.",
-    "NEW INSTRUCTION": "WHEN popup callback performs PSI modifications THEN wrap code in WriteCommandAction.runWriteCommandAction(project)"
-}
-
-[2025-12-03 13:05] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "apply_patch",
-    "ERROR": "Malformed patch: truncated content and missing end marker",
-    "ROOT CAUSE": "The patch for PluginSettingsState.kt was cut off with ellipses and lacked *** End Patch, making it unparsable.",
-    "PROJECT NOTE": "When editing PluginSettingsState, fully remove flags enablePopulateKwOnlyArgumentsIntention, enablePopulateRequiredArgumentsIntention, and enablePopulateRecursiveArgumentsIntention from State, apply/reset/copy, and any references.",
-    "NEW INSTRUCTION": "WHEN patch content shows ellipses or lacks *** End Patch THEN recreate a complete, well-formed patch before applying"
-}
-
 [2025-12-03 13:30] - Updated by Junie - Error analysis
 {
     "TYPE": "invalid args",
@@ -796,4 +756,44 @@
     "ROOT CAUSE": "IDE plugin tests were launched without the full Gradle test harness, so required test-log.properties and runtime setup were missing.",
     "PROJECT NOTE": "Run tests via the project root Gradle test tasks (or specify a test class name) so the IntelliJ test environment and logging properties are configured.",
     "NEW INSTRUCTION": "WHEN running tests for this project THEN execute Gradle test from project root without a path"
+}
+
+[2025-12-08 23:00] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic bug",
+    "TOOL": "run_test",
+    "ERROR": "Fix 'Add to __all__' not found",
+    "ROOT CAUSE": "The inspection excludes regular top-level attributes, only recognizing typing.NewType aliases.",
+    "PROJECT NOTE": "Update PyMissingInDunderAllInspection.kt (isExportable) to treat top-level PyTargetExpression assignments as exportable, not just NewType.",
+    "NEW INSTRUCTION": "WHEN run_test reports \"Fix 'Add to __all__' not found\" THEN allow top-level PyTargetExpression in isExportable"
+}
+
+[2025-12-08 23:01] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Fix 'Add to __all__' not found",
+    "ROOT CAUSE": "The inspection only treats NewType target assignments as exportable, so top-level attributes like my_attr are ignored and no quick fix is offered.",
+    "PROJECT NOTE": "Update PyMissingInDunderAllInspection.isExportable in src/main/kotlin/.../inspections/PyMissingInDunderAllInspection.kt to allow PyTargetExpression except __all__.",
+    "NEW INSTRUCTION": "WHEN run_test fails with 'Fix 'Add to __all__' not found' THEN broaden isExportable to export PyTargetExpression except __all__, then rerun tests"
+}
+
+[2025-12-08 23:01] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Fix 'Add to __all__' not found",
+    "ROOT CAUSE": "The inspection excludes top-level attributes because isExportable only allows NewType targets.",
+    "PROJECT NOTE": "Update src/main/kotlin/.../inspections/PyMissingInDunderAllInspection.kt: in isExportable, return true for any PyTargetExpression except '__all__' to enable exporting variables like my_attr.",
+    "NEW INSTRUCTION": "WHEN element is PyTargetExpression for __all__ export check THEN treat as exportable unless name is '__all__'"
+}
+
+[2025-12-08 23:02] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic bug",
+    "TOOL": "run_test",
+    "ERROR": "Quick fix 'Add to __all__' not found",
+    "ROOT CAUSE": "isExportable only allowed NewType target expressions and excluded plain top-level attributes.",
+    "PROJECT NOTE": "Update PyMissingInDunderAllInspection.kt:isExportable to treat any top-level PyTargetExpression except __all__ as exportable.",
+    "NEW INSTRUCTION": "WHEN element is PyTargetExpression and name is not __all__ THEN return exportable true in isExportable"
 }

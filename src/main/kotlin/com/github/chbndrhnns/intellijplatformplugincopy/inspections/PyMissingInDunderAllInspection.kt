@@ -10,12 +10,9 @@ import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.PsiNameIdentifierOwner
-import com.intellij.psi.util.QualifiedName
 import com.jetbrains.python.PyNames
-import com.jetbrains.python.codeInsight.typing.PyTypingTypeProvider
 import com.jetbrains.python.inspections.PyInspection
 import com.jetbrains.python.psi.*
-import com.jetbrains.python.psi.resolve.PyResolveUtil
 
 /**
  * Inspection that ensures public symbols are exported via a package's
@@ -254,17 +251,7 @@ class PyMissingInDunderAllInspection : PyInspection() {
         private fun isExportable(element: PyElement): Boolean {
             if (element is PyClass || element is PyFunction || element is PyTypeAliasStatement) return true
             if (element is PyTargetExpression) {
-                if (PyNames.ALL == element.name) return false
-                val value = element.findAssignedValue()
-                if (value is PyCallExpression) {
-                    val callee = value.callee as? PyReferenceExpression
-                    if (callee != null) {
-                        val resolvedQNames = PyResolveUtil.resolveImportedElementQNameLocally(callee)
-                        if (QualifiedName.fromDottedString(PyTypingTypeProvider.NEW_TYPE) in resolvedQNames) {
-                            return true
-                        }
-                    }
-                }
+                return PyNames.ALL != element.name
             }
             return false
         }
