@@ -5,7 +5,6 @@
 - [ ] feat: populate with argument names that exist in the current scope
 - [ ] fix: cancel introduce type rename dialog still keeps it
 - [ ] feat: Convert dict with default to try/except case
-- [ ] fix: populate arguments creates extra spaces when used on decorator
 - [ ] fix: introduce type fails for `MY_CONSTANT: Final[str] = "VALUE"`
 - [ ] feat: Copy names of failed tests
 - [ ] fix: ignore conftest when suggesting __all__
@@ -51,6 +50,7 @@ def test_():
 
 ## Completed Tasks (newest first)
 
+- [x] fix: populate arguments creates extra spaces when used on decorator
 - [x] fix: do not offer introduce type on import statement (constant,eg)
 - [x] fix: Update annotation when introducing custom type
 

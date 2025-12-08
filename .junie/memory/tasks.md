@@ -569,3 +569,13 @@ directly.",
     "NEW INSTRUCTION": "WHEN reproduction test passes locally THEN run full test suite and summarize results"
 }
 
+[2025-12-08 13:28] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "temporarily comment out reformat,add debug print twice",
+    "MISSING STEPS": "run full test suite,submit changes",
+    "BOTTLENECK": "Incorrect PSI context detection for decorator calls caused wrong reformatting.",
+    "PROJECT NOTE": "Decorator calls appear as PyCallExpressionImpl with a PyDecoratorImpl parent.",
+    "NEW INSTRUCTION": "WHEN changing formatting behavior THEN run full test suite after targeted tests"
+}
+

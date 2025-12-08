@@ -458,3 +458,53 @@
     "NEW INSTRUCTION": "WHEN caret is inside PyImportStatement or PyFromImportStatement THEN return intention not available"
 }
 
+[2025-12-08 13:15] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle (:test)",
+    "ERROR": "FileComparisonFailedError in decorator population test",
+    "ROOT CAUSE": "Argument insertion for decorator calls leaves extra spaces, producing text mismatch.",
+    "PROJECT NOTE": "In PopulateArgumentsService.populateArguments, after editing the PyArgumentList of a decorator call, invoke CodeStyleManager.getInstance(project).reformat(argumentList) (or the decorator node) to normalize spacing.",
+    "NEW INSTRUCTION": "WHEN target is a decorator call PyCallExpression THEN reformat its argument list after insertion"
+}
+
+[2025-12-08 13:16] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "Gradle test",
+    "ERROR": "Test diff hidden due to truncated output",
+    "ROOT CAUSE": "The test failed with FileComparisonFailedError, but actual file content was only printed to stdout and the console output was truncated.",
+    "PROJECT NOTE": "Gradle stores full test stdout/stderr in .output.txt as indicated by the truncation note; myFixture.checkResult compares exact text including whitespace.",
+    "NEW INSTRUCTION": "WHEN test output shows truncation notice THEN grep .output.txt for ACTUAL_TEXT_START..END to get actual"
+}
+
+[2025-12-08 13:17] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic bug",
+    "TOOL": "Gradle (:test) -> PopulateArgumentsService.populateArguments",
+    "ERROR": "Decorator call arguments not populated; empty parentheses produced",
+    "ROOT CAUSE": "The intention does not handle PyDecorator/its argument list, so no parameters are generated for @Decorator(...).",
+    "PROJECT NOTE": "In PopulateArgumentsService.findCallExpression/target resolution, also support PyDecorator and its PyArgumentList; treat it like a call by resolving the decorator’s callable (__init__/__call__).",
+    "NEW INSTRUCTION": "WHEN caret is inside PyDecorator or its argument list THEN resolve decorator as call and populate arguments"
+}
+
+[2025-12-08 13:24] - Updated by Junie - Error analysis
+{
+    "TYPE": "tool failure",
+    "TOOL": "undo_edit",
+    "ERROR": "Undo failed; tool cannot revert the last edit",
+    "ROOT CAUSE": "The undo_edit utility is not supported here and cannot roll back file changes.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN undo_edit fails to revert changes THEN restore content manually using search_replace or create"
+}
+
+[2025-12-08 13:27] - Updated by Junie - Error analysis
+{
+    "TYPE": "tool failure",
+    "TOOL": "undo_edit",
+    "ERROR": "Undo failed; no automatic revert available",
+    "ROOT CAUSE": "The undo tool cannot revert after subsequent edits or lacks a prior snapshot.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN undo_edit returns an error THEN manually revert using search_replace or reapply original content"
+}
+

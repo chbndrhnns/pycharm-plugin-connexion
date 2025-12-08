@@ -132,7 +132,9 @@ class PopulateArgumentsService {
             }
         }
 
-        CodeStyleManager.getInstance(project).reformat(argumentList)
+        if (call !is PyDecorator && call.parent !is PyDecorator) {
+            CodeStyleManager.getInstance(project).reformat(argumentList)
+        }
     }
 
     private fun isBuiltinName(name: String): Boolean {
