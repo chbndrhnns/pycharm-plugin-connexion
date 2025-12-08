@@ -8,11 +8,9 @@
 
 ## Pending Features
 
-- [ ] feat: commit: if it fails for hooks, add option keep selection of files
 - [ ] feat: Add local variable from unresolved reference
 - [ ] feat: exception: if using err/exc/error, offer `except bla as X`
 - [ ] feat: populate with argument names that exist in the current scope
-- [ ] feat: Convert dict with default to try/except case
 - [ ] feat: Copy names of failed tests
 - [ ] feat: quick fix to remove unresolved import from __all__
 - [ ] feat: Turn into type checking import
@@ -37,16 +35,16 @@
 
 ## In Progress Tasks
 
-- [ ] Offer unwrap here
+
+## Completed Tasks (newest first)
+
+- [x] Offer unwrap for redundant cast
 
 ```python
 def test_():
   val: int = 1
   return int(val)
 ```
-
-
-## Completed Tasks (newest first)
 
 - [x] wrap: Do not offer t.Final -> Wrap with Typevar
 - [x] unwrap: do not offer here `access_level: str = group_access.get("access_level")`
