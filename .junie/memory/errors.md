@@ -378,3 +378,13 @@
     "NEW INSTRUCTION": "WHEN post-create report shows Unresolved reference 'caret' THEN ignore validation and continue with tests"
 }
 
+[2025-12-08 10:31] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_project",
+    "ERROR": "Search returned too many results; output truncated",
+    "ROOT CAUSE": "The query term 'Action' is too broad, exceeding the tool's result limit.",
+    "PROJECT NOTE": "In this repo, IntelliJ actions live under src/main/kotlin/.../actions; include package/name fragments (e.g., 'IntroduceParameterObjectAction' or 'intellijplatformplugincopy/actions').",
+    "NEW INSTRUCTION": "WHEN search_project warns more than 100 results THEN refine query with specific class/package keywords"
+}
+

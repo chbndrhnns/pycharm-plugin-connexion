@@ -156,5 +156,11 @@
                 description="Introduces a parameter object for the current function">
             <add-to-group group-id="RefactoringMenu" anchor="last"/>
         </action>
+        <action id="com.github.chbndrhnns.intellijplatformplugincopy.actions.CopyBuildNumberAction"
+                class="com.github.chbndrhnns.intellijplatformplugincopy.actions.CopyBuildNumberAction"
+                text="Copy Build Number"
+                description="Copies the current IDE build number to the clipboard">
+            <add-to-group group-id="HelpMenu" anchor="last"/>
+        </action>
     </actions>
 </idea-plugin>

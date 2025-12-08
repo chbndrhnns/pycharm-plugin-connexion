@@ -529,3 +529,13 @@ directly.",
     "NEW INSTRUCTION": "WHEN adding tests for an intention THEN scan existing intention tests and mirror testData format"
 }
 
+[2025-12-08 10:33] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "search project, open tests",
+    "MISSING STEPS": "-",
+    "BOTTLENECK": "Overly broad project search produced excessive results and noise.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN search warns about too many results THEN refine query with narrower, targeted terms"
+}
+
