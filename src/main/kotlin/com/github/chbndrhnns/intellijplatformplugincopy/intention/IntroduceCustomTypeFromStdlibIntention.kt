@@ -9,6 +9,7 @@ import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerImpl
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
+import com.intellij.codeInsight.intention.preview.IntentionPreviewUtils
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.DumbAware
@@ -98,15 +99,14 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
 
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
         val plan = getPlan(editor, file) ?: return
-        applier.apply(project, editor, plan)
+        val isPreview = IntentionPreviewUtils.isIntentionPreviewActive()
+        applier.apply(project, editor, plan, isPreview = isPreview)
     }
 
     override fun generatePreview(project: Project, editor: Editor, file: PsiFile): IntentionPreviewInfo {
         if (!PluginSettingsState.instance().state.enableIntroduceCustomTypeFromStdlibIntention) {
             return IntentionPreviewInfo.EMPTY
         }
-        val plan = getPlan(editor, file) ?: return IntentionPreviewInfo.EMPTY
-        applier.apply(project, editor, plan, isPreview = true)
         return IntentionPreviewInfo.DIFF
     }
 

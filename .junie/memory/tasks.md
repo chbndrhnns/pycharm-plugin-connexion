@@ -639,3 +639,13 @@ directly.",
     "NEW INSTRUCTION": "WHEN adding a new test file THEN open a similar existing test and mirror imports and helpers"
 }
 
+[2025-12-08 22:56] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "run tests,create reproduction test case",
+    "MISSING STEPS": "open files,apply patch,reformat code,run build,verify preview handling",
+    "BOTTLENECK": "No code changes were applied to address the preview write context.",
+    "PROJECT NOTE": "Route preview via IntentionPreviewInfo.DIFF and pass isPreview to applier in invoke.",
+    "NEW INSTRUCTION": "WHEN IntentionPreviewUtils.isIntentionPreviewActive() is true THEN perform PSI edits via IntentionPreviewUtils.write and bypass WriteCommandAction"
+}
+

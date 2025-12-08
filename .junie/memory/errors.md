@@ -1,43 +1,3 @@
-[2025-12-02 22:05] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "run_test",
-    "ERROR": "Missing j.u.l LogManager test-log.properties",
-    "ROOT CAUSE": "IntelliJ test runtime expects a logging properties file in Gradle cache that is absent.",
-    "PROJECT NOTE": "This IJ Platform EAP warning often appears but tests still run; rely on final summary, not the initial log warning.",
-    "NEW INSTRUCTION": "WHEN run_test logs missing test-log.properties THEN rerun tests and rely on final summary"
-}
-
-[2025-12-02 22:25] - Updated by Junie - Error analysis
-{
-    "TYPE": "missing context",
-    "TOOL": "run_test",
-    "ERROR": "Intention not available at caret position",
-    "ROOT CAUSE": "The caret was on the assignment variable name, where the intention is not offered.",
-    "PROJECT NOTE": "This intention typically appears when the caret is on the RHS type usage (e.g., the constructor call) rather than the LHS variable identifier.",
-    "NEW INSTRUCTION": "WHEN intention lookup returns not in available intentions THEN place caret on RHS type usage"
-}
-
-[2025-12-02 22:44] - Updated by Junie - Error analysis
-{
-    "TYPE": "build failure",
-    "TOOL": "Gradle (:compileKotlin)",
-    "ERROR": "Unresolved reference: TypeEvalContext; missing required args",
-    "ROOT CAUSE": "WrapWithExpectedTypeIntention.kt uses TypeEvalContext without import and omits new context parameters in calls.",
-    "PROJECT NOTE": "TypeEvalContext is in com.jetbrains.python.psi.types; ensure it is imported and a TypeEvalContext instance is created/passed to APIs whose signatures require it before running tests.",
-    "NEW INSTRUCTION": "WHEN compileKotlin reports 'Unresolved reference' in Kotlin THEN add missing imports and update changed API parameters"
-}
-
-[2025-12-02 22:44] - Updated by Junie - Error analysis
-{
-    "TYPE": "build failure",
-    "TOOL": "Gradle (:compileKotlin)",
-    "ERROR": "Conflicting declarations: duplicate local 'context' variables",
-    "ROOT CAUSE": "Automated text replacement introduced multiple TypeEvalContext declarations in the same scope.",
-    "PROJECT NOTE": "In WrapWithExpectedTypeIntention.kt, declare a single TypeEvalContext per method and pass it to analyzer.analyzeAtCaret; remove duplicate 'context' vals added by bulk edits.",
-    "NEW INSTRUCTION": "WHEN compileKotlin reports 'Conflicting declarations' for a variable THEN deduplicate variable declarations within scope"
-}
-
 [2025-12-02 22:47] - Updated by Junie - Error analysis
 {
     "TYPE": "invalid args",
@@ -796,4 +756,44 @@
     "ROOT CAUSE": "The test likely used an intention name or caret position that does not match where UnwrapToExpectedTypeIntention is offered.",
     "PROJECT NOTE": "In this repo, doIntentionTest expects the caret on the wrapper call or its single argument, and the intention text must match the action’s presentation used in UnwrapBasicTest.",
     "NEW INSTRUCTION": "WHEN intention test cannot find action THEN place caret on wrapper call/arg and use exact intention text"
+}
+
+[2025-12-08 22:46] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid context",
+    "TOOL": "-",
+    "ERROR": "PSI write during preview triggered cancellation handler failure",
+    "ROOT CAUSE": "CustomTypeGenerator.insertClass performed a real PSI modification during intention preview, causing documentChanged and BackgroundHighlighter cancellation to throw.",
+    "PROJECT NOTE": "Ensure all PSI edits in IntroduceCustomTypeFromStdlibIntention preview path run inside IntentionPreviewUtils.write and operate on the preview PSI, not the live document.",
+    "NEW INSTRUCTION": "WHEN generating intention preview THEN perform all PSI edits inside IntentionPreviewUtils.write"
+}
+
+[2025-12-08 22:47] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid context",
+    "TOOL": "-",
+    "ERROR": "PSI edits in preview triggered BackgroundHighlighter cancellation crash",
+    "ROOT CAUSE": "Side-effectful operations ran during intention preview, causing document change cancellations to propagate.",
+    "PROJECT NOTE": "In CustomTypeApplier.apply, guard non-essential actions (rename, project-wide rewrites/imports) with isPreview or IntentionPreviewUtils.isIntentionPreviewActive() so only preview PSI edits occur inside IntentionPreviewUtils.write.",
+    "NEW INSTRUCTION": "WHEN IntentionPreviewUtils.isIntentionPreviewActive() THEN modify only preview PSI and skip side effects"
+}
+
+[2025-12-08 22:52] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "run_test",
+    "ERROR": "Missing j.u.l LogManager test-log.properties during IDE tests",
+    "ROOT CAUSE": "The IntelliJ test harness expects a logging config file that is absent in the Gradle cache, causing the test run to error out.",
+    "PROJECT NOTE": "This is an IntelliJ Platform plugin project; run tests from the project root via Gradle so the IntelliJ test framework and logging are initialized correctly.",
+    "NEW INSTRUCTION": "WHEN run_test logs 'test-log.properties does not exist' THEN run './gradlew cleanTest test --info' from project root"
+}
+
+[2025-12-08 22:56] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "run_test",
+    "ERROR": "Build failed; missing IDE test LogManager config",
+    "ROOT CAUSE": "IDE plugin tests were launched without the full Gradle test harness, so required test-log.properties and runtime setup were missing.",
+    "PROJECT NOTE": "Run tests via the project root Gradle test tasks (or specify a test class name) so the IntelliJ test environment and logging properties are configured.",
+    "NEW INSTRUCTION": "WHEN running tests for this project THEN execute Gradle test from project root without a path"
 }
