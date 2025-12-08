@@ -2,7 +2,6 @@
 
 ## Pending Issues
 
-- [ ] fix: introduce paramter object should only be available when caret on: function, function args, call site the same
 - [ ] fix: cancel introduce type rename dialog still keeps it
 - [ ] fix: ignore conftest when suggesting __all__
 - [ ] fix: do not offer introduce custom type on string annotation
@@ -50,13 +49,14 @@ def test_():
 
 ## In Progress Tasks
 
-- [ ] fix: do not offer introduce type if unresolved reference on statement: `MY_CONSTANT: Final[str] = "VALUE"`]
-- [ ] fix: introduce type fails for `MY_CONSTANT: Final[str] = "VALUE"`]
+- [-] fix: introduce paramter object should only be available when caret on: function, function args, call site the same
 - [-] feat: Transform between dict access .get and []
 - [ ] Configure default base classes
 
 ## Completed Tasks (newest first)
 
+- [N] fix: do not offer introduce type if unresolved reference on statement: `MY_CONSTANT: Final[str] = "VALUE"`]
+- [x] fix: introduce type fails for `MY_CONSTANT: Final[str] = "VALUE"`]
 - [x] fix: populate arguments creates extra spaces when used on decorator
 - [x] fix: do not offer introduce type on import statement (constant,eg)
 - [x] fix: Update annotation when introducing custom type
