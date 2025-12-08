@@ -33,10 +33,10 @@
 ## In Progress Tasks
 
 - [-] commit: if it fails for hooks, add option keep selection of files (docs/keep-commit-selection/spec.md)
-- [-] feat: Parse pytest identifier in search all dialog
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Parse pytest identifier in search all dialog
 - [x] feat: Support export of attributes
 - [x] Offer unwrap for redundant cast
 
