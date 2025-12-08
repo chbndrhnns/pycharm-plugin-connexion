@@ -53,13 +53,13 @@ def test_():
 
 ## In Progress Tasks
 
-- [-] feat: Copy build number
 - [-] feat: Transform between dict access .get and []
 - [x] refactor: PopulateArgumentsService
 - [ ] Configure default base classes
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Copy build number
 - [x] feat: Introduce parameter object (docs/parameter-object/state.md)
     - [x] refactor: String and imports handling in PyIntroduceParameterObjectProcessor
     - [x] check if there is a better way for `addDataclassImport`
