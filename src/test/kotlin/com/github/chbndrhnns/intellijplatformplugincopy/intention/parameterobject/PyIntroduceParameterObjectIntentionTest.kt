@@ -69,4 +69,51 @@ class PyIntroduceParameterObjectIntentionTest : TestBase() {
             )
         }
     }
+
+    fun testAvailableFromCallSite() {
+        withMockIntroduceParameterObjectDialog {
+            myFixture.doIntentionTest(
+                "a.py",
+                """
+                def create_user(first_name, last_name):
+                    print(first_name, last_name)
+
+
+                def main():
+                    create_<caret>user("John", "Doe")
+                """.trimIndent(),
+                """
+                from dataclasses import dataclass
+                from typing import Any
+
+
+                @dataclass(frozen=True, slots=True, kw_only=True)
+                class CreateUserParams:
+                    first_name: Any
+                    last_name: Any
+
+
+                def create_user(params: CreateUserParams):
+                    print(params.first_name, params.last_name)
+
+
+                def main():
+                    create_user(CreateUserParams(first_name="John", last_name="Doe"))
+                """.trimIndent(),
+                "Introduce parameter object"
+            )
+        }
+    }
+
+    fun testUnavailableInFunctionBody() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            def create_user(first_name, last_name):
+                print(<caret>first_name, last_name)
+            """.trimIndent()
+        )
+
+        assertEmpty(myFixture.filterAvailableIntentions("Introduce parameter object"))
+    }
 }

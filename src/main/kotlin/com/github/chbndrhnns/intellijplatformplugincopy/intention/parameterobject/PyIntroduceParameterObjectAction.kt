@@ -4,9 +4,6 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.psi.util.PsiTreeUtil
-import com.jetbrains.python.psi.PyFunction
-import com.jetbrains.python.psi.PyNamedParameter
 
 class PyIntroduceParameterObjectAction : AnAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
@@ -26,17 +23,7 @@ class PyIntroduceParameterObjectAction : AnAction() {
             return
         }
 
-        val function = PsiTreeUtil.getParentOfType(element, PyFunction::class.java)
-        if (function == null) {
-            e.presentation.isEnabledAndVisible = false
-            return
-        }
-
-        val parameters = function.parameterList.parameters
-            .filterIsInstance<PyNamedParameter>()
-            .filter { !it.isSelf && !it.isPositionalContainer && !it.isKeywordContainer }
-
-        e.presentation.isEnabledAndVisible = parameters.size >= 2
+        e.presentation.isEnabledAndVisible = IntroduceParameterObjectTarget.isAvailable(element)
     }
 
     override fun actionPerformed(e: AnActionEvent) {
@@ -45,7 +32,7 @@ class PyIntroduceParameterObjectAction : AnAction() {
         val psiFile = e.getData(CommonDataKeys.PSI_FILE) ?: return
 
         val element = psiFile.findElementAt(editor.caretModel.offset) ?: return
-        val function = PsiTreeUtil.getParentOfType(element, PyFunction::class.java) ?: return
+        val function = IntroduceParameterObjectTarget.find(element) ?: return
 
         PyIntroduceParameterObjectProcessor(function).run()
     }

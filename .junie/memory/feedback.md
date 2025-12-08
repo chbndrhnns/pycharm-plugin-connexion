@@ -230,3 +230,19 @@
     "NEW INSTRUCTION": "WHEN updating Make Public intention THEN restrict availability to identifier and add negative body test"
 }
 
+[2025-12-08 17:38] - Updated by Junie
+{
+    "TYPE": "new instructions",
+    "CATEGORY": "intention preview",
+    "ERROR": "-",
+    "NEW INSTRUCTION": "WHEN generating intention preview THEN perform PSI edits via IntentionPreviewUtils.write and avoid WriteCommandAction"
+}
+
+[2025-12-08 17:47] - Updated by Junie
+{
+    "TYPE": "new instructions",
+    "CATEGORY": "intention availability",
+    "ERROR": "-",
+    "NEW INSTRUCTION": "WHEN checking unresolved references for availability THEN only block on unresolved typing.Final"
+}
+

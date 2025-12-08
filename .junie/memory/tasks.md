@@ -579,3 +579,23 @@ directly.",
     "NEW INSTRUCTION": "WHEN changing formatting behavior THEN run full test suite after targeted tests"
 }
 
+[2025-12-08 17:30] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "scroll file repeatedly,update status repeatedly",
+    "MISSING STEPS": "search project,run single failing test,inspect availability logic first",
+    "BOTTLENECK": "Focused on TargetDetector instead of the intention’s availability logic.",
+    "PROJECT NOTE": "IntroduceCustomTypeFromStdlibIntention contains the availability gate via hasBlockingInspections.",
+    "NEW INSTRUCTION": "WHEN intention availability needs adjusting THEN search_project for intention class and inspect isAvailable logic"
+}
+
+[2025-12-08 17:58] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "get file structure,semantic search,search symbol",
+    "MISSING STEPS": "add tests,run tests",
+    "BOTTLENECK": "Availability guard added without adding and running tests to validate behavior.",
+    "PROJECT NOTE": "IntroduceParameterObject tests should assert availability and results via myFixture.checkResult.",
+    "NEW INSTRUCTION": "WHEN changing intention availability logic THEN add availability tests and run IntroduceParameterObject suite"
+}
+

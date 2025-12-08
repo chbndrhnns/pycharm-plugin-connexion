@@ -608,3 +608,113 @@
     "NEW INSTRUCTION": "WHEN get_file_structure reports cannot display or parsing failed THEN open the file using open and scroll"
 }
 
+[2025-12-08 17:39] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic bug",
+    "TOOL": "IntroduceCustomTypeFromStdlibIntention.generatePreview/CustomTypeApplier.apply",
+    "ERROR": "Reused cached plan in preview, writing to original file",
+    "ROOT CAUSE": "The cached CustomTypePlan from isAvailable points to the real PyFile and is reused in generatePreview, so insertClass modifies the original file instead of the preview copy.",
+    "PROJECT NOTE": "In getPlan(), do not read PLAN_KEY during preview; always rebuild the plan using the preview file/editor so plan.sourceFile and PSI anchors belong to the preview PSI.",
+    "NEW INSTRUCTION": "WHEN generating intention preview THEN rebuild plan from preview editor and file, ignore cache"
+}
+
+[2025-12-08 17:41] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid context",
+    "TOOL": "IntroduceCustomTypeFromStdlibIntention.generatePreview/CustomTypeApplier.insertClass",
+    "ERROR": "CompletionHandlerException during BackgroundHighlighter cancellation",
+    "ROOT CAUSE": "PSI insertion during intention preview triggered document change; cancellation handler threw while the background highlighter was being cancelled.",
+    "PROJECT NOTE": "CustomTypeGenerator.insertClass uses PsiFile.addAfter; in preview, all PSI writes must be fully enclosed by IntentionPreviewUtils.write and avoid any async/coroutine or Alarm usage during the write.",
+    "NEW INSTRUCTION": "WHEN generating an intention preview performs PSI writes THEN wrap all edits in IntentionPreviewUtils.write and avoid async callbacks"
+}
+
+[2025-12-08 17:42] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "CustomTypeGenerator.insertClass",
+    "ERROR": "Anchor element from different parent passed to addAfter",
+    "ROOT CAUSE": "The preview insertion used an anchor not directly under the target PyFile, causing a parent mismatch during PsiFile.addAfter.",
+    "PROJECT NOTE": "When inserting a top-level class, pick an anchor that is a direct child of the PyFile (e.g., first top-level statement) or null to append; do not use elements from inside statements/classes.",
+    "NEW INSTRUCTION": "WHEN inserting PSI into a file with addBefore/addAfter THEN choose an anchor that is a direct child of that file"
+}
+
+[2025-12-08 17:58] - Updated by Junie - Error analysis
+{
+    "TYPE": "path error",
+    "TOOL": "open_entire_file",
+    "ERROR": "Attempted to open a directory as a file",
+    "ROOT CAUSE": "The provided path points to a directory (docs/dict-access) but open_entire_file requires a file.",
+    "PROJECT NOTE": "docs/dict-access is a folder; open specific files within it (e.g., search and then open).",
+    "NEW INSTRUCTION": "WHEN target path is a directory THEN search for files inside and open a specific file"
+}
+
+[2025-12-08 18:00] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "open_entire_file",
+    "ERROR": "Tried to open a directory as a file",
+    "ROOT CAUSE": "The path docs/dict-access points to a directory, but open_entire_file expects a file.",
+    "PROJECT NOTE": "docs/dict-access is a docs folder; use project search or list functions to inspect its contents.",
+    "NEW INSTRUCTION": "WHEN open_entire_file target is a directory THEN list contents via get_file_structure or search_project"
+}
+
+[2025-12-08 18:00] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "open_entire_file",
+    "ERROR": "Attempted to open a directory as a file",
+    "ROOT CAUSE": "The path passed to open_entire_file pointed to a directory (docs/dict-access) rather than a file.",
+    "PROJECT NOTE": "The docs/dict-access path is a directory; enumerate files first before opening one.",
+    "NEW INSTRUCTION": "WHEN open_entire_file target is a directory THEN list files and open a specific file path"
+}
+
+[2025-12-08 18:02] - Updated by Junie - Error analysis
+{
+    "TYPE": "path error",
+    "TOOL": "open_entire_file",
+    "ERROR": "Attempted to open a directory as a file",
+    "ROOT CAUSE": "Passed a directory path to open_entire_file, which only accepts file paths.",
+    "PROJECT NOTE": "docs/dict-access is a directory; pick a specific file in it or search for relevant files first.",
+    "NEW INSTRUCTION": "WHEN target path is a directory THEN choose a concrete file path inside before opening"
+}
+
+[2025-12-08 18:03] - Updated by Junie - Error analysis
+{
+    "TYPE": "path error",
+    "TOOL": "open_entire_file",
+    "ERROR": "Path is a directory, not a file",
+    "ROOT CAUSE": "open_entire_file was called with a directory path (docs/dict-access) instead of a file path.",
+    "PROJECT NOTE": "Under docs/, some entries are directories; select a concrete file (e.g., README.md) or list contents first.",
+    "NEW INSTRUCTION": "WHEN open_entire_file reports 'Path is a directory' THEN list directory contents and open a specific file"
+}
+
+[2025-12-08 18:05] - Updated by Junie - Error analysis
+{
+    "TYPE": "path error",
+    "TOOL": "open_entire_file",
+    "ERROR": "Path is a directory, not a file",
+    "ROOT CAUSE": "The tool was given a directory path (docs/dict-access) instead of a file path.",
+    "PROJECT NOTE": "In this repo, docs/ and src/test/testData/ contain directories; open_entire_file requires a specific file (e.g., README.md or *.py), not a folder.",
+    "NEW INSTRUCTION": "WHEN open_entire_file path points to a directory THEN select and open a specific file within"
+}
+
+[2025-12-08 18:05] - Updated by Junie - Error analysis
+{
+    "TYPE": "path error",
+    "TOOL": "open_entire_file",
+    "ERROR": "Attempted to open a directory as a file",
+    "ROOT CAUSE": "Called open_entire_file with a directory path (docs/dict-access) instead of a file path.",
+    "PROJECT NOTE": "To inspect a directory, first list or search for files (e.g., via search_project) under it, then open specific files.",
+    "NEW INSTRUCTION": "WHEN path points to a directory THEN list or search files and open a specific file"
+}
+
+[2025-12-08 18:06] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "open_entire_file",
+    "ERROR": "Path is a directory, not a file",
+    "ROOT CAUSE": "A directory path was passed to a tool that requires a file path.",
+    "PROJECT NOTE": "docs subfolders may contain multiple files; identify and open a specific file (e.g., README.md) rather than the folder.",
+    "NEW INSTRUCTION": "WHEN open_entire_file target is a directory THEN choose and open a specific file within it"
+}
+
