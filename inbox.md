@@ -3,7 +3,6 @@
 ## Pending Issues
 
 - [ ] fix: cancel introduce type rename dialog still keeps it
-- [ ] fix: do not offer introduce custom type on string annotation
 - [ ] unwrap: do not offer here `access_level: str = group_access.get("access_level")`
 - [ ] wrap: Do not offer t.Final -> Wrap with Typevar
 - [ ] commit: if it fails for hooks, add option keep selection of files
@@ -48,12 +47,13 @@ def test_():
 
 ## In Progress Tasks
 
-- [ ] feat: Guard required python version, maybe with settings note?
-- [-] feat: Transform between dict access .get and []
-  - [ ] refactor `PyDictGetToTryExceptIntention`,
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Transform between dict access .get and []
+  - [x] refactor `PyDictGetToTryExceptIntention`,
+- [x] fix: do not offer introduce custom type on string annotation
+- [x] feat: Guard required python version, maybe with settings note?
 - [x] fix: ignore conftest when suggesting __all__
 - [x] fix: introduce paramter object should only be available when caret on: function, function args, call site the same
 - [N] fix: do not offer introduce type if unresolved reference on statement: `MY_CONSTANT: Final[str] = "VALUE"`]
