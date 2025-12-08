@@ -24,7 +24,6 @@
 - [ ] feat: Generate dataclass, basemodel
 - [ ] feat: Create run config using package mode
 - [ ] Copy pydantic mock?
-- [ ] feat: Support export of attributes
 - [ ] feat: Parse pytest identifier in search all dialog
 - [ ] feat: Copy selection with imports
 - [ ] feat: Wrap default/default_factory after introducing custom type in dataclass/pydantic
@@ -38,6 +37,7 @@
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Support export of attributes
 - [x] Offer unwrap for redundant cast
 
 ```python
