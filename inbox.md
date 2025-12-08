@@ -2,6 +2,7 @@
 
 ## Pending Issues
 
+- [ ] fix: Add pytest nodes to separate view in search everywhere (currently, `pytest` seems not respected)
 - [ ] fix: cancel introduce type rename dialog still keeps it
 - [ ] refactor: How to find if the caret is inside parentheses? `[PopulateArgumentsService.findCallExpression`
 - [ ] fix: do not offer "use exported" if in private child package: `from .._bases import BaseBlaModel`
@@ -33,6 +34,7 @@
 ## In Progress Tasks
 
 - [-] commit: if it fails for hooks, add option keep selection of files (docs/keep-commit-selection/spec.md)
+- [-] feat: Parse pytest node ids in the terminal as links
 
 ## Completed Tasks (newest first)
 
