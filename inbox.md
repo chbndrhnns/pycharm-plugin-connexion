@@ -13,6 +13,7 @@
 
 ## Pending Features
 
+- [ ] feat: Guard required python version, maybe with settings note?
 - [ ] feat: Add local variable from unresolved reference
 - [ ] feat: exception: if using err/exc/error, offer `except bla as X`
 - [ ] feat: populate with argument names that exist in the current scope
@@ -46,15 +47,16 @@ def test_():
 - [ ] feat: Render dataclass fields in preview
 - [ ] feat: Convert fn to lambda
 - [ ] feat: Block list: Do not allow names from typing or collections.abc.
+- [ ] feat: Configure default base classes
 
 ## In Progress Tasks
 
-- [-] fix: introduce paramter object should only be available when caret on: function, function args, call site the same
 - [-] feat: Transform between dict access .get and []
-- [ ] Configure default base classes
+  - [ ] refactor `PyDictGetToTryExceptIntention`,
 
 ## Completed Tasks (newest first)
 
+- [x] fix: introduce paramter object should only be available when caret on: function, function args, call site the same
 - [N] fix: do not offer introduce type if unresolved reference on statement: `MY_CONSTANT: Final[str] = "VALUE"`]
 - [x] fix: introduce type fails for `MY_CONSTANT: Final[str] = "VALUE"`]
 - [x] fix: populate arguments creates extra spaces when used on decorator
