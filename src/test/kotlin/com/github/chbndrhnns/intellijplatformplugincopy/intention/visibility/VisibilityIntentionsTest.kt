@@ -134,4 +134,28 @@ class VisibilityIntentionsTest : TestBase() {
             "Make private"
         )
     }
+
+    fun testMakePrivate_InMethodBody_NotAvailable() {
+        myFixture.assertIntentionNotAvailable(
+            "a.py",
+            """
+            class C:
+                def public(self):
+                    p<caret>ass
+            """,
+            "Make private"
+        )
+    }
+
+    fun testMakePublic_InMethodBody_NotAvailable() {
+        myFixture.assertIntentionNotAvailable(
+            "a.py",
+            """
+            class C:
+                def _private(self):
+                    p<caret>ass
+            """,
+            "Make public"
+        )
+    }
 }

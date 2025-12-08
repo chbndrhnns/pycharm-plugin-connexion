@@ -222,3 +222,11 @@
     "NEW INSTRUCTION": "WHEN description files missing for PyTryExceptToDictGetIntention THEN create intentionDescriptions with description.html and before/after example Python files"
 }
 
+[2025-12-08 12:15] - Updated by Junie
+{
+    "TYPE": "new instructions",
+    "CATEGORY": "visibility intentions",
+    "ERROR": "-",
+    "NEW INSTRUCTION": "WHEN updating Make Public intention THEN restrict availability to identifier and add negative body test"
+}
+

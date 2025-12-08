@@ -539,3 +539,23 @@ directly.",
     "NEW INSTRUCTION": "WHEN search warns about too many results THEN refine query with narrower, targeted terms"
 }
 
+[2025-12-08 12:15] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "search other intention, rerun tests",
+    "MISSING STEPS": "run full test suite, add class-body test",
+    "BOTTLENECK": "Availability detection ignored caret-on-identifier requirement.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN fixing intention availability THEN add negative tests for method and class bodies"
+}
+
+[2025-12-08 12:17] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "add tests, run tests",
+    "BOTTLENECK": "No symmetric test ensured Make public follows the same availability constraint.",
+    "PROJECT NOTE": "Shared PyToggleVisibilityIntention change already applies to Make public.",
+    "NEW INSTRUCTION": "WHEN changing shared visibility targeting THEN add symmetric tests for Make public and Make private"
+}
+

@@ -10,6 +10,7 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Iconable
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.PythonUiService
@@ -52,8 +53,15 @@ abstract class PyToggleVisibilityIntention : IntentionAction, HighPriorityAction
             PyFunction::class.java,
             PyClass::class.java,
             PyTargetExpression::class.java
-        ) as? PsiNamedElement
-        return named
+        ) as? PsiNamedElement ?: return null
+
+        if (named is PsiNameIdentifierOwner) {
+            val nameId = named.nameIdentifier
+            if (nameId != null && (nameId === atCaret || PsiTreeUtil.isAncestor(nameId, atCaret, false))) {
+                return named
+            }
+        }
+        return null
     }
 
     protected fun isDunder(name: String): Boolean = name.length >= 4 && name.startsWith("__") && name.endsWith("__")

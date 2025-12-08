@@ -2,6 +2,7 @@
 
 ## Pending Tasks
 
+- [ ] feat: populate with argument names that exist in the current scope
 - [ ] fix: Update annotation when introducing custom type
 
 ```python
@@ -59,6 +60,7 @@ def test_():
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Make visibility intention only available on names 
 - [x] feat: Copy build number
 - [x] feat: Introduce parameter object (docs/parameter-object/state.md)
     - [x] refactor: String and imports handling in PyIntroduceParameterObjectProcessor

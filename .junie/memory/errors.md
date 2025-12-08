@@ -388,3 +388,13 @@
     "NEW INSTRUCTION": "WHEN search_project warns more than 100 results THEN refine query with specific class/package keywords"
 }
 
+[2025-12-08 12:13] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle",
+    "ERROR": "Intention was available in method body; assertion expected not available",
+    "ROOT CAUSE": "Target resolution treats any position inside a function/class as valid, not just the name identifier.",
+    "PROJECT NOTE": "In PyToggleVisibilityIntention.findTargetSymbol/isAvailable, require the caret to be on PyFunction.getNameIdentifier or PyClass.getNameIdentifier; otherwise return false.",
+    "NEW INSTRUCTION": "WHEN caret is inside function/class but not on name identifier THEN return intention not available"
+}
+
