@@ -689,3 +689,13 @@ directly.",
     "NEW INSTRUCTION": "WHEN task references a specific file THEN open the file before editing"
 }
 
+[2025-12-09 00:22] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "add navigation tests, consult docs",
+    "BOTTLENECK": "Tests validate highlighting only and do not verify hyperlink resolution.",
+    "PROJECT NOTE": "plugin.xml shows existing Python language id warnings unrelated to this change.",
+    "NEW INSTRUCTION": "WHEN adding a console hyperlink THEN assert navigate opens the expected test element"
+}
+
