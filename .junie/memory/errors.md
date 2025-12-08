@@ -1,43 +1,3 @@
-[2025-12-01 21:29] - Updated by Junie - Error analysis
-{
-    "TYPE": "missing context",
-    "TOOL": "run_test",
-    "ERROR": "Build failed; error output truncated",
-    "ROOT CAUSE": "The test/build failed but the error message was truncated, hiding the actual failure.",
-    "PROJECT NOTE": "Re-run Gradle with --stacktrace or --info to get full compilation/test errors.",
-    "NEW INSTRUCTION": "WHEN build failure output is truncated THEN rerun tests with verbose logging to capture details"
-}
-
-[2025-12-01 21:43] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "Gradle",
-    "ERROR": "Immutable Gradle workspace modified; tests/build cannot proceed",
-    "ROOT CAUSE": "The IntelliJ Platform Gradle Plugin immutable workspace became corrupted/modified, triggering IllegalStateException.",
-    "PROJECT NOTE": "build.gradle.kts sets useInstaller = false for intellijPlatform.create, which uses an immutable workspace; toggling to true during tests can avoid this.",
-    "NEW INSTRUCTION": "WHEN error message contains \"immutable workspace\" THEN remove IntelliJ Platform Gradle Plugin workspace directory and rerun with --no-configuration-cache"
-}
-
-[2025-12-01 22:56] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Replacement introduced Kotlin syntax and semantic errors",
-    "ROOT CAUSE": "Incorrect Kotlin string literal quoting for multi-line content caused parse errors.",
-    "PROJECT NOTE": "myFixture.addFileToProject returns a PsiFile; do not cast VirtualFile to PyFile.",
-    "NEW INSTRUCTION": "WHEN replacing code with multi-line Kotlin strings THEN use triple quotes and trimIndent"
-}
-
-[2025-12-01 23:04] - Updated by Junie - Error analysis
-{
-    "TYPE": "path error",
-    "TOOL": "run_test",
-    "ERROR": "Test data file not found at expected path",
-    "ROOT CAUSE": "Test data files were created outside the project root, so the test runner could not locate them under src/test/testData.",
-    "PROJECT NOTE": "Inspection tests load files from src/test/testData relative to the repository root; ensure created files live under that path within the project directory.",
-    "NEW INSTRUCTION": "WHEN test reports 'Cannot find source file' under testData THEN create or move files under project src/test/testData path"
-}
-
 [2025-12-02 22:05] - Updated by Junie - Error analysis
 {
     "TYPE": "env/setup",
@@ -808,3 +768,32 @@
     "NEW INSTRUCTION": "WHEN deriving LanguageLevel from SDK THEN use LanguageLevel.fromPythonVersion(sdk.versionString ?: return false)"
 }
 
+[2025-12-08 22:06] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Intention \"Unwrap int()\" not available",
+    "ROOT CAUSE": "UnwrapToExpectedTypeIntention only offers when an expected type exists; redundant cast lacks context type.",
+    "PROJECT NOTE": "Extend UnwrapToExpectedTypeIntention.kt to also offer unwrap for redundant builtin casts (int/str/float/bool) when the single argument’s inferred type already matches the wrapper type, even if ExpectedTypeInfo.expectedCtorName is null.",
+    "NEW INSTRUCTION": "WHEN intention lookup misses 'Unwrap' for builtin cast THEN unwrap when wrapper equals argument type"
+}
+
+[2025-12-08 22:07] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Intention \"Unwrap int()\" not available at caret",
+    "ROOT CAUSE": "UnwrapToExpectedTypeIntention requires an expected type; redundant cast in return without annotation yields null expected type so intention is not offered.",
+    "PROJECT NOTE": "Update UnwrapToExpectedTypeIntention.kt to handle null ExpectedTypeInfo by recognizing builtin casts (int/str/float/bool) and comparing the inner expression type; ensure the intention text remains \"Unwrap int()\" for stdlib casts.",
+    "NEW INSTRUCTION": "WHEN expectedCtorName(expr, ctx) is null and callee is builtin cast THEN compare inner type to cast type and offer unwrap"
+}
+
+[2025-12-08 22:11] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Intention not available at caret during test",
+    "ROOT CAUSE": "The test likely used an intention name or caret position that does not match where UnwrapToExpectedTypeIntention is offered.",
+    "PROJECT NOTE": "In this repo, doIntentionTest expects the caret on the wrapper call or its single argument, and the intention text must match the action’s presentation used in UnwrapBasicTest.",
+    "NEW INSTRUCTION": "WHEN intention test cannot find action THEN place caret on wrapper call/arg and use exact intention text"
+}

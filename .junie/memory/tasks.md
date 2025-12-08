@@ -629,3 +629,13 @@ directly.",
     "NEW INSTRUCTION": "WHEN task says “do not offer intention” THEN add a negative availability test first"
 }
 
+[2025-12-08 22:11] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "add debug logging",
+    "MISSING STEPS": "inspect existing tests, scan project",
+    "BOTTLENECK": "New test used wrong base/imports due to not reusing existing fixtures.",
+    "PROJECT NOTE": "Tests should follow UnwrapBasicTest.kt using fixtures.TestBase and fixtures.doIntentionTest.",
+    "NEW INSTRUCTION": "WHEN adding a new test file THEN open a similar existing test and mirror imports and helpers"
+}
+

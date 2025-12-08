@@ -96,15 +96,20 @@ class UnwrapToExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
             containerItemCtor.name
         } else {
             val outerNames = PyTypeIntentions.computeDisplayTypeNames(call, context)
-            outerNames.expected
-        } ?: return null
+            if (outerNames.expected == "Unknown") null else outerNames.expected
+        }
 
         // Only unwrap when the inner expression already satisfies the expected type.
         // Unlike the wrapping intention, we do NOT require the wrapper call's own
         // displayed type to differ from the expected type, because in some environments
         // (notably NewType) the call expression may already be reported as the
         // underlying type even though it is conceptually a value-object wrapper.
-        val match = PyTypeIntentions.elementDisplaysAsCtor(innerExpr, expected, context)
+        //
+        // If the expected type is unknown (e.g. no annotation on return/assignment),
+        // we check if the inner expression matches the wrapper's own type.
+        // This covers cases like `return int(val)` where `val` is already `int`.
+        val targetType = expected ?: wrapperName
+        val match = PyTypeIntentions.elementDisplaysAsCtor(innerExpr, targetType, context)
         if (match != CtorMatch.MATCHES) return null
 
         return UnwrapContext(call, innerExpr, wrapperName)

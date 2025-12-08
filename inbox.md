@@ -16,14 +16,6 @@
 - [ ] feat: Copy names of failed tests
 - [ ] feat: quick fix to remove unresolved import from __all__
 - [ ] feat: Turn into type checking import
-- [ ] Offer unwrap here
-
-```python
-def test_():
-  val: int = 1
-  return int(val)
-```
-
 - [ ] roots: adopt when moving files
 - [ ] roots: mark as unresolved reference without
 - [ ] commit: if it fails for hooks, add option keep selection of files (docs/keep-commit-selection/spec.md)
@@ -44,6 +36,14 @@ def test_():
 - [ ] feat: Configure default base classes
 
 ## In Progress Tasks
+
+- [ ] Offer unwrap here
+
+```python
+def test_():
+  val: int = 1
+  return int(val)
+```
 
 
 ## Completed Tasks (newest first)
