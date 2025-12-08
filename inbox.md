@@ -5,7 +5,6 @@
 - [ ] feat: populate with argument names that exist in the current scope
 - [ ] fix: cancel introduce type rename dialog still keeps it
 - [ ] feat: Convert dict with default to try/except case
-- [ ] fix: do not offer introduce type on import statement (constant,eg)
 - [ ] fix: populate arguments creates extra spaces when used on decorator
 - [ ] fix: introduce type fails for `MY_CONSTANT: Final[str] = "VALUE"`
 - [ ] feat: Copy names of failed tests
@@ -48,32 +47,34 @@ def test_():
 ## In Progress Tasks
 
 - [-] feat: Transform between dict access .get and []
-- [x] refactor: PopulateArgumentsService
 - [ ] Configure default base classes
 
 ## Completed Tasks (newest first)
 
+- [x] fix: do not offer introduce type on import statement (constant,eg)
 - [x] fix: Update annotation when introducing custom type
 
 ```python
 d: dict[str, int] = {}
 val = d["<caret>abc"]
 ```
-- [x] fix: Make visibility intention only available on names 
+
+- [x] fix: Make visibility intention only available on names
 - [x] feat: Copy build number
 - [x] feat: Introduce parameter object (docs/parameter-object/state.md)
-    - [x] refactor: String and imports handling in PyIntroduceParameterObjectProcessor
-    - [x] check if there is a better way for `addDataclassImport`
-    - [x] refactor: updateCallSites
-    - [x] Add to Refactoring this context menu
-    - [x] fix: investigate strange `.trimIndent() + "\n\n",` in testMethodIntroduceParameterObject
-    - [x] Use kwargs by default for dataclass
-    - [x] Refactor tests to include the interceptor
-    - [x] Deal with union types and annotated and forward refs
-    - [x] Deal with *args, **kwargs, *, / correctly
-    - [x] fix: no name conflicts if same class name exists
-    - [x] Add to Refactoring menu
+  - [x] refactor: String and imports handling in PyIntroduceParameterObjectProcessor
+  - [x] check if there is a better way for `addDataclassImport`
+  - [x] refactor: updateCallSites
+  - [x] Add to Refactoring this context menu
+  - [x] fix: investigate strange `.trimIndent() + "\n\n",` in testMethodIntroduceParameterObject
+  - [x] Use kwargs by default for dataclass
+  - [x] Refactor tests to include the interceptor
+  - [x] Deal with union types and annotated and forward refs
+  - [x] Deal with *args, **kwargs, *, / correctly
+  - [x] fix: no name conflicts if same class name exists
+  - [x] Add to Refactoring menu
 - [x] fix: Populate should perform imports for leaf node types
+- [x] refactor: PopulateArgumentsService
 - [x] feat: When populating parameters, offer the quickfix only when inside the parentheses
 - [x] feat: When populating parameters, ignore any starting with an underscore
 - [N] feat: Do not show popup when populating required args only

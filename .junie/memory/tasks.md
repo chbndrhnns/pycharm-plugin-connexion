@@ -559,3 +559,13 @@ directly.",
     "NEW INSTRUCTION": "WHEN changing shared visibility targeting THEN add symmetric tests for Make public and Make private"
 }
 
+[2025-12-08 13:08] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "run full test suite",
+    "BOTTLENECK": "Skipping a full test run could hide regressions elsewhere.",
+    "PROJECT NOTE": "Centralize availability exclusions in TargetDetector to control intention scope consistently.",
+    "NEW INSTRUCTION": "WHEN reproduction test passes locally THEN run full test suite and summarize results"
+}
+

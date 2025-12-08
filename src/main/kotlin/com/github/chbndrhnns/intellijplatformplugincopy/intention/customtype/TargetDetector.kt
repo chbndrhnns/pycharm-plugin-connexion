@@ -22,6 +22,10 @@ class TargetDetector {
         val offset = editor.caretModel.offset
         val leaf = file.findElementAt(offset) ?: return null
 
+        if (PsiTreeUtil.getParentOfType(leaf, PyImportStatementBase::class.java) != null) {
+            return null
+        }
+
         tryFromAnnotation(leaf)?.let { return it }
         tryFromVariableDefinition(leaf)?.let { return it }
         tryFromFStringReference(leaf)?.let { return it }

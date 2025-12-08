@@ -448,3 +448,13 @@
     "NEW INSTRUCTION": "WHEN get_file_structure reports 'not possible to display' THEN open the file using open to inspect content"
 }
 
+[2025-12-08 13:06] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle (:test)",
+    "ERROR": "Intention offered on from-import; expected not available",
+    "ROOT CAUSE": "IntroduceCustomTypeFromStdlibIntention.isAvailable does not exclude Python import statements.",
+    "PROJECT NOTE": "Add an early guard in IntroduceCustomTypeFromStdlibIntention.kt to return false when the caret is within PyImportStatement or PyFromImportStatement (PyImportStatementBase).",
+    "NEW INSTRUCTION": "WHEN caret is inside PyImportStatement or PyFromImportStatement THEN return intention not available"
+}
+
