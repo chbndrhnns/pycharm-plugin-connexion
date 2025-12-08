@@ -210,6 +210,14 @@ class TargetDetector {
             ?: PsiTreeUtil.getParentOfType(leaf, PyNumericLiteralExpression::class.java, false)
             ?: return null
 
+        // Do not offer introduce-custom-type when caret is inside a forward-ref string
+        // that lives in an annotation, e.g. `val: "in<caret>t | str" = 2`.
+        // In this situation, the caret expression is a PyStringLiteralExpression under PyAnnotation.
+        val enclosingAnnotation = PsiTreeUtil.getParentOfType(expr, PyAnnotation::class.java, false)
+        if (enclosingAnnotation != null && expr is PyStringLiteralExpression) {
+            return null
+        }
+
         // If the caret is on the variable name (LHS of assignment), use the assigned value (RHS) instead.
         if (expr is PyTargetExpression) {
             val assignment = PsiTreeUtil.getParentOfType(expr, PyAssignmentStatement::class.java)

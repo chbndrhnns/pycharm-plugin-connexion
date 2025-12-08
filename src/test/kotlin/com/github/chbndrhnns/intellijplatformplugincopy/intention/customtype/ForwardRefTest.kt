@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import fixtures.TestBase
+import fixtures.assertIntentionNotAvailable
 import fixtures.doIntentionTest
 
 class ForwardRefTest : TestBase() {
@@ -60,6 +61,16 @@ class ForwardRefTest : TestBase() {
             """,
             "Introduce custom type from int",
             renameTo = "Customint"
+        )
+    }
+
+    fun testNotOffered_InForwardRefAnnotationString() {
+        myFixture.assertIntentionNotAvailable(
+            "a.py",
+            """
+            val: "in<caret>t | str | None" = 2
+            """,
+            "Introduce custom type"
         )
     }
 }

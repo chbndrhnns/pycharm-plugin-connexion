@@ -619,3 +619,13 @@ directly.",
     "NEW INSTRUCTION": "WHEN creating a new core guard utility THEN run build and resolve API errors before integrating elsewhere"
 }
 
+[2025-12-08 21:15] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "inspect tryFromAnnotation,handle typing.get_args,ensure availability check caches plan",
+    "MISSING STEPS": "run full test suite",
+    "BOTTLENECK": "Locating the precise PSI context to suppress intention availability.",
+    "PROJECT NOTE": "Negative intention availability assertions are provided via fixtures.assertIntentionNotAvailable.",
+    "NEW INSTRUCTION": "WHEN task says “do not offer intention” THEN add a negative availability test first"
+}
+
