@@ -59,6 +59,16 @@ class BasicTest : TestBase() {
         )
     }
 
+    fun testFinalConstant_UnavailableWhenFinalUnresolved() {
+        myFixture.assertIntentionNotAvailable(
+            "a.py",
+            """
+            MY_CONSTANT: Final[str] = "VAL<caret>UE"
+            """,
+            "Introduce custom type from str"
+        )
+    }
+
 
     fun testSimpleAnnotatedParam_Int_RewritesAnnotation() {
         myFixture.doIntentionTest(

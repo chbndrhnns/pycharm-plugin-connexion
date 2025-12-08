@@ -20,7 +20,9 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.PyFile
+import com.jetbrains.python.psi.PyReferenceExpression
 import com.jetbrains.python.psi.PyStarArgument
+import com.jetbrains.python.psi.PyStatement
 import com.jetbrains.python.psi.types.TypeEvalContext
 import javax.swing.Icon
 
@@ -84,11 +86,16 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
             return false
         }
 
+        if (hasUnresolvedReferences(plan)) {
+            editor.putUserData(PLAN_KEY, null)
+            return false
+        }
+
         // Block when there are type checker / argument list errors anywhere in the
         // logical construct we are about to operate on (annotation, parameter,
         // assignment, dataclass field, etc.), not just exactly at the caret.
-        val targetRange = plan.targetElement?.textRange
-        if (targetRange != null && hasBlockingInspections(project, editor, targetRange)) {
+        val targetRanges = collectBlockingRanges(plan)
+        if (targetRanges.any { hasBlockingInspections(project, editor, it) }) {
             return false
         }
 
@@ -126,14 +133,47 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
 
         return highlights.any { info ->
             info.description != null &&
-                    (info.inspectionToolId == "PyTypeCheckerInspection" ||
-                            info.inspectionToolId == "PyArgumentListInspection") &&
+                    info.inspectionToolId in BLOCKING_INSPECTION_IDS &&
                     TextRange(info.startOffset, info.endOffset).intersects(range)
+        }
+    }
+
+    private fun collectBlockingRanges(plan: CustomTypePlan): List<TextRange> {
+        val ranges = mutableListOf<TextRange>()
+
+        plan.targetElement?.textRange?.let(ranges::add)
+        plan.annotationRef?.textRange?.let(ranges::add)
+
+        plan.annotationRef?.let { ref ->
+            PsiTreeUtil.getParentOfType(ref, PyStatement::class.java, false)?.textRange?.let(ranges::add)
+        }
+
+        plan.expression?.textRange?.let(ranges::add)
+        plan.assignedExpression?.textRange?.let(ranges::add)
+        plan.field?.textRange?.let(ranges::add)
+
+        return ranges.distinct()
+    }
+
+    private fun hasUnresolvedReferences(plan: CustomTypePlan): Boolean {
+        val statement = PsiTreeUtil.getParentOfType(plan.targetElement, PyStatement::class.java, false)
+            ?: return false
+
+        val references: Collection<PyReferenceExpression> =
+            PsiTreeUtil.collectElementsOfType(statement, PyReferenceExpression::class.java)
+
+        return references.any { ref ->
+            val resolved = ref.reference?.resolve()
+            resolved == null
         }
     }
 
     companion object {
         private val PLAN_KEY = Key.create<CustomTypePlan>("introduce.custom.type.plan")
-
+        private val BLOCKING_INSPECTION_IDS = setOf(
+            "PyTypeCheckerInspection",
+            "PyArgumentListInspection",
+            "PyUnresolvedReferencesInspection",
+        )
     }
 }
