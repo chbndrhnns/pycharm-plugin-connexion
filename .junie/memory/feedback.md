@@ -254,3 +254,11 @@
     "NEW INSTRUCTION": "WHEN encountering dict.get(key, default) call THEN offer conversion to try/except KeyError form"
 }
 
+[2025-12-08 20:07] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "exports __all__",
+    "EXPECTATION": "Do not offer adding symbols to __all__ in conftest.py files",
+    "NEW INSTRUCTION": "WHEN current file name is conftest.py THEN do not suggest adding to __all__"
+}
+

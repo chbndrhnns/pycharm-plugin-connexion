@@ -149,6 +149,22 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
         })
     }
 
+    fun testIgnoreConftest() {
+        myFixture.configureByFiles(
+            "inspections/PyMissingInDunderAllInspection/IgnoreConftest/__init__.py",
+            "inspections/PyMissingInDunderAllInspection/IgnoreConftest/conftest.py",
+        )
+
+        myFixture.enableInspections(PyMissingInDunderAllInspection::class.java)
+        myFixture.checkHighlighting(true, false, false)
+
+        val fixes = myFixture.getAllQuickFixes()
+        assertTrue(
+            "Add to __all__ intention should not be offered for pytest conftest.py files",
+            fixes.none { it.familyName == "Add to __all__" }
+        )
+    }
+
     fun testSkipLibraryAndStdlibModules() {
         val testName = "SkipLibraries"
 

@@ -778,3 +778,13 @@
     "NEW INSTRUCTION": "WHEN post-create semantic validator flags testData Python THEN ignore warning and continue with tests"
 }
 
+[2025-12-08 20:09] - Updated by Junie - Error analysis
+{
+    "TYPE": "path error",
+    "TOOL": "search_project",
+    "ERROR": "Search path invalid; directory does not exist",
+    "ROOT CAUSE": "The provided search path was truncated, pointing outside the repository root.",
+    "PROJECT NOTE": "Use the repository root; project sources live under src/main and tests under src/test with testData under src/test/testData.",
+    "NEW INSTRUCTION": "WHEN search_project reports directory does not exist THEN set path to project root subdirectory"
+}
+

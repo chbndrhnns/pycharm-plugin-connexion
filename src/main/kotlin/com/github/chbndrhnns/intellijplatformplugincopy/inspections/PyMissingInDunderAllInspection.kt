@@ -166,6 +166,7 @@ class PyMissingInDunderAllInspection : PyInspection() {
          * exported from the containing package's __init__.py via __all__.
          */
         private fun checkModuleExportsFromContainingPackage(moduleFile: PyFile) {
+            if (isAllowlistedModule(moduleFile)) return
             val directory = moduleFile.containingDirectory ?: return
             val packageInit = directory.findFile(PyNames.INIT_DOT_PY) as? PyFile ?: return
 
@@ -265,7 +266,12 @@ class PyMissingInDunderAllInspection : PyInspection() {
         }
 
         private fun isAllowlistedModule(file: PyFile): Boolean {
-            val nameWithoutExtension = file.name.removeSuffix(".py")
+            val fileName = file.name
+            val nameWithoutExtension = fileName.removeSuffix(".py")
+
+            // pytest configuration modules should never be considered part of the
+            // public API and must be ignored when offering “Add to __all__”.
+            if (fileName == "conftest.py") return true
 
             if (isAllowlistedName(nameWithoutExtension)) return true
 
