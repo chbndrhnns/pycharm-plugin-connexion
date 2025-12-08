@@ -9,7 +9,7 @@ import java.util.regex.Pattern
 
 class PytestConsoleFilter(private val project: Project) : Filter {
     companion object {
-        private val PATTERN = Pattern.compile("^\\s*(.+?\\.py)::(\\S+)")
+        private val PATTERN = Pattern.compile("^\\s*([^\\s]+\\.py)::(\\S+)")
     }
 
     override fun applyFilter(line: String, entireLength: Int): Filter.Result? {
