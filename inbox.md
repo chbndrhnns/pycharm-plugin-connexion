@@ -34,10 +34,10 @@
 ## In Progress Tasks
 
 - [-] commit: if it fails for hooks, add option keep selection of files (docs/keep-commit-selection/spec.md)
-- [-] feat: Parse pytest node ids in the terminal as links
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Parse pytest node ids in the terminal as links
 - [x] feat: Parse pytest identifier in search all dialog
 - [x] feat: Support export of attributes
 - [x] Offer unwrap for redundant cast
