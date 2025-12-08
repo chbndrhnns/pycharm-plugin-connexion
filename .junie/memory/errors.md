@@ -1,73 +1,3 @@
-[2025-12-03 13:30] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "run_test",
-    "ERROR": "No tests found inside provided directory path",
-    "ROOT CAUSE": "run_test was called with a source folder path instead of a test target the runner recognizes.",
-    "PROJECT NOTE": "Run tests via the project root Gradle task or by specifying a test class name (e.g., testName=\"RecursiveArgumentsIntentionTest\"); do not pass src/test/kotlin as path.",
-    "NEW INSTRUCTION": "WHEN run_test outputs 'No tests found inside directory path' THEN rerun without path and specify the test class name"
-}
-
-[2025-12-03 13:31] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic bug",
-    "TOOL": "run_test",
-    "ERROR": "Test 'testNewTypeLeafPopulation' failed",
-    "ROOT CAUSE": "Value generator did not detect typing.NewType aliases and emitted raw ellipsis instead of Alias(...).",
-    "PROJECT NOTE": "In PopulateArgumentsService.generateValue, ensure NewType is detected (e.g., via PyTypingNewType or alias resolution) and produce AliasName(...); current PyClassLikeType branch may not cover actual NewType runtime type.",
-    "NEW INSTRUCTION": "WHEN type annotation resolves to typing.NewType alias THEN generate `<aliasName>(...)` as value"
-}
-
-[2025-12-03 13:50] - Updated by Junie - Error analysis
-{
-    "TYPE": "build failure",
-    "TOOL": "create",
-    "ERROR": "Unresolved references in new intention class",
-    "ROOT CAUSE": "The code used non-existent PyNamedParameter APIs and referenced a missing processor class.",
-    "PROJECT NOTE": "In this repo's Python PSI, PyNamedParameter lacks isCls; prefer isSelf and parameter.kind checks, and ensure referenced classes (e.g., PyIntroduceParameterObjectProcessor) are created before use.",
-    "NEW INSTRUCTION": "WHEN unresolved reference errors appear after creating a file THEN replace unsupported APIs and add missing classes"
-}
-
-[2025-12-03 13:58] - Updated by Junie - Error analysis
-{
-    "TYPE": "permission",
-    "TOOL": "run_test",
-    "ERROR": "Cannot modify a read-only file",
-    "ROOT CAUSE": "The processor writes to the target PyFile without ensuring it is writable via FileModificationService, so tests hit read-only VFS.",
-    "PROJECT NOTE": "Before inserting the dataclass into the target PyFile, call FileModificationService.getInstance().preparePsiElementForWrite(file) (or prepareFileForWrite(virtualFile)) and abort if it returns false.",
-    "NEW INSTRUCTION": "WHEN modifying a PsiFile content THEN ensure writability via FileModificationService before proceeding"
-}
-
-[2025-12-03 14:07] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "PyIntroduceParameterObjectProcessor.createDataclass",
-    "ERROR": "Anchor element parent mismatch during PsiFile.addBefore",
-    "ROOT CAUSE": "The anchor element used for insertion belongs to a different parent (class body) than the PsiFile receiving the new dataclass.",
-    "PROJECT NOTE": "When inserting a top-level dataclass, compute an anchor that is a direct child of the PyFile (e.g., first top-level statement or null to append), not an element from inside a class or method.",
-    "NEW INSTRUCTION": "WHEN adding PSI with addBefore/addAfter THEN use an anchor sharing the same parent"
-}
-
-[2025-12-03 14:42] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "FileComparisonFailedError: trailing whitespace/newline mismatch",
-    "ROOT CAUSE": "The produced file's trailing whitespace/newline does not match the expected .after file.",
-    "PROJECT NOTE": "doIntentionTest uses myFixture.checkResult which compares text strictly, including trailing spaces and final newline; expected files live under src/test/testData and must match exactly.",
-    "NEW INSTRUCTION": "WHEN FileComparisonFailedError in checkResult THEN match expected .after file whitespace exactly"
-}
-
-[2025-12-03 14:46] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Expected/actual differ due to final newline mismatch",
-    "ROOT CAUSE": "The expected .after text includes a trailing newline while the actual file does not.",
-    "PROJECT NOTE": "myFixture.checkResult compares exact text; the produced Python file currently has no final newline. Ensure the expected string in PyIntroduceParameterObjectIntentionTest.kt (after.trimIndent()) does not include a trailing blank line.",
-    "NEW INSTRUCTION": "WHEN debug shows 'Actual content ends' right after last code line THEN remove trailing newline from expected text"
-}
-
 [2025-12-03 14:57] - Updated by Junie - Error analysis
 {
     "TYPE": "invalid args",
@@ -796,4 +726,74 @@
     "ROOT CAUSE": "isExportable only allowed NewType target expressions and excluded plain top-level attributes.",
     "PROJECT NOTE": "Update PyMissingInDunderAllInspection.kt:isExportable to treat any top-level PyTargetExpression except __all__ as exportable.",
     "NEW INSTRUCTION": "WHEN element is PyTargetExpression and name is not __all__ THEN return exportable true in isExportable"
+}
+
+[2025-12-08 23:10] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "create",
+    "ERROR": "Unresolved reference 'git4idea' in test file",
+    "ROOT CAUSE": "Git plugin classes were not on the test compile classpath; plugin dependency configured incorrectly.",
+    "PROJECT NOTE": "To use Git classes in tests, declare git4idea under platformPlugins in gradle.properties (not platformBundledPlugins), or avoid direct git4idea imports and mock VCS behavior.",
+    "NEW INSTRUCTION": "WHEN importing git4idea classes in tests THEN add 'git4idea' to platformPlugins before creating files"
+}
+
+[2025-12-08 23:10] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "create",
+    "ERROR": "Unresolved reference to 'git4idea' in test file",
+    "ROOT CAUSE": "Git plugin classes were not on the test classpath due to incorrect/insufficient plugin dependency setup.",
+    "PROJECT NOTE": "To use git4idea types, declare 'git4idea' in gradle.properties (platformBundledPlugins or platformPlugins) and prefer VCS-agnostic tests when possible in this repo's fixtures.TestBase.",
+    "NEW INSTRUCTION": "WHEN test imports git4idea.* THEN replace with VCS-agnostic mocks and remove git4idea usage"
+}
+
+[2025-12-08 23:11] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "create",
+    "ERROR": "Unresolved reference 'git4idea' in test file",
+    "ROOT CAUSE": "The test imported git4idea classes without adding the Git plugin to the test classpath, causing unresolved symbols.",
+    "PROJECT NOTE": "Tests here compile against the configured IntelliJ platform; avoid direct git4idea dependencies or declare Git4Idea under platformPlugins and ensure Gradle sync before use.",
+    "NEW INSTRUCTION": "WHEN writing tests that reference external plugin APIs THEN avoid them and use VCS-agnostic mocks"
+}
+
+[2025-12-08 23:11] - Updated by Junie - Error analysis
+{
+    "TYPE": "build failure",
+    "TOOL": "create",
+    "ERROR": "Semantic errors from incorrect platform API usage",
+    "ROOT CAUSE": "New Kotlin code called platform APIs with wrong signatures and return-type assumptions (findMethodByName params; NavigationItem.navigate Unit).",
+    "PROJECT NOTE": "In IntelliJ Platform: NavigationItem.navigate returns Unit; processSelectedItem should call navigate and return true. For PyClass, prefer scanning methods by name when findMethodByName overloads mismatch.",
+    "NEW INSTRUCTION": "WHEN adding Kotlin code using IntelliJ/PyCharm APIs THEN verify method signatures and return types"
+}
+
+[2025-12-08 23:12] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "create",
+    "ERROR": "Unresolved reference 'git4idea' in test file",
+    "ROOT CAUSE": "Git plugin classes were not on the test compile classpath, so git4idea symbols could not resolve.",
+    "PROJECT NOTE": "Do not rely on git4idea in tests here; use VCS-agnostic service/mocks, or declare Git4Idea as a bundled plugin dependency in the Gradle intellijPlatform pluginDependencies block if truly required.",
+    "NEW INSTRUCTION": "WHEN external IDE plugin classes are unresolved in tests THEN replace with VCS-agnostic mocks or project APIs"
+}
+
+[2025-12-08 23:12] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "create",
+    "ERROR": "Unresolved reference 'git4idea' in new test file",
+    "ROOT CAUSE": "The test imports Git plugin APIs without the plugin on the test classpath.",
+    "PROJECT NOTE": "If Git APIs are needed, add 'Git4Idea' to platformBundledPlugins in gradle.properties and run tests via Gradle; otherwise keep tests VCS-agnostic.",
+    "NEW INSTRUCTION": "WHEN importing git4idea causes unresolved references THEN write a VCS-agnostic high-level test without plugin imports"
+}
+
+[2025-12-08 23:15] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "search_replace",
+    "ERROR": "Compared Unit? to Boolean in processSelectedItem",
+    "ROOT CAUSE": "NavigationItem.navigate returns Unit, but code compared it to Boolean causing a type mismatch.",
+    "PROJECT NOTE": "In IntelliJ Platform, NavigationItem.navigate(boolean requestFocus) returns Unit; do not compare its result.",
+    "NEW INSTRUCTION": "WHEN processSelectedItem uses NavigationItem.navigate return value THEN call navigate(true) and return true without comparison"
 }

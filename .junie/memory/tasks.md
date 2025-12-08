@@ -659,3 +659,33 @@ directly.",
     "NEW INSTRUCTION": "WHEN code or tests are modified THEN run target tests and summarize outcomes"
 }
 
+[2025-12-08 23:12] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "edit dependencies,create failing integration test,flip dependencies again",
+    "MISSING STEPS": "add high-level test,run tests,implement listener,register listener,implement banner",
+    "BOTTLENECK": "Chasing git4idea dependency names stalled progress before writing the requested high-level test.",
+    "PROJECT NOTE": "Use existing fixtures (TestBase) and myFixture.checkResult for tests per repo conventions.",
+    "NEW INSTRUCTION": "WHEN starting a feature implementation THEN first add a failing high-level test using TestBase"
+}
+
+[2025-12-08 23:15] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "update plugin.xml, add tests, run tests",
+    "BOTTLENECK": "Time lost fixing API mismatches from unverified IntelliJ SDK method signatures.",
+    "PROJECT NOTE": "Register the SearchEverywhere contributor Factory under com.intellij.searchEverywhereContributor in plugin.xml.",
+    "NEW INSTRUCTION": "WHEN implementing IntelliJ API interactions THEN verify method signatures in SDK before coding"
+}
+
+[2025-12-09 00:09] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "get file structure",
+    "MISSING STEPS": "open target file",
+    "BOTTLENECK": "Brittle bulk search-replace without first viewing the target file.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN task references a specific file THEN open the file before editing"
+}
+

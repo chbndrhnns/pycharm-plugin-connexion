@@ -16,7 +16,6 @@
 - [ ] feat: Turn into type checking import
 - [ ] roots: adopt when moving files
 - [ ] roots: mark as unresolved reference without
-- [ ] commit: if it fails for hooks, add option keep selection of files (docs/keep-commit-selection/spec.md)
 - [ ] feat: Treat references as PSI elements, pytest.mark.filterwarnings, patch()
 - [ ] refactor: How to find if the caret is inside parentheses? `[PopulateArgumentsService.findCallExpression`
 - [ ] feat: Replace expected with actual test outcome
@@ -24,7 +23,6 @@
 - [ ] feat: Generate dataclass, basemodel
 - [ ] feat: Create run config using package mode
 - [ ] Copy pydantic mock?
-- [ ] feat: Parse pytest identifier in search all dialog
 - [ ] feat: Copy selection with imports
 - [ ] feat: Wrap default/default_factory after introducing custom type in dataclass/pydantic
 - [ ] feat: Render dataclass fields in preview
@@ -34,6 +32,8 @@
 
 ## In Progress Tasks
 
+- [-] commit: if it fails for hooks, add option keep selection of files (docs/keep-commit-selection/spec.md)
+- [-] feat: Parse pytest identifier in search all dialog
 
 ## Completed Tasks (newest first)
 
