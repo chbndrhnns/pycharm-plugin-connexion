@@ -20,7 +20,8 @@ class NameSuggester {
         if (parts.isEmpty()) return null
 
         return parts.joinToString(separator = "") { part ->
-            part.replaceFirstChar { it.uppercaseChar() }
+            val normalized = part.lowercase()
+            normalized.replaceFirstChar { it.uppercaseChar() }
         }
     }
 

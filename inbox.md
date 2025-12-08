@@ -2,10 +2,11 @@
 
 ## Pending Tasks
 
+- [ ] feat: exception: if using err/exc/error, offer `except bla as X`
+- [ ] fix: introduce paramter object should only be available when caret on: function, function args, call site the same
 - [ ] feat: populate with argument names that exist in the current scope
 - [ ] fix: cancel introduce type rename dialog still keeps it
 - [ ] feat: Convert dict with default to try/except case
-- [ ] fix: introduce type fails for `MY_CONSTANT: Final[str] = "VALUE"`
 - [ ] feat: Copy names of failed tests
 - [ ] fix: ignore conftest when suggesting __all__
 - [ ] feat: quick fix to remove unresolved import from __all__
@@ -45,6 +46,8 @@ def test_():
 
 ## In Progress Tasks
 
+- [ ] fix: do not offer introduce type if unresolved reference on statement: `MY_CONSTANT: Final[str] = "VALUE"`]
+- [ ] fix: introduce type fails for `MY_CONSTANT: Final[str] = "VALUE"`]
 - [-] feat: Transform between dict access .get and []
 - [ ] Configure default base classes
 

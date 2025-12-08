@@ -36,6 +36,29 @@ class BasicTest : TestBase() {
         )
     }
 
+    fun testFinalConstant_UsesPascalCaseName() {
+        myFixture.doIntentionTest(
+            "a.py",
+            """
+            from typing import Final
+
+
+            MY_CONSTANT: Final[str] = "VAL<caret>UE"
+            """,
+            """
+            from typing import Final
+
+
+            class MyConstant(str):
+                pass
+
+
+            MY_CONSTANT: Final[MyConstant] = MyConstant("VALUE")
+            """,
+            "Introduce custom type from str"
+        )
+    }
+
 
     fun testSimpleAnnotatedParam_Int_RewritesAnnotation() {
         myFixture.doIntentionTest(

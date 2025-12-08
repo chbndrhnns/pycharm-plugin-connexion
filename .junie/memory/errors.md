@@ -508,3 +508,103 @@
     "NEW INSTRUCTION": "WHEN undo_edit returns an error THEN manually revert using search_replace or reapply original content"
 }
 
+[2025-12-08 14:02] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle (:test)",
+    "ERROR": "AssertionFailedError: TargetDetector returned null",
+    "ROOT CAUSE": "TargetDetector.find failed to detect ExpressionTarget when RHS is annotated with Final[str] and caret on string literal.",
+    "PROJECT NOTE": "Update TargetDetector.tryFromExpression (and related expected type extraction) to unwrap typing.Final[...] and use the inner builtin name (e.g., str) for matching; see PyTypeIntentions/ExpectedTypeInfo for expected-type resolution.",
+    "NEW INSTRUCTION": "WHEN expected type annotation uses typing.Final[...] THEN unwrap Final and match using the inner type"
+}
+
+[2025-12-08 14:04] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic bug",
+    "TOOL": "Gradle test",
+    "ERROR": "AssertionFailedError: TargetDetector.find returned null for Final[str] literal",
+    "ROOT CAUSE": "TargetDetector.tryFromExpression does not unwrap typing.Final[...] to the inner builtin type, so matching 'str' fails.",
+    "PROJECT NOTE": "Where expected types are derived (PyTypeIntentions/ExpectedTypeInfo and TargetDetector.determineBuiltinType/findExpressionMatchingBuiltin), ensure wrappers like Final/Optional/Annotated are unwrapped to their arguments before builtin matching.",
+    "NEW INSTRUCTION": "WHEN expected type annotation is typing.Final[...] THEN unwrap to inner type before matching"
+}
+
+[2025-12-08 14:04] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle :test",
+    "ERROR": "TargetDetector returned null for Final[str] constant",
+    "ROOT CAUSE": "TargetDetector.tryFromExpression fails to unwrap typing.Final and thus cannot match builtin 'str' at the string literal caret.",
+    "PROJECT NOTE": "In target detection/expected type derivation, ensure typing.Final[...] is treated as transparent so inner type drives builtin matching.",
+    "NEW INSTRUCTION": "WHEN expected type is typing.Final[...] THEN unwrap to the inner type before matching"
+}
+
+[2025-12-08 15:46] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle :test",
+    "ERROR": "FileComparisonFailedError: expected/actual text mismatch",
+    "ROOT CAUSE": "The intention produced code that differs from the test's expected 'after' text (likely formatting or annotation update specifics).",
+    "PROJECT NOTE": "IntelliJ fixture myFixture.checkResult compares text exactly, including whitespace and newlines; inspect the Gradle test HTML report for the unified diff.",
+    "NEW INSTRUCTION": "WHEN tests fail with FileComparisonFailedError THEN open build/reports/tests/test/index.html and inspect diff"
+}
+
+[2025-12-08 15:48] - Updated by Junie - Error analysis
+{
+    "TYPE": "run_test failure",
+    "TOOL": "Gradle :test",
+    "ERROR": "Could not write XML test results file",
+    "ROOT CAUSE": "The failing test produced output that broke Gradle’s XML report serialization, masking the original assertion mismatch.",
+    "PROJECT NOTE": "myFixture.checkResult compares text exactly; debugging by embedding full file text in exception or logs can make the Gradle XML report unwritable. Persist large debug output to a file and keep exception messages small.",
+    "NEW INSTRUCTION": "WHEN Gradle says 'Could not write XML test results' THEN rerun with --stacktrace and avoid large/unsanitized exception messages"
+}
+
+[2025-12-08 15:49] - Updated by Junie - Error analysis
+{
+    "TYPE": "run_test failure",
+    "TOOL": "Gradle (:test)",
+    "ERROR": "Could not write XML test results file",
+    "ROOT CAUSE": "The failing test produced a large/raw diff message that broke the JUnit XML writer.",
+    "PROJECT NOTE": "myFixture.checkResult compares exact text; prefer inspecting build/reports/tests/test/index.html for diffs instead of embedding raw file contents in exceptions.",
+    "NEW INSTRUCTION": "WHEN needing actual output from a failing test THEN write it to a file and log path, not exception"
+}
+
+[2025-12-08 15:50] - Updated by Junie - Error analysis
+{
+    "TYPE": "tool failure",
+    "TOOL": "Gradle :test",
+    "ERROR": "Could not write XML test results file",
+    "ROOT CAUSE": "The failing test produced a failure message/content that was not XML-safe for the JUnit report writer.",
+    "PROJECT NOTE": "FileComparisonFailedError may include raw file text; long or unescaped content in failure messages can break Gradle’s JUnit XML writer.",
+    "NEW INSTRUCTION": "WHEN Gradle reports 'Could not write XML test results' THEN rerun with --stacktrace and minimize failure message payload"
+}
+
+[2025-12-08 15:51] - Updated by Junie - Error analysis
+{
+    "TYPE": "tool failure",
+    "TOOL": "Gradle (:test)",
+    "ERROR": "Could not write XML test results report",
+    "ROOT CAUSE": "A custom failure message with raw file content caused the XML test reporter to choke.",
+    "PROJECT NOTE": "In this repo, rely on myFixture.checkResult for diffs; for debugging, write actual content to a side file and keep exceptions minimal to avoid breaking Gradle’s XML report writer.",
+    "NEW INSTRUCTION": "WHEN needing to inspect actual result text THEN write it to a file and rethrow original exception"
+}
+
+[2025-12-08 15:52] - Updated by Junie - Error analysis
+{
+    "TYPE": "tool failure",
+    "TOOL": "Gradle (:test reporter)",
+    "ERROR": "Could not write XML test results",
+    "ROOT CAUSE": "The failing test produced an exception message/content that the JUnit XML writer could not serialize.",
+    "PROJECT NOTE": "myFixture.checkResult failures can include large/raw text diffs; embedding full file content in exception messages can break Gradle’s XML report writer.",
+    "NEW INSTRUCTION": "WHEN needing to expose large actual file content THEN write it to a file and log its path"
+}
+
+[2025-12-08 17:23] - Updated by Junie - Error analysis
+{
+    "TYPE": "tool failure",
+    "TOOL": "get_file_structure",
+    "ERROR": "Cannot display file structure; parsing failed",
+    "ROOT CAUSE": "The file structure tool couldn't parse the Kotlin file and returned an unsupported/failed status.",
+    "PROJECT NOTE": "For Kotlin sources in this repo, directly open files to inspect content when structure parsing fails.",
+    "NEW INSTRUCTION": "WHEN get_file_structure reports cannot display or parsing failed THEN open the file using open and scroll"
+}
+
