@@ -13,16 +13,16 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
             def main():
                 create_user("John")
             """.trimIndent()
-        
+
         myFixture.configureByText("a.py", before)
         val intention = myFixture.findSingleIntention("Introduce parameter object")
 
         withMockIntroduceParameterObjectDialog {
             myFixture.launchAction(intention)
         }
-        
+
         val after = myFixture.file.text
-        
+
         val expected = """
             from dataclasses import dataclass
             from typing import Any
@@ -41,7 +41,7 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
             
             def main():
                 create_user(CreateUserParams(first_name="John"))""".trimIndent() + "\n"
-        
+
         assertEquals(expected, after)
     }
 
@@ -88,7 +88,7 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
             def main():
                 UserFactory.create_user("John", 30)
             """.trimIndent()
-            
+
         myFixture.configureByText("a.py", before)
         val intention = myFixture.findSingleIntention("Introduce parameter object")
 
@@ -120,7 +120,7 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
         """.trimIndent()
         )
     }
-    
+
     fun testStaticMethod() {
         withMockIntroduceParameterObjectDialog {
             myFixture.doIntentionTest(

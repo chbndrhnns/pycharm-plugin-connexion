@@ -10,8 +10,8 @@ class RecursiveArgumentsIntentionTest : TestBase() {
     fun testRecursiveDataclassPopulation() {
         withPopulatePopupSelection(index = 2) {
             myFixture.doIntentionTest(
-            "a.py",
-            """
+                "a.py",
+                """
             from dataclasses import dataclass
 
             @dataclass
@@ -29,7 +29,7 @@ class RecursiveArgumentsIntentionTest : TestBase() {
 
             a = A(<caret>)
             """,
-            """
+                """
             from dataclasses import dataclass
 
             @dataclass
@@ -90,8 +90,8 @@ class RecursiveArgumentsIntentionTest : TestBase() {
     fun testMixedTypesPopulation() {
         withPopulatePopupSelection(index = 2) {
             myFixture.doIntentionTest(
-            "a.py",
-            """
+                "a.py",
+                """
             from dataclasses import dataclass
 
             @dataclass
@@ -105,7 +105,7 @@ class RecursiveArgumentsIntentionTest : TestBase() {
 
             a = Node(<caret>)
             """,
-            """
+                """
             from dataclasses import dataclass
 
             @dataclass
@@ -121,15 +121,15 @@ class RecursiveArgumentsIntentionTest : TestBase() {
 
             """,
                 "Populate arguments..."
-        )
+            )
         }
     }
 
     fun testUnionWithDataclass() {
         withPopulatePopupSelection(index = 2) {
             myFixture.doIntentionTest(
-            "a.py",
-            """
+                "a.py",
+                """
             from dataclasses import dataclass
             from typing import Union
 
@@ -143,7 +143,7 @@ class RecursiveArgumentsIntentionTest : TestBase() {
 
             e = E(<caret>)
             """,
-            """
+                """
             from dataclasses import dataclass
             from typing import Union
 
@@ -159,15 +159,15 @@ class RecursiveArgumentsIntentionTest : TestBase() {
 
             """,
                 "Populate arguments..."
-        )
+            )
         }
     }
 
     fun testRecursionLimit() {
         withPopulatePopupSelection(index = 2) {
             myFixture.doIntentionTest(
-            "a.py",
-            """
+                "a.py",
+                """
             from dataclasses import dataclass
 
             @dataclass
@@ -176,7 +176,7 @@ class RecursiveArgumentsIntentionTest : TestBase() {
 
             a = Rec(<caret>)
             """,
-            """
+                """
             from dataclasses import dataclass
             
             @dataclass
@@ -187,7 +187,7 @@ class RecursiveArgumentsIntentionTest : TestBase() {
 
             """,
                 "Populate arguments..."
-        )
+            )
         }
     }
 

@@ -14,30 +14,13 @@ class PyIntroduceParameterObjectActionTest : TestBase() {
     }
 
     fun testActionAvailability() {
-        myFixture.configureByText("a.py", """
+        myFixture.configureByText(
+            "a.py", """
             def fo<caret>o(a, b):
                 pass
-        """.trimIndent())
-        
-        val action = PyIntroduceParameterObjectAction()
-        val dataContext = SimpleDataContext.builder()
-            .add(CommonDataKeys.PROJECT, project)
-            .add(CommonDataKeys.EDITOR, myFixture.editor)
-            .add(CommonDataKeys.PSI_FILE, myFixture.file)
-            .build()
-            
-        val event = TestActionEvent.createTestEvent(action, dataContext)
-        action.update(event)
-        
-        assertTrue(event.presentation.isEnabledAndVisible)
-    }
-    
-    fun testActionUnavailableForSingleParam() {
-        myFixture.configureByText("a.py", """
-            def fo<caret>o(a):
-                pass
-        """.trimIndent())
-        
+        """.trimIndent()
+        )
+
         val action = PyIntroduceParameterObjectAction()
         val dataContext = SimpleDataContext.builder()
             .add(CommonDataKeys.PROJECT, project)
@@ -47,7 +30,28 @@ class PyIntroduceParameterObjectActionTest : TestBase() {
 
         val event = TestActionEvent.createTestEvent(action, dataContext)
         action.update(event)
-        
+
+        assertTrue(event.presentation.isEnabledAndVisible)
+    }
+
+    fun testActionUnavailableForSingleParam() {
+        myFixture.configureByText(
+            "a.py", """
+            def fo<caret>o(a):
+                pass
+        """.trimIndent()
+        )
+
+        val action = PyIntroduceParameterObjectAction()
+        val dataContext = SimpleDataContext.builder()
+            .add(CommonDataKeys.PROJECT, project)
+            .add(CommonDataKeys.EDITOR, myFixture.editor)
+            .add(CommonDataKeys.PSI_FILE, myFixture.file)
+            .build()
+
+        val event = TestActionEvent.createTestEvent(action, dataContext)
+        action.update(event)
+
         assertFalse(event.presentation.isEnabledAndVisible)
     }
 }

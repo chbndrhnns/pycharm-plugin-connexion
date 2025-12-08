@@ -24,8 +24,8 @@ class RecursiveArgumentsImportTest : TestBase() {
 
         withPopulatePopupSelection(index = 2) {
             myFixture.doIntentionTest(
-            "main.py",
-            """
+                "main.py",
+                """
             from dataclasses import dataclass
             
             from .models import Main
@@ -34,7 +34,7 @@ class RecursiveArgumentsImportTest : TestBase() {
             def test():
                 m = Main(<caret>)
             """,
-            """
+                """
             from dataclasses import dataclass
             
             from .models import Main, Other
@@ -44,8 +44,8 @@ class RecursiveArgumentsImportTest : TestBase() {
                 m = Main(f=Other(val=...))
 
             """,
-            "Populate arguments..."
-        )
+                "Populate arguments..."
+            )
         }
     }
 
@@ -75,8 +75,8 @@ class RecursiveArgumentsImportTest : TestBase() {
 
         withPopulatePopupSelection(index = 2) {
             myFixture.doIntentionTest(
-            "main.py",
-            """
+                "main.py",
+                """
             from dataclasses import dataclass
             
             from .models import Main
@@ -85,7 +85,7 @@ class RecursiveArgumentsImportTest : TestBase() {
             def test():
                 m = Main(<caret>)
             """,
-            """
+                """
             from dataclasses import dataclass
             
             from .models import Main, B, C
@@ -95,8 +95,8 @@ class RecursiveArgumentsImportTest : TestBase() {
                 m = Main(b=B(c=C(x=..., z=...)))
 
             """,
-            "Populate arguments..."
-        )
+                "Populate arguments..."
+            )
         }
     }
 }

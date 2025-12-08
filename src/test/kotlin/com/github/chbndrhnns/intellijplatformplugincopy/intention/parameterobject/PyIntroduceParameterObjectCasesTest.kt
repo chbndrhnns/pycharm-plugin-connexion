@@ -63,7 +63,8 @@ class PyIntroduceParameterObjectCasesTest : TestBase() {
         withMockIntroduceParameterObjectDialog {
             myFixture.launchAction(intention)
         }
-        myFixture.checkResult("""
+        myFixture.checkResult(
+            """
             from dataclasses import dataclass
             from typing import Any
 
@@ -83,7 +84,8 @@ class PyIntroduceParameterObjectCasesTest : TestBase() {
                 def prop(self, params: PropParams):
                     pass
 
-        """.trimIndent())
+        """.trimIndent()
+        )
     }
 
     fun testOverload() {
@@ -103,7 +105,8 @@ class PyIntroduceParameterObjectCasesTest : TestBase() {
         withMockIntroduceParameterObjectDialog {
             myFixture.launchAction(intention)
         }
-        myFixture.checkResult("""
+        myFixture.checkResult(
+            """
             from dataclasses import dataclass
             from typing import overload, Any
 
@@ -121,14 +124,15 @@ class PyIntroduceParameterObjectCasesTest : TestBase() {
             def process(a, b):
                 pass
 
-        """.trimIndent())
+        """.trimIndent()
+        )
     }
 
     fun testStubFile() {
         val text = """
             def fo<caret>o(a: int, b: int): ...
         """.trimIndent()
-        
+
         myFixture.configureByText("a.pyi", text)
         assertEmpty(myFixture.filterAvailableIntentions("Introduce parameter object"))
     }
@@ -148,8 +152,9 @@ class PyIntroduceParameterObjectCasesTest : TestBase() {
         withMockIntroduceParameterObjectDialog {
             myFixture.launchAction(intention)
         }
-        
-        myFixture.checkResult("""
+
+        myFixture.checkResult(
+            """
             from dataclasses import dataclass
             from typing import Any
 
@@ -165,6 +170,7 @@ class PyIntroduceParameterObjectCasesTest : TestBase() {
 
                 inner(InnerParams(a=1, b=2))
 
-        """.trimIndent())
+        """.trimIndent()
+        )
     }
 }

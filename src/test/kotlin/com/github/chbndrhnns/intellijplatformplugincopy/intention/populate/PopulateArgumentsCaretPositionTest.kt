@@ -46,9 +46,9 @@ class PopulateArgumentsCaretPositionTest : TestBase() {
             "Populate arguments..."
         )
     }
-    
+
     fun testNotAvailableBeforeParentheses() {
-         myFixture.assertIntentionNotAvailable(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             from dataclasses import dataclass
@@ -61,9 +61,9 @@ class PopulateArgumentsCaretPositionTest : TestBase() {
             "Populate arguments..."
         )
     }
-    
+
     fun testNotAvailableAfterParentheses() {
-         myFixture.assertIntentionNotAvailable(
+        myFixture.assertIntentionNotAvailable(
             "a.py",
             """
             from dataclasses import dataclass

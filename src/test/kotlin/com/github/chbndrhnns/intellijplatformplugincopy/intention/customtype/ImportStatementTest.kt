@@ -24,7 +24,7 @@ class ImportStatementTest : TestBase() {
             "Introduce custom type"
         )
     }
-    
+
     fun testIntentionNotOfferedOnImportedConstant() {
         myFixture.assertIntentionNotAvailable(
             "a.py",

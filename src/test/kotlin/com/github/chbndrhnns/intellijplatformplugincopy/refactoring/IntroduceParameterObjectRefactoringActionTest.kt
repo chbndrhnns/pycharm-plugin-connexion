@@ -12,23 +12,30 @@ class IntroduceParameterObjectRefactoringActionTest : TestBase() {
 
     fun testActionExtendsBaseRefactoringAction() {
         val action = IntroduceParameterObjectRefactoringAction()
-        assertTrue("Action must extend BaseRefactoringAction to appear in 'Refactor This' popup",
-            action is BaseRefactoringAction)
+        assertTrue(
+            "Action must extend BaseRefactoringAction to appear in 'Refactor This' popup",
+            action is BaseRefactoringAction
+        )
     }
 
     fun testActionIsRegistered() {
         val actionManager = ActionManager.getInstance()
-        val action = actionManager.getAction("com.github.chbndrhnns.intellijplatformplugincopy.refactoring.IntroduceParameterObjectRefactoringAction")
+        val action =
+            actionManager.getAction("com.github.chbndrhnns.intellijplatformplugincopy.refactoring.IntroduceParameterObjectRefactoringAction")
         assertNotNull("Action should be registered in plugin.xml", action)
-        assertTrue("Registered action should be IntroduceParameterObjectRefactoringAction",
-            action is IntroduceParameterObjectRefactoringAction)
+        assertTrue(
+            "Registered action should be IntroduceParameterObjectRefactoringAction",
+            action is IntroduceParameterObjectRefactoringAction
+        )
     }
 
     fun testActionIsAvailableForFunctionWithMultipleParameters() {
-        myFixture.configureByText("test.py", """
+        myFixture.configureByText(
+            "test.py", """
             def foo(a: int, b<caret>: str, c: float):
                 pass
-        """.trimIndent())
+        """.trimIndent()
+        )
 
         val action = IntroduceParameterObjectRefactoringAction()
         val dataContext = SimpleDataContext.builder()
@@ -40,15 +47,19 @@ class IntroduceParameterObjectRefactoringActionTest : TestBase() {
         val event = createTestActionEvent(action, dataContext)
         action.update(event)
 
-        assertTrue("Action should be enabled for function with multiple parameters",
-            event.presentation.isEnabledAndVisible)
+        assertTrue(
+            "Action should be enabled for function with multiple parameters",
+            event.presentation.isEnabledAndVisible
+        )
     }
 
     fun testActionIsNotAvailableForFunctionWithOneParameter() {
-        myFixture.configureByText("test.py", """
+        myFixture.configureByText(
+            "test.py", """
             def foo(a<caret>: int):
                 pass
-        """.trimIndent())
+        """.trimIndent()
+        )
 
         val action = IntroduceParameterObjectRefactoringAction()
         val dataContext = SimpleDataContext.builder()
@@ -60,14 +71,18 @@ class IntroduceParameterObjectRefactoringActionTest : TestBase() {
         val event = createTestActionEvent(action, dataContext)
         action.update(event)
 
-        assertFalse("Action should not be enabled for function with only one parameter",
-            event.presentation.isEnabledAndVisible)
+        assertFalse(
+            "Action should not be enabled for function with only one parameter",
+            event.presentation.isEnabledAndVisible
+        )
     }
 
     fun testActionIsNotAvailableOutsideFunction() {
-        myFixture.configureByText("test.py", """
+        myFixture.configureByText(
+            "test.py", """
             x = 1<caret>
-        """.trimIndent())
+        """.trimIndent()
+        )
 
         val action = IntroduceParameterObjectRefactoringAction()
         val dataContext = SimpleDataContext.builder()
@@ -79,17 +94,21 @@ class IntroduceParameterObjectRefactoringActionTest : TestBase() {
         val event = createTestActionEvent(action, dataContext)
         action.update(event)
 
-        assertFalse("Action should not be enabled outside a function",
-            event.presentation.isEnabledAndVisible)
+        assertFalse(
+            "Action should not be enabled outside a function",
+            event.presentation.isEnabledAndVisible
+        )
     }
 
     fun testActionPerformsRefactoring() {
-        myFixture.configureByText("test.py", """
+        myFixture.configureByText(
+            "test.py", """
             def foo(a: int, b<caret>: str, c: float):
                 return a + len(b) + c
             
             foo(1, "hello", 3.14)
-        """.trimIndent())
+        """.trimIndent()
+        )
 
         val action = IntroduceParameterObjectRefactoringAction()
         val dataContext = SimpleDataContext.builder()
@@ -109,11 +128,13 @@ class IntroduceParameterObjectRefactoringActionTest : TestBase() {
     }
 
     fun testActionIgnoresSelfParameter() {
-        myFixture.configureByText("test.py", """
+        myFixture.configureByText(
+            "test.py", """
             class MyClass:
                 def method(self, a: int, b<caret>: str):
                     pass
-        """.trimIndent())
+        """.trimIndent()
+        )
 
         val action = IntroduceParameterObjectRefactoringAction()
         val dataContext = SimpleDataContext.builder()
@@ -125,15 +146,19 @@ class IntroduceParameterObjectRefactoringActionTest : TestBase() {
         val event = createTestActionEvent(action, dataContext)
         action.update(event)
 
-        assertTrue("Action should be enabled for method with self and two other parameters",
-            event.presentation.isEnabledAndVisible)
+        assertTrue(
+            "Action should be enabled for method with self and two other parameters",
+            event.presentation.isEnabledAndVisible
+        )
     }
 
     fun testActionIgnoresVariadicParameters() {
-        myFixture.configureByText("test.py", """
+        myFixture.configureByText(
+            "test.py", """
             def foo(a: int, b<caret>: str, *args, **kwargs):
                 pass
-        """.trimIndent())
+        """.trimIndent()
+        )
 
         val action = IntroduceParameterObjectRefactoringAction()
         val dataContext = SimpleDataContext.builder()
@@ -145,11 +170,16 @@ class IntroduceParameterObjectRefactoringActionTest : TestBase() {
         val event = createTestActionEvent(action, dataContext)
         action.update(event)
 
-        assertTrue("Action should be enabled and ignore *args/**kwargs",
-            event.presentation.isEnabledAndVisible)
+        assertTrue(
+            "Action should be enabled and ignore *args/**kwargs",
+            event.presentation.isEnabledAndVisible
+        )
     }
 
-    private fun createTestActionEvent(action: AnAction, dataContext: com.intellij.openapi.actionSystem.DataContext): com.intellij.openapi.actionSystem.AnActionEvent {
+    private fun createTestActionEvent(
+        action: AnAction,
+        dataContext: com.intellij.openapi.actionSystem.DataContext
+    ): com.intellij.openapi.actionSystem.AnActionEvent {
         return com.intellij.openapi.actionSystem.AnActionEvent.createFromDataContext(
             "",
             null,

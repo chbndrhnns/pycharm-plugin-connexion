@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.inspections
 
+import com.github.chbndrhnns.intellijplatformplugincopy.python.PythonVersionGuard
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInspection.LocalInspectionToolSession
 import com.intellij.codeInspection.ProblemsHolder
@@ -33,6 +34,9 @@ class PyPrivateModuleImportInspection : PyInspection() {
         isOnTheFly: Boolean,
         session: LocalInspectionToolSession,
     ): PsiElementVisitor {
+        if (!PythonVersionGuard.isSatisfied(holder.project)) {
+            return object : PyElementVisitor() {}
+        }
         val settings = PluginSettingsState.instance().state
         if (!settings.enablePyMissingInDunderAllInspection) {
             // Reuse the same setting gate as PyMissingInDunderAllInspection so

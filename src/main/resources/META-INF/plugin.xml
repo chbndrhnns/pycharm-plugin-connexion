@@ -13,6 +13,11 @@
         <applicationService
                 serviceImplementation="com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState"/>
 
+        <notificationGroup id="Python DDD Toolkit" displayType="BALLOON" isLogByDefault="true"/>
+
+        <postStartupActivity
+                implementation="com.github.chbndrhnns.intellijplatformplugincopy.startup.PythonVersionStartupActivity"/>
+
         <intentionAction>
             <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.WrapWithExpectedTypeIntention
             </className>

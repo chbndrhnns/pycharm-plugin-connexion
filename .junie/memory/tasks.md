@@ -609,3 +609,13 @@ directly.",
     "NEW INSTRUCTION": "WHEN tests must be executed THEN run Gradle tests via bash with the test class"
 }
 
+[2025-12-08 20:39] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "run build, update plugin.xml, add startup notification, gate inspections, gate intentions, add tests, run tests",
+    "BOTTLENECK": "Unresolved/incorrect SDK API usage in PythonVersionGuard caused compilation errors and stalled progress.",
+    "PROJECT NOTE": "Prefer file.languageLevel for PSI checks; when deriving project level, use ModuleManager modules or fall back safely.",
+    "NEW INSTRUCTION": "WHEN creating a new core guard utility THEN run build and resolve API errors before integrating elsewhere"
+}
+

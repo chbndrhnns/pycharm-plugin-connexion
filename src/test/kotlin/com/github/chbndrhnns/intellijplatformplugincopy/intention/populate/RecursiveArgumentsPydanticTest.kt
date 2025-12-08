@@ -11,8 +11,8 @@ class RecursiveArgumentsPydanticTest : TestBase() {
         // Note: effectively simulating what pydantic does for the type checker.
         withPopulatePopupSelection(index = 2) {
             myFixture.doIntentionTest(
-            "a.py",
-            """
+                "a.py",
+                """
             # Mimic basic Pydantic parts
             from typing import dataclass_transform
 
@@ -28,7 +28,7 @@ class RecursiveArgumentsPydanticTest : TestBase() {
 
             u = User(<caret>)
             """,
-            """
+                """
             # Mimic basic Pydantic parts
             from typing import dataclass_transform
 
@@ -44,16 +44,16 @@ class RecursiveArgumentsPydanticTest : TestBase() {
 
             u = User(userName=...)
             """,
-            "Populate arguments..."
-        )
+                "Populate arguments..."
+            )
         }
     }
 
     fun testPydanticAliasRecursive() {
         withPopulatePopupSelection(index = 2) {
             myFixture.doIntentionTest(
-            "a.py",
-            """
+                "a.py",
+                """
             from typing import dataclass_transform
 
             class Field:
@@ -71,7 +71,7 @@ class RecursiveArgumentsPydanticTest : TestBase() {
 
             o = Outer(<caret>)
             """,
-            """
+                """
             from typing import dataclass_transform
 
             class Field:
@@ -90,8 +90,8 @@ class RecursiveArgumentsPydanticTest : TestBase() {
             o = Outer(inner=Inner(value=...))
 
             """,
-            "Populate arguments..."
-        )
+                "Populate arguments..."
+            )
         }
     }
 }

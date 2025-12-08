@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.dictAccess
 
+import com.github.chbndrhnns.intellijplatformplugincopy.python.PythonVersionGuard
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -16,6 +17,7 @@ class PyDictAccessIntention : PsiElementBaseIntentionAction() {
     override fun getFamilyName(): String = "Toggle dictionary access"
 
     override fun isAvailable(project: Project, editor: Editor, element: PsiElement): Boolean {
+        if (!PythonVersionGuard.isSatisfiedForElement(element)) return false
         // 1. Check Bracket Access: d[k]
         val subscription = PsiTreeUtil.getParentOfType(element, PySubscriptionExpression::class.java)
         if (subscription != null && subscription.indexExpression != null) {

@@ -5,9 +5,9 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext
 import com.intellij.testFramework.TestActionEvent
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import fixtures.TestBase
 
-class CopyPackageContentActionTest : BasePlatformTestCase() {
+class CopyPackageContentActionTest : TestBase() {
 
     fun testActionUpdateThread() {
         val action = CopyPackageContentAction()

@@ -38,7 +38,7 @@ class PyIntroduceParameterObjectVariadicTest : TestBase() {
             )
         }
     }
-    
+
     fun testKwargs() {
         withMockIntroduceParameterObjectDialog {
             myFixture.doIntentionTest(
@@ -84,7 +84,7 @@ class PyIntroduceParameterObjectVariadicTest : TestBase() {
                 def main():
                     foo(1, b=2)
                 """.trimIndent(),
-                 """
+                """
                 from dataclasses import dataclass
                 from typing import Any
                 
@@ -107,8 +107,8 @@ class PyIntroduceParameterObjectVariadicTest : TestBase() {
         }
     }
 
-     fun testPositionalOnlySeparator() {
-         withMockIntroduceParameterObjectDialog {
+    fun testPositionalOnlySeparator() {
+        withMockIntroduceParameterObjectDialog {
             myFixture.doIntentionTest(
                 "a.py",
                 """
@@ -118,7 +118,7 @@ class PyIntroduceParameterObjectVariadicTest : TestBase() {
                 def main():
                     foo(1, 2)
                 """.trimIndent(),
-                 """
+                """
                  from dataclasses import dataclass
                  from typing import Any
                 

@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.dictAccess
 
+import com.github.chbndrhnns.intellijplatformplugincopy.python.PythonVersionGuard
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -17,6 +18,7 @@ class PyTryExceptToDictGetIntention : PsiElementBaseIntentionAction() {
     override fun getFamilyName(): String = "Replace try-except with dict.get"
 
     override fun isAvailable(project: Project, editor: Editor, element: PsiElement): Boolean {
+        if (!PythonVersionGuard.isSatisfiedForElement(element)) return false
         val tryExcept = PsiTreeUtil.getParentOfType(element, PyTryExceptStatement::class.java) ?: return false
 
         // Trigger: Cursor on `try` keyword or inside the `try` block.

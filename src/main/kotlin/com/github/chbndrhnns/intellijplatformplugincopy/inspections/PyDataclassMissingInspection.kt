@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.inspections
 
+import com.github.chbndrhnns.intellijplatformplugincopy.python.PythonVersionGuard
 import com.intellij.codeInspection.LocalInspectionToolSession
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
@@ -23,6 +24,9 @@ class PyDataclassMissingInspection : PyInspection() {
         isOnTheFly: Boolean,
         session: LocalInspectionToolSession
     ): PsiElementVisitor {
+        if (!PythonVersionGuard.isSatisfied(holder.project)) {
+            return object : PyElementVisitor() {}
+        }
         return object : PyElementVisitor() {
             val context = TypeEvalContext.codeAnalysis(holder.project, holder.file)
 

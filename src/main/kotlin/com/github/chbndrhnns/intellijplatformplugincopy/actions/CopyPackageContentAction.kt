@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.actions
 
+import com.github.chbndrhnns.intellijplatformplugincopy.python.PythonVersionGuard
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
@@ -72,6 +73,11 @@ class CopyPackageContentAction : AnAction() {
     override fun update(e: AnActionEvent) {
         // Only enable the action if a directory is selected
         if (!PluginSettingsState.instance().state.enableCopyPackageContentAction) {
+            e.presentation.isEnabledAndVisible = false
+            return
+        }
+
+        if (!PythonVersionGuard.isSatisfied(e.project)) {
             e.presentation.isEnabledAndVisible = false
             return
         }

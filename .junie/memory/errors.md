@@ -788,3 +788,23 @@
     "NEW INSTRUCTION": "WHEN search_project reports directory does not exist THEN set path to project root subdirectory"
 }
 
+[2025-12-08 20:37] - Updated by Junie - Error analysis
+{
+    "TYPE": "build failure",
+    "TOOL": "apply_patch",
+    "ERROR": "Introduced unresolved references and wrong SDK APIs",
+    "ROOT CAUSE": "Used non-existent properties/methods for this PyCharm SDK version (e.g., LanguageLevel.versionString, PythonSdkUtil.getLanguageLevelForSdk, project overload of findPythonSdk).",
+    "PROJECT NOTE": "Use com.jetbrains.python.sdk.legacy.PythonSdkUtil.findPythonSdk(project|module) and PythonSdkType.getLanguageLevelForSdk(sdk); use LanguageLevel.toPythonVersion(), not versionString.",
+    "NEW INSTRUCTION": "WHEN adding Python SDK/version checks THEN use legacy PythonSdkUtil and PythonSdkType.getLanguageLevelForSdk"
+}
+
+[2025-12-08 20:39] - Updated by Junie - Error analysis
+{
+    "TYPE": "build failure",
+    "TOOL": "apply_patch",
+    "ERROR": "Deprecated API used; marked for removal",
+    "ROOT CAUSE": "PythonSdkType.getLanguageLevelForSdk was used and is deprecated/treated as an error here.",
+    "PROJECT NOTE": "Project-level SDK must be resolved via ModuleManager.getInstance(project).modules then legacy PythonSdkUtil.findPythonSdk(module).",
+    "NEW INSTRUCTION": "WHEN deriving LanguageLevel from SDK THEN use LanguageLevel.fromPythonVersion(sdk.versionString ?: return false)"
+}
+
