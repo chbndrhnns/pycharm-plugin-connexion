@@ -214,3 +214,11 @@
     "NEW INSTRUCTION": "WHEN performing PSI code transformations in intentions THEN reformat changed elements via CodeStyleManager"
 }
 
+[2025-12-08 10:05] - Updated by Junie
+{
+    "TYPE": "new instructions",
+    "CATEGORY": "intention description",
+    "ERROR": "-",
+    "NEW INSTRUCTION": "WHEN description files missing for PyTryExceptToDictGetIntention THEN create intentionDescriptions with description.html and before/after example Python files"
+}
+

@@ -358,3 +358,23 @@
     "NEW INSTRUCTION": "WHEN search_project reports directory does not exist THEN retry using a path under the project root"
 }
 
+[2025-12-07 10:29] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "bash",
+    "ERROR": "Multi-line bash command not allowed by tool",
+    "ROOT CAUSE": "The bash tool rejects newline-separated commands; a multi-line heredoc script was submitted.",
+    "PROJECT NOTE": "Test data for intentions must be created under src/test/testData/intention/<feature>/ within the repo root.",
+    "NEW INSTRUCTION": "WHEN bash command contains newlines THEN split into multiple calls, one command per call"
+}
+
+[2025-12-07 10:32] - Updated by Junie - Error analysis
+{
+    "TYPE": "tool failure",
+    "TOOL": "create",
+    "ERROR": "Post-create linter flags '<caret>' as syntax error",
+    "ROOT CAUSE": "The file validator parses Python and does not recognize IntelliJ test caret markers.",
+    "PROJECT NOTE": "IntelliJ intention testData files legitimately contain the literal <caret> token; these files are not meant to be valid Python for external linters.",
+    "NEW INSTRUCTION": "WHEN post-create report shows Unresolved reference 'caret' THEN ignore validation and continue with tests"
+}
+
