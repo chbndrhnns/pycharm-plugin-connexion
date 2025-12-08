@@ -53,18 +53,18 @@ class CustomTypeApplier(
             } else null
         } else null
 
-        val usagesToWrap: List<SmartPsiElementPointer<PyExpression>> = if (!isPreview && paramToUpdate != null) {
+        val usagesToWrap: List<SmartPsiElementPointer<PyExpression>> = if (paramToUpdate != null) {
             val (function, parameter) = paramToUpdate
 
             // If on EDT (and not in preview/test), we must move to BGT for search
-            if (ApplicationManager.getApplication().isDispatchThread) {
+            if (!isPreview && ApplicationManager.getApplication().isDispatchThread) {
                 runWithModalProgressBlocking(project, "Finding usages to update...") {
                     readAction {
                         rewriter.findUsagesToWrap(function, parameter)
                     }
                 }
             } else {
-                // Already in BGT or allowed context
+                // Already in BGT or allowed context (preview)
                 rewriter.findUsagesToWrap(function, parameter)
             }
         } else emptyList()
@@ -85,7 +85,7 @@ class CustomTypeApplier(
             val pyGenerator = PyElementGenerator.getInstance(project)
 
             // Decide which file should host the newly introduced custom type.
-            val targetFileForNewClass = if (isPreview) pyFile else insertionPointFinder.chooseFile(plan.field, plan.expression, pyFile)
+            val targetFileForNewClass = insertionPointFinder.chooseFile(plan.field, plan.expression, pyFile)
 
             // Generate the new class definition in the chosen module.
             val newTypeName = naming.ensureUnique(targetFileForNewClass, baseTypeName)
@@ -155,7 +155,6 @@ class CustomTypeApplier(
             }
 
             val field = plan.field
-                ?.takeUnless { isPreview && it.containingFile != pyFile }
             if (field != null) {
                 // If we introduced the type from a call-site expression, there was
                 // no annotationRef to rewrite above. In that case, synchronise the

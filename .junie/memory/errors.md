@@ -608,33 +608,3 @@
     "NEW INSTRUCTION": "WHEN get_file_structure reports cannot display or parsing failed THEN open the file using open and scroll"
 }
 
-[2025-12-08 17:39] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic bug",
-    "TOOL": "IntroduceCustomTypeFromStdlibIntention.generatePreview/CustomTypeApplier.apply",
-    "ERROR": "Reused cached plan in preview, writing to original file",
-    "ROOT CAUSE": "The cached CustomTypePlan from isAvailable points to the real PyFile and is reused in generatePreview, so insertClass modifies the original file instead of the preview copy.",
-    "PROJECT NOTE": "In getPlan(), do not read PLAN_KEY during preview; always rebuild the plan using the preview file/editor so plan.sourceFile and PSI anchors belong to the preview PSI.",
-    "NEW INSTRUCTION": "WHEN generating intention preview THEN rebuild plan from preview editor and file, ignore cache"
-}
-
-[2025-12-08 17:41] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid context",
-    "TOOL": "IntroduceCustomTypeFromStdlibIntention.generatePreview/CustomTypeApplier.insertClass",
-    "ERROR": "CompletionHandlerException during BackgroundHighlighter cancellation",
-    "ROOT CAUSE": "PSI insertion during intention preview triggered document change; cancellation handler threw while the background highlighter was being cancelled.",
-    "PROJECT NOTE": "CustomTypeGenerator.insertClass uses PsiFile.addAfter; in preview, all PSI writes must be fully enclosed by IntentionPreviewUtils.write and avoid any async/coroutine or Alarm usage during the write.",
-    "NEW INSTRUCTION": "WHEN generating an intention preview performs PSI writes THEN wrap all edits in IntentionPreviewUtils.write and avoid async callbacks"
-}
-
-[2025-12-08 17:42] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "CustomTypeGenerator.insertClass",
-    "ERROR": "Anchor element from different parent passed to addAfter",
-    "ROOT CAUSE": "The preview insertion used an anchor not directly under the target PyFile, causing a parent mismatch during PsiFile.addAfter.",
-    "PROJECT NOTE": "When inserting a top-level class, pick an anchor that is a direct child of the PyFile (e.g., first top-level statement) or null to append; do not use elements from inside statements/classes.",
-    "NEW INSTRUCTION": "WHEN inserting PSI into a file with addBefore/addAfter THEN choose an anchor that is a direct child of that file"
-}
-

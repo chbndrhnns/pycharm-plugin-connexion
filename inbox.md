@@ -51,12 +51,12 @@ def test_():
 ## In Progress Tasks
 
 - [ ] fix: do not offer introduce type if unresolved reference on statement: `MY_CONSTANT: Final[str] = "VALUE"`]
+- [ ] fix: introduce type fails for `MY_CONSTANT: Final[str] = "VALUE"`]
 - [-] feat: Transform between dict access .get and []
 - [ ] Configure default base classes
 
 ## Completed Tasks (newest first)
 
-- [x] fix: introduce type fails for `MY_CONSTANT: Final[str] = "VALUE"`]
 - [x] fix: populate arguments creates extra spaces when used on decorator
 - [x] fix: do not offer introduce type on import statement (constant,eg)
 - [x] fix: Update annotation when introducing custom type
