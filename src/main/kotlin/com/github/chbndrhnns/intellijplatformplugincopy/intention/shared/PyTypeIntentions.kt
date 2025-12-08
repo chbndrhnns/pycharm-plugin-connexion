@@ -4,11 +4,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNamedElement
-import com.jetbrains.python.psi.PyCallExpression
-import com.jetbrains.python.psi.PyExpression
-import com.jetbrains.python.psi.PyKeywordArgument
-import com.jetbrains.python.psi.PyReferenceExpression
-import com.jetbrains.python.psi.PyTypedElement
+import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.impl.PyPsiUtils
 import com.jetbrains.python.psi.types.TypeEvalContext
 
@@ -49,6 +45,11 @@ object PyTypeIntentions {
         if (args.size != 1) return null
 
         val callee = call.callee as? PyReferenceExpression ?: return null
+
+        // Skip bound method calls like obj.get(...), obj.setdefault(...), etc.
+        // These are not value-object wrappers and should not be unwrapped.
+        if (callee.qualifier != null) return null
+
         val name = callee.name ?: return null
         var inner = args[0] ?: return null
 

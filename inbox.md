@@ -3,14 +3,12 @@
 ## Pending Issues
 
 - [ ] fix: cancel introduce type rename dialog still keeps it
-- [ ] unwrap: do not offer here `access_level: str = group_access.get("access_level")`
-- [ ] wrap: Do not offer t.Final -> Wrap with Typevar
-- [ ] commit: if it fails for hooks, add option keep selection of files
 - [ ] refactor: How to find if the caret is inside parentheses? `[PopulateArgumentsService.findCallExpression`
 - [ ] fix: do not offer "use exported" if in private child package: `from .._bases import BaseBlaModel`
 
 ## Pending Features
 
+- [ ] feat: commit: if it fails for hooks, add option keep selection of files
 - [ ] feat: Add local variable from unresolved reference
 - [ ] feat: exception: if using err/exc/error, offer `except bla as X`
 - [ ] feat: populate with argument names that exist in the current scope
@@ -50,6 +48,8 @@ def test_():
 
 ## Completed Tasks (newest first)
 
+- [x] wrap: Do not offer t.Final -> Wrap with Typevar
+- [x] unwrap: do not offer here `access_level: str = group_access.get("access_level")`
 - [x] feat: Transform between dict access .get and []
   - [x] refactor `PyDictGetToTryExceptIntention`,
 - [x] fix: do not offer introduce custom type on string annotation

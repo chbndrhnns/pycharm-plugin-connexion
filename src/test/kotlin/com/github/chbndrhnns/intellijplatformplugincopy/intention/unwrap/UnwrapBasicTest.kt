@@ -157,4 +157,16 @@ class UnwrapBasicTest : TestBase() {
             "Unwrap UserId()"
         )
     }
+
+    fun testAnnotatedAssignment_DictGet_NotOffered() {
+        myFixture.assertIntentionNotAvailable(
+            "a.py",
+            """
+            def do():
+                group_access = {}
+                access_level: str = group_access.<caret>get("access_level")
+            """,
+            "Unwrap get()"
+        )
+    }
 }
