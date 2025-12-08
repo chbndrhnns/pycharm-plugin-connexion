@@ -1,18 +1,26 @@
 # Inbox
 
-## Pending Tasks
+## Pending Issues
 
-- [ ] feat: exception: if using err/exc/error, offer `except bla as X`
 - [ ] fix: introduce paramter object should only be available when caret on: function, function args, call site the same
-- [ ] feat: populate with argument names that exist in the current scope
 - [ ] fix: cancel introduce type rename dialog still keeps it
+- [ ] fix: ignore conftest when suggesting __all__
+- [ ] fix: do not offer introduce custom type on string annotation
+- [ ] unwrap: do not offer here `access_level: str = group_access.get("access_level")`
+- [ ] wrap: Do not offer t.Final -> Wrap with Typevar
+- [ ] commit: if it fails for hooks, add option keep selection of files
+- [ ] refactor: How to find if the caret is inside parentheses? `[PopulateArgumentsService.findCallExpression`
+- [ ] fix: do not offer "use exported" if in private child package: `from .._bases import BaseBlaModel`
+
+## Pending Features
+
+- [ ] feat: Add local variable from unresolved reference
+- [ ] feat: exception: if using err/exc/error, offer `except bla as X`
+- [ ] feat: populate with argument names that exist in the current scope
 - [ ] feat: Convert dict with default to try/except case
 - [ ] feat: Copy names of failed tests
-- [ ] fix: ignore conftest when suggesting __all__
 - [ ] feat: quick fix to remove unresolved import from __all__
-- [ ] fix: do not offer introduce custom type on string annotation
 - [ ] feat: Turn into type checking import
-- [ ] https://youtrack.jetbrains.com/issue/PY-85543]
 - [ ] Offer unwrap here
 
 ```python
@@ -21,8 +29,6 @@ def test_():
   return int(val)
 ```
 
-- [ ] unwrap: do not offer here `access_level: str = group_access.get("access_level")`
-- [ ] wrap: Do not offer t.Final -> Wrap with Typevar
 - [ ] roots: adopt when moving files
 - [ ] roots: mark as unresolved reference without
 - [ ] commit: if it fails for hooks, add option keep selection of files
@@ -30,8 +36,6 @@ def test_():
 - [ ] feat: Treat references as PSI elements, pytest.mark.filterwarnings, patch()
 - [ ] refactor: How to find if the caret is inside parentheses? `[PopulateArgumentsService.findCallExpression`
 - [ ] feat: Replace expected with actual test outcome
-- [ ] Research why this magic is required: `fixtures.IntentionHelpersKt.doIntentionTest`
-- [ ] fix: do not offer "use exported" if in private child package: `from .._bases import BaseBlaModel`
 - [ ] feat: populate union (docs/populate/populate-union.md)
 - [ ] feat: Generate dataclass, basemodel
 - [ ] feat: Create run config using package mode
@@ -39,10 +43,10 @@ def test_():
 - [ ] feat: Support export of attributes
 - [ ] feat: Parse pytest identifier in search all dialog
 - [ ] feat: Copy selection with imports
-- [ ] Wrap default/default_factory after introducing custom type in dataclass/pydantic
-- [ ] Render dataclass fields in preview
+- [ ] feat:Wrap default/default_factory after introducing custom type in dataclass/pydantic
+- [ ] feat: Render dataclass fields in preview
 - [ ] feat: Convert fn to lambda
-- [ ] Block list: Do not allow names from typing or collections.abc.
+- [ ] feat: Block list: Do not allow names from typing or collections.abc.
 
 ## In Progress Tasks
 
