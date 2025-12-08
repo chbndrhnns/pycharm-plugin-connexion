@@ -246,3 +246,11 @@
     "NEW INSTRUCTION": "WHEN checking unresolved references for availability THEN only block on unresolved typing.Final"
 }
 
+[2025-12-08 18:12] - Updated by Junie
+{
+    "TYPE": "new instructions",
+    "CATEGORY": "intention behavior",
+    "ERROR": "-",
+    "NEW INSTRUCTION": "WHEN encountering dict.get(key, default) call THEN offer conversion to try/except KeyError form"
+}
+
