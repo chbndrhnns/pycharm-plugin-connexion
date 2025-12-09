@@ -37,6 +37,7 @@ abstract class TestBase : MyPlatformTestCase() {
                 enableDataclassMissingInspection = true,
                 enablePrivateModuleImportInspection = true,
                 enableCopyBuildNumberAction = true,
+                enableCreateLocalVariableIntention = true,
                 ),
         )
         val sdk = PythonMockSdk.create(LanguageLevel.PYTHON311, myFixture.tempDirFixture.getFile("/")!!)

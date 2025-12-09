@@ -1,23 +1,3 @@
-[2025-12-04 13:15] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "create",
-    "ERROR": "File already exists at path",
-    "ROOT CAUSE": "Attempted to create an existing file instead of updating its contents.",
-    "PROJECT NOTE": "docs/parameter-object/state.md already exists; update it using apply_patch or search_replace.",
-    "NEW INSTRUCTION": "WHEN create reports file already exists THEN update the file using apply_patch instead"
-}
-
-[2025-12-04 14:08] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid context",
-    "TOOL": "PyIntroduceParameterObjectAction.update",
-    "ERROR": "PSI requested on EDT in update()",
-    "ROOT CAUSE": "The action's update() queries injected PSI from DataContext on the EDT, violating ActionUpdateThread rules.",
-    "PROJECT NOTE": "In PyIntroduceParameterObjectAction, override getActionUpdateThread() to return ActionUpdateThread.BGT and ensure PSI/data lookups happen in update() under BGT only; avoid injected PSI requests on EDT.",
-    "NEW INSTRUCTION": "WHEN IDE logs '$injected$.psi.File is requested on EDT' THEN set getActionUpdateThread to BGT and move PSI lookups off EDT"
-}
-
 [2025-12-04 15:23] - Updated by Junie - Error analysis
 {
     "TYPE": "invalid args",
@@ -806,4 +786,24 @@
     "ROOT CAUSE": "Inserting before the colon made PSI place 'as' inside exceptClass, before the closing ')'.",
     "PROJECT NOTE": "When editing PyExceptPart, add 'as <name>' after exceptClass (use addAfter on exceptPart.exceptClass) or rebuild the except clause from text via PyElementGenerator to avoid token-boundary issues.",
     "NEW INSTRUCTION": "WHEN exceptClass exists in PyExceptPart THEN insert 'as target' after exceptClass using addAfter"
+}
+
+[2025-12-09 10:30] - Updated by Junie - Error analysis
+{
+    "TYPE": "build failure",
+    "TOOL": "create",
+    "ERROR": "Unresolved references in created intention file",
+    "ROOT CAUSE": "The new intention references a missing settings flag and uses PyReferenceExpression.resolve() which doesn't exist.",
+    "PROJECT NOTE": "Add enableCreateLocalVariableIntention to PluginSettingsState.State and wire it in PluginSettingsConfigurable; use refExpr.reference?.resolve() instead of refExpr.resolve().",
+    "NEW INSTRUCTION": "WHEN linter reports Unresolved reference 'enableCreateLocalVariableIntention' THEN add flag to settings State and UI"
+}
+
+[2025-12-09 10:32] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid API",
+    "TOOL": "create",
+    "ERROR": "Unresolved reference: resolve() on PyReferenceExpression",
+    "ROOT CAUSE": "The new intention calls PyReferenceExpression.resolve(), which is not a valid API; resolution must use its PsiReference.",
+    "PROJECT NOTE": "In Python PSI, resolve references via refExpr.reference.resolve() (or multiResolve), not refExpr.resolve().",
+    "NEW INSTRUCTION": "WHEN resolving a PyReferenceExpression THEN use refExpr.reference.resolve() and check for null"
 }

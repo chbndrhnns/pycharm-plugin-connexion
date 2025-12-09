@@ -98,6 +98,11 @@
             <category>Exceptions</category>
         </intentionAction>
 
+        <intentionAction>
+            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.localvariable.CreateLocalVariableIntention</className>
+            <category>Create local variable</category>
+        </intentionAction>
+
         <applicationConfigurable
                 displayName="DDD Toolkit"
                 id="com.github.chbndrhnns.intellijplatformplugincopy.settings"

@@ -25,6 +25,7 @@ class PluginSettingsConfigurable : SearchableConfigurable {
     private lateinit var enableDataclassMissingInspectionCb: JBCheckBox
     private lateinit var enablePrivateModuleImportInspectionCb: JBCheckBox
     private lateinit var enableCopyBuildNumberCb: JBCheckBox
+    private lateinit var enableCreateLocalVariableIntentionCb: JBCheckBox
 
     override fun getId(): String = "com.github.chbndrhnns.intellijplatformplugincopy.settings"
     override fun getDisplayName(): String = "DDD Toolkit"
@@ -49,6 +50,7 @@ class PluginSettingsConfigurable : SearchableConfigurable {
         enableDataclassMissingInspectionCb = JBCheckBox("Enable ‘Dataclass missing’ inspection")
         enablePrivateModuleImportInspectionCb = JBCheckBox("Enable ‘Private module import’ inspection")
         enableCopyBuildNumberCb = JBCheckBox("Enable ‘Copy Build Number’ context menu action")
+        enableCreateLocalVariableIntentionCb = JBCheckBox("Enable ‘Create local variable’ intention")
         inner.add(enableWrapCb)
         inner.add(enableWrapItemsCb)
         inner.add(enableUnwrapCb)
@@ -65,6 +67,7 @@ class PluginSettingsConfigurable : SearchableConfigurable {
         inner.add(enableDataclassMissingInspectionCb)
         inner.add(enablePrivateModuleImportInspectionCb)
         inner.add(enableCopyBuildNumberCb)
+        inner.add(enableCreateLocalVariableIntentionCb)
         p.add(inner, BorderLayout.NORTH)
         panel = p
         return p
@@ -87,7 +90,8 @@ class PluginSettingsConfigurable : SearchableConfigurable {
                 (::enableIntroduceParameterObjectCb.isInitialized && enableIntroduceParameterObjectCb.isSelected != state.enableIntroduceParameterObjectIntention) ||
                 (::enableDataclassMissingInspectionCb.isInitialized && enableDataclassMissingInspectionCb.isSelected != state.enableDataclassMissingInspection) ||
                 (::enablePrivateModuleImportInspectionCb.isInitialized && enablePrivateModuleImportInspectionCb.isSelected != state.enablePrivateModuleImportInspection) ||
-                (::enableCopyBuildNumberCb.isInitialized && enableCopyBuildNumberCb.isSelected != state.enableCopyBuildNumberAction)
+                (::enableCopyBuildNumberCb.isInitialized && enableCopyBuildNumberCb.isSelected != state.enableCopyBuildNumberAction) ||
+                (::enableCreateLocalVariableIntentionCb.isInitialized && enableCreateLocalVariableIntentionCb.isSelected != state.enableCreateLocalVariableIntention)
     }
 
     override fun apply() {
@@ -109,6 +113,7 @@ class PluginSettingsConfigurable : SearchableConfigurable {
             enableDataclassMissingInspection = enableDataclassMissingInspectionCb.isSelected,
             enablePrivateModuleImportInspection = enablePrivateModuleImportInspectionCb.isSelected,
             enableCopyBuildNumberAction = enableCopyBuildNumberCb.isSelected,
+            enableCreateLocalVariableIntention = enableCreateLocalVariableIntentionCb.isSelected,
         )
         svc.loadState(s)
     }
@@ -142,6 +147,7 @@ class PluginSettingsConfigurable : SearchableConfigurable {
         if (::enablePrivateModuleImportInspectionCb.isInitialized) enablePrivateModuleImportInspectionCb.isSelected =
             st.enablePrivateModuleImportInspection
         if (::enableCopyBuildNumberCb.isInitialized) enableCopyBuildNumberCb.isSelected = st.enableCopyBuildNumberAction
+        if (::enableCreateLocalVariableIntentionCb.isInitialized) enableCreateLocalVariableIntentionCb.isSelected = st.enableCreateLocalVariableIntention
     }
 
     override fun disposeUIResources() {

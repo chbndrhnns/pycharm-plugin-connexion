@@ -24,6 +24,7 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enableDataclassMissingInspection: Boolean = true,
         var enablePrivateModuleImportInspection: Boolean = true,
         var enableCopyBuildNumberAction: Boolean = true,
+        var enableCreateLocalVariableIntention: Boolean = true,
     )
 
     private var myState = State()

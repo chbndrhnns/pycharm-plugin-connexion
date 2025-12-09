@@ -779,3 +779,13 @@ directly.",
     "NEW INSTRUCTION": "WHEN deprecated API usage is identified THEN search_project for all occurrences and fix together"
 }
 
+[2025-12-09 10:33] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "scan project, run build early",
+    "BOTTLENECK": "Incorrect API usage for PyReferenceExpression resolution caused compilation failure.",
+    "PROJECT NOTE": "plugin.xml shows unresolved Python language id; verify correct language id and dependencies when registering the intention.",
+    "NEW INSTRUCTION": "WHEN new Kotlin classes or settings are added THEN run the build immediately"
+}
+
