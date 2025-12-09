@@ -2,6 +2,7 @@
 
 ## Pending Issues
 
+- [ ] Unsupported python version appears too early, when no interpreter is set up
 - [ ] fix: Remove deprecated usage: `FilenameIndex.getFilesByName`
 - [ ] fix: Add pytest nodes to separate view in search everywhere (currently, `pytest` seems not respected)
 - [ ] fix: cancel introduce type rename dialog still keeps it
