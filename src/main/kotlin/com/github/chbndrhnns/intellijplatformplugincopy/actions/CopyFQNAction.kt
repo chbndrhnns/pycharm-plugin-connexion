@@ -39,7 +39,7 @@ class CopyFQNAction : AnAction() {
         }
     }
 
-    private fun collectFQNs(
+    internal fun collectFQNs(
         node: DefaultMutableTreeNode,
         result: MutableList<String>,
         project: Project
@@ -61,7 +61,7 @@ class CopyFQNAction : AnAction() {
         }
     }
 
-    private fun generateFQN(proxy: SMTestProxy, project: Project): String? {
+    internal fun generateFQN(proxy: SMTestProxy, project: Project): String? {
         val url = proxy.locationUrl
         if (url != null && url.startsWith("python_uttestid://")) {
             return url.removePrefix("python_uttestid://")

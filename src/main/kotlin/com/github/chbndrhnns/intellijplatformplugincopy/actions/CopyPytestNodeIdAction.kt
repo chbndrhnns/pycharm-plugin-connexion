@@ -43,7 +43,7 @@ class CopyPytestNodeIdAction : AnAction() {
         }
     }
 
-    private fun collectNodeIds(
+    internal fun collectNodeIds(
         node: DefaultMutableTreeNode,
         result: MutableList<String>,
         project: Project

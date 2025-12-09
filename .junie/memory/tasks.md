@@ -917,3 +917,14 @@
     "PROJECT NOTE": "IntelliJ Platform API availability depends on platformVersion in gradle.properties; validate replacements against it.",
     "NEW INSTRUCTION": "WHEN deprecation fix requires unknown replacement API THEN inspect warned lines, then search project for replacement symbol before editing"
 }
+
+[2025-12-09 23:32] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "run full test suite",
+    "MISSING STEPS": "-",
+    "BOTTLENECK": "Gradle/IDE test environment instability when executing the entire suite.",
+    "PROJECT NOTE": "Using fake SMTestProxy trees is sufficient; no need to involve TestTreeView.",
+    "NEW INSTRUCTION": "WHEN verifying added tests THEN run only the specific test class or method"
+}
+

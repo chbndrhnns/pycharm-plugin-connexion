@@ -1,13 +1,3 @@
-[2025-12-08 15:49] - Updated by Junie - Error analysis
-{
-    "TYPE": "run_test failure",
-    "TOOL": "Gradle (:test)",
-    "ERROR": "Could not write XML test results file",
-    "ROOT CAUSE": "The failing test produced a large/raw diff message that broke the JUnit XML writer.",
-    "PROJECT NOTE": "myFixture.checkResult compares exact text; prefer inspecting build/reports/tests/test/index.html for diffs instead of embedding raw file contents in exceptions.",
-    "NEW INSTRUCTION": "WHEN needing actual output from a failing test THEN write it to a file and log path, not exception"
-}
-
 [2025-12-08 15:50] - Updated by Junie - Error analysis
 {
     "TYPE": "tool failure",
@@ -806,4 +796,14 @@
     "ROOT CAUSE": "Replaced a deprecated API with PackageIndex, which is unavailable in the project’s SDK version.",
     "PROJECT NOTE": "For package name lookup by directory, keep ProjectRootManager.getInstance(project).fileIndex.getPackageNameByDirectory with @Suppress(\"DEPRECATION\") unless com.intellij.openapi.roots.PackageIndex exists in the targeted platform.",
     "NEW INSTRUCTION": "WHEN replacing a deprecated IntelliJ API THEN verify target class exists in current SDK before editing"
+}
+
+[2025-12-09 23:31] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "Gradle :test",
+    "ERROR": "Could not read Gradle transforms workspace metadata.bin",
+    "ROOT CAUSE": "The Gradle transforms cache is corrupted while configuring IntelliJ platform test dependencies.",
+    "PROJECT NOTE": "This IntelliJ plugin project relies on Gradle-managed IDE artifacts; cache corruption in ~/.gradle/caches/transforms can break configuration. Refresh dependencies from project root.",
+    "NEW INSTRUCTION": "WHEN Gradle reports 'Could not read workspace metadata' THEN run './gradlew --refresh-dependencies cleanTest test'"
 }
