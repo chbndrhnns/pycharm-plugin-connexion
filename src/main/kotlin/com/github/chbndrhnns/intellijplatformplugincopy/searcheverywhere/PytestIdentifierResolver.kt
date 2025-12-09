@@ -3,6 +3,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.searcheverywhere
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiManager
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.jetbrains.python.psi.PyClass
@@ -20,7 +21,10 @@ class PytestIdentifierResolver(private val project: Project) {
         val scope = GlobalSearchScope.projectScope(project)
 
         // Find the Python file
-        val pyFiles = FilenameIndex.getFilesByName(project, fileName, scope).filterIsInstance<PyFile>()
+        val psiManager = PsiManager.getInstance(project)
+        val pyFiles = FilenameIndex.getVirtualFilesByName(fileName, scope)
+            .mapNotNull { psiManager.findFile(it) }
+            .filterIsInstance<PyFile>()
 
         for (pyFile in pyFiles) {
             // Check if this is the correct file by path

@@ -769,3 +769,13 @@ directly.",
     "NEW INSTRUCTION": "WHEN adding a new intention THEN create intentionDescriptions with description and before/after templates"
 }
 
+[2025-12-09 10:18] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "scan project for other usages",
+    "BOTTLENECK": "Validation relied on a single targeted test rather than ensuring all occurrences were addressed.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN deprecated API usage is identified THEN search_project for all occurrences and fix together"
+}
+
