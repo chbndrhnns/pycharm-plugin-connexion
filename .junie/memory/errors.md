@@ -1,63 +1,3 @@
-[2025-12-03 14:57] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "No value passed for newly added parameters",
-    "ROOT CAUSE": "Method signatures were changed to include paramUsages/functionUsages but call sites were not updated accordingly.",
-    "PROJECT NOTE": "When refactoring PyIntroduceParameterObjectProcessor to two phases (read/search then write), ensure run() computes usages in readAction and passes them to updateFunctionBody and updateCallSites.",
-    "NEW INSTRUCTION": "WHEN search_replace reports 'No value passed for parameter' THEN update all call sites to supply required arguments"
-}
-
-[2025-12-03 22:23] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Argument type mismatch: passed PyClass where String expected",
-    "ROOT CAUSE": "Call site was updated to pass a PyClass but the method signature still expects a String.",
-    "PROJECT NOTE": "In PyIntroduceParameterObjectProcessor.kt, change updateCallSites to accept PyClass and update all invocations accordingly.",
-    "NEW INSTRUCTION": "WHEN argument type mismatch appears after refactor THEN update method signatures and all call sites"
-}
-
-[2025-12-04 11:49] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic bug",
-    "TOOL": "run_test",
-    "ERROR": "Intention not offered for variadic/separator signatures",
-    "ROOT CAUSE": "The Introduce Parameter Object processor excludes *args/**kwargs/*/ parameters, so the intention is not available and expected transformations fail.",
-    "PROJECT NOTE": "In PyIntroduceParameterObjectProcessor.collectParameters and signature rewriting, variadic params and separators are filtered out; keep them intact while grouping only selected normal parameters into the dataclass.",
-    "NEW INSTRUCTION": "WHEN function has *args, **kwargs, * or / THEN preserve them and still offer the intention"
-}
-
-[2025-12-04 12:30] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic bug",
-    "TOOL": "run_test",
-    "ERROR": "Classmethod call arguments mapped to 'cls'",
-    "ROOT CAUSE": "updateCallSites maps the first call-site argument to the first formal parameter, not skipping the implicit receiver ('cls' for classmethod), so arguments shift and params/dataclass get misplaced.",
-    "PROJECT NOTE": "When reconstructing call arguments, treat 'self' and 'cls' as implicit for bound calls and exclude them from positional mapping and from the extracted set.",
-    "NEW INSTRUCTION": "WHEN mapping call-site arguments for a method with first param self/cls THEN skip that parameter in positional mapping"
-}
-
-[2025-12-04 12:34] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Expected/actual text mismatch in test result",
-    "ROOT CAUSE": "The processor doesn't detect dataclass name collisions and fails to suffix an index, producing a conflicting name.",
-    "PROJECT NOTE": "Implement collision-safe naming in PyIntroduceParameterObjectProcessor.kt (e.g., generateDataclassName): check current file scope and imports for the target name; if taken, append 1, 2, ... until unique.",
-    "NEW INSTRUCTION": "WHEN existing class with generated dataclass name in scope THEN append increasing index until the name is unique"
-}
-
-[2025-12-04 12:35] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Expected/actual text mismatch",
-    "ROOT CAUSE": "The expected 'after' text includes extra trailing newline(s), causing strict comparison failure.",
-    "PROJECT NOTE": "myFixture.checkResult compares text exactly; avoid appending extra blank lines in expected strings for doIntentionTest.",
-    "NEW INSTRUCTION": "WHEN preparing expected 'after' text THEN remove trailing blank lines and final newline additions"
-}
-
 [2025-12-04 12:59] - Updated by Junie - Error analysis
 {
     "TYPE": "test assertion",
@@ -808,3 +748,62 @@
     "NEW INSTRUCTION": "WHEN run_test reports missing test-log.properties THEN set java.util.logging.config.file to a valid resource path"
 }
 
+[2025-12-09 09:34] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "run_test",
+    "ERROR": "Missing j.u.l LogManager config file",
+    "ROOT CAUSE": "The IntelliJ test runner looked for a JUL test-log.properties that isn't present in the IDE cache.",
+    "PROJECT NOTE": "Gradle IntelliJ tests may print JUL config missing yet still execute fully; optionally set -Djava.util.logging.config.file to a valid properties file in test resources to silence it.",
+    "NEW INSTRUCTION": "WHEN run_test prints 'LogManager config file does not exist' THEN proceed if tests summary shows all passed"
+}
+
+[2025-12-09 09:34] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "run_test",
+    "ERROR": "Missing test-log.properties for j.u.l.LogManager",
+    "ROOT CAUSE": "The test JVM expects a java.util.logging config file but none is provided.",
+    "PROJECT NOTE": "Add src/test/resources/test-log.properties and configure Gradle test to set -Djava.util.logging.config.file to that file.",
+    "NEW INSTRUCTION": "WHEN run_test logs 'LogManager config does not exist' THEN set java.util.logging.config.file to a test resource file"
+}
+
+[2025-12-09 09:36] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "run_test",
+    "ERROR": "Missing j.u.l.LogManager config file test-log.properties",
+    "ROOT CAUSE": "Tests start the IDE platform expecting a JUL config file, but system property points to a non-existent path.",
+    "PROJECT NOTE": "Provide a test logging config and wire it via Gradle: create src/test/resources/test-log.properties and add in build.gradle.kts: tasks.test { systemProperty(\"java.util.logging.config.file\", file(\"src/test/resources/test-log.properties\").absolutePath) }",
+    "NEW INSTRUCTION": "WHEN run_test prints 'LogManager config does not exist' THEN set java.util.logging.config.file to a valid test-log.properties"
+}
+
+[2025-12-09 09:40] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "run_test",
+    "ERROR": "Missing j.u.l LogManager config file",
+    "ROOT CAUSE": "The IDE test runner expects test-log.properties in the PyCharm SDK cache path, which is absent.",
+    "PROJECT NOTE": "This warning can appear while IntelliJ tests still execute successfully; it's benign if tests pass.",
+    "NEW INSTRUCTION": "WHEN run_test reports missing test-log.properties but tests pass THEN ignore the warning and proceed"
+}
+
+[2025-12-09 09:42] - Updated by Junie - Error analysis
+{
+    "TYPE": "compile error",
+    "TOOL": "create",
+    "ERROR": "Used non-existent PyRaiseStatement.fromExpression property",
+    "ROOT CAUSE": "The Python PSI API lacks fromExpression on PyRaiseStatement; the code referenced it directly.",
+    "PROJECT NOTE": "In IntelliJ Python PSI, detect 'from' via PyTokenTypes.FROM_KEYWORD and pick the following expression from raiseStatement.expressions.",
+    "NEW INSTRUCTION": "WHEN needing the raise 'from' expression THEN find FROM token and select following expression"
+}
+
+[2025-12-09 09:50] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "CustomTypeGenerator.insertClass",
+    "ERROR": "Anchor parent mismatch for addAfter",
+    "ROOT CAUSE": "The preview used an anchor not directly under the target PyFile, so PsiFile.addAfter rejected it.",
+    "PROJECT NOTE": "When inserting a top-level class in Kotlin/Python PSI, the anchor must be a direct child of the PyFile (e.g., an existing top-level statement or null to append). Recompute the anchor from the preview file, not reused from the original.",
+    "NEW INSTRUCTION": "WHEN inserting a class into a PyFile THEN select an anchor that is a direct child of that file"
+}

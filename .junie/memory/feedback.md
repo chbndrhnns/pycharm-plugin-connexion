@@ -262,3 +262,35 @@
     "NEW INSTRUCTION": "WHEN current file name is conftest.py THEN do not suggest adding to __all__"
 }
 
+[2025-12-09 06:48] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "commit restore banner",
+    "EXPECTATION": "Also display the restore bar when the commit dialog is cancelled, since selection is lost then too",
+    "NEW INSTRUCTION": "WHEN commit dialog is cancelled THEN show restore banner offering selection restoration"
+}
+
+[2025-12-09 07:33] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "commit workflow integration",
+    "EXPECTATION": "Hook into the modal commit dialog lifecycle; executionEnded on CommitWorkflowListener is not invoked there",
+    "NEW INSTRUCTION": "WHEN implementing selection restore for modal dialog THEN use CheckinHandlerFactory and CheckinHandler callbacks"
+}
+
+[2025-12-09 08:13] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "modal commit dialog banner",
+    "EXPECTATION": "Restore banner must work in modal commit dialog; do not rely on panel being Disposable",
+    "NEW INSTRUCTION": "WHEN panel is not Disposable in modal dialog THEN obtain dialog Disposable and attach banner"
+}
+
+[2025-12-09 09:49] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "intention behavior",
+    "EXPECTATION": "Use whatever identifier appears after 'from' in the raise statement and apply it; only one test is needed",
+    "NEW INSTRUCTION": "WHEN raise statement has 'from <identifier>' THEN offer intention using that identifier"
+}
+

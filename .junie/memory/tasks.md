@@ -699,3 +699,43 @@ directly.",
     "NEW INSTRUCTION": "WHEN adding a console hyperlink THEN assert navigate opens the expected test element"
 }
 
+[2025-12-09 00:28] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "add negative tests, expand edge-case tests, verify cross-platform paths",
+    "BOTTLENECK": "Insufficient negative tests for ambiguous patterns leading to false positives.",
+    "PROJECT NOTE": "Tighten regex or validation to avoid matching lines like file.py:: (no node), Windows drive paths, or pytest summary lines.",
+    "NEW INSTRUCTION": "WHEN implementing a console filter or parser THEN add negative tests covering common false-positive patterns and path variants"
+}
+
+[2025-12-09 07:36] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "focus non-modal first,heuristic success detection via changelist diff,reflection-based restore for non-modal handler",
+    "MISSING STEPS": "use modal checkin handler,wire factory in plugin.xml,handle cancel/fail paths for modal,add modal-specific tests",
+    "BOTTLENECK": "Wrong lifecycle hook; CommitWorkflowListener.executionEnded is not called by the modal dialog.",
+    "PROJECT NOTE": "For modal commits, use CheckinHandler via VcsCheckinHandlerFactory; commit workflow hooks target non-modal UI.",
+    "NEW INSTRUCTION": "WHEN commit originates from modal dialog THEN register VcsCheckinHandlerFactory and implement CheckinHandler"
+}
+
+[2025-12-09 08:14] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "keep non-modal listener",
+    "MISSING STEPS": "add modal cancel hook,add modal cancellation test,manual verify in IDE",
+    "BOTTLENECK": "Cancellation detection relied on panel being Disposable, which is false for modal dialog.",
+    "PROJECT NOTE": "CommitProjectPanelAdapter is not Disposable; cancellation should be detected via the owning DialogWrapper close/cancel events.",
+    "NEW INSTRUCTION": "WHEN modal commit panel is not Disposable THEN attach DialogWrapper close listener to detect cancellation"
+}
+
+[2025-12-09 09:42] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "run tests, align intention text",
+    "BOTTLENECK": "Tests were not executed, hiding a probable intention text/name mismatch.",
+    "PROJECT NOTE": "The test utility likely matches intentions by getText; keep a stable text string.",
+    "NEW INSTRUCTION": "WHEN using doIntentionTest with an intention name THEN set getText to that exact string"
+}
+
