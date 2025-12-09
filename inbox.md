@@ -9,7 +9,6 @@
 
 ## Pending Features
 
-- [ ] feat: Add local variable from unresolved reference
 - [ ] feat: populate with argument names that exist in the current scope
 - [ ] feat: Copy names of failed tests
 - [ ] feat: quick fix to remove unresolved import from __all__
@@ -31,6 +30,7 @@
 
 ## In Progress Tasks
 
+- [x] feat: Add local variable from unresolved reference
 - [ ] commit: if it fails for hooks, add option keep selection of files (docs/keep-commit-selection/spec.md)
 
 ## Completed Tasks (newest first)
