@@ -288,16 +288,122 @@ intentionTest("a.py") {
 
 ---
 
+### Long File Analysis
+
+The following files were analyzed for potential splitting. Files are listed by line count.
+
+#### 8. `TargetDetector.kt` (547 lines) - **Recommended to Split**
+
+**File:** `src/main/kotlin/.../intention/customtype/TargetDetector.kt`
+
+**Issue:**
+This is the longest file in the codebase. It contains a single class with 20+ private helper methods covering multiple detection strategies:
+- Annotation detection (`tryFromAnnotation`)
+- Variable definition detection (`tryFromVariableDefinition`, `createTargetFromDefinition`)
+- F-string reference detection (`tryFromFStringReference`)
+- Expression detection (`tryFromExpression`) - the largest method
+- Type determination helpers (`determineBuiltinType`, `detectFromLiteral`, `normalizeName`)
+- Context detection (`detectKeywordArgumentName`, `detectAssignmentName`, `detectReturnAnnotationInfo`, `detectParameterDefaultInfo`, `detectDictionaryKeyInfo`)
+- Validation helpers (`isAlreadyWrappedInCustomType`, `isEnumAssignment`, `hasConflictingDataclassType`, `isDataclassField`, `isImplicitReturnOfFunctionCall`)
+
+**Suggested Refactoring:**
+Split into focused detector classes:
+
+1. **`AnnotationTargetDetector.kt`** - Detection from annotations and variable definitions
+   - `tryFromAnnotation()`
+   - `tryFromVariableDefinition()`
+   - `createTargetFromDefinition()`
+   - `createTargetFromParameter()`
+
+2. **`ExpressionTargetDetector.kt`** - Detection from expressions
+   - `tryFromExpression()` and its helpers
+   - `detectKeywordArgumentName()`
+   - `detectAssignmentName()`
+   - `detectReturnAnnotationInfo()`
+   - `detectParameterDefaultInfo()`
+   - `detectDictionaryKeyInfo()`
+
+3. **`TargetValidation.kt`** - Validation utilities
+   - `isAlreadyWrappedInCustomType()`
+   - `isEnumAssignment()`
+   - `hasConflictingDataclassType()`
+   - `isImplicitReturnOfFunctionCall()`
+   - `isAssignmentTargetOfImplicitFunctionCall()`
+
+4. **`TypeNameNormalizer.kt`** - Type name utilities
+   - `normalizeName()`
+   - `isTypingSymbol()`
+   - `determineBuiltinType()`
+   - `detectFromLiteral()`
+   - `findExpressionMatchingBuiltin()`
+
+The main `TargetDetector` class would become a coordinator delegating to these focused classes.
+
+---
+
+#### 9. `strategies.kt` (356 lines) - **Recommended to Split**
+
+**File:** `src/main/kotlin/.../intention/wrap/strategies.kt`
+
+**Issue:**
+This file contains 7 different strategy classes all in one file:
+- `WrapStrategy` (interface)
+- `OuterContainerStrategy` (~85 lines)
+- `ContainerItemStrategy` (~30 lines)
+- `UnionStrategy` (~60 lines)
+- `GenericCtorStrategy` (~30 lines)
+- `UnwrapStrategy` (object, ~20 lines)
+- `EnumStrategy` (~45 lines)
+- `EnumMemberDefinitionStrategy` (~55 lines)
+
+**Suggested Refactoring:**
+Split each strategy into its own file following the single-class-per-file convention:
+
+```
+intention/wrap/strategies/
+├── WrapStrategy.kt              # Interface definition
+├── OuterContainerStrategy.kt
+├── ContainerItemStrategy.kt
+├── UnionStrategy.kt
+├── GenericCtorStrategy.kt
+├── UnwrapStrategy.kt
+├── EnumStrategy.kt
+└── EnumMemberDefinitionStrategy.kt
+```
+
+Alternatively, group related strategies:
+- `ContainerStrategies.kt` - `OuterContainerStrategy`, `ContainerItemStrategy`
+- `TypeStrategies.kt` - `UnionStrategy`, `GenericCtorStrategy`
+- `EnumStrategies.kt` - `EnumStrategy`, `EnumMemberDefinitionStrategy`
+- `UnwrapStrategy.kt` - standalone
+
+---
+
+#### Files Analyzed but NOT Recommended to Split
+
+| File | Lines | Reason |
+|------|-------|--------|
+| `PyIntroduceParameterObjectProcessor.kt` | 429 | Cohesive refactoring processor - all methods work together for a single refactoring operation |
+| `UsageRewriter.kt` | 357 | Cohesive rewriter class - all methods handle PSI rewrites for the same feature |
+| `PyMissingInDunderAllInspection.kt` | 307 | Standard inspection pattern with nested Visitor - splitting would break the inspection structure |
+| `UnionCandidates.kt` | 281 | Single responsibility - collecting union type candidates |
+| `CustomTypeApplier.kt` | 272 | Cohesive applier class for the custom type feature |
+| `ContainerTyping.kt` | 249 | Focused on container type analysis |
+
+---
+
 ### Priority Recommendations
 
 | Priority | Item | Effort | Impact |
 |----------|------|--------|--------|
-| High | Duplicate `isBuiltinName` | Low | Reduces maintenance burden |
-| High | Duplicate `CONTAINERS` | Low | Single source of truth |
+| High | Duplicate `isBuiltinName` | Low | Reduces maintenance burden | ✓ Done |
+| High | Duplicate `CONTAINERS` | Low | Single source of truth | ✓ Done |
 | Medium | Split `ExpectedTypeInfo.kt` | Medium | Improves readability and testability |
+| Medium | Split `TargetDetector.kt` | Medium | Improves maintainability of largest file |
+| Medium | Split `strategies.kt` | Low | Better organization, easier navigation |
 | Medium | Intention boilerplate | Medium | Reduces code duplication |
 | Low | `PyWrapHeuristics` boundaries | Medium | Clarifies architecture |
-| Low | Test SDK setup | Low | Minor DRY improvement |
+| Low | Test SDK setup | Low | Minor DRY improvement | ✓ Done |
 | Low | Test helpers organization | Low | Improves discoverability |
 
 ---

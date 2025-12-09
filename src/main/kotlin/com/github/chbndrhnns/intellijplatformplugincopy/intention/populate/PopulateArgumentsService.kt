@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.populate
 
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyBuiltinNames
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.PyImportService
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -131,7 +132,7 @@ class PopulateArgumentsService {
             if (finalResult.text == "..." && calleeClass != null) {
                 val field = calleeClass.findClassAttribute(name, true, context)
                 val aliasName = (field?.annotation?.value as? PyReferenceExpression)?.name
-                if (!aliasName.isNullOrBlank() && !isBuiltinName(aliasName)) {
+                if (!aliasName.isNullOrBlank() && !PyBuiltinNames.isBuiltin(aliasName)) {
                     finalResult = PyValueGenerator.GenerationResult("$aliasName(...)", emptySet())
                 }
             }
@@ -162,12 +163,5 @@ class PopulateArgumentsService {
         if (call !is PyDecorator && call.parent !is PyDecorator) {
             CodeStyleManager.getInstance(project).reformat(argumentList)
         }
-    }
-
-    private fun isBuiltinName(name: String): Boolean {
-        val lower = name.lowercase()
-        return lower in setOf(
-            "int", "str", "float", "bool", "bytes", "list", "dict", "set", "tuple", "range", "complex"
-        )
     }
 }

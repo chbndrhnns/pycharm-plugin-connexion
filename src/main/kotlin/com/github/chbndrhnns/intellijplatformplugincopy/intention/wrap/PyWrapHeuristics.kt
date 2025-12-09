@@ -16,7 +16,7 @@ import com.jetbrains.python.psi.types.TypeEvalContext
  */
 object PyWrapHeuristics {
 
-    val CONTAINERS = setOf("list", "set", "tuple", "dict")
+    val CONTAINERS get() = PyTypeIntentions.CONTAINERS
 
     fun isContainerLiteral(expr: PsiElement): Boolean = when (expr) {
         is PyListLiteralExpression,

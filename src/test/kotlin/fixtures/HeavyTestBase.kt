@@ -1,21 +1,15 @@
 package fixtures
 
-import PythonMockSdk
-import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.DumbService
-import com.intellij.openapi.projectRoots.ProjectJdkTable
-import com.intellij.openapi.util.Disposer
 import com.intellij.testFramework.PsiTestUtil
 import com.intellij.testFramework.UsefulTestCase
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
 import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory
 import com.jetbrains.python.inspections.PyTypeCheckerInspection
-import com.jetbrains.python.psi.LanguageLevel
-import java.nio.file.Paths
 
 /**
  * Heavy variant of [TestBase] using a real project fixture created via
@@ -62,28 +56,19 @@ abstract class HeavyTestBase : UsefulTestCase() {
     }
 
     private fun setUpPython() {
-        System.setProperty(
-            "idea.python.helpers.path",
-            Paths.get(PathManager.getHomePath(), "plugins", "python-ce", "helpers").toString(),
-        )
+        PythonTestSetup.configurePythonHelpers()
 
         val root = myFixture.tempDirFixture.getFile("/")!!
 
-        runWriteAction {
-            val sdk = PythonMockSdk.create(LanguageLevel.PYTHON311, root)
-
-            // 1. Register SDK in the global JDK table so the project sees it.
-            ProjectJdkTable.getInstance().addJdk(sdk)
-            // 2. Let tests decide which directories become content/source
-            // roots (see docs/heavy2.md). Here we only prepare the SDK and
-            // attach it to the project-wide JDK table.
-
-            Disposer.register(myFixture.testRootDisposable) {
-                runWriteAction {
-                    ProjectJdkTable.getInstance().removeJdk(sdk)
-                }
-            }
-        }
+        // Register SDK in the global JDK table so the project sees it.
+        // Let tests decide which directories become content/source
+        // roots (see docs/heavy2.md). Here we only prepare the SDK and
+        // attach it to the project-wide JDK table.
+        PythonTestSetup.createAndRegisterSdk(
+            root = root,
+            disposable = myFixture.testRootDisposable,
+            addToJdkTable = true
+        )
 
         // Enable the Python type checker so heavy tests can assert on
         // inspections that rely on indices and the configured SDK.

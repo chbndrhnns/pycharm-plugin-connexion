@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.populate
 
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.isDataclassClass
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyBuiltinNames
 import com.intellij.psi.PsiNamedElement
 import com.jetbrains.python.PyNames
 import com.jetbrains.python.psi.LanguageLevel
@@ -106,7 +107,7 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
             // prefer `Alias(...)`. Do not wrap plain string aliases like Pydantic's Field(alias="...").
             if (valueText == DEFAULT_FALLBACK_VALUE && field.aliasElement != null) {
                 val alias = field.aliasName
-                if (!alias.isNullOrBlank() && !isBuiltinName(alias)) {
+                if (!alias.isNullOrBlank() && !PyBuiltinNames.isBuiltin(alias)) {
                     valueText = "$alias(...)"
                     // aliasElement is non-null here; add it to imports if applicable
                     requiredImports.add(field.aliasElement)
@@ -140,7 +141,7 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
 
     private fun wrapAliasNameOrDefault(name: String?): GenerationResult {
         val simple = name?.takeIf { it.isNotBlank() } ?: return defaultResult()
-        if (isBuiltinName(simple)) return defaultResult()
+        if (PyBuiltinNames.isBuiltin(simple)) return defaultResult()
         // Could be further refined by checking scope/qualification and adding imports if needed.
         return GenerationResult("$simple(...)", emptySet())
     }
@@ -153,16 +154,6 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
             "List", "list" -> "list"
             "Set", "set" -> PyNames.SET
             else -> name
-        }
-    }
-
-    private fun isBuiltinName(name: String): Boolean {
-        // Prefer using PyNames constants; keep a compact, single-source check.
-        return when (name.lowercase()) {
-            PyNames.TYPE_INT, PyNames.TYPE_STR, PyNames.FLOAT, "bool", PyNames.BYTES,
-            "list", PyNames.DICT, PyNames.SET, PyNames.TUPLE, "range", "complex" -> true
-
-            else -> false
         }
     }
 

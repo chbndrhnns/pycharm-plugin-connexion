@@ -1,0 +1,137 @@
+package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
+
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.Elementwise
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.ElementwiseUnionChoice
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.Single
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.CtorMatch
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedCtor
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedTypeInfo
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions
+import com.jetbrains.python.psi.*
+import com.jetbrains.python.psi.types.TypeEvalContext
+
+/**
+ * Strategy for wrapping with outer container types (list, set, tuple).
+ */
+class OuterContainerStrategy : WrapStrategy {
+    override fun run(context: AnalysisContext): StrategyResult {
+        val outerCtor = resolveExpectedOuterContainerCtor(context.element, context.typeEval)
+            ?: return StrategyResult.Continue
+
+        if (outerCtor.name == "dict") return StrategyResult.Skip("Dict not supported")
+
+        // Check if we are already inside a container that matches the expectation
+        if (PyWrapHeuristics.parentMatchesExpectedContainer(context.element, outerCtor.name)) {
+            // The outer container is already there. Proceed to check items or other strategies.
+            return StrategyResult.Continue
+        }
+
+        val element = context.element
+        val isSameContainerLiteral = when (outerCtor.name.lowercase()) {
+            "list" -> element is PyListLiteralExpression || element is PyListCompExpression
+            "set" -> element is PySetLiteralExpression || element is PySetCompExpression
+            "dict" -> element is PyDictLiteralExpression || element is PyDictCompExpression
+            "tuple" -> element is PyTupleExpression
+            else -> false
+        }
+
+        if (isSameContainerLiteral) {
+            return StrategyResult.Continue
+        }
+
+        val isContainerLiteral = PyWrapHeuristics.isContainerLiteral(element) ||
+                element is PyListCompExpression || element is PySetCompExpression || element is PyDictCompExpression
+
+        if (!isContainerLiteral) {
+            // Check if the variable itself matches the outer container type
+            val match = PyTypeIntentions.elementDisplaysAsCtor(element, outerCtor.name, context.typeEval)
+            val names = PyTypeIntentions.computeDisplayTypeNames(element, context.typeEval)
+            val actualUsesSameOuter = names.actual?.lowercase()?.startsWith(outerCtor.name.lowercase()) == true
+
+            if (match == CtorMatch.MATCHES || actualUsesSameOuter) {
+                // Outer matches. Check for elementwise issues.
+                val candidates = PyWrapHeuristics.expectedItemCtorsForContainer(element, context.typeEval)
+                if (candidates.isNotEmpty()) {
+                    if (candidates.size >= 2) {
+                        return StrategyResult.Found(ElementwiseUnionChoice(element, outerCtor.name, candidates))
+                    }
+                    val only = candidates.first()
+                    if (!PyWrapHeuristics.isAlreadyWrappedWith(element, only.name, only.symbol)) {
+                        return StrategyResult.Found(Elementwise(element, outerCtor.name, only.name, only.symbol))
+                    }
+                }
+            }
+        }
+
+        // Fallback: wrap with outer container
+        val differs =
+            PyTypeIntentions.elementDisplaysAsCtor(element, outerCtor.name, context.typeEval) == CtorMatch.DIFFERS
+        val alreadyWrapped = PyWrapHeuristics.isAlreadyWrappedWith(element, outerCtor.name, outerCtor.symbol)
+
+        if (differs && !alreadyWrapped) {
+            val target = (element.parent as? PyExpression) ?: element
+            if (UnwrapStrategy.unwrapYieldsExpectedCtor(target, outerCtor.name, context.typeEval)) {
+                return StrategyResult.Skip("Unwrap yields expected ctor")
+            }
+            return StrategyResult.Found(Single(target, outerCtor.name, outerCtor.symbol))
+        }
+
+        return StrategyResult.Continue
+    }
+
+    private fun resolveExpectedOuterContainerCtor(expr: PyExpression, ctx: TypeEvalContext): ExpectedCtor? {
+        val info = ExpectedTypeInfo.getExpectedTypeInfo(expr, ctx) ?: return null
+        val annExpr = info.annotationExpr as? PyExpression ?: return null
+
+        val baseName = when (val sub = annExpr as? PySubscriptionExpression) {
+            null -> (annExpr as? PyReferenceExpression)?.name?.lowercase()
+            else -> (sub.operand as? PyReferenceExpression)?.name?.lowercase()
+        } ?: return null
+
+        fun mapToConcrete(name: String): String? = when (name) {
+            "list", "sequence", "collection", "iterable", "mutablesequence", "generator", "iterator" -> "list"
+            "set" -> "set"
+            "tuple" -> "tuple"
+            "dict", "mapping", "mutablemapping" -> "dict"
+            else -> null
+        }
+
+        val concrete = mapToConcrete(baseName) ?: return null
+        return ExpectedCtor(concrete, null)
+    }
+}
+
+/**
+ * Strategy for wrapping container items with expected type.
+ */
+class ContainerItemStrategy : WrapStrategy {
+    override fun run(context: AnalysisContext): StrategyResult {
+        val element = context.element
+        val containerItemTarget = PyTypeIntentions.findContainerItemAtCaret(context.editor, element) ?: element
+
+        val ctor = PyTypeIntentions.tryContainerItemCtor(containerItemTarget, context.typeEval)
+            ?: return StrategyResult.Continue
+
+        val suppressedContainers = setOf("list", "set", "tuple", "dict")
+        if (suppressedContainers.contains(ctor.name.lowercase())) return StrategyResult.Continue
+
+        if (PyTypeIntentions.elementDisplaysAsCtor(
+                containerItemTarget,
+                ctor.name,
+                context.typeEval
+            ) == CtorMatch.MATCHES
+        ) {
+            return StrategyResult.Skip("Element already matches")
+        }
+
+        if (PyWrapHeuristics.isAlreadyWrappedWith(containerItemTarget, ctor.name, ctor.symbol)) {
+            return StrategyResult.Skip("Already wrapped")
+        }
+
+        if (UnwrapStrategy.unwrapYieldsExpectedCtor(containerItemTarget, ctor.name, context.typeEval)) {
+            return StrategyResult.Skip("Unwrap yields expected ctor")
+        }
+
+        return StrategyResult.Found(Single(containerItemTarget, ctor.name, ctor.symbol))
+    }
+}
