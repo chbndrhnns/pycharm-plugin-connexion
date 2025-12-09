@@ -27,7 +27,7 @@
 
 ## In Progress Tasks
 
-- [ ] feat: Treat references as PSI elements, pytest.mark.filterwarnings, patch()
+- [-] feat: Treat references as PSI elements, pytest.mark.filterwarnings, patch()
 - [ ] feat: Copy selection with imports
 - [ ] feat: Replace expected with actual test outcome
 - [ ] feat: Jump from test to test node
