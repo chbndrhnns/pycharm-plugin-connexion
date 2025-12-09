@@ -879,3 +879,23 @@ directly.",
     "NEW INSTRUCTION": "WHEN spec item is a group THEN enumerate subcases and write one focused test for each"
 }
 
+[2025-12-09 15:30] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "create secondary action",
+    "MISSING STEPS": "register actions, add tests, run tests, run build",
+    "BOTTLENECK": "No registration and tests prevented verifying the feature works end-to-end.",
+    "PROJECT NOTE": "Register the action in plugin.xml under actions and bind it to the test tree view popup; add IntelliJ platform tests in src/test/kotlin.",
+    "NEW INSTRUCTION": "WHEN tests are added or modified THEN plan a step to run the full test suite"
+}
+
+[2025-12-09 15:39] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "check run configuration type",
+    "MISSING STEPS": "update action enablement, manual verify in IDE, add tests",
+    "BOTTLENECK": "Action visibility/enabling tied to run configuration instead of selection.",
+    "PROJECT NOTE": "Ensure actions/group are registered under TestTreePopupMenu in plugin.xml.",
+    "NEW INSTRUCTION": "WHEN context menu opens in TestTreeView THEN enable actions if any selected node maps to SMTestProxy"
+}
+

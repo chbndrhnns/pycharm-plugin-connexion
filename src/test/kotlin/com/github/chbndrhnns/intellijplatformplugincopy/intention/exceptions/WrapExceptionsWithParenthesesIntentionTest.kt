@@ -66,10 +66,19 @@ class WrapExceptionsWithParenthesesIntentionTest : TestBase() {
             action = (action as com.intellij.codeInsight.intention.IntentionActionDelegate).delegate
         }
 
-        assertTrue("Action should implement PriorityAction", action is com.intellij.codeInsight.intention.PriorityAction)
-        assertEquals(com.intellij.codeInsight.intention.PriorityAction.Priority.TOP, (action as com.intellij.codeInsight.intention.PriorityAction).priority)
+        assertTrue(
+            "Action should implement PriorityAction",
+            action is com.intellij.codeInsight.intention.PriorityAction
+        )
+        assertEquals(
+            com.intellij.codeInsight.intention.PriorityAction.Priority.TOP,
+            (action as com.intellij.codeInsight.intention.PriorityAction).priority
+        )
 
         assertTrue("Action should implement Iconable", action is com.intellij.openapi.util.Iconable)
-        assertEquals(com.intellij.icons.AllIcons.Actions.QuickfixBulb, (action as com.intellij.openapi.util.Iconable).getIcon(0))
+        assertEquals(
+            com.intellij.icons.AllIcons.Actions.QuickfixBulb,
+            (action as com.intellij.openapi.util.Iconable).getIcon(0)
+        )
     }
 }

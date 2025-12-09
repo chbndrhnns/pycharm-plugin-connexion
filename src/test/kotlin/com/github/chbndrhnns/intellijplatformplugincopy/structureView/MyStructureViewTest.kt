@@ -10,7 +10,8 @@ class MyStructureViewTest : TestBase() {
 
     fun testPrivateMembersFilter() {
         // 1. Setup a Python file with private members
-        val file = myFixture.configureByText("test.py",
+        val file = myFixture.configureByText(
+            "test.py",
             """
             class MyClass:
                 def public_method(self): pass
@@ -21,14 +22,14 @@ class MyStructureViewTest : TestBase() {
         // 2. Get the builder (this mimics what the IDE does)
         val builder = LanguageStructureViewBuilder.getInstance().getStructureViewBuilder(file)
         assertNotNull(builder)
-        
+
         // Ensure it is our wrapper (TreeBasedStructureViewBuilder)
         assertTrue("Builder should be TreeBasedStructureViewBuilder", builder is TreeBasedStructureViewBuilder)
         val treeBuilder = builder as TreeBasedStructureViewBuilder
 
         // 3. Create the model
         val model = treeBuilder.createStructureViewModel(myFixture.editor)
-        
+
         // 4. Verify our filter is present
         val filters = model.filters
         val myFilter = filters.find { it is MyPrivateMembersFilter }
@@ -36,7 +37,7 @@ class MyStructureViewTest : TestBase() {
 
         // 5. Test the filter logic manually
         val root = model.root
-        
+
         var classElement: TreeElement? = null
         for (child in root.children) {
             if (child.presentation.presentableText == "MyClass") {
@@ -44,7 +45,7 @@ class MyStructureViewTest : TestBase() {
                 break
             }
         }
-        
+
         assertNotNull("Class 'MyClass' not found in structure view root", classElement)
 
         val methods = classElement!!.children
@@ -56,19 +57,21 @@ class MyStructureViewTest : TestBase() {
     }
 
     private fun findMethod(methods: Array<TreeElement>, name: String): TreeElement {
-        return methods.firstOrNull { 
+        return methods.firstOrNull {
             val text = it.presentation.presentableText ?: return@firstOrNull false
             text == name || text.startsWith("$name(")
-        } ?: throw RuntimeException("Method not found: $name. Available: ${methods.joinToString { it.presentation.presentableText ?: "null" }}")
+        }
+            ?: throw RuntimeException("Method not found: $name. Available: ${methods.joinToString { it.presentation.presentableText ?: "null" }}")
     }
 
     fun testPrivateMembersFilterDisabled() {
         // 0. Disable the setting
         PluginSettingsState.instance().state.enableStructureViewPrivateMembersFilter = false
-        
+
         try {
             // 1. Setup a Python file with private members
-            val file = myFixture.configureByText("test.py",
+            val file = myFixture.configureByText(
+                "test.py",
                 """
                 class MyClass:
                     def public_method(self): pass
@@ -84,12 +87,12 @@ class MyStructureViewTest : TestBase() {
 
             // 3. Create the model
             val model = treeBuilder.createStructureViewModel(myFixture.editor)
-            
+
             // 4. Verify our filter is NOT present
             val filters = model.filters
             val myFilter = filters.find { it is MyPrivateMembersFilter }
             assertNull("My custom filter should NOT be registered when setting is disabled", myFilter)
-            
+
         } finally {
             // Restore setting (though TestBase.setUp should handle it for other tests, it is good practice)
             PluginSettingsState.instance().state.enableStructureViewPrivateMembersFilter = true

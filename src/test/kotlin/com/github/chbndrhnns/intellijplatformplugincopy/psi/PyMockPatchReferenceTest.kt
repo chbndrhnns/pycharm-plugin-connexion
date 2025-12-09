@@ -76,13 +76,15 @@ class PyMockPatchReferenceTest : TestBase() {
         )
 
         myFixture.renameElementAtCaret("NewClass")
-        myFixture.checkResult("""
+        myFixture.checkResult(
+            """
             from unittest.mock import patch
             
             @patch('RenameModule.NewClass')
             def test_something(mock_cls):
                 pass
-        """.trimIndent())
+        """.trimIndent()
+        )
     }
 
     fun testCompletion() {

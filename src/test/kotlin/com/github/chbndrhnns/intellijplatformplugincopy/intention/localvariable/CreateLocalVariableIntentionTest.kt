@@ -73,15 +73,17 @@ class CreateLocalVariableIntentionTest : TestBase() {
             val action = myFixture.availableIntentions.find { it.text == "Create local variable" }
             assertNull(action)
         } finally {
-             PluginSettingsState.instance().state.enableCreateLocalVariableIntention = true
+            PluginSettingsState.instance().state.enableCreateLocalVariableIntention = true
         }
     }
 
     fun testPriorityAndIcon() {
-        myFixture.configureByText("test_priority.py", """
+        myFixture.configureByText(
+            "test_priority.py", """
             def func():
                 print(<caret>z)
-        """.trimIndent())
+        """.trimIndent()
+        )
 
         var action = myFixture.availableIntentions.find { it.text == "Create local variable" }
         assertNotNull(action)

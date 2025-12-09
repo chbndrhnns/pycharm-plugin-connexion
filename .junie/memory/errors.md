@@ -1,23 +1,3 @@
-[2025-12-08 13:15] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "Gradle (:test)",
-    "ERROR": "FileComparisonFailedError in decorator population test",
-    "ROOT CAUSE": "Argument insertion for decorator calls leaves extra spaces, producing text mismatch.",
-    "PROJECT NOTE": "In PopulateArgumentsService.populateArguments, after editing the PyArgumentList of a decorator call, invoke CodeStyleManager.getInstance(project).reformat(argumentList) (or the decorator node) to normalize spacing.",
-    "NEW INSTRUCTION": "WHEN target is a decorator call PyCallExpression THEN reformat its argument list after insertion"
-}
-
-[2025-12-08 13:16] - Updated by Junie - Error analysis
-{
-    "TYPE": "missing context",
-    "TOOL": "Gradle test",
-    "ERROR": "Test diff hidden due to truncated output",
-    "ROOT CAUSE": "The test failed with FileComparisonFailedError, but actual file content was only printed to stdout and the console output was truncated.",
-    "PROJECT NOTE": "Gradle stores full test stdout/stderr in .output.txt as indicated by the truncation note; myFixture.checkResult compares exact text including whitespace.",
-    "NEW INSTRUCTION": "WHEN test output shows truncation notice THEN grep .output.txt for ACTUAL_TEXT_START..END to get actual"
-}
-
 [2025-12-08 13:17] - Updated by Junie - Error analysis
 {
     "TYPE": "logic bug",
@@ -806,4 +786,24 @@
     "ROOT CAUSE": "The bash tool forbids newline-separated commands; the command included multiple lines.",
     "PROJECT NOTE": "This repo's automation expects one bash command per call; chain commands with && or make separate calls.",
     "NEW INSTRUCTION": "WHEN bash command contains newline THEN issue separate bash calls, one per command"
+}
+
+[2025-12-09 15:28] - Updated by Junie - Error analysis
+{
+    "TYPE": "build failure",
+    "TOOL": "create",
+    "ERROR": "Used SMTestProxy.project and null Project in getLocation",
+    "ROOT CAUSE": "SMTestProxy lacks a project property and getLocation requires a non-null Project.",
+    "PROJECT NOTE": "Use proxy.getLocation(project, GlobalSearchScope.allScope(project)); obtain Project from action/event context, not from SMTestProxy.",
+    "NEW INSTRUCTION": "WHEN needing SMTestProxy PSI location THEN pass project to proxy.getLocation using GlobalSearchScope.allScope(project)"
+}
+
+[2025-12-09 15:29] - Updated by Junie - Error analysis
+{
+    "TYPE": "build failure",
+    "TOOL": "create",
+    "ERROR": "Nullability and unresolved reference in getLocation call",
+    "ROOT CAUSE": "Code assumed SMTestProxy exposes a project and passed null to getLocation, causing unresolved reference and nullability errors.",
+    "PROJECT NOTE": "In this SDK, SMTestProxy doesn't provide a Project; obtain Project from AnActionEvent/DataContext and pass it explicitly to getLocation.",
+    "NEW INSTRUCTION": "WHEN calling SMTestProxy.getLocation THEN pass Project from action context explicitly"
 }

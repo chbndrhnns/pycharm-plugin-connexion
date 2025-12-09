@@ -342,3 +342,11 @@
     "NEW INSTRUCTION": "WHEN building or suggesting dotted names from files THEN drop '.py' suffix from module segment"
 }
 
+[2025-12-09 15:34] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "test tree action availability",
+    "EXPECTATION": "Copy Special should be available on every test tree node and enabled when applicable, not only on the root or greyed out.",
+    "NEW INSTRUCTION": "WHEN a test tree node is selected THEN show and enable Copy Special actions"
+}
+

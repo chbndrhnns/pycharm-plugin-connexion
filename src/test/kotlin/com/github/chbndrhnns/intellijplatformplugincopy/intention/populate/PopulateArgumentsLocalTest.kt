@@ -44,7 +44,7 @@ class PopulateArgumentsLocalTest : TestBase() {
         assertTrue("Should populate param1 with local variable", text.contains("param1=param1"))
         assertTrue("Should populate param2 with default value", text.contains("param2=..."))
     }
-    
+
     override fun tearDown() {
         PopulateArgumentsIntentionHooks.popupHost = null
         super.tearDown()

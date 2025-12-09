@@ -205,5 +205,15 @@
                 description="Copies the current IDE build number to the clipboard">
             <add-to-group group-id="HelpMenu" anchor="last"/>
         </action>
+
+        <group id="MyPlugin.CopySpecialGroup" text="Copy Special" popup="true">
+            <add-to-group group-id="TestTreePopupMenu" anchor="last"/>
+            <action id="MyPlugin.CopyPytestNodeIds"
+                    class="com.github.chbndrhnns.intellijplatformplugincopy.actions.CopyPytestNodeIdAction"
+                    text="Copy Pytest Node IDs"/>
+            <action id="MyPlugin.CopyFQNs"
+                    class="com.github.chbndrhnns.intellijplatformplugincopy.actions.CopyFQNAction"
+                    text="Copy FQNs"/>
+        </group>
     </actions>
 </idea-plugin>

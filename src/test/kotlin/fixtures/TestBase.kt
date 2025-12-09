@@ -39,7 +39,7 @@ abstract class TestBase : MyPlatformTestCase() {
                 enableCopyBuildNumberAction = true,
                 enableCreateLocalVariableIntention = true,
                 enableStructureViewPrivateMembersFilter = true,
-                ),
+            ),
         )
         val sdk = PythonMockSdk.create(LanguageLevel.PYTHON311, myFixture.tempDirFixture.getFile("/")!!)
         Disposer.register(testRootDisposable) {
