@@ -38,6 +38,7 @@ class CopyPytestNodeIdAction : AnAction() {
         }
 
         if (result.isNotEmpty()) {
+            result.sort()
             CopyPasteManager.getInstance().setContents(StringSelection(result.joinToString("\n")))
         }
     }

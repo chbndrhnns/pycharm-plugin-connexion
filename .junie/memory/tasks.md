@@ -1,24 +1,3 @@
-[2025-12-02 07:53] - Updated by Junie - Trajectory analysis
-{
-"PLAN QUALITY": "near-optimal",
-"REDUNDANT STEPS": "register action",
-"MISSING STEPS": "add tests, run tests",
-"BOTTLENECK": "Tests were not created and executed early to drive implementation.",
-"PROJECT NOTE": "The filtering rule works without registering a UI action; tests can toggle via properties/util
-directly.",
-"NEW INSTRUCTION": "WHEN task mentions guided by tests THEN create failing test and run tests before implementation"
-}
-
-[2025-12-02 22:05] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "broad search",
-    "MISSING STEPS": "run full test suite, summarize results",
-    "BOTTLENECK": "Lack of full-suite validation to detect regressions across intentions.",
-    "PROJECT NOTE": "Intention action texts must match exactly in tests; keep strings consistent.",
-    "NEW INSTRUCTION": "WHEN tests are created or modified THEN run full test suite and summarize results"
-}
-
 [2025-12-02 22:16] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -917,4 +896,24 @@ directly.",
     "BOTTLENECK": "No build/validation after refactoring to UI DSL.",
     "PROJECT NOTE": "-",
     "NEW INSTRUCTION": "WHEN settings UI code is changed THEN run build and fix compilation errors"
+}
+
+[2025-12-09 23:03] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "propose patch in prose",
+    "MISSING STEPS": "open files, apply patch, run tests, submit",
+    "BOTTLENECK": "Provided suggestions instead of implementing and verifying changes.",
+    "PROJECT NOTE": "Sort the aggregated results in CopyFQNAction and CopyPytestNodeIdAction before copying.",
+    "NEW INSTRUCTION": "WHEN change affects code behavior THEN apply_patch to files and run tests before submit"
+}
+
+[2025-12-09 23:04] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "add sort in CopyPytestNodeIdAction",
+    "BOTTLENECK": "Change was applied to only one of two analogous actions.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN change applies to multiple analogous actions THEN search and update all analogous actions consistently"
 }
