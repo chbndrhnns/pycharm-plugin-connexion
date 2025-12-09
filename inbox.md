@@ -9,7 +9,6 @@
 
 ## Pending Features
 
-- [ ] feat: populate with argument names that exist in the current scope
 - [ ] feat: Copy names of failed tests
 - [ ] feat: quick fix to remove unresolved import from __all__
 - [ ] feat: Turn into type checking import
@@ -27,14 +26,15 @@
 - [ ] feat: Convert fn to lambda
 - [ ] feat: Block list: Do not allow names from typing or collections.abc.
 - [ ] feat: Configure default base classes
+- [ ] commit: if it fails for hooks, add option keep selection of files (docs/keep-commit-selection/spec.md, stash)
 
 ## In Progress Tasks
 
-- [ ] feat: filter structure view by private/public
-- [ ] commit: if it fails for hooks, add option keep selection of files (docs/keep-commit-selection/spec.md)
+- [ ] feat: populate with argument names that exist in the current scope
 
 ## Completed Tasks (newest first)
 
+- [x] feat: filter structure view by private/public
 - [x] feat: Add local variable from unresolved reference
 - [x] Unsupported python version appears too early, when no interpreter is set up
 - [x] fix: Remove deprecated usage: `FilenameIndex.getFilesByName`
