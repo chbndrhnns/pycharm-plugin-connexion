@@ -43,7 +43,7 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
         languageLevel: LanguageLevel
     ): GenerationResult {
         val pyClass = type.pyClass
-        return if (pyClass != null && isDataclassClass(pyClass)) {
+        return if (isDataclassClass(pyClass)) {
             generateDataclassValue(pyClass, context, depth, generator, languageLevel)
         } else {
             // Some providers represent typing.NewType/aliases as PyClassType but without a backing PyClass.

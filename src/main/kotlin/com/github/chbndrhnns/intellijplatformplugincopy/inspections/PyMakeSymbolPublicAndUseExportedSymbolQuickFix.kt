@@ -143,38 +143,16 @@ class PyMakeSymbolPublicAndUseExportedSymbolQuickFix(
         // imports) or a simple reference expression. We rewrite the text
         // representation conservatively by dropping the last dotted
         // component when it starts with an underscore.
-        val sourceText = importSource.text
-        val newSourceText = when (importSource) {
-            is PyQualifiedExpression -> {
-                val qualifierText = importSource.qualifier?.text
-                val referencedName = importSource.referencedName
-                if (referencedName != null && referencedName.startsWith("_")) {
-                    qualifierText ?: return
-                } else {
-                    // Not a private module after all – bail out.
-                    return
-                }
-            }
-
-            is PyReferenceExpression -> {
-                val referencedName = importSource.referencedName
-                if (referencedName != null && referencedName.startsWith("_")) {
-                    // ``from _impl import Name`` → ``from . import Name`` is
-                    // not what we want here; this quick-fix is meant for
-                    // ``from pkg._impl import Name`` style imports where
-                    // there is at least one public package component.
-                    return
-                }
-                sourceText
-            }
-
-            else -> return
+        val referencedName = importSource.referencedName
+        if (referencedName == null || !referencedName.startsWith("_")) {
+            return
         }
+        val newSourceText = importSource.qualifier?.text ?: return
 
         val alias = importElement.asName
 
         val relativeLevel = fromImport.relativeLevel
-        val newImportText = if (relativeLevel != null && relativeLevel > 0) {
+        val newImportText = if (relativeLevel > 0) {
             // For relative imports we prepend the appropriate number of
             // leading dots to the new source text.
             val dots = "".padStart(relativeLevel, '.')

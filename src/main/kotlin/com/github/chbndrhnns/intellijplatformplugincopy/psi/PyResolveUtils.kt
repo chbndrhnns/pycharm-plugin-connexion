@@ -4,6 +4,7 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiManager
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.jetbrains.python.psi.PyClass
@@ -43,17 +44,21 @@ object PyResolveUtils {
 
     private fun findTopLevelModule(project: Project, name: String): PsiElement? {
         val scope = GlobalSearchScope.allScope(project)
+        val psiManager = PsiManager.getInstance(project)
 
         // Try name.py
-        val files = FilenameIndex.getFilesByName(project, "$name.py", scope)
-        val pyFile = files.firstOrNull { it is PyFile }
-        if (pyFile != null) return pyFile
+        val virtualFiles = FilenameIndex.getVirtualFilesByName("$name.py", scope)
+        for (vf in virtualFiles) {
+            val file = psiManager.findFile(vf)
+            if (file is PyFile) return file
+        }
 
         // Try package (directory with __init__.py)
-        val inits = FilenameIndex.getFilesByName(project, "__init__.py", scope)
-        for (init in inits) {
-            if (init.parent?.name == name) {
-                return init.parent
+        val initVFiles = FilenameIndex.getVirtualFilesByName("__init__.py", scope)
+        for (vf in initVFiles) {
+            if (vf.parent?.name == name) {
+                val psiFile = psiManager.findFile(vf) ?: continue
+                return psiFile.parent
             }
         }
         return null

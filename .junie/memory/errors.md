@@ -1,23 +1,3 @@
-[2025-12-08 15:46] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "Gradle :test",
-    "ERROR": "FileComparisonFailedError: expected/actual text mismatch",
-    "ROOT CAUSE": "The intention produced code that differs from the test's expected 'after' text (likely formatting or annotation update specifics).",
-    "PROJECT NOTE": "IntelliJ fixture myFixture.checkResult compares text exactly, including whitespace and newlines; inspect the Gradle test HTML report for the unified diff.",
-    "NEW INSTRUCTION": "WHEN tests fail with FileComparisonFailedError THEN open build/reports/tests/test/index.html and inspect diff"
-}
-
-[2025-12-08 15:48] - Updated by Junie - Error analysis
-{
-    "TYPE": "run_test failure",
-    "TOOL": "Gradle :test",
-    "ERROR": "Could not write XML test results file",
-    "ROOT CAUSE": "The failing test produced output that broke Gradle’s XML report serialization, masking the original assertion mismatch.",
-    "PROJECT NOTE": "myFixture.checkResult compares text exactly; debugging by embedding full file text in exception or logs can make the Gradle XML report unwritable. Persist large debug output to a file and keep exception messages small.",
-    "NEW INSTRUCTION": "WHEN Gradle says 'Could not write XML test results' THEN rerun with --stacktrace and avoid large/unsanitized exception messages"
-}
-
 [2025-12-08 15:49] - Updated by Junie - Error analysis
 {
     "TYPE": "run_test failure",
@@ -806,4 +786,24 @@
     "ROOT CAUSE": "A diagnostic test deliberately calls fail(), converting the debug run into a build error.",
     "PROJECT NOTE": "Large failure messages can break Gradle’s XML reports; prefer stdout/stderr for diagnostics.",
     "NEW INSTRUCTION": "WHEN adding temporary debug output in tests THEN print logs and keep tests passing"
+}
+
+[2025-12-09 23:19] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "search_replace",
+    "ERROR": "Unresolved reference 'PackageIndex'",
+    "ROOT CAUSE": "Replaced a deprecated API with a non-existent class for this SDK version.",
+    "PROJECT NOTE": "This project’s PyCharm SDK does not include com.intellij.openapi.roots.PackageIndex; do not import it as a replacement.",
+    "NEW INSTRUCTION": "WHEN import becomes unresolved after an edit THEN undo change and verify correct SDK API before retrying"
+}
+
+[2025-12-09 23:22] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid API",
+    "TOOL": "search_replace",
+    "ERROR": "Unresolved reference 'PackageIndex'",
+    "ROOT CAUSE": "Replaced a deprecated API with PackageIndex, which is unavailable in the project’s SDK version.",
+    "PROJECT NOTE": "For package name lookup by directory, keep ProjectRootManager.getInstance(project).fileIndex.getPackageNameByDirectory with @Suppress(\"DEPRECATION\") unless com.intellij.openapi.roots.PackageIndex exists in the targeted platform.",
+    "NEW INSTRUCTION": "WHEN replacing a deprecated IntelliJ API THEN verify target class exists in current SDK before editing"
 }

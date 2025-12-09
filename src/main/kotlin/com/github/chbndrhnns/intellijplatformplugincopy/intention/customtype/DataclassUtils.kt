@@ -16,7 +16,7 @@ internal fun isDataclassClass(pyClass: PyClass): Boolean {
     }
 
     val superExprs = pyClass.superClassExpressions
-    return superExprs != null && superExprs.any { superExpr ->
+    return superExprs.any { superExpr ->
         val ref = superExpr as? PyReferenceExpression
         val name = ref?.name
         val qNameOwner = superExpr as? PyQualifiedNameOwner

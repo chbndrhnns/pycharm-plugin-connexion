@@ -40,6 +40,8 @@ class SpecificImportPathProvider : PyCanonicalPathProvider {
         // We construct the QName manually to ensure we get the specific file path (e.g. 'domain._lib')
         // instead of the promoted package path (e.g. 'domain') which QualifiedNameFinder might prefer.
         val parent = virtualFile.parent ?: return null
+
+        @Suppress("DEPRECATION")
         val packageName = fileIndex.getPackageNameByDirectory(parent) ?: return null
         val fileName = virtualFile.nameWithoutExtension
 

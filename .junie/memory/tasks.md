@@ -1,13 +1,3 @@
-[2025-12-02 22:16] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "edit multiple intention classes",
-    "MISSING STEPS": "run full test suite, verify intention text, ask user",
-    "BOTTLENECK": "No confirmed reproduction before planning code changes.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN reproduction test passes unexpectedly THEN ask_user for exact code sample and intention text"
-}
-
 [2025-12-02 22:29] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -916,4 +906,14 @@
     "BOTTLENECK": "Change was applied to only one of two analogous actions.",
     "PROJECT NOTE": "-",
     "NEW INSTRUCTION": "WHEN change applies to multiple analogous actions THEN search and update all analogous actions consistently"
+}
+
+[2025-12-09 23:23] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "repeat failing edit,excess status updates",
+    "MISSING STEPS": "inspect warned lines,search replacement API,run build",
+    "BOTTLENECK": "Uncertainty about correct replacement for deprecated IntelliJ APIs.",
+    "PROJECT NOTE": "IntelliJ Platform API availability depends on platformVersion in gradle.properties; validate replacements against it.",
+    "NEW INSTRUCTION": "WHEN deprecation fix requires unknown replacement API THEN inspect warned lines, then search project for replacement symbol before editing"
 }

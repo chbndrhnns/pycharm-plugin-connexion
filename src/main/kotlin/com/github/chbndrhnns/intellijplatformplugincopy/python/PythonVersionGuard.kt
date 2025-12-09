@@ -5,7 +5,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.jetbrains.python.psi.LanguageLevel
 import com.jetbrains.python.psi.PyFile
-import com.jetbrains.python.sdk.PythonSdkType
 import com.jetbrains.python.sdk.legacy.PythonSdkUtil
 
 /**
@@ -23,14 +22,14 @@ object PythonVersionGuard {
         val modules = com.intellij.openapi.module.ModuleManager.getInstance(project).modules
         val firstModule = modules.firstOrNull() ?: return false
         val sdk = PythonSdkUtil.findPythonSdk(firstModule) ?: return false
-        val level = PythonSdkType.getLanguageLevelForSdk(sdk) ?: return false
+        val level = LanguageLevel.fromPythonVersion(sdk.versionString ?: return false) ?: return false
         return level.isAtLeast(minLevel)
     }
 
     fun isSatisfied(module: Module?): Boolean {
         if (module == null) return false
         val sdk = PythonSdkUtil.findPythonSdk(module) ?: return false
-        val level = PythonSdkType.getLanguageLevelForSdk(sdk) ?: return false
+        val level = LanguageLevel.fromPythonVersion(sdk.versionString ?: return false) ?: return false
         return level.isAtLeast(minLevel)
     }
 

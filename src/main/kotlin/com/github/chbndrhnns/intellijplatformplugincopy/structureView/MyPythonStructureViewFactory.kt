@@ -12,7 +12,7 @@ class MyPythonStructureViewFactory : PsiStructureViewFactory {
     override fun getStructureViewBuilder(psiFile: PsiFile): StructureViewBuilder? {
         // 1. Get the original builder from the default Python implementation
         // We use LanguageStructureViewBuilder to find all implementations and pick the one that isn't ours
-        val originalBuilder = LanguageStructureViewBuilder.INSTANCE
+        val originalBuilder = LanguageStructureViewBuilder.getInstance()
             .allForLanguage(psiFile.language).asSequence()
             .filter { factory -> factory !is MyPythonStructureViewFactory }
             .map { factory -> factory.getStructureViewBuilder(psiFile) }
