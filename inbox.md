@@ -9,6 +9,7 @@
 
 ## Pending Features
 
+- [ ] When populating arguments, highlight the target function (area) when the popup appears
 - [ ] feat: quick fix to remove unresolved import from __all__
 - [ ] feat: Turn into type checking import
 - [ ] roots: adopt when moving files
