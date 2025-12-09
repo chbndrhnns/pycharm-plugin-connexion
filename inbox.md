@@ -9,18 +9,14 @@
 
 ## Pending Features
 
-- [ ] feat: Copy names of failed tests
 - [ ] feat: quick fix to remove unresolved import from __all__
 - [ ] feat: Turn into type checking import
 - [ ] roots: adopt when moving files
 - [ ] roots: mark as unresolved reference without
-- [ ] feat: Treat references as PSI elements, pytest.mark.filterwarnings, patch()
-- [ ] feat: Replace expected with actual test outcome
 - [ ] feat: populate union (docs/populate/populate-union.md)
 - [ ] feat: Generate dataclass, basemodel
 - [ ] feat: Create run config using package mode
 - [ ] Copy pydantic mock?
-- [ ] feat: Copy selection with imports
 - [ ] feat: Wrap default/default_factory after introducing custom type in dataclass/pydantic
 - [ ] feat: Render dataclass fields in preview
 - [ ] feat: Convert fn to lambda
@@ -29,6 +25,13 @@
 - [ ] commit: if it fails for hooks, add option keep selection of files (docs/keep-commit-selection/spec.md, stash)
 
 ## In Progress Tasks
+
+- [ ] feat: Treat references as PSI elements, pytest.mark.filterwarnings, patch()
+- [ ] feat: Copy selection with imports
+- [ ] feat: Replace expected with actual test outcome
+- [ ] feat: Jump from test to test node
+- [ ] feat: Copy names of failed tests
+- [ ] feat: Copy with dependencies
 
 
 ## Completed Tasks (newest first)
