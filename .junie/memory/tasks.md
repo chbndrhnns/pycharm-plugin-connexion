@@ -1,23 +1,3 @@
-[2025-12-01 21:54] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "rerun tests, run single test directly",
-    "MISSING STEPS": "analyze error, reset build workspace, disable configuration cache",
-    "BOTTLENECK": "Immutable Gradle workspace error prevented any test execution.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN Gradle reports immutable workspace modified THEN run './gradlew --stop && ./gradlew clean test --no-configuration-cache'"
-}
-
-[2025-12-01 22:56] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "run tests, use destination file virtual path",
-    "BOTTLENECK": "Incorrect Kotlin multiline string escaping led to revert and re-edit.",
-    "PROJECT NOTE": "Capture PsiFile from addFileToProject and derive VirtualFile path directly.",
-    "NEW INSTRUCTION": "WHEN destination file is pre-created THEN use its virtualFile.path in move processor"
-}
-
 [2025-12-02 07:53] - Updated by Junie - Trajectory analysis
 {
 "PLAN QUALITY": "near-optimal",
@@ -917,4 +897,24 @@ directly.",
     "BOTTLENECK": "Answer was not grounded in the repository’s actual strategy implementation.",
     "PROJECT NOTE": "Review PytestNodeIdGenerator and PytestNodeIdGeneratorTest to confirm when Strategy 2 triggers.",
     "NEW INSTRUCTION": "WHEN question concerns specific repo algorithm or strategy THEN scan project and open implementation and tests before drafting answer"
+}
+
+[2025-12-09 22:46] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "inspect build files",
+    "MISSING STEPS": "ask user for target IDE range",
+    "BOTTLENECK": "Assumed UI DSL availability without confirming supported IDE versions with the user.",
+    "PROJECT NOTE": "If options grow further, consider collapsible groups or tabs to keep scanning fast.",
+    "NEW INSTRUCTION": "WHEN planning settings UI refactor without stated IDE targets THEN ask_user for minimum supported IDE version"
+}
+
+[2025-12-09 22:56] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "open build.gradle.kts, open gradle.properties",
+    "MISSING STEPS": "run build, verify UI at runtime",
+    "BOTTLENECK": "No build/validation after refactoring to UI DSL.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN settings UI code is changed THEN run build and fix compilation errors"
 }
