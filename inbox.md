@@ -30,10 +30,10 @@
 
 ## In Progress Tasks
 
-- [ ] feat: populate with argument names that exist in the current scope
 
 ## Completed Tasks (newest first)
 
+- [x] feat: populate with argument names that exist in the current scope
 - [x] feat: filter structure view by private/public
 - [x] feat: Add local variable from unresolved reference
 - [x] Unsupported python version appears too early, when no interpreter is set up
