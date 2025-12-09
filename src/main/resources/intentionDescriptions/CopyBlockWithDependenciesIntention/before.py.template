@@ -1,0 +1,7 @@
+import math
+
+def helper():
+    return math.pi
+
+def <spot>calculate</spot>():
+    return helper() * 2

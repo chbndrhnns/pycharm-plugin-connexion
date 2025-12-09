@@ -111,6 +111,11 @@
             <category>Create local variable</category>
         </intentionAction>
 
+        <intentionAction>
+            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.copy.CopyBlockWithDependenciesIntention</className>
+            <category>Refactorings</category>
+        </intentionAction>
+
         <applicationConfigurable
                 displayName="DDD Toolkit"
                 id="com.github.chbndrhnns.intellijplatformplugincopy.settings"

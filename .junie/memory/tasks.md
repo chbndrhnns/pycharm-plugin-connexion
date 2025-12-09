@@ -849,3 +849,33 @@ directly.",
     "NEW INSTRUCTION": "WHEN completion items include '.py' segment THEN strip '.py' and compute dotted module names"
 }
 
+[2025-12-09 15:00] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "register intention, run tests, align intention name",
+    "BOTTLENECK": "Feature not registered; tests not executed to validate behavior.",
+    "PROJECT NOTE": "Ensure test’s intention text equals the intention’s getText and plugin.xml registration.",
+    "NEW INSTRUCTION": "WHEN adding a new intention class THEN register it in plugin.xml under intentions"
+}
+
+[2025-12-09 15:13] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "compare spec to tests, map scenarios to test names, report uncovered cases",
+    "BOTTLENECK": "No explicit mapping from spec scenarios to implemented tests.",
+    "PROJECT NOTE": "Create a simple traceability list linking docs/copy-with-dependencies.md scenarios to tests in src/test/kotlin/...CopyBlockWithDependenciesIntentionTest.kt.",
+    "NEW INSTRUCTION": "WHEN asked about uncovered spec cases THEN map spec scenarios to test cases and list gaps"
+}
+
+[2025-12-09 15:20] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "map spec to tests",
+    "BOTTLENECK": "Grouped spec items weren’t expanded into discrete, assertable test cases.",
+    "PROJECT NOTE": "Uncovered cases from the spec: multiple imports per line, relative imports, nested functions, diamond dependencies.",
+    "NEW INSTRUCTION": "WHEN spec item is a group THEN enumerate subcases and write one focused test for each"
+}
+
