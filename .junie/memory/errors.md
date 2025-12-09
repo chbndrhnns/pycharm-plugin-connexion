@@ -1,63 +1,3 @@
-[2025-12-08 15:52] - Updated by Junie - Error analysis
-{
-    "TYPE": "tool failure",
-    "TOOL": "Gradle (:test reporter)",
-    "ERROR": "Could not write XML test results",
-    "ROOT CAUSE": "The failing test produced an exception message/content that the JUnit XML writer could not serialize.",
-    "PROJECT NOTE": "myFixture.checkResult failures can include large/raw text diffs; embedding full file content in exception messages can break Gradle’s XML report writer.",
-    "NEW INSTRUCTION": "WHEN needing to expose large actual file content THEN write it to a file and log its path"
-}
-
-[2025-12-08 17:23] - Updated by Junie - Error analysis
-{
-    "TYPE": "tool failure",
-    "TOOL": "get_file_structure",
-    "ERROR": "Cannot display file structure; parsing failed",
-    "ROOT CAUSE": "The file structure tool couldn't parse the Kotlin file and returned an unsupported/failed status.",
-    "PROJECT NOTE": "For Kotlin sources in this repo, directly open files to inspect content when structure parsing fails.",
-    "NEW INSTRUCTION": "WHEN get_file_structure reports cannot display or parsing failed THEN open the file using open and scroll"
-}
-
-[2025-12-08 17:39] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic bug",
-    "TOOL": "IntroduceCustomTypeFromStdlibIntention.generatePreview/CustomTypeApplier.apply",
-    "ERROR": "Reused cached plan in preview, writing to original file",
-    "ROOT CAUSE": "The cached CustomTypePlan from isAvailable points to the real PyFile and is reused in generatePreview, so insertClass modifies the original file instead of the preview copy.",
-    "PROJECT NOTE": "In getPlan(), do not read PLAN_KEY during preview; always rebuild the plan using the preview file/editor so plan.sourceFile and PSI anchors belong to the preview PSI.",
-    "NEW INSTRUCTION": "WHEN generating intention preview THEN rebuild plan from preview editor and file, ignore cache"
-}
-
-[2025-12-08 17:41] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid context",
-    "TOOL": "IntroduceCustomTypeFromStdlibIntention.generatePreview/CustomTypeApplier.insertClass",
-    "ERROR": "CompletionHandlerException during BackgroundHighlighter cancellation",
-    "ROOT CAUSE": "PSI insertion during intention preview triggered document change; cancellation handler threw while the background highlighter was being cancelled.",
-    "PROJECT NOTE": "CustomTypeGenerator.insertClass uses PsiFile.addAfter; in preview, all PSI writes must be fully enclosed by IntentionPreviewUtils.write and avoid any async/coroutine or Alarm usage during the write.",
-    "NEW INSTRUCTION": "WHEN generating an intention preview performs PSI writes THEN wrap all edits in IntentionPreviewUtils.write and avoid async callbacks"
-}
-
-[2025-12-08 17:42] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "CustomTypeGenerator.insertClass",
-    "ERROR": "Anchor element from different parent passed to addAfter",
-    "ROOT CAUSE": "The preview insertion used an anchor not directly under the target PyFile, causing a parent mismatch during PsiFile.addAfter.",
-    "PROJECT NOTE": "When inserting a top-level class, pick an anchor that is a direct child of the PyFile (e.g., first top-level statement) or null to append; do not use elements from inside statements/classes.",
-    "NEW INSTRUCTION": "WHEN inserting PSI into a file with addBefore/addAfter THEN choose an anchor that is a direct child of that file"
-}
-
-[2025-12-08 17:58] - Updated by Junie - Error analysis
-{
-    "TYPE": "path error",
-    "TOOL": "open_entire_file",
-    "ERROR": "Attempted to open a directory as a file",
-    "ROOT CAUSE": "The provided path points to a directory (docs/dict-access) but open_entire_file requires a file.",
-    "PROJECT NOTE": "docs/dict-access is a folder; open specific files within it (e.g., search and then open).",
-    "NEW INSTRUCTION": "WHEN target path is a directory THEN search for files inside and open a specific file"
-}
-
 [2025-12-08 18:00] - Updated by Junie - Error analysis
 {
     "TYPE": "invalid args",
@@ -807,3 +747,74 @@
     "PROJECT NOTE": "In CopyPytestNodeIdAction.collectNodeIds, fall back to traversing SMTestProxy.children when a tree node wraps an SMTestProxy suite but the tree has no children (common for 'Test Results' root).",
     "NEW INSTRUCTION": "WHEN tree node has SMTestProxy and no tree children THEN traverse proxy.children recursively"
 }
+
+[2025-12-09 23:49] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "run_test",
+    "ERROR": "Gradle immutable workspace cache modified",
+    "ROOT CAUSE": "The Gradle transforms cache for the IDE distribution was altered/corrupted, aborting initialization.",
+    "PROJECT NOTE": "This IntelliJ Platform plugin build unpacks the IDE into Gradle's transforms cache; fix by clearing the affected transforms cache and rerunning with --refresh-dependencies (optionally run gradlew --stop then clean build).",
+    "NEW INSTRUCTION": "WHEN Gradle reports immutable workspace modified in transforms THEN delete Gradle transforms cache and rerun with --refresh-dependencies"
+}
+
+[2025-12-09 23:50] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "run_test",
+    "ERROR": "Immutable Gradle cache workspace modified; IntelliJ Platform init failed",
+    "ROOT CAUSE": "The Gradle IntelliJ plugin detected a corrupted/modifed IDE cache under ~/.gradle/caches/transforms.",
+    "PROJECT NOTE": "This is an IntelliJ Platform plugin project; corrupted IDE cache in Gradle transforms prevents :initializeIntellijPlatformPlugin from running.",
+    "NEW INSTRUCTION": "WHEN Gradle reports immutable workspace modified in transforms THEN delete that cache and run clean with refresh-dependencies"
+}
+
+[2025-12-09 23:50] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "run_test",
+    "ERROR": "Gradle immutable workspace cache modified",
+    "ROOT CAUSE": "The IntelliJ Platform IDE distribution in Gradle's transforms cache is corrupted or externally changed.",
+    "PROJECT NOTE": "This is an IntelliJ Platform plugin project; when initializeIntellijPlatformPlugin fails with immutable workspace errors, clear the IDE distribution cache or refresh dependencies before running tests.",
+    "NEW INSTRUCTION": "WHEN Gradle initializeIntellijPlatformPlugin reports immutable workspace modified THEN run './gradlew clean --refresh-dependencies test' from project root"
+}
+
+[2025-12-10 00:05] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "collectFQNs didn't traverse SMTestProxy children",
+    "ROOT CAUSE": "CopyFQNAction.collectFQNs iterates DefaultMutableTreeNode children only, ignoring SMTestProxy children when UI tree is empty.",
+    "PROJECT NOTE": "Align CopyFQNAction traversal with CopyPytestNodeIdAction: if userObject is SMTestProxy, recurse over proxy.children and build dotted names; only fall back to DefaultMutableTreeNode traversal when no proxy is present.",
+    "NEW INSTRUCTION": "WHEN node userObject is SMTestProxy THEN recurse over proxy.children instead of UI tree children"
+}
+
+[2025-12-10 00:05] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "FQN collection from root proxy returned empty list",
+    "ROOT CAUSE": "CopyFQNAction iterates DefaultMutableTreeNode children instead of SMTestProxy children when invoked on the root.",
+    "PROJECT NOTE": "Update src/main/kotlin/.../actions/CopyFQNAction.kt to mirror CopyPytestNodeIdAction: if userObject is SMTestProxy, recurse over proxy.children and collect FQNs; then sort results.",
+    "NEW INSTRUCTION": "WHEN tree node wraps SMTestProxy THEN traverse proxy children recursively to collect FQNs"
+}
+
+[2025-12-10 00:07] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "CustomTypeGenerator.insertClass",
+    "ERROR": "Anchor parent mismatch for addAfter",
+    "ROOT CAUSE": "The anchor passed to addAfter was not a direct child of the target PyFile.",
+    "PROJECT NOTE": "When inserting a top-level class in a PyFile, call file.addAfter/Before with an anchor that is a direct child (e.g., last top-level statement) or null to append.",
+    "NEW INSTRUCTION": "WHEN anchor parent differs from target file THEN use a direct child anchor or null"
+}
+
+[2025-12-10 00:11] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "-",
+    "ERROR": "plugin.xml: Cannot resolve language id 'Python'",
+    "ROOT CAUSE": "The validation environment lacked the Python plugin, so the 'Python' language id was unknown.",
+    "PROJECT NOTE": "Declare dependency on the Python plugin: add <depends>com.jetbrains.python</depends> (or 'Pythonid' for older IDEs) in plugin.xml and include 'com.jetbrains.python' in platformPlugins in gradle.properties.",
+    "NEW INSTRUCTION": "WHEN plugin.xml references Python language or APIs THEN declare com.jetbrains.python dependency and enable platformPlugins accordingly"
+}
+

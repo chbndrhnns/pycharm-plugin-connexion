@@ -126,6 +126,105 @@ class CopyActionsTest : TestBase() {
         )
     }
 
+    fun testCopyFQNFromRootNodeWithProxyStructureOnly() {
+        // Reproduces the case where the DefaultMutableTreeNode tree structure
+        // does not contain the children, but the SMTestProxy structure does.
+
+        // 1. Create file and proxy
+        val file1 = myFixture.addFileToProject(
+            "module1/test_mod1.py",
+            """
+            def test_one():
+                pass
+            """.trimIndent()
+        )
+        val path1 = file1.virtualFile.path
+        val url1 = "python<$path1>://module1.test_mod1.test_one"
+        val proxy1 = FakeSMTestProxy("test_one", false, null, url1)
+
+        // 2. Create Root Proxy
+        val rootProxy = FakeSMTestProxy("Root", true, null, null)
+        rootProxy.addChild(proxy1)
+
+        // 3. Create Tree Node wrapping Root Proxy
+        // IMPORTANT: We do NOT add children to the DefaultMutableTreeNode
+        val rootNode = DefaultMutableTreeNode(rootProxy)
+
+        // 4. Test CopyFQNAction
+        val fqnResult = mutableListOf<String>()
+        CopyFQNAction().collectFQNs(rootNode, fqnResult, project)
+
+        // Expect: module1.test_mod1.test_one
+        assertEquals(1, fqnResult.size)
+        assertTrue(
+            "Expected module1.test_mod1.test_one in $fqnResult",
+            fqnResult.contains("module1.test_mod1.test_one")
+        )
+    }
+
+    fun testCopyFQNFromParameterizedTest() {
+        val file1 = myFixture.addFileToProject(
+            "module1/test_mod1.py",
+            """
+            import pytest
+            @pytest.mark.parametrize("arg", [1, 2])
+            def test_param(arg):
+                pass
+            """.trimIndent()
+        )
+        file1.virtualFile.path
+
+        // python_uttestid URL with parameters
+        val url1 = "python_uttestid://module1.test_mod1.test_param[1]"
+        val proxy1 = FakeSMTestProxy("test_param[1]", false, null, url1)
+
+        val rootNode = DefaultMutableTreeNode(proxy1)
+
+        val fqnResult = mutableListOf<String>()
+        CopyFQNAction().collectFQNs(rootNode, fqnResult, project)
+
+        assertEquals(1, fqnResult.size)
+        // We want the parameter to be excluded
+        assertEquals("module1.test_mod1.test_param", fqnResult[0])
+    }
+
+    fun testCopyFQNFromParameterizedTestDuplicates() {
+        val file1 = myFixture.addFileToProject(
+            "module1/test_mod1.py",
+            """
+            import pytest
+            @pytest.mark.parametrize("arg", [1, 2])
+            def test_param(arg):
+                pass
+            """.trimIndent()
+        )
+        file1.virtualFile.path
+
+        // python_uttestid URL with parameters
+        val url1 = "python_uttestid://module1.test_mod1.test_param[1]"
+        val proxy1 = FakeSMTestProxy("test_param[1]", false, null, url1)
+
+        val url2 = "python_uttestid://module1.test_mod1.test_param[2]"
+        val proxy2 = FakeSMTestProxy("test_param[2]", false, null, url2)
+
+        val rootNode = DefaultMutableTreeNode("Root")
+        rootNode.add(DefaultMutableTreeNode(proxy1))
+        rootNode.add(DefaultMutableTreeNode(proxy2))
+
+        val fqnResult = mutableListOf<String>()
+        CopyFQNAction().collectFQNs(rootNode, fqnResult, project)
+
+        // Raw collection should have duplicates because we have two proxies
+        assertEquals(2, fqnResult.size)
+        assertEquals("module1.test_mod1.test_param", fqnResult[0])
+        assertEquals("module1.test_mod1.test_param", fqnResult[1])
+
+        // The fix in actionPerformed does this:
+        val uniqueResult = fqnResult.distinct()
+        assertEquals(1, uniqueResult.size)
+        assertEquals("module1.test_mod1.test_param", uniqueResult[0])
+    }
+
     private class FakeSMTestProxy(
         name: String,
         isSuite: Boolean,

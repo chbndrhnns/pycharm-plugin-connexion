@@ -374,3 +374,35 @@
     "NEW INSTRUCTION": "WHEN Copy Node Ids invoked on root test results node THEN collect and copy all leaf test node ids joined by newlines"
 }
 
+[2025-12-09 23:49] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "pytest copy formats",
+    "EXPECTATION": "Copying Fully Qualified Names from pytest tree should not match pytest node id format; include full test name and parameters.",
+    "NEW INSTRUCTION": "WHEN copying FQN from test tree THEN output dotted qualname and include parameters"
+}
+
+[2025-12-10 00:03] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "FQN copy root",
+    "EXPECTATION": "CopyFQNAction should work when invoked on the test results root and include FQNs for all test nodes, sorted.",
+    "NEW INSTRUCTION": "WHEN CopyFQNAction is invoked on root node THEN collect all leaf FQNs, include parameters, sort, and copy joined by newlines"
+}
+
+[2025-12-10 00:06] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "FQN format",
+    "EXPECTATION": "Fully Qualified Names must exclude pytest parameters; no bracketed [] suffix after the test name.",
+    "NEW INSTRUCTION": "WHEN test name contains '[' in FQN generation THEN strip bracketed parameter suffix"
+}
+
+[2025-12-10 00:11] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "FQN deduplication",
+    "EXPECTATION": "A parameterized test should appear only once in FQN output, not once per parameter.",
+    "NEW INSTRUCTION": "WHEN collecting FQNs from parameterized tests THEN emit one entry without parameters and deduplicate"
+}
+

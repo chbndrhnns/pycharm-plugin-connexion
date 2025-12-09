@@ -1,43 +1,3 @@
-[2025-12-02 22:33] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "list file structure,repeat search",
-    "MISSING STEPS": "inspect all search results",
-    "BOTTLENECK": "Contexts were recreated because top-level APIs didn’t accept a passed context.",
-    "PROJECT NOTE": "For intentions, use codeAnalysis in isAvailable and userInitiated in invoke.",
-    "NEW INSTRUCTION": "WHEN entrypoint analyzes in both isAvailable and invoke THEN pass one TypeEvalContext through"
-}
-
-[2025-12-02 22:55] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "broad search",
-    "MISSING STEPS": "-",
-    "BOTTLENECK": "Over-broad project search produced noisy results and added latency.",
-    "PROJECT NOTE": "Extract a shared user-code gating utility and reuse it across inspections.",
-    "NEW INSTRUCTION": "WHEN project search warns about too many results THEN refine query to target classes"
-}
-
-[2025-12-02 23:11] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "run tests, modify inspections, run tests again, run all tests",
-    "BOTTLENECK": "Using the wrong test base class caused immediate compile errors.",
-    "PROJECT NOTE": "Tests in this repo should extend fixtures.TestBase and use myFixture.module.",
-    "NEW INSTRUCTION": "WHEN test base class unresolved THEN Extend fixtures.TestBase and use myFixture.module for library setup"
-}
-
-[2025-12-02 23:19] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "manual file browsing, incremental scrolling",
-    "MISSING STEPS": "scan project, summarize findings, propose refactors",
-    "BOTTLENECK": "Started with manual navigation instead of a repo-wide search.",
-    "PROJECT NOTE": "createFromText usages clustered in inspections/PyAllExportUtil.kt and related QuickFix/intentions; these are prime PSI-only refactor targets.",
-    "NEW INSTRUCTION": "WHEN needing PSI-vs-AST audit THEN grep repo for PyElementGenerator and createFromText, then summarize"
-}
-
 [2025-12-02 23:54] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -928,3 +888,22 @@
     "NEW INSTRUCTION": "WHEN selected test node has SMTestProxy children THEN traverse SMTestProxy children to collect ids"
 }
 
+[2025-12-09 23:53] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "run tests,run tests again,create reproduction test before reading code",
+    "MISSING STEPS": "scan project,read PytestNodeIdGenerator,read CopyPytestNodeIdAction,apply user rules for node ids,ask user to fix broken build",
+    "BOTTLENECK": "Gradle immutable workspace corruption blocked running tests and feedback loop.",
+    "PROJECT NOTE": "Implement user rules directly in PytestNodeIdGenerator and CopyPytestNodeIdAction to use PSI file path, '::' separators, include parameters, and collect leaf nodes from root.",
+    "NEW INSTRUCTION": "WHEN build fails with immutable workspace corruption THEN ask_user to clean Gradle cache and continue static analysis"
+}
+
+[2025-12-10 00:06] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "modify code, ensure sorting, run tests",
+    "BOTTLENECK": "FQNs are collected from UI tree nodes instead of SMTestProxy hierarchy.",
+    "PROJECT NOTE": "Mirror traversal from CopyPytestNodeIdAction or centralize in TestProxyExtractor.",
+    "NEW INSTRUCTION": "WHEN collecting FQNs from test tree THEN traverse SMTestProxy hierarchy and sort results"
+}

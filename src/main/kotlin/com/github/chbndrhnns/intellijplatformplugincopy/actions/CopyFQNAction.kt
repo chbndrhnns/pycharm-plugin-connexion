@@ -2,6 +2,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.actions
 
 import com.intellij.execution.testframework.TestTreeView
 import com.intellij.execution.testframework.sm.runner.SMTestProxy
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
@@ -11,6 +12,10 @@ import java.awt.datatransfer.StringSelection
 import javax.swing.tree.DefaultMutableTreeNode
 
 class CopyFQNAction : AnAction() {
+
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.EDT
+    }
 
     override fun update(e: AnActionEvent) {
         val view = e.getData(PlatformDataKeys.CONTEXT_COMPONENT) as? TestTreeView
@@ -34,8 +39,8 @@ class CopyFQNAction : AnAction() {
         }
 
         if (result.isNotEmpty()) {
-            result.sort()
-            CopyPasteManager.getInstance().setContents(StringSelection(result.joinToString("\n")))
+            val uniqueResult = result.distinct().sorted()
+            CopyPasteManager.getInstance().setContents(StringSelection(uniqueResult.joinToString("\n")))
         }
     }
 
@@ -46,17 +51,31 @@ class CopyFQNAction : AnAction() {
     ) {
         val proxy = TestProxyExtractor.getTestProxy(node)
 
-        if (proxy != null && proxy.isLeaf) {
+        if (proxy != null) {
+            collectFQNsFromProxy(proxy, result, project)
+        } else {
+            for (i in 0 until node.childCount) {
+                val child = node.getChildAt(i)
+                if (child is DefaultMutableTreeNode) {
+                    collectFQNs(child, result, project)
+                }
+            }
+        }
+    }
+
+    private fun collectFQNsFromProxy(
+        proxy: SMTestProxy,
+        result: MutableList<String>,
+        project: Project
+    ) {
+        if (proxy.isLeaf) {
             val fqn = generateFQN(proxy, project)
             if (fqn != null) {
                 result.add(fqn)
             }
-        }
-
-        for (i in 0 until node.childCount) {
-            val child = node.getChildAt(i)
-            if (child is DefaultMutableTreeNode) {
-                collectFQNs(child, result, project)
+        } else {
+            for (child in proxy.children) {
+                collectFQNsFromProxy(child, result, project)
             }
         }
     }
@@ -64,14 +83,25 @@ class CopyFQNAction : AnAction() {
     internal fun generateFQN(proxy: SMTestProxy, project: Project): String? {
         val url = proxy.locationUrl
         if (url != null && url.startsWith("python_uttestid://")) {
-            return url.removePrefix("python_uttestid://")
+            return stripParameters(url.removePrefix("python_uttestid://"))
         }
 
         val nodeId = PytestNodeIdGenerator.parseProxy(proxy, project) ?: return null
         // Transform "path/to/file.py::Class::method" to "path.to.file.Class.method"
-        return nodeId.nodeid.replace(".py", "")
+        val fqn = nodeId.nodeid.replace(".py", "")
             .replace("/", ".")
             .replace("::", ".")
+        return stripParameters(fqn)
+    }
+
+    private fun stripParameters(fqn: String): String {
+        if (fqn.endsWith("]")) {
+            val index = fqn.lastIndexOf('[')
+            if (index != -1) {
+                return fqn.substring(0, index)
+            }
+        }
+        return fqn
     }
 
     private fun isPythonContext(view: TestTreeView): Boolean {
