@@ -1,33 +1,3 @@
-[2025-12-04 15:23] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Passed extra arguments to unchanged methods",
-    "ROOT CAUSE": "Call sites were updated to include new parameters, but method definitions were not adjusted.",
-    "PROJECT NOTE": "In PyIntroduceParameterObjectProcessor.kt, update createDataclass, updateFunctionBody, and replaceFunctionSignature to accept frozen, slots, and parameterName as added at call sites.",
-    "NEW INSTRUCTION": "WHEN call site arity exceeds method parameters THEN update method signatures and implementations accordingly"
-}
-
-[2025-12-04 21:18] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "FileComparisonFailedError text mismatch",
-    "ROOT CAUSE": "PopulateArguments did not import the NewType alias used in the generated value.",
-    "PROJECT NOTE": "In PopulateArgumentsService.generateValue/population flow, when valStr uses an alias (e.g., MyStr(...)), also add that alias PsiNamedElement to requiredImports so PyImportService.ensureImportedIfNeeded can import it.",
-    "NEW INSTRUCTION": "WHEN generated value references typing.NewType alias THEN add alias symbol to requiredImports and import"
-}
-
-[2025-12-04 21:31] - Updated by Junie - Error analysis
-{
-    "TYPE": "build failure",
-    "TOOL": "run_test",
-    "ERROR": "Unresolved reference 'doIntentionTest'",
-    "ROOT CAUSE": "The new test file did not import the fixtures.doIntentionTest helper function.",
-    "PROJECT NOTE": "In this repo, doIntentionTest is a top-level function in the fixtures package; test classes must import fixtures.doIntentionTest explicitly.",
-    "NEW INSTRUCTION": "WHEN test code uses doIntentionTest THEN add import fixtures.doIntentionTest"
-}
-
 [2025-12-04 21:33] - Updated by Junie - Error analysis
 {
     "TYPE": "logic bug",
@@ -806,4 +776,34 @@
     "ROOT CAUSE": "The new intention calls PyReferenceExpression.resolve(), which is not a valid API; resolution must use its PsiReference.",
     "PROJECT NOTE": "In Python PSI, resolve references via refExpr.reference.resolve() (or multiResolve), not refExpr.resolve().",
     "NEW INSTRUCTION": "WHEN resolving a PyReferenceExpression THEN use refExpr.reference.resolve() and check for null"
+}
+
+[2025-12-09 10:56] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "search_replace",
+    "ERROR": "plugin.xml: Cannot resolve language id 'Python'",
+    "ROOT CAUSE": "The build/runtime environment lacks the Python plugin, so the language id is unknown to the validator.",
+    "PROJECT NOTE": "Ensure Gradle includes intellij.plugins += listOf(\"python\") and keep <depends>com.intellij.modules.python</depends> in plugin.xml.",
+    "NEW INSTRUCTION": "WHEN plugin.xml shows 'Cannot resolve language with id \"Python\"' THEN add 'python' to Gradle intellij.plugins and sync"
+}
+
+[2025-12-09 10:57] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "search_replace",
+    "ERROR": "Cannot resolve language id 'Python' in plugin.xml",
+    "ROOT CAUSE": "The Python language isn't available to the validator because the Python plugin isn't declared as a dependency.",
+    "PROJECT NOTE": "Declare the Python plugin explicitly in plugin.xml: add <depends>Pythonid</depends> alongside com.intellij.modules.python to satisfy language resolution.",
+    "NEW INSTRUCTION": "WHEN plugin.xml shows 'Cannot resolve language with id Python' THEN add <depends>Pythonid</depends> to plugin.xml"
+}
+
+[2025-12-09 10:57] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "plugin.xml",
+    "ERROR": "Cannot resolve language id 'Python' in plugin.xml",
+    "ROOT CAUSE": "The Python plugin is not declared/loaded, so language=\"Python\" cannot be resolved.",
+    "PROJECT NOTE": "Add Python plugin dependency: in plugin.xml <depends>com.jetbrains.python</depends> and in Gradle intellij.plugins include \"com.jetbrains.python\".",
+    "NEW INSTRUCTION": "WHEN plugin.xml uses language=\"Python\" THEN declare com.jetbrains.python dependency and Gradle intellij.plugins"
 }

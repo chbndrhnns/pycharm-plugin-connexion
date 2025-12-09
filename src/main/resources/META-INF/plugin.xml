@@ -10,6 +10,10 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
+        <lang.psiStructureViewFactory language="Python"
+                                      implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.structureView.MyPythonStructureViewFactory"
+                                      order="first"/>
+
         <applicationService
                 serviceImplementation="com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState"/>
 

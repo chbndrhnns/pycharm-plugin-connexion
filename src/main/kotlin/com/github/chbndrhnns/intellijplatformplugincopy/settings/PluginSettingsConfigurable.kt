@@ -26,6 +26,7 @@ class PluginSettingsConfigurable : SearchableConfigurable {
     private lateinit var enablePrivateModuleImportInspectionCb: JBCheckBox
     private lateinit var enableCopyBuildNumberCb: JBCheckBox
     private lateinit var enableCreateLocalVariableIntentionCb: JBCheckBox
+    private lateinit var enableStructureViewPrivateMembersFilterCb: JBCheckBox
 
     override fun getId(): String = "com.github.chbndrhnns.intellijplatformplugincopy.settings"
     override fun getDisplayName(): String = "DDD Toolkit"
@@ -51,6 +52,7 @@ class PluginSettingsConfigurable : SearchableConfigurable {
         enablePrivateModuleImportInspectionCb = JBCheckBox("Enable ‘Private module import’ inspection")
         enableCopyBuildNumberCb = JBCheckBox("Enable ‘Copy Build Number’ context menu action")
         enableCreateLocalVariableIntentionCb = JBCheckBox("Enable ‘Create local variable’ intention")
+        enableStructureViewPrivateMembersFilterCb = JBCheckBox("Enable ‘Show Private Members’ filter in Structure View")
         inner.add(enableWrapCb)
         inner.add(enableWrapItemsCb)
         inner.add(enableUnwrapCb)
@@ -68,6 +70,7 @@ class PluginSettingsConfigurable : SearchableConfigurable {
         inner.add(enablePrivateModuleImportInspectionCb)
         inner.add(enableCopyBuildNumberCb)
         inner.add(enableCreateLocalVariableIntentionCb)
+        inner.add(enableStructureViewPrivateMembersFilterCb)
         p.add(inner, BorderLayout.NORTH)
         panel = p
         return p
@@ -91,7 +94,8 @@ class PluginSettingsConfigurable : SearchableConfigurable {
                 (::enableDataclassMissingInspectionCb.isInitialized && enableDataclassMissingInspectionCb.isSelected != state.enableDataclassMissingInspection) ||
                 (::enablePrivateModuleImportInspectionCb.isInitialized && enablePrivateModuleImportInspectionCb.isSelected != state.enablePrivateModuleImportInspection) ||
                 (::enableCopyBuildNumberCb.isInitialized && enableCopyBuildNumberCb.isSelected != state.enableCopyBuildNumberAction) ||
-                (::enableCreateLocalVariableIntentionCb.isInitialized && enableCreateLocalVariableIntentionCb.isSelected != state.enableCreateLocalVariableIntention)
+                (::enableCreateLocalVariableIntentionCb.isInitialized && enableCreateLocalVariableIntentionCb.isSelected != state.enableCreateLocalVariableIntention) ||
+                (::enableStructureViewPrivateMembersFilterCb.isInitialized && enableStructureViewPrivateMembersFilterCb.isSelected != state.enableStructureViewPrivateMembersFilter)
     }
 
     override fun apply() {
@@ -114,6 +118,7 @@ class PluginSettingsConfigurable : SearchableConfigurable {
             enablePrivateModuleImportInspection = enablePrivateModuleImportInspectionCb.isSelected,
             enableCopyBuildNumberAction = enableCopyBuildNumberCb.isSelected,
             enableCreateLocalVariableIntention = enableCreateLocalVariableIntentionCb.isSelected,
+            enableStructureViewPrivateMembersFilter = enableStructureViewPrivateMembersFilterCb.isSelected,
         )
         svc.loadState(s)
     }
@@ -148,6 +153,8 @@ class PluginSettingsConfigurable : SearchableConfigurable {
             st.enablePrivateModuleImportInspection
         if (::enableCopyBuildNumberCb.isInitialized) enableCopyBuildNumberCb.isSelected = st.enableCopyBuildNumberAction
         if (::enableCreateLocalVariableIntentionCb.isInitialized) enableCreateLocalVariableIntentionCb.isSelected = st.enableCreateLocalVariableIntention
+        if (::enableStructureViewPrivateMembersFilterCb.isInitialized) enableStructureViewPrivateMembersFilterCb.isSelected =
+            st.enableStructureViewPrivateMembersFilter
     }
 
     override fun disposeUIResources() {

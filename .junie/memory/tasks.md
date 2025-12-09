@@ -789,3 +789,13 @@ directly.",
     "NEW INSTRUCTION": "WHEN new Kotlin classes or settings are added THEN run the build immediately"
 }
 
+[2025-12-09 10:57] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "make directory,create faulty factory",
+    "MISSING STEPS": "scan project,consult docs,run build,add tests,run tests",
+    "BOTTLENECK": "APIs were implemented without verifying the correct StructureViewBuilder contract.",
+    "PROJECT NOTE": "Unresolved language id 'Python' suggests missing Python plugin dependency in build/test environment.",
+    "NEW INSTRUCTION": "WHEN adding or modifying plugin.xml extensions THEN run build and resolve missing dependencies"
+}
+

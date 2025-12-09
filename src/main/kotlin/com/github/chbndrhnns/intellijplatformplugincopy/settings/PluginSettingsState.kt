@@ -25,6 +25,7 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enablePrivateModuleImportInspection: Boolean = true,
         var enableCopyBuildNumberAction: Boolean = true,
         var enableCreateLocalVariableIntention: Boolean = true,
+        var enableStructureViewPrivateMembersFilter: Boolean = true,
     )
 
     private var myState = State()
