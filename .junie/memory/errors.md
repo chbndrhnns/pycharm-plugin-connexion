@@ -1,63 +1,3 @@
-[2025-12-08 13:17] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic bug",
-    "TOOL": "Gradle (:test) -> PopulateArgumentsService.populateArguments",
-    "ERROR": "Decorator call arguments not populated; empty parentheses produced",
-    "ROOT CAUSE": "The intention does not handle PyDecorator/its argument list, so no parameters are generated for @Decorator(...).",
-    "PROJECT NOTE": "In PopulateArgumentsService.findCallExpression/target resolution, also support PyDecorator and its PyArgumentList; treat it like a call by resolving the decorator’s callable (__init__/__call__).",
-    "NEW INSTRUCTION": "WHEN caret is inside PyDecorator or its argument list THEN resolve decorator as call and populate arguments"
-}
-
-[2025-12-08 13:24] - Updated by Junie - Error analysis
-{
-    "TYPE": "tool failure",
-    "TOOL": "undo_edit",
-    "ERROR": "Undo failed; tool cannot revert the last edit",
-    "ROOT CAUSE": "The undo_edit utility is not supported here and cannot roll back file changes.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN undo_edit fails to revert changes THEN restore content manually using search_replace or create"
-}
-
-[2025-12-08 13:27] - Updated by Junie - Error analysis
-{
-    "TYPE": "tool failure",
-    "TOOL": "undo_edit",
-    "ERROR": "Undo failed; no automatic revert available",
-    "ROOT CAUSE": "The undo tool cannot revert after subsequent edits or lacks a prior snapshot.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN undo_edit returns an error THEN manually revert using search_replace or reapply original content"
-}
-
-[2025-12-08 14:02] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "Gradle (:test)",
-    "ERROR": "AssertionFailedError: TargetDetector returned null",
-    "ROOT CAUSE": "TargetDetector.find failed to detect ExpressionTarget when RHS is annotated with Final[str] and caret on string literal.",
-    "PROJECT NOTE": "Update TargetDetector.tryFromExpression (and related expected type extraction) to unwrap typing.Final[...] and use the inner builtin name (e.g., str) for matching; see PyTypeIntentions/ExpectedTypeInfo for expected-type resolution.",
-    "NEW INSTRUCTION": "WHEN expected type annotation uses typing.Final[...] THEN unwrap Final and match using the inner type"
-}
-
-[2025-12-08 14:04] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic bug",
-    "TOOL": "Gradle test",
-    "ERROR": "AssertionFailedError: TargetDetector.find returned null for Final[str] literal",
-    "ROOT CAUSE": "TargetDetector.tryFromExpression does not unwrap typing.Final[...] to the inner builtin type, so matching 'str' fails.",
-    "PROJECT NOTE": "Where expected types are derived (PyTypeIntentions/ExpectedTypeInfo and TargetDetector.determineBuiltinType/findExpressionMatchingBuiltin), ensure wrappers like Final/Optional/Annotated are unwrapped to their arguments before builtin matching.",
-    "NEW INSTRUCTION": "WHEN expected type annotation is typing.Final[...] THEN unwrap to inner type before matching"
-}
-
-[2025-12-08 14:04] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "Gradle :test",
-    "ERROR": "TargetDetector returned null for Final[str] constant",
-    "ROOT CAUSE": "TargetDetector.tryFromExpression fails to unwrap typing.Final and thus cannot match builtin 'str' at the string literal caret.",
-    "PROJECT NOTE": "In target detection/expected type derivation, ensure typing.Final[...] is treated as transparent so inner type drives builtin matching.",
-    "NEW INSTRUCTION": "WHEN expected type is typing.Final[...] THEN unwrap to the inner type before matching"
-}
-
 [2025-12-08 15:46] - Updated by Junie - Error analysis
 {
     "TYPE": "test assertion",
@@ -806,4 +746,64 @@
     "ROOT CAUSE": "Code assumed SMTestProxy exposes a project and passed null to getLocation, causing unresolved reference and nullability errors.",
     "PROJECT NOTE": "In this SDK, SMTestProxy doesn't provide a Project; obtain Project from AnActionEvent/DataContext and pass it explicitly to getLocation.",
     "NEW INSTRUCTION": "WHEN calling SMTestProxy.getLocation THEN pass Project from action context explicitly"
+}
+
+[2025-12-09 21:37] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic bug",
+    "TOOL": "PytestNodeIdGenerator.generateFromProxyHierarchy",
+    "ERROR": "Node ID used '::' for path components",
+    "ROOT CAUSE": "When PSI resolution fails, fallback concatenates all proxy names with '::', treating directories as pytest suffix instead of a filesystem path.",
+    "PROJECT NOTE": "In the SMTestProxy tree, leading nodes often represent path segments (e.g., tests -> test_this -> test_fqn.py). Build path with '/' up to the file node, then append '::Class::test'.",
+    "NEW INSTRUCTION": "WHEN PSI resolution returns null and using proxy fallback THEN join leading path segments with '/' and use '::' only for classes/tests"
+}
+
+[2025-12-09 21:38] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic bug",
+    "TOOL": "PytestNodeIdGenerator.getId",
+    "ERROR": "Fallback produced '::' path segments instead of path/file.py::suffix",
+    "ROOT CAUSE": "PSI resolution failed and fallback concatenated tree node names with '::' separators.",
+    "PROJECT NOTE": "Resolve PSI via PyTestsLocator.getLocation(locationUrl, project, scope) rather than proxy.getLocation; then build nodeid from file relative path and PSI hierarchy.",
+    "NEW INSTRUCTION": "WHEN getLocation returns null or file is null THEN resolve via PyTestsLocator using locationUrl"
+}
+
+[2025-12-09 21:38] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic bug",
+    "TOOL": "PytestNodeIdGenerator.generateFromProxyHierarchy",
+    "ERROR": "Fallback produced invalid pytest node id format",
+    "ROOT CAUSE": "The fallback joins all proxy names with '::', losing path separators and .py.",
+    "PROJECT NOTE": "In TestTreeView, directory nodes are suites; the file node carries the .py filename. Build 'dir/dir/file.py' then append '::Class::test'.",
+    "NEW INSTRUCTION": "WHEN using fallback from proxy hierarchy THEN join directories with '/', then '::' for classes/methods"
+}
+
+[2025-12-09 22:25] - Updated by Junie - Error analysis
+{
+    "TYPE": "test runtime",
+    "TOOL": "run_test",
+    "ERROR": "NullPointerException in PytestNodeIdGeneratorTest",
+    "ROOT CAUSE": "Test files are not under a module content root so generator returns null and NPE follows.",
+    "PROJECT NOTE": "In BasePlatformTestCase, create test files with myFixture.addFileToProject(\"tests/test_fqn.py\", text) or configure a content root; avoid configureByText alone when code needs VirtualFile path resolution.",
+    "NEW INSTRUCTION": "WHEN testing PytestNodeIdGenerator THEN add files via myFixture.addFileToProject under a source root"
+}
+
+[2025-12-09 22:28] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "run_test",
+    "ERROR": "NullPointerException in PytestNodeIdGeneratorTest",
+    "ROOT CAUSE": "FakeSMTestProxy was created with a null locationUrl so parseProxy returned null and was dereferenced.",
+    "PROJECT NOTE": "Tests using SMTestProxy must provide a valid python<file_path>://FQN locationUrl; use psiFile.virtualFile.path from myFixture.configureByText.",
+    "NEW INSTRUCTION": "WHEN constructing SMTestProxy in tests THEN provide python<abs_file_path>://module.Class.test locationUrl"
+}
+
+[2025-12-09 22:30] - Updated by Junie - Error analysis
+{
+    "TYPE": "test failure",
+    "TOOL": "run_test",
+    "ERROR": "Intentional fail() caused test run to error",
+    "ROOT CAUSE": "A diagnostic test deliberately calls fail(), converting the debug run into a build error.",
+    "PROJECT NOTE": "Large failure messages can break Gradle’s XML reports; prefer stdout/stderr for diagnostics.",
+    "NEW INSTRUCTION": "WHEN adding temporary debug output in tests THEN print logs and keep tests passing"
 }

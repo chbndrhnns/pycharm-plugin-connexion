@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.actions
 
 import com.intellij.execution.testframework.TestTreeView
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
@@ -10,6 +11,10 @@ import java.awt.datatransfer.StringSelection
 import javax.swing.tree.DefaultMutableTreeNode
 
 class CopyPytestNodeIdAction : AnAction() {
+
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.EDT
+    }
 
     override fun update(e: AnActionEvent) {
         val view = e.getData(PlatformDataKeys.CONTEXT_COMPONENT) as? TestTreeView
@@ -45,9 +50,9 @@ class CopyPytestNodeIdAction : AnAction() {
         val proxy = TestProxyExtractor.getTestProxy(node)
 
         if (proxy != null && proxy.isLeaf) {
-            val nodeId = PytestNodeIdGenerator.getId(proxy, project)
+            val nodeId = PytestNodeIdGenerator.parseProxy(proxy, project)
             if (nodeId != null) {
-                result.add(nodeId)
+                result.add(nodeId.nodeid)
             }
         }
 

@@ -350,3 +350,19 @@
     "NEW INSTRUCTION": "WHEN a test tree node is selected THEN show and enable Copy Special actions"
 }
 
+[2025-12-09 21:36] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "pytest node id format",
+    "EXPECTATION": "Node id must start with the file path using '/' and ending with '.py', followed by '::Class::test' (e.g., tests/test_this/test_fqn.py::TestOuter::TestInner::test_foo), not split directories with '::'.",
+    "NEW INSTRUCTION": "WHEN building node id from proxy without PSI THEN derive relative file path and append symbols via '::'"
+}
+
+[2025-12-09 22:29] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "in-memory files support",
+    "EXPECTATION": "Implementation should work with in-memory PSI files from myFixture.configureByText and not rely on LocalFileSystem or real files.",
+    "NEW INSTRUCTION": "WHEN deriving file path for node id THEN use PSI containingFile.virtualFile.path"
+}
+

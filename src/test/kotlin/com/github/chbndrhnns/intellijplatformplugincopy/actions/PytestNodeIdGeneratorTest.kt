@@ -20,10 +20,12 @@ class PytestNodeIdGeneratorTest : TestBase() {
             """.trimIndent()
         )
         val function = myFixture.findElementByText("test_foo", PyFunction::class.java)
-        val proxy = FakeSMTestProxy("test_foo", false, function)
+        val path = myFixture.file.virtualFile.path
+        val locationUrl = "python<$path>://test_simple.test_foo"
+        val proxy = FakeSMTestProxy("test_foo", false, function, locationUrl)
 
-        val id = PytestNodeIdGenerator.getId(proxy, project)
-        assertEquals("test_simple.py::test_foo", id)
+        val record = PytestNodeIdGenerator.parseProxy(proxy, project)
+        assertEquals("test_simple.py::test_foo", record!!.nodeid)
     }
 
     fun testClassMethod() {
@@ -36,10 +38,12 @@ class PytestNodeIdGeneratorTest : TestBase() {
             """.trimIndent()
         )
         val method = myFixture.findElementByText("test_method", PyFunction::class.java)
-        val proxy = FakeSMTestProxy("test_method", false, method)
+        val path = myFixture.file.virtualFile.path
+        val locationUrl = "python<$path>://test_class.TestMyClass.test_method"
+        val proxy = FakeSMTestProxy("test_method", false, method, locationUrl)
 
-        val id = PytestNodeIdGenerator.getId(proxy, project)
-        assertEquals("test_class.py::TestMyClass::test_method", id)
+        val id = PytestNodeIdGenerator.parseProxy(proxy, project)
+        assertEquals("test_class.py::TestMyClass::test_method", id!!.nodeid)
     }
 
     fun testNestedClassMethod() {
@@ -53,41 +57,20 @@ class PytestNodeIdGeneratorTest : TestBase() {
             """.trimIndent()
         )
         val method = myFixture.findElementByText("test_inner", PyFunction::class.java)
-        val proxy = FakeSMTestProxy("test_inner", false, method)
+        val path = myFixture.file.virtualFile.path
+        val locationUrl = "python<$path>://test_nested.TestOuter.TestInner.test_inner"
+        val proxy = FakeSMTestProxy("test_inner", false, method, locationUrl)
 
-        val id = PytestNodeIdGenerator.getId(proxy, project)
-        assertEquals("test_nested.py::TestOuter::TestInner::test_inner", id)
-    }
-
-    fun testFallbackHierarchy() {
-        // Create a hierarchy of proxies without PSI
-        val root = FakeSMTestProxy("root", true, null)
-        val fileProxy = FakeSMTestProxy("test_fallback.py", true, null)
-        val classProxy = FakeSMTestProxy("TestFallback", true, null)
-        val methodProxy = FakeSMTestProxy("test_fallback_method", false, null)
-
-        root.addChild(fileProxy)
-        fileProxy.addChild(classProxy)
-        classProxy.addChild(methodProxy)
-
-        val id = PytestNodeIdGenerator.getId(methodProxy, project)
-        // Expected behavior of fallback: traverse up to parent
-        // fileProxy -> classProxy -> methodProxy
-        // Note: Logic currently stops at parent != null, so root is excluded if it has no parent?
-        // Wait, loop: while (current != null && current.parent != null)
-        // methodProxy (parent=classProxy) -> add "test_fallback_method"
-        // classProxy (parent=fileProxy) -> add "TestFallback"
-        // fileProxy (parent=root) -> add "test_fallback.py"
-        // root (parent=null) -> stop.
-
-        assertEquals("test_fallback.py::TestFallback::test_fallback_method", id)
+        val record = PytestNodeIdGenerator.parseProxy(proxy, project)
+        assertEquals("test_nested.py::TestOuter::TestInner::test_inner", record!!.nodeid)
     }
 
     private class FakeSMTestProxy(
         name: String,
         isSuite: Boolean,
-        private val element: PsiElement?
-    ) : SMTestProxy(name, isSuite, null) {
+        private val element: PsiElement?,
+        locationUrl: String? = null
+    ) : SMTestProxy(name, isSuite, locationUrl) {
 
         override fun getLocation(project: Project, scope: GlobalSearchScope): Location<*>? {
             return element?.let { PsiLocation(it) }

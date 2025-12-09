@@ -1,33 +1,3 @@
-[2025-12-01 20:13] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "scan project for multiFollowAssignmentsChain",
-    "MISSING STEPS": "run build",
-    "BOTTLENECK": "No validation step after changing a function signature.",
-    "PROJECT NOTE": "There may be other callers of resolvedCallee; ensure all are updated.",
-    "NEW INSTRUCTION": "WHEN function signature is changed THEN update all call sites and run project build"
-}
-
-[2025-12-01 20:26] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "register extension, add tests, run build",
-    "BOTTLENECK": "Provider was created but not registered in plugin.xml.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN creating a new extension class THEN immediately register it in plugin.xml"
-}
-
-[2025-12-01 21:42] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "run test (unsupported tool)",
-    "MISSING STEPS": "scan project, open tests scaffold, run build, run tests via gradle",
-    "BOTTLENECK": "Attempted to run tests with an unavailable tool leading to opaque build failure.",
-    "PROJECT NOTE": "Use Gradle wrapper to compile and run tests (e.g., ./gradlew build test).",
-    "NEW INSTRUCTION": "WHEN tests must run THEN execute './gradlew test' using bash"
-}
-
 [2025-12-01 21:54] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -899,3 +869,52 @@ directly.",
     "NEW INSTRUCTION": "WHEN context menu opens in TestTreeView THEN enable actions if any selected node maps to SMTestProxy"
 }
 
+[2025-12-09 21:34] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "open unrelated files,update_status duplication",
+    "MISSING STEPS": "handle metainfo,consult docs,add parameterized test cases",
+    "BOTTLENECK": "Node id generation ignores parameterization due to missing metainfo handling.",
+    "PROJECT NOTE": "See docs/pytest/node-ids.md for metainfo usage to handle parametrized tests.",
+    "NEW INSTRUCTION": "WHEN proxy exposes metainfo or parameterized test name THEN use it as leaf name when building pytest node id"
+}
+
+[2025-12-09 21:38] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "resolve via PyTestsLocator,improve fallback",
+    "BOTTLENECK": "PSI resolution failed and fallback produced wrong separators for file path.",
+    "PROJECT NOTE": "Use PyTestsLocator.getLocation and metainfo; fix fallback to join file segments with '/' and use '::' only for class/function.",
+    "NEW INSTRUCTION": "WHEN using fallback from proxy hierarchy THEN join file path with '/' and suffix with '::'"
+}
+
+[2025-12-09 22:28] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "scan implementation file,open TestBase",
+    "MISSING STEPS": "run tests,verify node id format",
+    "BOTTLENECK": "Null locationUrl in FakeSMTestProxy caused parseProxy to return null and NPE.",
+    "PROJECT NOTE": "SMTestProxy locationUrl should use format python<file path>://fully.qualified.name.",
+    "NEW INSTRUCTION": "WHEN tests were modified THEN run the modified test file immediately"
+}
+
+[2025-12-09 22:31] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "add debug test,force failure,run test repeatedly",
+    "MISSING STEPS": "refactor implementation,update tests,run full tests,remove debug artifacts",
+    "BOTTLENECK": "Implementation tightly coupled to LocalFileSystem/ProjectFileIndex instead of PSI/VirtualFile.",
+    "PROJECT NOTE": "Use proxy.getLocation(PsiLocation) and VirtualFile from PSI to compute node IDs without module/content roots.",
+    "NEW INSTRUCTION": "WHEN implementation requires real files for resolution THEN refactor to derive from PSI and VirtualFile"
+}
+
+[2025-12-09 22:40] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "open file",
+    "MISSING STEPS": "scan project,open implementation,verify against tests",
+    "BOTTLENECK": "Answer was not grounded in the repository’s actual strategy implementation.",
+    "PROJECT NOTE": "Review PytestNodeIdGenerator and PytestNodeIdGeneratorTest to confirm when Strategy 2 triggers.",
+    "NEW INSTRUCTION": "WHEN question concerns specific repo algorithm or strategy THEN scan project and open implementation and tests before drafting answer"
+}

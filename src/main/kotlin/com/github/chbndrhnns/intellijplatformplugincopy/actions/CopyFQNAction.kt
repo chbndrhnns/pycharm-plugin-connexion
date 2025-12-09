@@ -66,9 +66,9 @@ class CopyFQNAction : AnAction() {
             return url.removePrefix("python_uttestid://")
         }
 
-        val nodeId = PytestNodeIdGenerator.getId(proxy, project) ?: return null
+        val nodeId = PytestNodeIdGenerator.parseProxy(proxy, project) ?: return null
         // Transform "path/to/file.py::Class::method" to "path.to.file.Class.method"
-        return nodeId.replace(".py", "")
+        return nodeId.nodeid.replace(".py", "")
             .replace("/", ".")
             .replace("::", ".")
     }
