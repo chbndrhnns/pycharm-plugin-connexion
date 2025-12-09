@@ -18,6 +18,12 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enableCopyPackageContentAction: Boolean = true,
         var enableRestoreSourceRootPrefix: Boolean = true,
         var enableRelativeImportPreference: Boolean = true,
+        var enableDictAccessIntention: Boolean = true,
+        var enableMakePublicIntention: Boolean = true,
+        var enableIntroduceParameterObjectIntention: Boolean = true,
+        var enableDataclassMissingInspection: Boolean = true,
+        var enablePrivateModuleImportInspection: Boolean = true,
+        var enableCopyBuildNumberAction: Boolean = true,
     )
 
     private var myState = State()

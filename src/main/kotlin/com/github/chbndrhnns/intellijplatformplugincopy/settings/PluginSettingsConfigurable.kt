@@ -19,6 +19,12 @@ class PluginSettingsConfigurable : SearchableConfigurable {
     private lateinit var enableCopyPackageContentCb: JBCheckBox
     private lateinit var enableRestoreSourceRootPrefixCb: JBCheckBox
     private lateinit var enableRelativeImportPreferenceCb: JBCheckBox
+    private lateinit var enableDictAccessCb: JBCheckBox
+    private lateinit var enableMakePublicCb: JBCheckBox
+    private lateinit var enableIntroduceParameterObjectCb: JBCheckBox
+    private lateinit var enableDataclassMissingInspectionCb: JBCheckBox
+    private lateinit var enablePrivateModuleImportInspectionCb: JBCheckBox
+    private lateinit var enableCopyBuildNumberCb: JBCheckBox
 
     override fun getId(): String = "com.github.chbndrhnns.intellijplatformplugincopy.settings"
     override fun getDisplayName(): String = "DDD Toolkit"
@@ -37,6 +43,12 @@ class PluginSettingsConfigurable : SearchableConfigurable {
         enableCopyPackageContentCb = JBCheckBox("Enable ‘Copy Package Content’ context menu action")
         enableRestoreSourceRootPrefixCb = JBCheckBox("Enable ‘Restore Source Root Prefix’ in imports")
         enableRelativeImportPreferenceCb = JBCheckBox("Enable ‘Prefer relative imports’ in auto-import")
+        enableDictAccessCb = JBCheckBox("Enable ‘Dictionary access’ intentions")
+        enableMakePublicCb = JBCheckBox("Enable ‘Make public/private’ intentions")
+        enableIntroduceParameterObjectCb = JBCheckBox("Enable ‘Introduce parameter object’ intention")
+        enableDataclassMissingInspectionCb = JBCheckBox("Enable ‘Dataclass missing’ inspection")
+        enablePrivateModuleImportInspectionCb = JBCheckBox("Enable ‘Private module import’ inspection")
+        enableCopyBuildNumberCb = JBCheckBox("Enable ‘Copy Build Number’ context menu action")
         inner.add(enableWrapCb)
         inner.add(enableWrapItemsCb)
         inner.add(enableUnwrapCb)
@@ -47,6 +59,12 @@ class PluginSettingsConfigurable : SearchableConfigurable {
         inner.add(enableCopyPackageContentCb)
         inner.add(enableRestoreSourceRootPrefixCb)
         inner.add(enableRelativeImportPreferenceCb)
+        inner.add(enableDictAccessCb)
+        inner.add(enableMakePublicCb)
+        inner.add(enableIntroduceParameterObjectCb)
+        inner.add(enableDataclassMissingInspectionCb)
+        inner.add(enablePrivateModuleImportInspectionCb)
+        inner.add(enableCopyBuildNumberCb)
         p.add(inner, BorderLayout.NORTH)
         panel = p
         return p
@@ -63,7 +81,13 @@ class PluginSettingsConfigurable : SearchableConfigurable {
                 (::enableDunderAllInspectionCb.isInitialized && enableDunderAllInspectionCb.isSelected != state.enablePyMissingInDunderAllInspection) ||
                 (::enableCopyPackageContentCb.isInitialized && enableCopyPackageContentCb.isSelected != state.enableCopyPackageContentAction) ||
                 (::enableRestoreSourceRootPrefixCb.isInitialized && enableRestoreSourceRootPrefixCb.isSelected != state.enableRestoreSourceRootPrefix) ||
-                (::enableRelativeImportPreferenceCb.isInitialized && enableRelativeImportPreferenceCb.isSelected != state.enableRelativeImportPreference)
+                (::enableRelativeImportPreferenceCb.isInitialized && enableRelativeImportPreferenceCb.isSelected != state.enableRelativeImportPreference) ||
+                (::enableDictAccessCb.isInitialized && enableDictAccessCb.isSelected != state.enableDictAccessIntention) ||
+                (::enableMakePublicCb.isInitialized && enableMakePublicCb.isSelected != state.enableMakePublicIntention) ||
+                (::enableIntroduceParameterObjectCb.isInitialized && enableIntroduceParameterObjectCb.isSelected != state.enableIntroduceParameterObjectIntention) ||
+                (::enableDataclassMissingInspectionCb.isInitialized && enableDataclassMissingInspectionCb.isSelected != state.enableDataclassMissingInspection) ||
+                (::enablePrivateModuleImportInspectionCb.isInitialized && enablePrivateModuleImportInspectionCb.isSelected != state.enablePrivateModuleImportInspection) ||
+                (::enableCopyBuildNumberCb.isInitialized && enableCopyBuildNumberCb.isSelected != state.enableCopyBuildNumberAction)
     }
 
     override fun apply() {
@@ -79,6 +103,12 @@ class PluginSettingsConfigurable : SearchableConfigurable {
             enableCopyPackageContentAction = enableCopyPackageContentCb.isSelected,
             enableRestoreSourceRootPrefix = enableRestoreSourceRootPrefixCb.isSelected,
             enableRelativeImportPreference = enableRelativeImportPreferenceCb.isSelected,
+            enableDictAccessIntention = enableDictAccessCb.isSelected,
+            enableMakePublicIntention = enableMakePublicCb.isSelected,
+            enableIntroduceParameterObjectIntention = enableIntroduceParameterObjectCb.isSelected,
+            enableDataclassMissingInspection = enableDataclassMissingInspectionCb.isSelected,
+            enablePrivateModuleImportInspection = enablePrivateModuleImportInspectionCb.isSelected,
+            enableCopyBuildNumberAction = enableCopyBuildNumberCb.isSelected,
         )
         svc.loadState(s)
     }
@@ -103,6 +133,15 @@ class PluginSettingsConfigurable : SearchableConfigurable {
             st.enableRestoreSourceRootPrefix
         if (::enableRelativeImportPreferenceCb.isInitialized) enableRelativeImportPreferenceCb.isSelected =
             st.enableRelativeImportPreference
+        if (::enableDictAccessCb.isInitialized) enableDictAccessCb.isSelected = st.enableDictAccessIntention
+        if (::enableMakePublicCb.isInitialized) enableMakePublicCb.isSelected = st.enableMakePublicIntention
+        if (::enableIntroduceParameterObjectCb.isInitialized) enableIntroduceParameterObjectCb.isSelected =
+            st.enableIntroduceParameterObjectIntention
+        if (::enableDataclassMissingInspectionCb.isInitialized) enableDataclassMissingInspectionCb.isSelected =
+            st.enableDataclassMissingInspection
+        if (::enablePrivateModuleImportInspectionCb.isInitialized) enablePrivateModuleImportInspectionCb.isSelected =
+            st.enablePrivateModuleImportInspection
+        if (::enableCopyBuildNumberCb.isInitialized) enableCopyBuildNumberCb.isSelected = st.enableCopyBuildNumberAction
     }
 
     override fun disposeUIResources() {

@@ -38,9 +38,7 @@ class PyPrivateModuleImportInspection : PyInspection() {
             return object : PyElementVisitor() {}
         }
         val settings = PluginSettingsState.instance().state
-        if (!settings.enablePyMissingInDunderAllInspection) {
-            // Reuse the same setting gate as PyMissingInDunderAllInspection so
-            // users can disable all __all__/export related checks at once.
+        if (!settings.enablePrivateModuleImportInspection) {
             return object : PyElementVisitor() {}
         }
 

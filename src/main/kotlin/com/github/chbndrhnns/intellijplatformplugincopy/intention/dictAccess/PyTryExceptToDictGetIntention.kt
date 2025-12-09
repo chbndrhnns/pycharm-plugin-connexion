@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.dictAccess
 
 import com.github.chbndrhnns.intellijplatformplugincopy.python.PythonVersionGuard
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -18,6 +19,7 @@ class PyTryExceptToDictGetIntention : PsiElementBaseIntentionAction() {
     override fun getFamilyName(): String = "Replace try-except with dict.get"
 
     override fun isAvailable(project: Project, editor: Editor, element: PsiElement): Boolean {
+        if (!PluginSettingsState.instance().state.enableDictAccessIntention) return false
         if (!PythonVersionGuard.isSatisfiedForElement(element)) return false
         val tryExcept = PsiTreeUtil.getParentOfType(element, PyTryExceptStatement::class.java) ?: return false
 

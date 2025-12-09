@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject
 
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -13,6 +14,7 @@ class PyIntroduceParameterObjectIntention : PsiElementBaseIntentionAction() {
     override fun startInWriteAction(): Boolean = false
 
     override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean {
+        if (!PluginSettingsState.instance().state.enableIntroduceParameterObjectIntention) return false
         return IntroduceParameterObjectTarget.isAvailable(element)
     }
 

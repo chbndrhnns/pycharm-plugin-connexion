@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.inspections
 
 import com.github.chbndrhnns.intellijplatformplugincopy.python.PythonVersionGuard
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInspection.LocalInspectionToolSession
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
@@ -24,6 +25,9 @@ class PyDataclassMissingInspection : PyInspection() {
         isOnTheFly: Boolean,
         session: LocalInspectionToolSession
     ): PsiElementVisitor {
+        if (!PluginSettingsState.instance().state.enableDataclassMissingInspection) {
+            return object : PyElementVisitor() {}
+        }
         if (!PythonVersionGuard.isSatisfied(holder.project)) {
             return object : PyElementVisitor() {}
         }

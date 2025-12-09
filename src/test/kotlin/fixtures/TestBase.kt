@@ -31,7 +31,13 @@ abstract class TestBase : MyPlatformTestCase() {
                 enableCopyPackageContentAction = true,
                 enableRestoreSourceRootPrefix = true,
                 enableRelativeImportPreference = true,
-            ),
+                enableDictAccessIntention = true,
+                enableMakePublicIntention = true,
+                enableIntroduceParameterObjectIntention = true,
+                enableDataclassMissingInspection = true,
+                enablePrivateModuleImportInspection = true,
+                enableCopyBuildNumberAction = true,
+                ),
         )
         val sdk = PythonMockSdk.create(LanguageLevel.PYTHON311, myFixture.tempDirFixture.getFile("/")!!)
         Disposer.register(testRootDisposable) {
