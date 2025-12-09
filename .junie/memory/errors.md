@@ -1,43 +1,3 @@
-[2025-12-04 21:33] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic bug",
-    "TOOL": "run_test",
-    "ERROR": "Expected/actual text mismatch in test",
-    "ROOT CAUSE": "Value generator does not handle collection types, so list[NewType] yields ellipsis instead of [Alias(...)].",
-    "PROJECT NOTE": "Extend PopulateArgumentsService.generateValue to handle PyCollectionType (list/set/tuple). For list, generate an element using the inner type (including NewType alias handling/imports) and produce a singleton list like [Element(...)].",
-    "NEW INSTRUCTION": "WHEN type is PyCollectionType with one element type THEN generate container with one sample element"
-}
-
-[2025-12-04 21:36] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Expected/actual text mismatch in test result",
-    "ROOT CAUSE": "generateCollectionValue produced [MyStr(...)] but test expects [MyStr(...),] with trailing comma.",
-    "PROJECT NOTE": "PopulateArgumentsService.generateCollectionValue should emit a singleton container with a trailing comma (e.g., [value,] or {value,}) to match fixture expectations and exact myFixture.checkResult comparison.",
-    "NEW INSTRUCTION": "WHEN generating container with one sample element THEN append a trailing comma after the element"
-}
-
-[2025-12-04 21:41] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "rename_element",
-    "ERROR": "Rename conflicts: class shadowed by constructor",
-    "ROOT CAUSE": "Tried renaming the class to the same name at its declaration, which is unnecessary and triggers conflict detection.",
-    "PROJECT NOTE": "To add a new setting (e.g., generateKwOnly) update IntroduceParameterObjectSettings data class content directly; no rename is required.",
-    "NEW INSTRUCTION": "WHEN attempting to change class members THEN modify file content via apply_patch instead of rename_element"
-}
-
-[2025-12-06 08:01] - Updated by Junie - Error analysis
-{
-    "TYPE": "path error",
-    "TOOL": "search_project",
-    "ERROR": "Searched in non-existent directory outside project root",
-    "ROOT CAUSE": "The search path used '/Users/jo/src/test' which is not inside the repository root and does not exist.",
-    "PROJECT NOTE": "Use the repository root '/Users/jo/src/pycharm-ddd-toolkit'; test sources are under src/test/kotlin and testData under src/test/testData.",
-    "NEW INSTRUCTION": "WHEN search_project reports directory does not exist THEN retry using a path under the project root"
-}
-
 [2025-12-07 10:29] - Updated by Junie - Error analysis
 {
     "TYPE": "invalid args",
@@ -806,4 +766,44 @@
     "ROOT CAUSE": "The Python plugin is not declared/loaded, so language=\"Python\" cannot be resolved.",
     "PROJECT NOTE": "Add Python plugin dependency: in plugin.xml <depends>com.jetbrains.python</depends> and in Gradle intellij.plugins include \"com.jetbrains.python\".",
     "NEW INSTRUCTION": "WHEN plugin.xml uses language=\"Python\" THEN declare com.jetbrains.python dependency and Gradle intellij.plugins"
+}
+
+[2025-12-09 11:24] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Chooser option 'local' not found",
+    "ROOT CAUSE": "The new local-scope population option is not implemented or added to the chooser list.",
+    "PROJECT NOTE": "PopulateArgumentsIntention builds chooser items from PopulateOptions.ALL_OPTIONS/NON_RECURSIVE_OPTIONS; extend PopulateOptions (plus label()) to add a 'use locals' variant and include it only when at least one parameter name matches a local symbol.",
+    "NEW INSTRUCTION": "WHEN building chooser items for PopulateArguments THEN include 'use locals' option if any local name matches"
+}
+
+[2025-12-09 11:26] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Chooser lacked expected 'local' option",
+    "ROOT CAUSE": "The new test expects a chooser item for using local symbols, but PopulateOptions/Intention code does not define or render such an option yet.",
+    "PROJECT NOTE": "Add a new PopulateOptions variant (e.g., useLocalScope=true) to ALL_OPTIONS/NON_RECURSIVE_OPTIONS and update label() so the chooser shows a 'from locals' item.",
+    "NEW INSTRUCTION": "WHEN tests expect a new chooser option THEN add and render that option before running tests"
+}
+
+[2025-12-09 11:29] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle (:test)",
+    "ERROR": "Chooser item containing 'local' not found",
+    "ROOT CAUSE": "The new test expects a chooser option for locals, but the option and label are not implemented yet.",
+    "PROJECT NOTE": "Chooser entries are rendered via PopulateOptions.label(); tests should select by that exact label text.",
+    "NEW INSTRUCTION": "WHEN writing chooser-selection tests THEN match the exact PopulateOptions.label() string"
+}
+
+[2025-12-09 11:31] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "run_test",
+    "ERROR": "Unresolved reference in test source file",
+    "ROOT CAUSE": "The new test references PopulateArgumentsIntentionHooks, which is not defined in the project.",
+    "PROJECT NOTE": "Chooser stubbing must use an existing hook; if none exists, add a test-only hooks object under the same package to expose a mutable PopupHost for tests.",
+    "NEW INSTRUCTION": "WHEN a test references helper hooks THEN verify they exist or add a test-only stub in test sources"
 }

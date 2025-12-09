@@ -310,3 +310,11 @@
     "NEW INSTRUCTION": "WHEN adding the Structure View 'Show Private Members' filter THEN do not register or assign any keyboard shortcut"
 }
 
+[2025-12-09 11:41] - Updated by Junie
+{
+    "TYPE": "negative",
+    "CATEGORY": "tests regression",
+    "EXPECTATION": "New populate-arguments feature must not break existing tests; PopulateArgumentsIntentionTest and RequiredArgumentsIntentionTest should pass",
+    "NEW INSTRUCTION": "WHEN modifying PopulateArguments behavior or options THEN run related tests and fix regressions"
+}
+

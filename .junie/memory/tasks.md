@@ -799,3 +799,23 @@ directly.",
     "NEW INSTRUCTION": "WHEN adding or modifying plugin.xml extensions THEN run build and resolve missing dependencies"
 }
 
+[2025-12-09 11:31] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "open files fully, implement feature, run tests",
+    "BOTTLENECK": "Insufficient inspection of PopulateOptions and service logic before designing the new option.",
+    "PROJECT NOTE": "Add the new chooser item by extending PopulateOptions.ALL_OPTIONS and NON_RECURSIVE_OPTIONS.",
+    "NEW INSTRUCTION": "WHEN file structure view is truncated or unclear THEN open_entire_file before proceeding"
+}
+
+[2025-12-09 11:44] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "add recursive options,rename intention label",
+    "MISSING STEPS": "run tests,update tests,keep backward-compatibility shim",
+    "BOTTLENECK": "Tests assert old intention titles and behavior that no longer exist.",
+    "PROJECT NOTE": "Tests like PopulateArgumentsIntentionTest and RequiredArgumentsIntentionTest check exact intention strings; new single popup flow uses “Populate arguments...”.",
+    "NEW INSTRUCTION": "WHEN adding or renaming intention actions THEN search tests and update expected intention labels"
+}
+

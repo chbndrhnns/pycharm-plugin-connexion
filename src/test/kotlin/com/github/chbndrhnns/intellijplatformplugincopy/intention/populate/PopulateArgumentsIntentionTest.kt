@@ -79,7 +79,11 @@ class PopulateArgumentsIntentionTest : TestBase() {
 
             assertEquals("Populate arguments", fake.lastTitle)
             assertEquals(
-                listOf("All arguments", "Required arguments only"),
+                listOf(
+                    "All arguments",
+                    "Required arguments only",
+                    "Populate arguments (from locals)"
+                ),
                 fake.lastLabels
             )
         }
@@ -115,7 +119,8 @@ class PopulateArgumentsIntentionTest : TestBase() {
                     "All arguments",
                     "Required arguments only",
                     "All arguments (recursive)",
-                    "Required arguments only (recursive)"
+                    "Required arguments only (recursive)",
+                    "Populate arguments (from locals)"
                 ),
                 fake.lastLabels
             )

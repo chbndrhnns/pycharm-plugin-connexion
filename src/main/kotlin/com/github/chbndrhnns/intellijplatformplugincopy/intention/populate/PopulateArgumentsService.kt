@@ -4,7 +4,11 @@ import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.PyImportS
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.codeStyle.CodeStyleManager
+import com.intellij.psi.util.QualifiedName
+import com.jetbrains.python.codeInsight.controlflow.ControlFlowCache
+import com.jetbrains.python.codeInsight.dataflow.scope.ScopeUtil
 import com.jetbrains.python.psi.*
+import com.jetbrains.python.psi.resolve.PyResolveUtil
 import com.jetbrains.python.psi.types.PyCallableParameter
 import com.jetbrains.python.psi.types.TypeEvalContext
 
@@ -76,7 +80,7 @@ class PopulateArgumentsService {
         val languageLevel = LanguageLevel.forElement(file)
 
         // Always use the recursive generator which handles both nested dataclasses and leaf alias wrapping.
-        populateRecursively(project, file, call, argumentList, missing, context, generator, languageLevel)
+        populateRecursively(project, file, call, argumentList, missing, context, generator, languageLevel, options)
     }
 
     private fun populateRecursively(
@@ -87,7 +91,8 @@ class PopulateArgumentsService {
         missing: List<PyCallableParameter>,
         context: TypeEvalContext,
         generator: PyElementGenerator,
-        languageLevel: LanguageLevel
+        languageLevel: LanguageLevel,
+        options: PopulateOptions
     ) {
         val calleeClass: PyClass? = (call.callee as? PyReferenceExpression)
             ?.reference
@@ -97,19 +102,41 @@ class PopulateArgumentsService {
         val paramData = missing.mapNotNull { param ->
             val name = param.name ?: return@mapNotNull null
             val type = param.getType(context)
-            var result = valueGenerator.generateValue(type, context, 0, generator, languageLevel)
+
+            val result: PyValueGenerator.GenerationResult = if (options.useLocalScope) {
+                val owner = ScopeUtil.getScopeOwner(call) ?: file
+                val qName = QualifiedName.fromDottedString(name)
+                val resolved = PyResolveUtil.resolveQualifiedNameInScope(qName, owner, context)
+
+                var found = resolved.isNotEmpty()
+                if (!found) {
+                    val scope = ControlFlowCache.getScope(owner)
+                    if (scope.containsDeclaration(name)) {
+                        found = true
+                    }
+                }
+
+                if (found) {
+                    PyValueGenerator.GenerationResult(name, emptySet())
+                } else {
+                    valueGenerator.generateValue(type, context, 0, generator, languageLevel)
+                }
+            } else {
+                valueGenerator.generateValue(type, context, 0, generator, languageLevel)
+            }
 
             // If we only have a leaf "..." and the dataclass field annotation is an alias
             // (e.g. NewType), prefer wrapping with that alias at the top level too.
-            if (result.text == "..." && calleeClass != null) {
+            var finalResult = result
+            if (finalResult.text == "..." && calleeClass != null) {
                 val field = calleeClass.findClassAttribute(name, true, context)
                 val aliasName = (field?.annotation?.value as? PyReferenceExpression)?.name
                 if (!aliasName.isNullOrBlank() && !isBuiltinName(aliasName)) {
-                    result = PyValueGenerator.GenerationResult("$aliasName(...)", emptySet())
+                    finalResult = PyValueGenerator.GenerationResult("$aliasName(...)", emptySet())
                 }
             }
 
-            Triple(param, name, result)
+            Triple(param, name, finalResult)
         }
 
         // First, create placeholder keyword arguments for all missing params
