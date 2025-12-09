@@ -2,7 +2,6 @@
 
 ## Pending Issues
 
-- [ ] fix: Remove deprecated usage: `FilenameIndex.getFilesByName`
 - [ ] fix: Add pytest nodes to separate view in search everywhere (currently, `pytest` seems not respected)
 - [ ] fix: cancel introduce type rename dialog still keeps it
 - [ ] refactor: How to find if the caret is inside parentheses? `[PopulateArgumentsService.findCallExpression`
@@ -32,11 +31,12 @@
 
 ## In Progress Tasks
 
-- [ ] Unsupported python version appears too early, when no interpreter is set up
 - [ ] commit: if it fails for hooks, add option keep selection of files (docs/keep-commit-selection/spec.md)
 
 ## Completed Tasks (newest first)
 
+- [x] Unsupported python version appears too early, when no interpreter is set up
+- [x] fix: Remove deprecated usage: `FilenameIndex.getFilesByName`
 - [x] feat: exception: if using err/exc/error, offer `except bla as X`
 - [x] feat: exception: wrap list with parentheses to resolve syntax error
 - [x] feat: Parse pytest node ids in the terminal as links
