@@ -9,6 +9,8 @@
 
 ## Pending Features
 
+- [ ] feat: Add intention: make parameter optional (`arg: str` -> `arg: str | None = None`)
+- [ ] feat: copy element with dependencies should generate a preview about the direct copy (not including dependencies)
 - [ ] When populating arguments, highlight the target function (area) when the popup appears
 - [ ] feat: quick fix to remove unresolved import from __all__
 - [ ] feat: Turn into type checking import
