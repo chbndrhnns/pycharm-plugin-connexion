@@ -1,6 +1,8 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.localvariable
 
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
+import com.intellij.codeInsight.intention.PriorityAction
+import com.intellij.icons.AllIcons
 import fixtures.TestBase
 import fixtures.doIntentionTest
 
@@ -71,7 +73,27 @@ class CreateLocalVariableIntentionTest : TestBase() {
             val action = myFixture.availableIntentions.find { it.text == "Create local variable" }
             assertNull(action)
         } finally {
-            PluginSettingsState.instance().state.enableCreateLocalVariableIntention = true
+             PluginSettingsState.instance().state.enableCreateLocalVariableIntention = true
         }
+    }
+
+    fun testPriorityAndIcon() {
+        myFixture.configureByText("test_priority.py", """
+            def func():
+                print(<caret>z)
+        """.trimIndent())
+
+        var action = myFixture.availableIntentions.find { it.text == "Create local variable" }
+        assertNotNull(action)
+
+        while (action is com.intellij.codeInsight.intention.IntentionActionDelegate) {
+            action = (action as com.intellij.codeInsight.intention.IntentionActionDelegate).delegate
+        }
+
+        assertTrue("Action should implement PriorityAction", action is PriorityAction)
+        assertEquals(PriorityAction.Priority.TOP, (action as PriorityAction).priority)
+
+        assertTrue("Action should implement Iconable", action is com.intellij.openapi.util.Iconable)
+        assertEquals(AllIcons.Actions.QuickfixBulb, (action as com.intellij.openapi.util.Iconable).getIcon(0))
     }
 }

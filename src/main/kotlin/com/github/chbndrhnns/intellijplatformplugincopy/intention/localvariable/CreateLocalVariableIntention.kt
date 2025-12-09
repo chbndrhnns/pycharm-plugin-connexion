@@ -1,15 +1,19 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.localvariable
 
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
+import com.intellij.codeInsight.intention.PriorityAction
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Iconable
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.IncorrectOperationException
 import com.jetbrains.python.codeInsight.intentions.PyBaseIntentionAction
 import com.jetbrains.python.psi.*
+import javax.swing.Icon
 
-class CreateLocalVariableIntention : PyBaseIntentionAction() {
+class CreateLocalVariableIntention : PyBaseIntentionAction(), PriorityAction, Iconable {
 
     override fun getFamilyName(): String {
         return "Create local variable"
@@ -17,6 +21,14 @@ class CreateLocalVariableIntention : PyBaseIntentionAction() {
 
     override fun getText(): String {
         return "Create local variable"
+    }
+
+    override fun getPriority(): PriorityAction.Priority {
+        return PriorityAction.Priority.TOP
+    }
+
+    override fun getIcon(flags: Int): Icon {
+        return AllIcons.Actions.QuickfixBulb
     }
 
     override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
