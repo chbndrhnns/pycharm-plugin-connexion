@@ -318,3 +318,11 @@
     "NEW INSTRUCTION": "WHEN modifying PopulateArguments behavior or options THEN run related tests and fix regressions"
 }
 
+[2025-12-09 12:36] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "reference contributors",
+    "EXPECTATION": "Separate PSI reference contributors per feature instead of combining them in one class",
+    "NEW INSTRUCTION": "WHEN implementing a new PSI reference feature THEN create a separate PsiReferenceContributor and register it"
+}
+

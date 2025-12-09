@@ -1,103 +1,3 @@
-[2025-12-07 10:29] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "bash",
-    "ERROR": "Multi-line bash command not allowed by tool",
-    "ROOT CAUSE": "The bash tool rejects newline-separated commands; a multi-line heredoc script was submitted.",
-    "PROJECT NOTE": "Test data for intentions must be created under src/test/testData/intention/<feature>/ within the repo root.",
-    "NEW INSTRUCTION": "WHEN bash command contains newlines THEN split into multiple calls, one command per call"
-}
-
-[2025-12-07 10:32] - Updated by Junie - Error analysis
-{
-    "TYPE": "tool failure",
-    "TOOL": "create",
-    "ERROR": "Post-create linter flags '<caret>' as syntax error",
-    "ROOT CAUSE": "The file validator parses Python and does not recognize IntelliJ test caret markers.",
-    "PROJECT NOTE": "IntelliJ intention testData files legitimately contain the literal <caret> token; these files are not meant to be valid Python for external linters.",
-    "NEW INSTRUCTION": "WHEN post-create report shows Unresolved reference 'caret' THEN ignore validation and continue with tests"
-}
-
-[2025-12-08 10:31] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_project",
-    "ERROR": "Search returned too many results; output truncated",
-    "ROOT CAUSE": "The query term 'Action' is too broad, exceeding the tool's result limit.",
-    "PROJECT NOTE": "In this repo, IntelliJ actions live under src/main/kotlin/.../actions; include package/name fragments (e.g., 'IntroduceParameterObjectAction' or 'intellijplatformplugincopy/actions').",
-    "NEW INSTRUCTION": "WHEN search_project warns more than 100 results THEN refine query with specific class/package keywords"
-}
-
-[2025-12-08 12:13] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "Gradle",
-    "ERROR": "Intention was available in method body; assertion expected not available",
-    "ROOT CAUSE": "Target resolution treats any position inside a function/class as valid, not just the name identifier.",
-    "PROJECT NOTE": "In PyToggleVisibilityIntention.findTargetSymbol/isAvailable, require the caret to be on PyFunction.getNameIdentifier or PyClass.getNameIdentifier; otherwise return false.",
-    "NEW INSTRUCTION": "WHEN caret is inside function/class but not on name identifier THEN return intention not available"
-}
-
-[2025-12-08 12:30] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "Gradle",
-    "ERROR": "FileComparisonFailedError: expected annotation change not applied",
-    "ROOT CAUSE": "The custom type introduction wrapped the literal but did not update dict key type annotation.",
-    "PROJECT NOTE": "Extend CustomTypeApplier/UsageRewriter to propagate replacements into generic annotations (e.g., dict[key, val]) when usage is a subscript key; add/update logic in customtype/UsageRewriter.kt and PlanBuilder to locate and rewrite the corresponding annotation node.",
-    "NEW INSTRUCTION": "WHEN caret inside string literal used as dict key THEN update dict key annotation to custom type and wrap the literal"
-}
-
-[2025-12-08 12:32] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "Gradle (:test)",
-    "ERROR": "FileComparisonFailedError: expected/actual text mismatch",
-    "ROOT CAUSE": "The intention updated the literal usage but did not update the dict key type in the annotation, so the produced file differed from the expected 'after' text.",
-    "PROJECT NOTE": "myFixture.doIntentionTest compares file text exactly; both usage and related annotations must be updated to match expected output.",
-    "NEW INSTRUCTION": "WHEN caret is on a dict key in a subscript THEN resolve container annotation key type and update it"
-}
-
-[2025-12-08 12:33] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "Gradle",
-    "ERROR": "FileComparisonFailedError in ReproductionTest",
-    "ROOT CAUSE": "The intention failed to update the dict key type annotation because target detection did not map a subscription key usage to the key type in the annotated dict.",
-    "PROJECT NOTE": "Update TargetDetector (src/main/kotlin/.../customtype/TargetDetector.kt) to detect when the caret is on a dict key (PySubscriptionExpression.indexExpression) and link to the key type in the variable's annotation (dict[K, V] or Mapping[K, V]).",
-    "NEW INSTRUCTION": "WHEN expression is index of PySubscriptionExpression THEN resolve container annotation and select key type reference"
-}
-
-[2025-12-08 12:33] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "Gradle :test",
-    "ERROR": "FileComparisonFailedError in ReproductionTest",
-    "ROOT CAUSE": "The actual file content after intention did not match the expected text.",
-    "PROJECT NOTE": "Open build/reports/tests/test/index.html to view the exact diff; doIntentionTest compares text exactly, including whitespace.",
-    "NEW INSTRUCTION": "WHEN Gradle reports FileComparisonFailedError THEN open HTML test report to inspect diff"
-}
-
-[2025-12-08 12:36] - Updated by Junie - Error analysis
-{
-    "TYPE": "tool failure",
-    "TOOL": "get_file_structure",
-    "ERROR": "File structure parsing failed for Kotlin file",
-    "ROOT CAUSE": "The file structure tool cannot parse Kotlin files in this context; use direct open instead.",
-    "PROJECT NOTE": "Kotlin sources under src/main/kotlin are reliably readable via the open tool; get_file_structure may not support them.",
-    "NEW INSTRUCTION": "WHEN get_file_structure reports 'not possible to display' THEN open the file using open to inspect content"
-}
-
-[2025-12-08 13:06] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "Gradle (:test)",
-    "ERROR": "Intention offered on from-import; expected not available",
-    "ROOT CAUSE": "IntroduceCustomTypeFromStdlibIntention.isAvailable does not exclude Python import statements.",
-    "PROJECT NOTE": "Add an early guard in IntroduceCustomTypeFromStdlibIntention.kt to return false when the caret is within PyImportStatement or PyFromImportStatement (PyImportStatementBase).",
-    "NEW INSTRUCTION": "WHEN caret is inside PyImportStatement or PyFromImportStatement THEN return intention not available"
-}
-
 [2025-12-08 13:15] - Updated by Junie - Error analysis
 {
     "TYPE": "test assertion",
@@ -806,4 +706,104 @@
     "ROOT CAUSE": "The new test references PopulateArgumentsIntentionHooks, which is not defined in the project.",
     "PROJECT NOTE": "Chooser stubbing must use an existing hook; if none exists, add a test-only hooks object under the same package to expose a mutable PopupHost for tests.",
     "NEW INSTRUCTION": "WHEN a test references helper hooks THEN verify they exist or add a test-only stub in test sources"
+}
+
+[2025-12-09 12:14] - Updated by Junie - Error analysis
+{
+    "TYPE": "build failure",
+    "TOOL": "create",
+    "ERROR": "Wrong PyPsiFacade.resolveQualifiedName API usage",
+    "ROOT CAUSE": "Used String and element instead of QualifiedName and PyQualifiedNameResolveContext and assumed single result.",
+    "PROJECT NOTE": "In this SDK, call PyPsiFacade.resolveQualifiedName(QualifiedName, PyQualifiedNameResolveContext) and handle a List<PsiElement>; build QualifiedName via QualifiedName.fromDottedString and context via PyQualifiedNameResolveContext based on PyResolveContext/anchor.",
+    "NEW INSTRUCTION": "WHEN calling PyPsiFacade.resolveQualifiedName THEN pass QualifiedName and PyQualifiedNameResolveContext, handle list"
+}
+
+[2025-12-09 12:15] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "create",
+    "ERROR": "Wrong types passed to resolveQualifiedName API",
+    "ROOT CAUSE": "The Kotlin code called PyPsiFacade.resolveQualifiedName with String and element, but the API expects QualifiedName and PyResolveContext and returns a List<PsiElement>.",
+    "PROJECT NOTE": "Use QualifiedName.fromDottedString(name) and PyResolveContext.defaultContext(); convert returned List<PsiElement> to PsiElementResolveResult[].",
+    "NEW INSTRUCTION": "WHEN using PyPsiFacade.resolveQualifiedName THEN pass QualifiedName and PyResolveContext and map list to results"
+}
+
+[2025-12-09 12:18] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "bash",
+    "ERROR": "Multiline bash command is prohibited",
+    "ROOT CAUSE": "The bash tool received two independent commands separated by a newline, which it disallows.",
+    "PROJECT NOTE": "This environment’s bash tool forbids newline-separated commands; chain with && or run separately.",
+    "NEW INSTRUCTION": "WHEN bash command contains a newline THEN run each command in a separate bash call"
+}
+
+[2025-12-09 12:19] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "create",
+    "ERROR": "Wrong types passed to resolveQualifiedName",
+    "ROOT CAUSE": "The code used String and a PSI element for resolveQualifiedName, which requires a QualifiedName and PyQualifiedNameResolveContext and returns a list.",
+    "PROJECT NOTE": "With IntelliJ Python API, build QualifiedName via QualifiedName.fromDottedString(value) and context via PyResolveContext.defaultContext().withFoothold(element).toQualifiedNameResolveContext(project); map returned PsiElements to PsiElementResolveResult.",
+    "NEW INSTRUCTION": "WHEN calling PyPsiFacade.resolveQualifiedName THEN construct QualifiedName/context and map returned elements to results"
+}
+
+[2025-12-09 12:21] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "bash",
+    "ERROR": "Multiple commands on separate lines in one bash call",
+    "ROOT CAUSE": "The bash tool invocation included newline-separated commands, which this environment forbids.",
+    "PROJECT NOTE": "This project’s bash tool disallows multi-line commands; use && or separate calls.",
+    "NEW INSTRUCTION": "WHEN bash command contains newlines THEN split into separate bash calls"
+}
+
+[2025-12-09 12:23] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Incorrect arguments and return handling for resolveQualifiedName",
+    "ROOT CAUSE": "Code passed a String and element to PyPsiFacade.resolveQualifiedName, which expects a QualifiedName and a resolve context and returns a list.",
+    "PROJECT NOTE": "In this repo’s PyCharm SDK, use QualifiedName.fromDottedString(name) and a proper PyQualifiedNameResolveContext (e.g., via PyResolveContext) and map returned List<PsiElement> to ResolveResult.",
+    "NEW INSTRUCTION": "WHEN calling PyPsiFacade.resolveQualifiedName THEN pass QualifiedName and map returned elements to results"
+}
+
+[2025-12-09 12:24] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "bash",
+    "ERROR": "Multiple commands on separate lines in one call",
+    "ROOT CAUSE": "The bash tool was given newline-separated commands, which it explicitly forbids.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN bash command includes newline THEN execute one command per separate call"
+}
+
+[2025-12-09 12:24] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "create",
+    "ERROR": "Wrong PyPsiFacade.resolveQualifiedName argument types",
+    "ROOT CAUSE": "Used String and element where QualifiedName and PyQualifiedNameResolveContext were required, and mishandled the List<PsiElement> return.",
+    "PROJECT NOTE": "In src/main/.../psi/PyTestReferenceContributor.kt, use QualifiedName.fromDottedString(name) with PyResolveContext, and convert the returned List<PsiElement> to ResolveResult via PsiElementResolveResult.",
+    "NEW INSTRUCTION": "WHEN calling PyPsiFacade.resolveQualifiedName THEN pass QualifiedName and PyResolveContext; map List<PsiElement> to ResolveResult[]"
+}
+
+[2025-12-09 12:26] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "create",
+    "ERROR": "Wrong argument types for resolveQualifiedName",
+    "ROOT CAUSE": "Called PyPsiFacade.resolveQualifiedName with String and PyStringLiteral instead of QualifiedName and PyQualifiedNameResolveContext, and assumed a single PsiElement result.",
+    "PROJECT NOTE": "In this project, use QualifiedName.fromDottedString(name) and PyResolveContext.defaultContext(); resolveQualifiedName returns List<PsiElement> that must be mapped to ResolveResult.",
+    "NEW INSTRUCTION": "WHEN calling PyPsiFacade.resolveQualifiedName THEN pass QualifiedName and PyResolveContext and map list to results"
+}
+
+[2025-12-09 12:27] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "bash",
+    "ERROR": "Multiple commands on separate lines prohibited",
+    "ROOT CAUSE": "The bash tool forbids newline-separated commands; the command included multiple lines.",
+    "PROJECT NOTE": "This repo's automation expects one bash command per call; chain commands with && or make separate calls.",
+    "NEW INSTRUCTION": "WHEN bash command contains newline THEN issue separate bash calls, one per command"
 }

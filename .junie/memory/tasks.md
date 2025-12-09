@@ -819,3 +819,23 @@ directly.",
     "NEW INSTRUCTION": "WHEN adding or renaming intention actions THEN search tests and update expected intention labels"
 }
 
+[2025-12-09 12:27] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "repeat project scan, restate plan",
+    "MISSING STEPS": "run build, register extension, add tests, run tests",
+    "BOTTLENECK": "Compilation errors from incorrect Python PSI resolve API usage blocked progress.",
+    "PROJECT NOTE": "Register the PsiReferenceContributor under referenceContributor with language=\"Python\" in plugin.xml.",
+    "NEW INSTRUCTION": "WHEN creating new Kotlin platform code THEN run build and fix compilation errors"
+}
+
+[2025-12-09 12:39] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "gather requirements, design for extensibility, refactor",
+    "BOTTLENECK": "Single contributor class combined heterogeneous reference responsibilities.",
+    "PROJECT NOTE": "Register multiple psi.referenceContributor entries in plugin.xml when splitting providers.",
+    "NEW INSTRUCTION": "WHEN one contributor handles unrelated reference types THEN split into separate contributors and register each"
+}
+

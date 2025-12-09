@@ -10,6 +10,10 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
+        <psi.referenceContributor language="Python"
+                                  implementation="com.github.chbndrhnns.intellijplatformplugincopy.psi.PyMockPatchReferenceContributor"/>
+        <psi.referenceContributor language="Python"
+                                  implementation="com.github.chbndrhnns.intellijplatformplugincopy.psi.PyFilterWarningsReferenceContributor"/>
         <lang.psiStructureViewFactory language="Python"
                                       implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.structureView.MyPythonStructureViewFactory"
                                       order="first"/>
