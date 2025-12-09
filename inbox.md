@@ -2,6 +2,7 @@
 
 ## Pending Issues
 
+- [ ] fix: Remove deprecated usage: `FilenameIndex.getFilesByName`
 - [ ] fix: Add pytest nodes to separate view in search everywhere (currently, `pytest` seems not respected)
 - [ ] fix: cancel introduce type rename dialog still keeps it
 - [ ] refactor: How to find if the caret is inside parentheses? `[PopulateArgumentsService.findCallExpression`
