@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.psi
 
+import com.intellij.openapi.util.TextRange
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.*
 import com.intellij.util.ProcessingContext
@@ -21,7 +22,7 @@ class PyMockPatchReferenceContributor : PsiReferenceContributor() {
                     val refs = mutableListOf<PsiReference>()
 
                     if (isMockPatchArgument(literal)) {
-                        refs.add(PyMockPatchReference(literal))
+                        refs.addAll(createReferences(literal))
                     }
 
                     return refs.toTypedArray()
@@ -42,17 +43,26 @@ class PyMockPatchReferenceContributor : PsiReferenceContributor() {
         }
         return false
     }
-}
 
-class PyMockPatchReference(element: PyStringLiteralExpression) :
-    PsiPolyVariantReferenceBase<PyStringLiteralExpression>(element) {
-    override fun multiResolve(incompleteCode: Boolean): Array<ResolveResult> {
-        val resolved = PyResolveUtils.resolveDottedName(myElement.stringValue, myElement)
-        if (resolved != null) {
-            return arrayOf(PsiElementResolveResult(resolved))
+    private fun createReferences(literal: PyStringLiteralExpression): List<PsiReference> {
+        val text = literal.stringValue
+        val valueRange = literal.stringValueTextRange
+        val startOffset = valueRange.startOffset
+
+        val refs = mutableListOf<PsiReference>()
+        var currentIndex = 0
+
+        while (currentIndex < text.length) {
+            val nextDot = text.indexOf('.', currentIndex)
+            val end = if (nextDot == -1) text.length else nextDot
+
+            if (end > currentIndex) {
+                val range = TextRange(startOffset + currentIndex, startOffset + end)
+                refs.add(PyDottedSegmentReference(literal, range, text, startOffset))
+            }
+
+            currentIndex = end + 1
         }
-        return ResolveResult.EMPTY_ARRAY
+        return refs
     }
-
-    override fun getVariants(): Array<Any> = emptyArray()
 }

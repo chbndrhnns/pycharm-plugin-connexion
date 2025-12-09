@@ -61,32 +61,24 @@ class PyFilterWarningsReferenceContributor : PsiReferenceContributor() {
                 val startOffsetInElement = valueRange.startOffset + start
 
                 if (startOffsetInElement + category.length <= literal.textLength) {
-                    return listOf(
-                        PyFilterWarningsCategoryReference(
-                            literal,
-                            TextRange(startOffsetInElement, startOffsetInElement + category.length),
-                            category
-                        )
-                    )
+                    val refs = mutableListOf<PsiReference>()
+                    var currentIndex = 0
+
+                    while (currentIndex < category.length) {
+                        val nextDot = category.indexOf('.', currentIndex)
+                        val end = if (nextDot == -1) category.length else nextDot
+
+                        if (end > currentIndex) {
+                            val range = TextRange(startOffsetInElement + currentIndex, startOffsetInElement + end)
+                            refs.add(PyDottedSegmentReference(literal, range, category, startOffsetInElement))
+                        }
+
+                        currentIndex = end + 1
+                    }
+                    return refs
                 }
             }
         }
         return emptyList()
     }
-}
-
-class PyFilterWarningsCategoryReference(
-    element: PyStringLiteralExpression,
-    rangeInElement: TextRange,
-    private val categoryName: String
-) : PsiPolyVariantReferenceBase<PyStringLiteralExpression>(element, rangeInElement) {
-    override fun multiResolve(incompleteCode: Boolean): Array<ResolveResult> {
-        val resolved = PyResolveUtils.resolveDottedName(categoryName, myElement)
-        if (resolved != null) {
-            return arrayOf(PsiElementResolveResult(resolved))
-        }
-        return ResolveResult.EMPTY_ARRAY
-    }
-
-    override fun getVariants(): Array<Any> = emptyArray()
 }

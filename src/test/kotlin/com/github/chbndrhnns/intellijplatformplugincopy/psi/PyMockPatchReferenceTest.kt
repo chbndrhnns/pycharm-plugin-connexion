@@ -47,7 +47,7 @@ class PyMockPatchReferenceTest : TestBase() {
             from unittest import mock
             
             def test_foo():
-                with mock.patch('MyMo<caret>dule.MyClass'):
+                with mock.patch('MyModule.MyCla<caret>ss'):
                     pass
         """.trimIndent()
         )
@@ -55,5 +55,59 @@ class PyMockPatchReferenceTest : TestBase() {
         val element = myFixture.getElementAtCaret()
         assertInstanceOf(element, PyClass::class.java)
         assertEquals("MyClass", (element as PyClass).name)
+    }
+
+    fun testRename() {
+        myFixture.addFileToProject(
+            "RenameModule.py", """
+            class OldClass:
+                pass
+        """.trimIndent()
+        )
+
+        myFixture.configureByText(
+            "test_rename.py", """
+            from unittest.mock import patch
+            
+            @patch('RenameModule.Old<caret>Class')
+            def test_something(mock_cls):
+                pass
+        """.trimIndent()
+        )
+
+        myFixture.renameElementAtCaret("NewClass")
+        myFixture.checkResult("""
+            from unittest.mock import patch
+            
+            @patch('RenameModule.NewClass')
+            def test_something(mock_cls):
+                pass
+        """.trimIndent())
+    }
+
+    fun testCompletion() {
+        myFixture.addFileToProject(
+            "CompletionModule.py", """
+            class TargetClass:
+                pass
+            def target_func():
+                pass
+        """.trimIndent()
+        )
+
+        myFixture.configureByText(
+            "test_completion.py", """
+            from unittest.mock import patch
+            
+            @patch('CompletionModule.<caret>')
+            def test_something(mock_cls):
+                pass
+        """.trimIndent()
+        )
+
+        val variants = myFixture.getCompletionVariants("test_completion.py")
+        assertNotNull(variants)
+        assertTrue(variants!!.contains("TargetClass"))
+        assertTrue(variants.contains("target_func"))
     }
 }

@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.psi
 
+import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
@@ -82,5 +83,34 @@ object PyResolveUtils {
             ?: element.findInstanceAttribute(name, true) ?: element.findClassAttribute(name, true, null)
         }
         return null
+    }
+
+    fun getVariants(element: PsiElement?): Array<Any> {
+        val result = mutableListOf<Any>()
+        if (element == null) return emptyArray()
+
+        if (element is PsiDirectory) {
+            element.files.forEach { file ->
+                if (file is PyFile && file.name != "__init__.py") {
+                    val name = file.name.removeSuffix(".py")
+                    result.add(LookupElementBuilder.create(file, name).withIcon(file.getIcon(0)))
+                }
+            }
+            element.subdirectories.forEach { subdir ->
+                if (subdir.findFile("__init__.py") != null) {
+                    result.add(subdir)
+                }
+            }
+        } else if (element is PyFile) {
+            result.addAll(element.topLevelClasses)
+            result.addAll(element.topLevelFunctions)
+            result.addAll(element.topLevelAttributes)
+        } else if (element is PyClass) {
+            result.addAll(element.methods)
+            result.addAll(element.nestedClasses)
+            result.addAll(element.instanceAttributes)
+            result.addAll(element.classAttributes)
+        }
+        return result.toTypedArray()
     }
 }

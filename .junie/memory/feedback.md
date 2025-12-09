@@ -326,3 +326,19 @@
     "NEW INSTRUCTION": "WHEN implementing a new PSI reference feature THEN create a separate PsiReferenceContributor and register it"
 }
 
+[2025-12-09 12:42] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "completion and rename",
+    "EXPECTATION": "Offer code completion in string targets (e.g., mock.patch, filterwarnings) and preserve fully qualified names when renaming referenced classes, changing only the last segment.",
+    "NEW INSTRUCTION": "WHEN string PsiReference represents dotted name THEN preserve qualifier on rename and provide completion variants"
+}
+
+[2025-12-09 12:50] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "dotted name resolution",
+    "EXPECTATION": "Do not include .py file extensions in dotted references; use package.module.Class form",
+    "NEW INSTRUCTION": "WHEN building or suggesting dotted names from files THEN drop '.py' suffix from module segment"
+}
+
