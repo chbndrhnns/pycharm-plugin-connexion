@@ -30,11 +30,11 @@
 
 ## In Progress Tasks
 
-- [x] feat: Add local variable from unresolved reference
 - [ ] commit: if it fails for hooks, add option keep selection of files (docs/keep-commit-selection/spec.md)
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Add local variable from unresolved reference
 - [x] Unsupported python version appears too early, when no interpreter is set up
 - [x] fix: Remove deprecated usage: `FilenameIndex.getFilesByName`
 - [x] feat: exception: if using err/exc/error, offer `except bla as X`
