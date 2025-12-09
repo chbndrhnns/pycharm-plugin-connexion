@@ -9,6 +9,7 @@
 
 ## Pending Features
 
+- [ ] feat: search everywhere: search for partial matches in test names
 - [ ] feat: Configure dunder all inspection to be only available if __all__ is present
 - [ ] feat: Add intention: make parameter optional (`arg: str` -> `arg: str | None = None`)
 - [ ] feat: copy element with dependencies should generate a preview about the direct copy (not including dependencies)

@@ -34,6 +34,11 @@ class PytestIdentifierContributor(private val myProject: Project) : WeightedSear
         return true
     }
 
+    override fun isShownInSeparateTab(): Boolean {
+        // This will create a separate tab
+        return false
+    }
+
     override fun fetchWeightedElements(
         pattern: String,
         progressIndicator: ProgressIndicator,
