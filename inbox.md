@@ -28,15 +28,14 @@
 ## In Progress Tasks
 
 - [-] feat: Treat references as PSI elements, pytest.mark.filterwarnings, patch()
-- [ ] feat: Copy selection with imports
 - [ ] feat: Replace expected with actual test outcome
 - [ ] feat: Jump from test to test node
 - [ ] feat: Copy names of failed tests
-- [ ] feat: Copy with dependencies
 
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Copy selection with imports
 - [x] feat: populate with argument names that exist in the current scope
 - [x] feat: filter structure view by private/public
 - [x] feat: Add local variable from unresolved reference
