@@ -1,12 +1,13 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.structureView
 
 import com.intellij.icons.AllIcons
+import com.intellij.ide.util.FileStructureFilter
 import com.intellij.ide.util.treeView.smartTree.ActionPresentation
 import com.intellij.ide.util.treeView.smartTree.ActionPresentationData
-import com.intellij.ide.util.treeView.smartTree.Filter
 import com.intellij.ide.util.treeView.smartTree.TreeElement
+import com.intellij.openapi.actionSystem.Shortcut
 
-class MyPrivateMembersFilter : Filter {
+class MyPrivateMembersFilter : FileStructureFilter {
     override fun isVisible(treeNode: TreeElement): Boolean {
         val presentation = treeNode.presentation
         val name = presentation.presentableText
@@ -23,5 +24,13 @@ class MyPrivateMembersFilter : Filter {
 
     override fun getName(): String {
         return "MY_SHOW_PRIVATE_MEMBERS"
+    }
+
+    override fun getCheckBoxText(): String {
+        return "Show private members"
+    }
+
+    override fun getShortcut(): Array<Shortcut> {
+        return emptyArray()
     }
 }

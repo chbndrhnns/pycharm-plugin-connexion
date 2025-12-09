@@ -302,3 +302,11 @@
     "NEW INSTRUCTION": "WHEN except clause catches a tuple AND adding capture THEN append ' as <identifier>' after the tuple"
 }
 
+[2025-12-09 11:16] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "shortcut conflict",
+    "EXPECTATION": "Remove the keyboard shortcut for 'Show Private Members' in the File Structure view to avoid conflict with Cmd+F12",
+    "NEW INSTRUCTION": "WHEN adding the Structure View 'Show Private Members' filter THEN do not register or assign any keyboard shortcut"
+}
+

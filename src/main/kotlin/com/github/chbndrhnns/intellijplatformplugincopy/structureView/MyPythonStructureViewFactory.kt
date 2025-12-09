@@ -19,19 +19,24 @@ class MyPythonStructureViewFactory : PsiStructureViewFactory {
             .firstOrNull() ?: return null
 
         // 2. Wrap the builder
-        if (originalBuilder is TreeBasedStructureViewBuilder) {
-            return object : TreeBasedStructureViewBuilder() {
-                override fun createStructureViewModel(editor: Editor?): StructureViewModel {
-                    val originalModel = originalBuilder.createStructureViewModel(editor)
-                    return MyStructureViewModelWrapper(originalModel)
+        // We must always return a TreeBasedStructureViewBuilder for the popup to work correctly
+        return object : TreeBasedStructureViewBuilder() {
+            override fun createStructureViewModel(editor: Editor?): StructureViewModel {
+                val originalModel = if (originalBuilder is TreeBasedStructureViewBuilder) {
+                    originalBuilder.createStructureViewModel(editor)
+                } else {
+                    // Fallback: create the full view to get the model
+                    originalBuilder.createStructureView(null, psiFile.project).treeModel
                 }
+                return MyStructureViewModelWrapper(originalModel)
+            }
 
-                override fun isRootNodeShown(): Boolean {
+            override fun isRootNodeShown(): Boolean {
+                if (originalBuilder is TreeBasedStructureViewBuilder) {
                     return originalBuilder.isRootNodeShown
                 }
+                return false
             }
         }
-        
-        return originalBuilder
     }
 }
