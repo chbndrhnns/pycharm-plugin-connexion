@@ -366,3 +366,11 @@
     "NEW INSTRUCTION": "WHEN deriving file path for node id THEN use PSI containingFile.virtualFile.path"
 }
 
+[2025-12-09 23:42] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "copy node ids root",
+    "EXPECTATION": "Triggering copy from the 'Test Results' root should include all tests' node ids.",
+    "NEW INSTRUCTION": "WHEN Copy Node Ids invoked on root test results node THEN collect and copy all leaf test node ids joined by newlines"
+}
+

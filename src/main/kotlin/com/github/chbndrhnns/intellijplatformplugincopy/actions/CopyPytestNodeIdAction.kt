@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.actions
 
 import com.intellij.execution.testframework.TestTreeView
+import com.intellij.execution.testframework.sm.runner.SMTestProxy
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -50,17 +51,31 @@ class CopyPytestNodeIdAction : AnAction() {
     ) {
         val proxy = TestProxyExtractor.getTestProxy(node)
 
-        if (proxy != null && proxy.isLeaf) {
+        if (proxy != null) {
+            collectNodeIdsFromProxy(proxy, result, project)
+        } else {
+            for (i in 0 until node.childCount) {
+                val child = node.getChildAt(i)
+                if (child is DefaultMutableTreeNode) {
+                    collectNodeIds(child, result, project)
+                }
+            }
+        }
+    }
+
+    private fun collectNodeIdsFromProxy(
+        proxy: SMTestProxy,
+        result: MutableList<String>,
+        project: Project
+    ) {
+        if (proxy.isLeaf) {
             val nodeId = PytestNodeIdGenerator.parseProxy(proxy, project)
             if (nodeId != null) {
                 result.add(nodeId.nodeid)
             }
-        }
-
-        for (i in 0 until node.childCount) {
-            val child = node.getChildAt(i)
-            if (child is DefaultMutableTreeNode) {
-                collectNodeIds(child, result, project)
+        } else {
+            for (child in proxy.children) {
+                collectNodeIdsFromProxy(child, result, project)
             }
         }
     }

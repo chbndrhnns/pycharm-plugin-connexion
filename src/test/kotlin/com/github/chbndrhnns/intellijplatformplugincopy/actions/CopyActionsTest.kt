@@ -89,6 +89,43 @@ class CopyActionsTest : TestBase() {
         )
     }
 
+    fun testCopyFromRootNodeWithProxyStructureOnly() {
+        // Reproduces the case where the DefaultMutableTreeNode tree structure
+        // does not contain the children, but the SMTestProxy structure does.
+
+        // 1. Create file and proxy
+        val file1 = myFixture.addFileToProject(
+            "module1/test_mod1.py",
+            """
+            def test_one():
+                pass
+            """.trimIndent()
+        )
+        val path1 = file1.virtualFile.path
+        val url1 = "python<$path1>://module1.test_mod1.test_one"
+        val proxy1 = FakeSMTestProxy("test_one", false, null, url1)
+
+        // 2. Create Root Proxy
+        val rootProxy = FakeSMTestProxy("Root", true, null, null)
+        rootProxy.addChild(proxy1)
+
+        // 3. Create Tree Node wrapping Root Proxy
+        // IMPORTANT: We do NOT add children to the DefaultMutableTreeNode
+        val rootNode = DefaultMutableTreeNode(rootProxy)
+
+        // 4. Test CopyPytestNodeIdAction
+        val nodeIdResult = mutableListOf<String>()
+        CopyPytestNodeIdAction().collectNodeIds(rootNode, nodeIdResult, project)
+
+        // Expect: module1/test_mod1.py::test_one
+        // Current implementation fails because it iterates DefaultMutableTreeNode children (count=0)
+        assertEquals(1, nodeIdResult.size)
+        assertTrue(
+            "Expected module1/test_mod1.py::test_one in $nodeIdResult",
+            nodeIdResult.contains("module1/test_mod1.py::test_one")
+        )
+    }
+
     private class FakeSMTestProxy(
         name: String,
         isSuite: Boolean,

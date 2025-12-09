@@ -917,3 +917,14 @@
     "PROJECT NOTE": "Using fake SMTestProxy trees is sufficient; no need to involve TestTreeView.",
     "NEW INSTRUCTION": "WHEN verifying added tests THEN run only the specific test class or method"
 }
+
+[2025-12-09 23:46] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "refactor",
+    "BOTTLENECK": "Traversal ignores SMTestProxy children when tree nodes have no children.",
+    "PROJECT NOTE": "In CopyPytestNodeIdAction, traverse SMTestProxy hierarchy when available, not only DefaultMutableTreeNode.",
+    "NEW INSTRUCTION": "WHEN selected test node has SMTestProxy children THEN traverse SMTestProxy children to collect ids"
+}
+
