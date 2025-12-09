@@ -30,6 +30,9 @@
 
 ## In Progress Tasks
 
+- [ ] feat: filter structure view by private/public
+
+
 - [ ] commit: if it fails for hooks, add option keep selection of files (docs/keep-commit-selection/spec.md)
 
 ## Completed Tasks (newest first)
