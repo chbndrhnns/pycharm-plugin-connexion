@@ -46,4 +46,30 @@ class WrapExceptionsWithParenthesesIntentionTest : TestBase() {
             "Wrap exceptions with parentheses"
         )
     }
+
+    fun testPriorityAndIcon() {
+        myFixture.configureByText(
+            "test_file_priority.py",
+            """
+            def test_():
+                try:
+                    ...
+                except Inde<caret>xError, KeyError:
+                    pass
+            """
+        )
+
+        var action = myFixture.availableIntentions.find { it.text == "Wrap exceptions with parentheses" }
+        assertNotNull(action)
+
+        while (action is com.intellij.codeInsight.intention.IntentionActionDelegate) {
+            action = (action as com.intellij.codeInsight.intention.IntentionActionDelegate).delegate
+        }
+
+        assertTrue("Action should implement PriorityAction", action is com.intellij.codeInsight.intention.PriorityAction)
+        assertEquals(com.intellij.codeInsight.intention.PriorityAction.Priority.TOP, (action as com.intellij.codeInsight.intention.PriorityAction).priority)
+
+        assertTrue("Action should implement Iconable", action is com.intellij.openapi.util.Iconable)
+        assertEquals(com.intellij.icons.AllIcons.Actions.QuickfixBulb, (action as com.intellij.openapi.util.Iconable).getIcon(0))
+    }
 }

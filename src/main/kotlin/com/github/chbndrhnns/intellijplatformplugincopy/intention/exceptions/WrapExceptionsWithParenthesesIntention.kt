@@ -1,19 +1,27 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.exceptions
 
+import com.intellij.codeInsight.intention.PriorityAction
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Iconable
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.PyTokenTypes
 import com.jetbrains.python.psi.LanguageLevel
 import com.jetbrains.python.psi.PyElementGenerator
 import com.jetbrains.python.psi.PyExceptPart
+import javax.swing.Icon
 
-class WrapExceptionsWithParenthesesIntention : PsiElementBaseIntentionAction() {
+class WrapExceptionsWithParenthesesIntention : PsiElementBaseIntentionAction(), PriorityAction, Iconable {
     override fun getFamilyName(): String = "Wrap exceptions with parentheses"
 
     override fun getText(): String = "Wrap exceptions with parentheses"
+
+    override fun getPriority(): PriorityAction.Priority = PriorityAction.Priority.TOP
+
+    override fun getIcon(flags: Int): Icon = AllIcons.Actions.QuickfixBulb
 
     override fun isAvailable(project: Project, editor: Editor, element: PsiElement): Boolean {
         val exceptPart = PsiTreeUtil.getParentOfType(element, PyExceptPart::class.java) ?: return false
