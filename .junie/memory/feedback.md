@@ -294,3 +294,11 @@
     "NEW INSTRUCTION": "WHEN raise statement has 'from <identifier>' THEN offer intention using that identifier"
 }
 
+[2025-12-09 10:00] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "exception capture intention",
+    "EXPECTATION": "When adding capture to an except clause with a tuple, keep the tuple intact and add 'as <identifier>' after the closing parenthesis, using the identifier from 'raise ... from <identifier>'.",
+    "NEW INSTRUCTION": "WHEN except clause catches a tuple AND adding capture THEN append ' as <identifier>' after the tuple"
+}
+

@@ -1,23 +1,3 @@
-[2025-12-04 12:59] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Expected and actual text do not match",
-    "ROOT CAUSE": "PopulateArguments still includes underscore-prefixed parameters, but tests expect them ignored.",
-    "PROJECT NOTE": "In PopulateArgumentsService (e.g., getMissingParameters/population pipeline), filter out parameters/fields whose names start with '_' (also for dataclass constructor fields) while preserving self/cls logic.",
-    "NEW INSTRUCTION": "WHEN generating argument list THEN skip parameters with names starting with \"_\""
-}
-
-[2025-12-04 13:06] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Intention not offered inside parentheses",
-    "ROOT CAUSE": "findCallExpression does not resolve the PyCallExpression when caret is within PyArgumentList, so the intention list is empty.",
-    "PROJECT NOTE": "Update PopulateArgumentsService.findCallExpression to locate the PSI element at caret, climb to PyArgumentList, then its parent PyCallExpression; when caret is in PyArgumentList set targetElement to the argument list to satisfy blocking inspection checks.",
-    "NEW INSTRUCTION": "WHEN caret is inside PyArgumentList and no intention found THEN resolve call from PyArgumentList and return it"
-}
-
 [2025-12-04 13:15] - Updated by Junie - Error analysis
 {
     "TYPE": "invalid args",
@@ -806,4 +786,24 @@
     "ROOT CAUSE": "The preview used an anchor not directly under the target PyFile, so PsiFile.addAfter rejected it.",
     "PROJECT NOTE": "When inserting a top-level class in Kotlin/Python PSI, the anchor must be a direct child of the PyFile (e.g., an existing top-level statement or null to append). Recompute the anchor from the preview file, not reused from the original.",
     "NEW INSTRUCTION": "WHEN inserting a class into a PyFile THEN select an anchor that is a direct child of that file"
+}
+
+[2025-12-09 09:57] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "-",
+    "ERROR": "plugin.xml: Cannot resolve language id 'Python'",
+    "ROOT CAUSE": "The validator environment cannot resolve the Python language ID despite the plugin dependency.",
+    "PROJECT NOTE": "Inspections in plugin.xml use language=\"Python\" and require <depends>com.intellij.modules.python</depends>; this repo already declares it, so the warning is likely a validator false positive.",
+    "NEW INSTRUCTION": "WHEN plugin.xml validator reports 'Cannot resolve language with id Python' THEN confirm python depends tag exists and proceed without changes"
+}
+
+[2025-12-09 10:03] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic bug",
+    "TOOL": "AddExceptionCaptureIntention.invoke",
+    "ERROR": "Inserted 'as' inside exception tuple",
+    "ROOT CAUSE": "Inserting before the colon made PSI place 'as' inside exceptClass, before the closing ')'.",
+    "PROJECT NOTE": "When editing PyExceptPart, add 'as <name>' after exceptClass (use addAfter on exceptPart.exceptClass) or rebuild the except clause from text via PyElementGenerator to avoid token-boundary issues.",
+    "NEW INSTRUCTION": "WHEN exceptClass exists in PyExceptPart THEN insert 'as target' after exceptClass using addAfter"
 }

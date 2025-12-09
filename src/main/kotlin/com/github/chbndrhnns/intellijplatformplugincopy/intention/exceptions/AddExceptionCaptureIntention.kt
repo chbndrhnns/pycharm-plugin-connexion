@@ -6,7 +6,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.PyTokenTypes
-import com.jetbrains.python.psi.*
+import com.jetbrains.python.psi.PyExceptPart
+import com.jetbrains.python.psi.PyRaiseStatement
+import com.jetbrains.python.psi.PyReferenceExpression
 
 class AddExceptionCaptureIntention : PsiElementBaseIntentionAction() {
     override fun getFamilyName(): String = "Add exception capture"
@@ -41,29 +43,9 @@ class AddExceptionCaptureIntention : PsiElementBaseIntentionAction() {
         if (exceptPart.target != null) return
         exceptPart.exceptClass ?: return
 
-        val generator = PyElementGenerator.getInstance(project)
-        val languageLevel = LanguageLevel.forElement(element)
-        
-        // Create a dummy except part to extract 'as target' elements
-        val dummyFile = generator.createDummyFile(languageLevel, "try: pass\nexcept Exception as $fromName: pass")
-        val dummyExcept = PsiTreeUtil.findChildOfType(dummyFile, PyExceptPart::class.java) ?: return
-        
-        val asToken = dummyExcept.node.findChildByType(PyTokenTypes.AS_KEYWORD)?.psi
-        val target = dummyExcept.target
+        val colon = exceptPart.node.findChildByType(PyTokenTypes.COLON) ?: return
+        val offset = colon.startOffset
 
-        if (asToken != null && target != null) {
-            val parserFacade = com.intellij.psi.PsiParserFacade.getInstance(project)
-            val space = parserFacade.createWhiteSpaceFromText(" ")
-            
-            // Insert before colon
-            val colon = exceptPart.node.findChildByType(PyTokenTypes.COLON)?.psi
-            
-            if (colon != null) {
-                 val addedTarget = exceptPart.addBefore(target, colon)
-                 val addedSpace2 = exceptPart.addBefore(space, addedTarget)
-                 val addedAs = exceptPart.addBefore(asToken, addedSpace2)
-                 exceptPart.addBefore(space, addedAs)
-            }
-        }
+        editor.document.insertString(offset, " as $fromName")
     }
 }

@@ -739,3 +739,33 @@ directly.",
     "NEW INSTRUCTION": "WHEN using doIntentionTest with an intention name THEN set getText to that exact string"
 }
 
+[2025-12-09 09:58] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "add edge-case tests",
+    "BOTTLENECK": "Ensuring intention availability across different caret positions and PSI shapes.",
+    "PROJECT NOTE": "plugin.xml shows unresolved language id warnings for Python; may require proper language attribute or removal if unnecessary.",
+    "NEW INSTRUCTION": "WHEN implementing an intention for a syntax pattern THEN add tests for multiple caret positions"
+}
+
+[2025-12-09 10:04] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "reproduce bug, add tests, modify intention, run tests",
+    "BOTTLENECK": "The intention fails to handle tuple except-classes when adding a capture target.",
+    "PROJECT NOTE": "In AddExceptionCaptureIntention, handle tuple/parenthesized exceptClass: insert `as <name>` before the colon, not inside the tuple.",
+    "NEW INSTRUCTION": "WHEN intention edits except clause for raise-from name THEN write failing tests for single and tuple"
+}
+
+[2025-12-09 10:09] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "add descriptions",
+    "BOTTLENECK": "Intention description resources were not created for the new intention.",
+    "PROJECT NOTE": "Intention descriptions should be under resources/intentionDescriptions/WrapExceptionsWithParenthesesIntention with description.html and before.py.template/after.py.template.",
+    "NEW INSTRUCTION": "WHEN adding a new intention THEN create intentionDescriptions with description and before/after templates"
+}
+

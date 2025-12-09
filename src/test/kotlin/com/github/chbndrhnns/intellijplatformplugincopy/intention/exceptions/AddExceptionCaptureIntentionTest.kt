@@ -25,4 +25,25 @@ class AddExceptionCaptureIntentionTest : TestBase() {
             "Add 'as original_error' to except clause"
         )
     }
+
+    fun testAddExceptionCapture_Tuple() {
+        myFixture.doIntentionTest(
+            "test_file_tuple.py",
+            """
+            def test_():
+                try:
+                    ...
+                except (IndexError, KeyError):
+                    raise Exception from e<caret>rr
+            """,
+            """
+            def test_():
+                try:
+                    ...
+                except (IndexError, KeyError) as err:
+                    raise Exception from err
+            """,
+            "Add 'as err' to except clause"
+        )
+    }
 }

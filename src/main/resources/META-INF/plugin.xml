@@ -93,6 +93,11 @@
             <category>Exceptions</category>
         </intentionAction>
 
+        <intentionAction>
+            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.exceptions.WrapExceptionsWithParenthesesIntention</className>
+            <category>Exceptions</category>
+        </intentionAction>
+
         <applicationConfigurable
                 displayName="DDD Toolkit"
                 id="com.github.chbndrhnns.intellijplatformplugincopy.settings"

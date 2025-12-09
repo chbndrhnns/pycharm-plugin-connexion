@@ -2,7 +2,6 @@
 
 ## Pending Issues
 
-- [ ] Unsupported python version appears too early, when no interpreter is set up
 - [ ] fix: Remove deprecated usage: `FilenameIndex.getFilesByName`
 - [ ] fix: Add pytest nodes to separate view in search everywhere (currently, `pytest` seems not respected)
 - [ ] fix: cancel introduce type rename dialog still keeps it
@@ -33,8 +32,10 @@
 
 ## In Progress Tasks
 
+- [ ] Unsupported python version appears too early, when no interpreter is set up
 - [ ] commit: if it fails for hooks, add option keep selection of files (docs/keep-commit-selection/spec.md)
 - [-] feat: exception: if using err/exc/error, offer `except bla as X`
+- [-] feat: exception: wrap list with parentheses to resolve syntax error
 
 ## Completed Tasks (newest first)
 
