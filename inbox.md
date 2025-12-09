@@ -31,6 +31,8 @@
 - [ ] feat: Replace expected with actual test outcome
 - [ ] feat: Jump from test to test node
 - [ ] feat: Copy names of failed tests
+  - [ ] Validate FQN
+  - [ ] Validate pytest node ids
 
 
 ## Completed Tasks (newest first)
