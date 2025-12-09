@@ -12,7 +12,6 @@
 ## Pending Features
 
 - [ ] feat: Add local variable from unresolved reference
-- [ ] feat: exception: if using err/exc/error, offer `except bla as X`
 - [ ] feat: populate with argument names that exist in the current scope
 - [ ] feat: Copy names of failed tests
 - [ ] feat: quick fix to remove unresolved import from __all__
@@ -20,7 +19,6 @@
 - [ ] roots: adopt when moving files
 - [ ] roots: mark as unresolved reference without
 - [ ] feat: Treat references as PSI elements, pytest.mark.filterwarnings, patch()
-- [ ] refactor: How to find if the caret is inside parentheses? `[PopulateArgumentsService.findCallExpression`
 - [ ] feat: Replace expected with actual test outcome
 - [ ] feat: populate union (docs/populate/populate-union.md)
 - [ ] feat: Generate dataclass, basemodel
@@ -35,7 +33,8 @@
 
 ## In Progress Tasks
 
-- [-] commit: if it fails for hooks, add option keep selection of files (docs/keep-commit-selection/spec.md)
+- [ ] commit: if it fails for hooks, add option keep selection of files (docs/keep-commit-selection/spec.md)
+- [-] feat: exception: if using err/exc/error, offer `except bla as X`
 
 ## Completed Tasks (newest first)
 
