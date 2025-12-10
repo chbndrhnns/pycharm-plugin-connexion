@@ -38,6 +38,7 @@
 
 ## In Progress Tasks
 
+- [ ] feat: Implement abstract methods in child classes, starting from abstract method
 - [ ] feat: Show red bubble if introduce parameter object is not available
 - [-] feat: Configure dunder all inspection to be only available if __all__ is present
 - [ ] feat: Replace expected with actual test outcome
