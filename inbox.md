@@ -2,7 +2,6 @@
 
 ## Pending Issues
 
-- [ ] fix: do not offer make private/public on test methods and test classes
 - [ ] fix: Add pytest nodes to separate view in search everywhere (currently, `pytest` seems not respected)
 - [ ] fix: cancel introduce type rename dialog still keeps it
 - [ ] refactor: How to find if the caret is inside parentheses? `[PopulateArgumentsService.findCallExpression`
@@ -32,12 +31,13 @@
 ## In Progress Tasks
 
 - [-] feat: Configure dunder all inspection to be only available if __all__ is present
-- [ ] feat: Use "change visibility" intention for private/public
 - [ ] feat: Replace expected with actual test outcome
 - [ ] feat: Jump from test to test node
 
 ## Completed Tasks (newest first)
 
+- [x] fix: do not offer make private/public on test methods and test classes
+- [x] feat: Use "change visibility" intention for private/public
 - [x] feat: Copy names of failed tests
   - [x] Validate FQN
   - [x] Validate pytest node ids
