@@ -57,6 +57,11 @@ dependencies {
 
 // Configure IntelliJ Platform Gradle Plugin - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-extension.html
 intellijPlatform {
+    // Only build searchable options if the 'publishPlugin' task is explicitly requested
+    buildSearchableOptions = gradle.startParameter.taskNames.none {
+        it.contains("runIde") || it.contains("runIdeForUiTests")
+    }
+
     pluginConfiguration {
         name = providers.gradleProperty("pluginName")
         version = providers.gradleProperty("pluginVersion")
