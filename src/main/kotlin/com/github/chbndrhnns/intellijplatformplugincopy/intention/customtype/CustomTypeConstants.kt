@@ -4,7 +4,11 @@ object CustomTypeConstants {
     val SUPPORTED_BUILTINS: Set<String> = setOf(
         "int", "str", "float", "bool", "bytes",
         "datetime", "date", "time", "timedelta", "UUID", "Decimal",
-        "list", "set", "dict", "tuple", "frozenset"
+        "list", "set", "dict", "tuple", "frozenset",
+        "IPv4Address", "IPv6Address",
+        "IPv4Network", "IPv6Network",
+        "IPv4Interface", "IPv6Interface",
+        "Path"
     )
 
     val TYPING_ALIASES: Map<String, String> = mapOf(

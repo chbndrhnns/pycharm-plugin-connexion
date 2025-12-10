@@ -887,3 +887,14 @@
     "PROJECT NOTE": "IntentionsConfigurable should also declare dependency on com.intellij.intentionAction.",
     "NEW INSTRUCTION": "WHEN configurable EP dependencies are unspecified THEN inspect plugin.xml and add matching WithEpDependencies"
 }
+
+[2025-12-10 21:53] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "scan docs",
+    "MISSING STEPS": "update normalize, add import mapping, update docs",
+    "BOTTLENECK": "Type resolution and imports for non-builtin stdlib classes were not addressed.",
+    "PROJECT NOTE": "Extend TargetDetector.normalizeName to recognize ipaddress.* and pathlib.Path, and add preferred import rules in PyImportService/ImportManager so generated code imports from the correct modules.",
+    "NEW INSTRUCTION": "WHEN new supported type is from a stdlib module THEN update normalizeName and import mapping; add passing intention tests"
+}
+

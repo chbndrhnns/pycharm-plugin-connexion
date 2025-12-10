@@ -1,13 +1,3 @@
-[2025-12-08 23:10] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "create",
-    "ERROR": "Unresolved reference to 'git4idea' in test file",
-    "ROOT CAUSE": "Git plugin classes were not on the test classpath due to incorrect/insufficient plugin dependency setup.",
-    "PROJECT NOTE": "To use git4idea types, declare 'git4idea' in gradle.properties (platformBundledPlugins or platformPlugins) and prefer VCS-agnostic tests when possible in this repo's fixtures.TestBase.",
-    "NEW INSTRUCTION": "WHEN test imports git4idea.* THEN replace with VCS-agnostic mocks and remove git4idea usage"
-}
-
 [2025-12-08 23:11] - Updated by Junie - Error analysis
 {
     "TYPE": "env/setup",
@@ -796,4 +786,14 @@
     "ROOT CAUSE": "The new intention remains a dummy (isAvailable=false, no changes), so the test cannot find/apply it.",
     "PROJECT NOTE": "Intention tests here use doIntentionTest; the intention must be registered in plugin.xml and return true for isAvailable at the caret, and invoke must modify PSI accordingly.",
     "NEW INSTRUCTION": "WHEN adding a new intention test THEN implement minimal isAvailable and invoke before running tests"
+}
+
+[2025-12-10 21:51] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_project",
+    "ERROR": "Missing search query; path-only invocation rejected",
+    "ROOT CAUSE": "The tool was called with only a path parameter, but it requires a lexical/semantic/exact search query.",
+    "PROJECT NOTE": "To list files under a path, use the bash tool (e.g., ls) instead of search_project.",
+    "NEW INSTRUCTION": "WHEN search_project call lacks query parameters THEN include lexical_search_query or semantic_search_query"
 }
