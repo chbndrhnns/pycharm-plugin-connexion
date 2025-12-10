@@ -1,23 +1,3 @@
-[2025-12-03 22:40] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "scroll code,create document",
-    "MISSING STEPS": "inspect diffs,locate existing docs,update existing doc,validate against code",
-    "BOTTLENECK": "No concrete diff analysis to drive precise documentation changes.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN updating docs from commits THEN run git show -n 2 and update existing docs"
-}
-
-[2025-12-04 09:48] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "add tests, wire intention, complete refactor",
-    "BOTTLENECK": "Call-site update for partial extraction was started but left incomplete.",
-    "PROJECT NOTE": "Use the processor's injected paramSelector to test partial extraction without showing UI.",
-    "NEW INSTRUCTION": "WHEN adding UI-driven selection for refactoring THEN create unit tests using injected selector verifying partial extraction"
-}
-
 [2025-12-04 11:34] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -886,4 +866,14 @@
     "BOTTLENECK": "Did not guarantee or verify ordering of suggestions via tests.",
     "PROJECT NOTE": "Use a CompletionWeigher or custom sorter; TypeEvalContext.userInitiated suits completion.",
     "NEW INSTRUCTION": "WHEN requirement mentions suggestion priority or order THEN add CompletionWeigher and assert ranking in tests"
+}
+
+[2025-12-10 22:39] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "fetch external docs,search require-restart",
+    "MISSING STEPS": "open plugin.xml fully,scan plugin.xml for components,scan project for deprecated components,check built plugin.xml,run dynamic plugin verification,ask user for inspection result",
+    "BOTTLENECK": "Did not actually review full plugin.xml; relied on secondary docs.",
+    "PROJECT NOTE": "plugin.xml view was truncated; you must scroll to see component declarations.",
+    "NEW INSTRUCTION": "WHEN plugin.xml view shows truncated or partial content THEN scroll down to review entire file"
 }

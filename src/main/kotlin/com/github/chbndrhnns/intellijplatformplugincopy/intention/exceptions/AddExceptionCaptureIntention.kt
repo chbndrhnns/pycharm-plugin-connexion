@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.exceptions
 
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -14,6 +15,7 @@ class AddExceptionCaptureIntention : PsiElementBaseIntentionAction() {
     override fun getFamilyName(): String = "Add exception capture"
 
     override fun isAvailable(project: Project, editor: Editor, element: PsiElement): Boolean {
+        if (!PluginSettingsState.instance().state.enableAddExceptionCaptureIntention) return false
         val raiseStatement = PsiTreeUtil.getParentOfType(element, PyRaiseStatement::class.java) ?: return false
         val fromKeyword = raiseStatement.node.findChildByType(PyTokenTypes.FROM_KEYWORD) ?: return false
         val fromExpression = raiseStatement.expressions.firstOrNull { it.textRange.startOffset > fromKeyword.startOffset } ?: return false

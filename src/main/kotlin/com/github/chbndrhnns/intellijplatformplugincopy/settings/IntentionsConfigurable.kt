@@ -57,6 +57,26 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                 checkBox("‘Create local variable’ intention")
                     .bindSelected(settings::enableCreateLocalVariableIntention)
             }
+            row {
+                checkBox("‘Make parameter optional’ intention")
+                    .bindSelected(settings::enableMakeParameterOptionalIntention)
+            }
+            row {
+                checkBox("‘Make parameter mandatory’ intention")
+                    .bindSelected(settings::enableMakeParameterMandatoryIntention)
+            }
+            row {
+                checkBox("‘Add exception capture’ intention")
+                    .bindSelected(settings::enableAddExceptionCaptureIntention)
+            }
+            row {
+                checkBox("‘Wrap exceptions with parentheses’ intention")
+                    .bindSelected(settings::enableWrapExceptionsWithParenthesesIntention)
+            }
+            row {
+                checkBox("‘Implement abstract method in child classes’ intention")
+                    .bindSelected(settings::enableImplementAbstractMethodInChildClassesIntention)
+            }
         }
     }
 }

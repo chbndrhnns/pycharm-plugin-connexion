@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.abstractmethod
 
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.PriorityAction
 import com.intellij.openapi.editor.Editor
@@ -16,6 +17,7 @@ class ImplementAbstractMethodInChildClassesIntention : IntentionAction, Priority
     override fun getFamilyName(): String = "Implement abstract method in child classes"
 
     override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
+        if (!PluginSettingsState.instance().state.enableImplementAbstractMethodInChildClassesIntention) return false
         if (file !is PyFile) return false
 
         val element = file.findElementAt(editor.caretModel.offset) ?: return false

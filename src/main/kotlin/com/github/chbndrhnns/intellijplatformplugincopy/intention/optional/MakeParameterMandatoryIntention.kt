@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.optional
 
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.PriorityAction
 import com.intellij.openapi.application.ApplicationManager
@@ -18,6 +19,7 @@ class MakeParameterMandatoryIntention : IntentionAction, PriorityAction {
     override fun getFamilyName(): String = "Make mandatory"
 
     override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
+        if (!PluginSettingsState.instance().state.enableMakeParameterMandatoryIntention) return false
         if (file !is PyFile) return false
 
         val element = findTargetElement(editor, file) ?: return false

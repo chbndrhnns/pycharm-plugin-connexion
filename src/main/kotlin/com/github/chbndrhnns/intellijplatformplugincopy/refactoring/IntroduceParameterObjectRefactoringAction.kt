@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.refactoring
 
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiElement
@@ -22,6 +23,7 @@ class IntroduceParameterObjectRefactoringAction : PyBaseRefactoringAction() {
         file: PsiFile,
         context: DataContext
     ): Boolean {
+        if (!PluginSettingsState.instance().state.enableIntroduceParameterObjectRefactoringAction) return false
         val function = PsiTreeUtil.getParentOfType(element, PyFunction::class.java) ?: return false
         
         val parameters = function.parameterList.parameters

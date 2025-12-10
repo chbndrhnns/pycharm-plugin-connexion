@@ -1,9 +1,19 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.actions
 
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.execution.testframework.sm.runner.SMTestProxy
+import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 
 class CopyFQNAction : AbstractCopyTestNodeAction("\n") {
+
+    override fun update(e: AnActionEvent) {
+        if (!PluginSettingsState.instance().state.enableCopyFQNsAction) {
+            e.presentation.isEnabledAndVisible = false
+            return
+        }
+        super.update(e)
+    }
 
     override fun getValuableText(proxy: SMTestProxy, project: Project): String? {
         return generateFQN(proxy, project)

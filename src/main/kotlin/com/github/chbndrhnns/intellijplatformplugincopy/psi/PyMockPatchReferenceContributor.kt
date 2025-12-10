@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.psi
 
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.openapi.util.TextRange
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.*
@@ -11,6 +12,7 @@ import com.jetbrains.python.psi.PyStringLiteralExpression
 
 class PyMockPatchReferenceContributor : PsiReferenceContributor() {
     override fun registerReferenceProviders(registrar: PsiReferenceRegistrar) {
+        if (!PluginSettingsState.instance().state.enablePyMockPatchReferenceContributor) return
         registrar.registerReferenceProvider(
             PlatformPatterns.psiElement(PyStringLiteralExpression::class.java),
             object : PsiReferenceProvider() {

@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.actions
 
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -17,6 +18,10 @@ class CopyBlockWithDependenciesAction : AnAction() {
     }
 
     override fun update(e: AnActionEvent) {
+        if (!PluginSettingsState.instance().state.enableCopyBlockWithDependenciesAction) {
+            e.presentation.isEnabledAndVisible = false
+            return
+        }
         val project = e.project
         val editor = e.getData(CommonDataKeys.EDITOR)
         val file = e.getData(CommonDataKeys.PSI_FILE)

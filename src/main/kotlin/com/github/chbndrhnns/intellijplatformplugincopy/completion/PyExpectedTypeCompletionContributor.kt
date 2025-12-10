@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.completion
 
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedTypeInfo
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.patterns.PlatformPatterns.psiElement
@@ -22,6 +23,9 @@ class PyExpectedTypeCompletionContributor : CompletionContributor() {
                     context: ProcessingContext,
                     result: CompletionResultSet
                 ) {
+                    if (!PluginSettingsState.instance().state.enablePyReturnCompletionContributor) {
+                        return
+                    }
                     val position = parameters.position
                     val expression = PsiTreeUtil.getParentOfType(position, PyExpression::class.java) ?: return
 

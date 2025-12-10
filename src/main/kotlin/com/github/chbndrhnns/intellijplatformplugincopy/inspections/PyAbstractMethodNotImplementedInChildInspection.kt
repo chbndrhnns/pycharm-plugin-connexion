@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.inspections
 
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.abstractmethod.AbstractMethodUtils
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInspection.LocalInspectionToolSession
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
@@ -21,6 +22,9 @@ class PyAbstractMethodNotImplementedInChildInspection : PyInspection() {
         isOnTheFly: Boolean,
         session: LocalInspectionToolSession
     ): PsiElementVisitor {
+        if (!PluginSettingsState.instance().state.enableAbstractMethodNotImplementedInspection) {
+            return object : PyElementVisitor() {}
+        }
         return object : PyElementVisitor() {
             override fun visitPyClass(node: PyClass) {
                 super.visitPyClass(node)

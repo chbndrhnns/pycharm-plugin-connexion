@@ -29,6 +29,10 @@ class InspectionsConfigurable : BoundConfigurable("Inspections"), Configurable.W
                 checkBox("‘Private module import’ inspection")
                     .bindSelected(settings::enablePrivateModuleImportInspection)
             }
+            row {
+                checkBox("‘Abstract method not implemented in child classes’ inspection")
+                    .bindSelected(settings::enableAbstractMethodNotImplementedInspection)
+            }
         }
     }
 }

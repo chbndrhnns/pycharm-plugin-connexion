@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.searcheverywhere
 
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.ide.actions.searcheverywhere.FoundItemDescriptor
 import com.intellij.ide.actions.searcheverywhere.SearchEverywhereContributor
 import com.intellij.ide.actions.searcheverywhere.SearchEverywhereContributorFactory
@@ -44,6 +45,9 @@ class PytestIdentifierContributor(private val myProject: Project) : WeightedSear
         progressIndicator: ProgressIndicator,
         consumer: Processor<in FoundItemDescriptor<PsiElement>>
     ) {
+        if (!PluginSettingsState.instance().state.enablePytestIdentifierSearchEverywhereContributor) {
+            return
+        }
         if (!pattern.contains("::")) {
             return
         }
