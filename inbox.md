@@ -2,6 +2,8 @@
 
 ## Pending Issues
 
+- [ ] feat: Consider if this should only work for dataclass/classes, for others, there is change signature
+- [ ] refactor: `MakeParameterMandatoryIntention`
 - [ ] refactor: `if (!aliasName.isNullOrBlank() && !PyBuiltinNames.isBuiltin(aliasName)) {`
 - [ ] fix: Add pytest nodes to separate view in search everywhere (currently, `pytest` seems not respected)
 - [ ] fix: cancel introduce type rename dialog still keeps it
@@ -9,10 +11,12 @@
 
 ## Pending Features
 
+- [ ] feat: Move instance method
+- [ ] feat: Move to inner class
+- [ ] feat: Move symbol to any of the currently imported packages/modules, change references
 - [ ] feat: Inspect duplicates in __all__
 - [ ] feat: introduce custom type as newtype, as well, or other custom constructs
 - [ ] feat: Introduce type alias for union type
-- [ ] feat: Make field mandatory, check call sites
 - [ ] feat: Turn dict into dataclass/pydantic model
 - [ ] feat: search everywhere: search for partial matches in test names
 - [ ] feat: copy element with dependencies should generate a preview about the direct copy (not including dependencies)
@@ -34,14 +38,15 @@
 
 ## In Progress Tasks
 
-- [-] feat: Reload plugin without restart
-- [-] feat: Show red bubble if introduce parameter object is not available
+- [ ] feat: Show red bubble if introduce parameter object is not available
 - [-] feat: Configure dunder all inspection to be only available if __all__ is present
 - [ ] feat: Replace expected with actual test outcome
 - [ ] feat: Jump from test to test node
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Make argument mandatory
+- [x] feat: Reload plugin without restart
 - [x] fix: Populate: need to import leaf node types
 - [x] feat: Create settings group
 - [x] feat: Move "copy with dependencies" intention to copy special
