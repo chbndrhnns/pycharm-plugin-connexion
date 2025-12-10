@@ -107,6 +107,11 @@
         </intentionAction>
 
         <intentionAction>
+            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.abstractmethod.ImplementAbstractMethodInChildClassesIntention</className>
+            <category>Refactorings</category>
+        </intentionAction>
+
+        <intentionAction>
             <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.exceptions.WrapExceptionsWithParenthesesIntention</className>
             <category>Exceptions</category>
         </intentionAction>

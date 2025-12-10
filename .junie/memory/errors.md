@@ -1,83 +1,3 @@
-[2025-12-08 22:47] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid context",
-    "TOOL": "-",
-    "ERROR": "PSI edits in preview triggered BackgroundHighlighter cancellation crash",
-    "ROOT CAUSE": "Side-effectful operations ran during intention preview, causing document change cancellations to propagate.",
-    "PROJECT NOTE": "In CustomTypeApplier.apply, guard non-essential actions (rename, project-wide rewrites/imports) with isPreview or IntentionPreviewUtils.isIntentionPreviewActive() so only preview PSI edits occur inside IntentionPreviewUtils.write.",
-    "NEW INSTRUCTION": "WHEN IntentionPreviewUtils.isIntentionPreviewActive() THEN modify only preview PSI and skip side effects"
-}
-
-[2025-12-08 22:52] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "run_test",
-    "ERROR": "Missing j.u.l LogManager test-log.properties during IDE tests",
-    "ROOT CAUSE": "The IntelliJ test harness expects a logging config file that is absent in the Gradle cache, causing the test run to error out.",
-    "PROJECT NOTE": "This is an IntelliJ Platform plugin project; run tests from the project root via Gradle so the IntelliJ test framework and logging are initialized correctly.",
-    "NEW INSTRUCTION": "WHEN run_test logs 'test-log.properties does not exist' THEN run './gradlew cleanTest test --info' from project root"
-}
-
-[2025-12-08 22:56] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "run_test",
-    "ERROR": "Build failed; missing IDE test LogManager config",
-    "ROOT CAUSE": "IDE plugin tests were launched without the full Gradle test harness, so required test-log.properties and runtime setup were missing.",
-    "PROJECT NOTE": "Run tests via the project root Gradle test tasks (or specify a test class name) so the IntelliJ test environment and logging properties are configured.",
-    "NEW INSTRUCTION": "WHEN running tests for this project THEN execute Gradle test from project root without a path"
-}
-
-[2025-12-08 23:00] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic bug",
-    "TOOL": "run_test",
-    "ERROR": "Fix 'Add to __all__' not found",
-    "ROOT CAUSE": "The inspection excludes regular top-level attributes, only recognizing typing.NewType aliases.",
-    "PROJECT NOTE": "Update PyMissingInDunderAllInspection.kt (isExportable) to treat top-level PyTargetExpression assignments as exportable, not just NewType.",
-    "NEW INSTRUCTION": "WHEN run_test reports \"Fix 'Add to __all__' not found\" THEN allow top-level PyTargetExpression in isExportable"
-}
-
-[2025-12-08 23:01] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Fix 'Add to __all__' not found",
-    "ROOT CAUSE": "The inspection only treats NewType target assignments as exportable, so top-level attributes like my_attr are ignored and no quick fix is offered.",
-    "PROJECT NOTE": "Update PyMissingInDunderAllInspection.isExportable in src/main/kotlin/.../inspections/PyMissingInDunderAllInspection.kt to allow PyTargetExpression except __all__.",
-    "NEW INSTRUCTION": "WHEN run_test fails with 'Fix 'Add to __all__' not found' THEN broaden isExportable to export PyTargetExpression except __all__, then rerun tests"
-}
-
-[2025-12-08 23:01] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Fix 'Add to __all__' not found",
-    "ROOT CAUSE": "The inspection excludes top-level attributes because isExportable only allows NewType targets.",
-    "PROJECT NOTE": "Update src/main/kotlin/.../inspections/PyMissingInDunderAllInspection.kt: in isExportable, return true for any PyTargetExpression except '__all__' to enable exporting variables like my_attr.",
-    "NEW INSTRUCTION": "WHEN element is PyTargetExpression for __all__ export check THEN treat as exportable unless name is '__all__'"
-}
-
-[2025-12-08 23:02] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic bug",
-    "TOOL": "run_test",
-    "ERROR": "Quick fix 'Add to __all__' not found",
-    "ROOT CAUSE": "isExportable only allowed NewType target expressions and excluded plain top-level attributes.",
-    "PROJECT NOTE": "Update PyMissingInDunderAllInspection.kt:isExportable to treat any top-level PyTargetExpression except __all__ as exportable.",
-    "NEW INSTRUCTION": "WHEN element is PyTargetExpression and name is not __all__ THEN return exportable true in isExportable"
-}
-
-[2025-12-08 23:10] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "create",
-    "ERROR": "Unresolved reference 'git4idea' in test file",
-    "ROOT CAUSE": "Git plugin classes were not on the test compile classpath; plugin dependency configured incorrectly.",
-    "PROJECT NOTE": "To use Git classes in tests, declare git4idea under platformPlugins in gradle.properties (not platformBundledPlugins), or avoid direct git4idea imports and mock VCS behavior.",
-    "NEW INSTRUCTION": "WHEN importing git4idea classes in tests THEN add 'git4idea' to platformPlugins before creating files"
-}
-
 [2025-12-08 23:10] - Updated by Junie - Error analysis
 {
     "TYPE": "env/setup",
@@ -798,3 +718,82 @@
     "NEW INSTRUCTION": "WHEN creating AnActionEvent in tests THEN use createFromAnAction with action.templatePresentation"
 }
 
+[2025-12-10 20:53] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle (:test)",
+    "ERROR": "Intention not available at caret",
+    "ROOT CAUSE": "The new intention stub returns false in isAvailable, so the test cannot invoke it.",
+    "PROJECT NOTE": "Tests call fixtures.doIntentionTest with the intention text; the caret must be on an @abstractmethod PyFunction and isAvailable must return true for that PSI to proceed.",
+    "NEW INSTRUCTION": "WHEN doIntentionTest reports intention not found THEN make isAvailable true on target PSI and implement minimal invoke"
+}
+
+[2025-12-10 20:55] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle (:test)",
+    "ERROR": "AssertionError: intention not applied",
+    "ROOT CAUSE": "The new intention's isAvailable returns false, so the test couldn't invoke it.",
+    "PROJECT NOTE": "Tests use myFixture.doIntentionTest to locate the intention by getText; ensure plugin.xml registration and isAvailable return true at the caret PSI.",
+    "NEW INSTRUCTION": "WHEN adding a new intention test THEN implement minimal isAvailable logic before running tests"
+}
+
+[2025-12-10 20:56] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle (:test)",
+    "ERROR": "Test failed: intention not available due to dummy implementation",
+    "ROOT CAUSE": "The new intention returns isAvailable=false and has no invoke logic, so the test expecting the intention to run fails.",
+    "PROJECT NOTE": "doIntentionTest requires the intention text to match exactly and isAvailable to be true at the caret; registration in plugin.xml alone is insufficient.",
+    "NEW INSTRUCTION": "WHEN adding doIntentionTest for a new intention THEN implement isAvailable for the test case first"
+}
+
+[2025-12-10 20:57] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle :test",
+    "ERROR": "Intention not available; test AssertionError",
+    "ROOT CAUSE": "The new intention's isAvailable returns false (dummy), so the test cannot find or invoke it.",
+    "PROJECT NOTE": "Tests use myFixture.doIntentionTest matching the intention text; ensure plugin.xml registration and isAvailable detect caret on an @abc.abstractmethod.",
+    "NEW INSTRUCTION": "WHEN doIntentionTest fails to find the intention THEN implement isAvailable for the tested caret context"
+}
+
+[2025-12-10 20:59] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "bash",
+    "ERROR": "Test failed: intention action not available",
+    "ROOT CAUSE": "The new intention's isAvailable always returns false, so the test cannot find it.",
+    "PROJECT NOTE": "Tests use fixtures.doIntentionTest which requires the intention to be discoverable by its text; implement isAvailable to detect abc.abstractmethod on a class method.",
+    "NEW INSTRUCTION": "WHEN adding a new intention test THEN implement minimal isAvailable to make it discoverable"
+}
+
+[2025-12-10 21:03] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle :test",
+    "ERROR": "Intention not available; assertion failed",
+    "ROOT CAUSE": "The new intention returns isAvailable=false, so the test could not invoke it.",
+    "PROJECT NOTE": "doIntentionTest locates the intention by exact getText(); ensure plugin.xml is registered and isAvailable returns true at the caret context.",
+    "NEW INSTRUCTION": "WHEN adding a doIntentionTest for a new intention THEN implement minimal isAvailable to match the test context"
+}
+
+[2025-12-10 21:06] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle :test",
+    "ERROR": "Intention not available at caret; assertion failed",
+    "ROOT CAUSE": "The new intention has a dummy implementation with isAvailable=false and empty invoke, so doIntentionTest cannot find/apply it.",
+    "PROJECT NOTE": "doIntentionTest matches by intention text; ensure plugin.xml registration and text match, and add intentionDescriptions resources once implemented.",
+    "NEW INSTRUCTION": "WHEN doIntentionTest targets a new intention THEN implement isAvailable and invoke before running tests"
+}
+
+[2025-12-10 21:07] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle (:test)",
+    "ERROR": "Intention test failed with AssertionError",
+    "ROOT CAUSE": "The new intention remains a dummy (isAvailable=false, no changes), so the test cannot find/apply it.",
+    "PROJECT NOTE": "Intention tests here use doIntentionTest; the intention must be registered in plugin.xml and return true for isAvailable at the caret, and invoke must modify PSI accordingly.",
+    "NEW INSTRUCTION": "WHEN adding a new intention test THEN implement minimal isAvailable and invoke before running tests"
+}
