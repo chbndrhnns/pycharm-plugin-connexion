@@ -13,7 +13,8 @@
 
 ## Pending Features
 
-- [ ] feat: When typing "return", offer the annotated return types first in the suggestions
+- [ ] feat: Add quickfix to skip/unskip test
+- [ ] feat: Add quickfix to parametrize test
 - [ ] feat: When implementing abstract method, present dialog to choose or show edits
 - [ ] feat: Move instance method
 - [ ] feat: Move to inner class
@@ -42,6 +43,9 @@
 
 ## In Progress Tasks
 
+- [ ] feat: Check which parts are not toggleable in settings so far
+- [ ] fix: Add __slots__ = () when introducing custom type for str
+- [-] feat: In assignments or calls, offer the annotated return types first in the suggestions
 - [ ] feat: Show red bubble if introduce parameter object is not available
 - [-] feat: Configure dunder all inspection to be only available if __all__ is present
 - [ ] feat: Replace expected with actual test outcome
@@ -49,6 +53,7 @@
 
 ## Completed Tasks (newest first)
 
+- [x] feat: When typing "return", offer the annotated return types first in the suggestions
 - [x] feat: Add inspection that renders a problem in the base class if methods are missing in child classes
 - [x] feat: Implement abstract methods in child classes, starting from abstract method
 - [x] feat: Make argument mandatory
