@@ -5,8 +5,6 @@
 - [ ] fix: When implementing abstract method, take care of existing ellipsis
 - [ ] fix: implement abstract method is put above __init__
 - [ ] feat: Consider if this should only work for dataclass/classes, for others, there is change signature
-- [ ] refactor: `MakeParameterMandatoryIntention`
-- [ ] refactor: `if (!aliasName.isNullOrBlank() && !PyBuiltinNames.isBuiltin(aliasName)) {`
 - [ ] fix: Add pytest nodes to separate view in search everywhere (currently, `pytest` seems not respected)
 - [ ] fix: cancel introduce type rename dialog still keeps it
 - [ ] refactor: How to find if the caret is inside parentheses? `[PopulateArgumentsService.findCallExpression`
@@ -42,7 +40,9 @@
 
 ## In Progress Tasks
 
-- [ ] refactor: `if (fn.isAsync && returnType is PyCollectionType) {`
+- [-] refactor: `if (fn.isAsync && returnType is PyCollectionType) {`
+- [-] refactor: `MakeParameterMandatoryIntention`
+- [-] refactor: `if (!aliasName.isNullOrBlank() && !PyBuiltinNames.isBuiltin(aliasName)) {`
 - [-] feat: Check which parts are not toggleable in settings so far
 - [ ] feat: Add __slots__ = () when introducing custom type for str
 - [ ] feat: Show red bubble if introduce parameter object is not available
