@@ -5,7 +5,6 @@
 - [ ] fix: Add pytest nodes to separate view in search everywhere (currently, `pytest` seems not respected)
 - [ ] fix: cancel introduce type rename dialog still keeps it
 - [ ] refactor: How to find if the caret is inside parentheses? `[PopulateArgumentsService.findCallExpression`
-- [ ] fix: do not offer "use exported" if in private child package: `from .._bases import BaseBlaModel`
 
 ## Pending Features
 
@@ -36,6 +35,7 @@
 
 ## Completed Tasks (newest first)
 
+- [x] fix: do not offer "use exported" if in private child package: `from .._bases import BaseBlaModel`
 - [x] fix: do not offer make private/public on test methods and test classes
 - [x] feat: Use "change visibility" intention for private/public
 - [x] feat: Copy names of failed tests
