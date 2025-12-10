@@ -40,7 +40,7 @@ class MakeParameterMandatoryIntention : IntentionAction, PriorityAction {
         if (problematicCallSites.isNotEmpty()) {
             if (!ApplicationManager.getApplication().isUnitTestMode) {
                 val message =
-                    "There are call sites that do not provide this argument. Making it mandatory will break code. Continue?"
+                    "There are call sites that do not provide this argument. Making it mandatory will break code. Call sites will be updated with ellipsis (...). Continue?"
                 val result = Messages.showYesNoDialog(
                     project,
                     message,

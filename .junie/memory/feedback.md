@@ -430,3 +430,11 @@
     "NEW INSTRUCTION": "WHEN user confirms despite missing call arguments THEN insert 'parameter_name=...' at each affected call site"
 }
 
+[2025-12-10 20:45] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "call site fix-up messaging",
+    "EXPECTATION": "The confirmation message should inform the user that call sites will be updated with an ellipsis placeholder when proceeding.",
+    "NEW INSTRUCTION": "WHEN showing missing-arguments confirmation dialog THEN state call sites will use '...'' placeholders"
+}
+
