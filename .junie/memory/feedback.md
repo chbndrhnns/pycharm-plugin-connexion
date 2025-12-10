@@ -414,3 +414,11 @@
     "NEW INSTRUCTION": "WHEN creating or refactoring AnAction subclasses THEN avoid super text/icon; use plugin.xml"
 }
 
+[2025-12-10 15:24] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "plugin.xml menu placement",
+    "EXPECTATION": "CopyBlockWithDependenciesAction should appear in the editor's Copy Special menu, not in the test tree",
+    "NEW INSTRUCTION": "WHEN registering CopyBlockWithDependenciesAction THEN add only to EditorPopupMenu Copy Special group, not TestTreePopupMenu"
+}
+

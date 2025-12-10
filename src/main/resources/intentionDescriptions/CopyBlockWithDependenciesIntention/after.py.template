@@ -1,7 +1,0 @@
-import math
-
-def helper():
-    return math.pi
-
-def calculate():
-    return helper() * 2

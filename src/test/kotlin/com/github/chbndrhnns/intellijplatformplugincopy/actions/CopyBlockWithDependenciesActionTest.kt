@@ -1,10 +1,10 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.intention.copy
+package com.github.chbndrhnns.intellijplatformplugincopy.actions
 
 import com.intellij.openapi.ide.CopyPasteManager
 import fixtures.TestBase
 import java.awt.datatransfer.DataFlavor
 
-class CopyBlockWithDependenciesIntentionTest : TestBase() {
+class CopyBlockWithDependenciesActionTest : TestBase() {
 
     fun testSimpleFunction() {
         doCopyTest(
@@ -355,12 +355,7 @@ class CopyBlockWithDependenciesIntentionTest : TestBase() {
     private fun doCopyTest(fileText: String, expectedClipboard: String) {
         myFixture.configureByText("a.py", fileText.trimIndent())
 
-        // Simulate user invoking the intention
-        val intentionName = "Copy element with dependencies" // Adjust to match actual name
-        val intention = myFixture.availableIntentions.find { it.text == intentionName }
-            ?: error("Intention '$intentionName' not found")
-
-        myFixture.launchAction(intention)
+        myFixture.performEditorAction("MyPlugin.CopyBlockWithDependenciesAction")
 
         // Verify clipboard content
         val content = CopyPasteManager.getInstance().getContents(DataFlavor.stringFlavor) as? String

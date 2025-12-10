@@ -1,23 +1,3 @@
-[2025-12-03 14:00] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "revert change, reapply change",
-    "MISSING STEPS": "ensure files writable",
-    "BOTTLENECK": "Start-in-write fix triggered read-only file errors in processor writes.",
-    "PROJECT NOTE": "Intention lacks a description resource; add description per IntelliJ intention requirements.",
-    "NEW INSTRUCTION": "WHEN disabling startInWriteAction in an intention THEN ensure target files writable via ReadonlyStatusHandler"
-}
-
-[2025-12-03 14:04] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "verify resource path, run tests",
-    "BOTTLENECK": "Did not verify that directory name matches the Intention class used by IDE.",
-    "PROJECT NOTE": "Ensure the description folder name matches the intention action class short name (not the processor).",
-    "NEW INSTRUCTION": "WHEN creating intention description files THEN open intention class and verify description path name"
-}
-
 [2025-12-03 14:13] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -896,4 +876,24 @@
     "BOTTLENECK": "The new intention was not registered and tests were not executed.",
     "PROJECT NOTE": "Register the intention in plugin.xml under <intentions> with a category, matching the action text.",
     "NEW INSTRUCTION": "WHEN a new intention class is added THEN register it in plugin.xml immediately"
+}
+
+[2025-12-10 15:19] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "scan project, remove intention registration, delete old file, run tests",
+    "BOTTLENECK": "Old intention remains in codebase and plugin.xml, risking duplicate behavior.",
+    "PROJECT NOTE": "plugin.xml has multiple intentionAction entries; remove the specific CopyBlockWithDependenciesIntention registration, not unrelated ones.",
+    "NEW INSTRUCTION": "WHEN converting intention to action THEN remove intention registration and delete intention class"
+}
+
+[2025-12-10 15:28] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "add to test tree menu",
+    "MISSING STEPS": "verify menu placement,add UI visibility test",
+    "BOTTLENECK": "Mixed group added to both editor and test tree caused wrong menu placement.",
+    "PROJECT NOTE": "Split Copy Special into two groups: editor-only vs test-tree-only to avoid cross-listing.",
+    "NEW INSTRUCTION": "WHEN adding editor-only action THEN register only in EditorPopupMenu, not TestTreePopupMenu"
 }

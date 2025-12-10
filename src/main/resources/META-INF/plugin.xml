@@ -111,10 +111,6 @@
             <category>Create local variable</category>
         </intentionAction>
 
-        <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.copy.CopyBlockWithDependenciesIntention</className>
-            <category>Refactorings</category>
-        </intentionAction>
 
         <applicationConfigurable
                 displayName="DDD Toolkit"
@@ -204,6 +200,11 @@
                 text="Copy Build Number"
                 description="Copies the current IDE build number to the clipboard">
             <add-to-group group-id="HelpMenu" anchor="last"/>
+        </action>
+        <action id="MyPlugin.CopyBlockWithDependenciesAction"
+                class="com.github.chbndrhnns.intellijplatformplugincopy.actions.CopyBlockWithDependenciesAction"
+                text="Copy with Dependencies">
+            <add-to-group group-id="Copy.Paste.Special" anchor="last"/>
         </action>
 
         <group id="MyPlugin.CopySpecialGroup" text="Copy Special" popup="true">
