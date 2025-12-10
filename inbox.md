@@ -13,6 +13,7 @@
 
 ## Pending Features
 
+- [ ] feat: When typing "return", offer the annotated return types first in the suggestions
 - [ ] feat: When implementing abstract method, present dialog to choose or show edits
 - [ ] feat: Move instance method
 - [ ] feat: Move to inner class
@@ -41,7 +42,6 @@
 
 ## In Progress Tasks
 
-- [ ] feat: Add inspection that renders a problem in the base class if methods are missing in child classes
 - [ ] feat: Show red bubble if introduce parameter object is not available
 - [-] feat: Configure dunder all inspection to be only available if __all__ is present
 - [ ] feat: Replace expected with actual test outcome
@@ -49,6 +49,7 @@
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Add inspection that renders a problem in the base class if methods are missing in child classes
 - [x] feat: Implement abstract methods in child classes, starting from abstract method
 - [x] feat: Make argument mandatory
 - [x] feat: Reload plugin without restart
