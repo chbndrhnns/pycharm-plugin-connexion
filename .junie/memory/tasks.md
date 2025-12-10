@@ -1,13 +1,3 @@
-[2025-12-03 13:54] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "create processor stub, register intention, run tests",
-    "BOTTLENECK": "Incorrect Python PSI API usage led to unresolved references and compile failures.",
-    "PROJECT NOTE": "Use PyNamedParameter.isSelf, isPositionalContainer, and isKeywordContainer; no isCls API.",
-    "NEW INSTRUCTION": "WHEN intention invoke references a new class THEN create a minimal compiling stub first"
-}
-
 [2025-12-03 14:00] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -896,4 +886,14 @@
     "BOTTLENECK": "No immediate test rerun after implementing the fix.",
     "PROJECT NOTE": "Use VfsUtilCore.isAncestor on VirtualFile for directory ancestry checks.",
     "NEW INSTRUCTION": "WHEN implementing a fix after reproducing with a new test THEN rerun the new test, then run the full test suite"
+}
+
+[2025-12-10 12:20] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "register intention, run tests",
+    "BOTTLENECK": "The new intention was not registered and tests were not executed.",
+    "PROJECT NOTE": "Register the intention in plugin.xml under <intentions> with a category, matching the action text.",
+    "NEW INSTRUCTION": "WHEN a new intention class is added THEN register it in plugin.xml immediately"
 }
