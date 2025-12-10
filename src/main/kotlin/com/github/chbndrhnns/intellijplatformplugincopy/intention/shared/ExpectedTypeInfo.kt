@@ -3,6 +3,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.shared
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.util.PsiTreeUtil
+import com.jetbrains.python.codeInsight.typing.PyTypingTypeProvider
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.impl.getImplicitArgumentCount
 import com.jetbrains.python.psi.resolve.PyResolveContext
@@ -225,24 +226,21 @@ internal object ExpectedTypeInfo {
         if (parent is PyReturnStatement) {
             val fn = PsiTreeUtil.getParentOfType(parent, PyFunction::class.java)
             val retAnnExpr = fn?.annotation?.value
+
             if (retAnnExpr is PyExpression) {
                 val named = (retAnnExpr as? PyReferenceExpression)?.reference?.resolve() as? PsiNamedElement
                 var returnType = fn.let { ctx.getReturnType(it) }
 
-                if (fn.isAsync && returnType is PyCollectionType) {
-                    val qName = returnType.classQName
-                    if (qName == "typing.Coroutine" || qName == "collections.abc.Coroutine") {
-                        val args = returnType.elementTypes
-                        if (args.size >= 3) {
-                            returnType = args[2]
-                        }
+                if (fn.isAsync) {
+                    val unwrappedRef = PyTypingTypeProvider.unwrapCoroutineReturnType(returnType)
+                    if (unwrappedRef != null) {
+                        returnType = unwrappedRef.get()
                     }
                 }
 
                 return TypeInfo(returnType, retAnnExpr, named)
             }
         }
-
         if ((parent is PyIfPart && parent.condition == expr) ||
             (parent is PyWhilePart && parent.condition == expr) ||
             (parent is PyConditionalExpression && parent.condition == expr)
