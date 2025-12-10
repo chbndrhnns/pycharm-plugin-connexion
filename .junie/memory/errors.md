@@ -1,33 +1,3 @@
-[2025-12-08 18:00] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "open_entire_file",
-    "ERROR": "Tried to open a directory as a file",
-    "ROOT CAUSE": "The path docs/dict-access points to a directory, but open_entire_file expects a file.",
-    "PROJECT NOTE": "docs/dict-access is a docs folder; use project search or list functions to inspect its contents.",
-    "NEW INSTRUCTION": "WHEN open_entire_file target is a directory THEN list contents via get_file_structure or search_project"
-}
-
-[2025-12-08 18:00] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "open_entire_file",
-    "ERROR": "Attempted to open a directory as a file",
-    "ROOT CAUSE": "The path passed to open_entire_file pointed to a directory (docs/dict-access) rather than a file.",
-    "PROJECT NOTE": "The docs/dict-access path is a directory; enumerate files first before opening one.",
-    "NEW INSTRUCTION": "WHEN open_entire_file target is a directory THEN list files and open a specific file path"
-}
-
-[2025-12-08 18:02] - Updated by Junie - Error analysis
-{
-    "TYPE": "path error",
-    "TOOL": "open_entire_file",
-    "ERROR": "Attempted to open a directory as a file",
-    "ROOT CAUSE": "Passed a directory path to open_entire_file, which only accepts file paths.",
-    "PROJECT NOTE": "docs/dict-access is a directory; pick a specific file in it or search for relevant files first.",
-    "NEW INSTRUCTION": "WHEN target path is a directory THEN choose a concrete file path inside before opening"
-}
-
 [2025-12-08 18:03] - Updated by Junie - Error analysis
 {
     "TYPE": "path error",
@@ -818,3 +788,22 @@
     "NEW INSTRUCTION": "WHEN plugin.xml references Python language or APIs THEN declare com.jetbrains.python dependency and enable platformPlugins accordingly"
 }
 
+[2025-12-10 07:57] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Unresolved reference 'sort' on List",
+    "ROOT CAUSE": "Code called mutating sort() on a read-only Kotlin List instead of using sorted().",
+    "PROJECT NOTE": "In this repo, action hooks like processResult use List<String>; prefer result.sorted() over in-place sorting.",
+    "NEW INSTRUCTION": "WHEN sorting a Kotlin List result THEN return result.sorted() instead of mutating"
+}
+
+[2025-12-10 07:59] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Unresolved reference 'sort' on List",
+    "ROOT CAUSE": "processResult parameter is a Kotlin List, so in-place sort() is unavailable; use sorted().",
+    "PROJECT NOTE": "AbstractCopyTestNodeAction.processResult takes List<String>; overrides get an immutable List and must return a new sorted list.",
+    "NEW INSTRUCTION": "WHEN overriding processResult receives List THEN return result.sorted() instead of calling sort()"
+}

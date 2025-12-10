@@ -406,3 +406,11 @@
     "NEW INSTRUCTION": "WHEN collecting FQNs from parameterized tests THEN emit one entry without parameters and deduplicate"
 }
 
+[2025-12-10 08:21] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "action presentation warning",
+    "EXPECTATION": "Do not instantiate action Presentation in constructors; supply text via plugin.xml or a PresentationSupplier.",
+    "NEW INSTRUCTION": "WHEN creating or refactoring AnAction subclasses THEN avoid super text/icon; use plugin.xml"
+}
+

@@ -1,23 +1,3 @@
-[2025-12-02 23:54] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "run tests",
-    "BOTTLENECK": "No test execution to validate the new anchor behavior.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN inspection code is modified THEN run project tests via bash"
-}
-
-[2025-12-03 00:03] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "open test data files",
-    "MISSING STEPS": "run full test suite",
-    "BOTTLENECK": "Correctly resolving the target import element when anchoring at statement level.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN modifying inspection registration or quick-fix applicability scope THEN Run full test suite and address failures before submitting."
-}
-
 [2025-12-03 11:57] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -906,4 +886,24 @@
     "BOTTLENECK": "FQNs are collected from UI tree nodes instead of SMTestProxy hierarchy.",
     "PROJECT NOTE": "Mirror traversal from CopyPytestNodeIdAction or centralize in TestProxyExtractor.",
     "NEW INSTRUCTION": "WHEN collecting FQNs from test tree THEN traverse SMTestProxy hierarchy and sort results"
+}
+
+[2025-12-10 07:59] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "create base class, refactor existing actions, change existing tests, plan view-traversal switch",
+    "MISSING STEPS": "read existing tests, add tests, implement stacktrace action, register action, run tests",
+    "BOTTLENECK": "Scope-expanding refactor diverted effort and broke existing test assumptions.",
+    "PROJECT NOTE": "Existing CopyActionsTest expects current behavior; avoid altering it when adding new action.",
+    "NEW INSTRUCTION": "WHEN task requests another copy action THEN add standalone action and tests without refactoring"
+}
+
+[2025-12-10 08:24] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "refactor, implement new action, update registration, add tests",
+    "MISSING STEPS": "run inspections, adjust action constructors, move presentation config to update, verify warning resolved",
+    "BOTTLENECK": "The plan solved a different feature instead of fixing the warning.",
+    "PROJECT NOTE": "For IntelliJ actions, avoid presentation changes in constructors; set text in plugin.xml or in update().",
+    "NEW INSTRUCTION": "WHEN inspection flags constructor presentation usage THEN move presentation setup to update or plugin.xml"
 }

@@ -60,7 +60,7 @@ class CopyActionsTest : TestBase() {
 
         // 4. Test CopyFQNAction
         val fqnResult = mutableListOf<String>()
-        CopyFQNAction().collectFQNs(rootNode, fqnResult, project)
+        CopyFQNAction().collect(rootNode, fqnResult, project)
         fqnResult.sort()
 
         // Expect: module1.test_mod1.test_one and module2.test_mod2.TestClass.test_two
@@ -70,7 +70,7 @@ class CopyActionsTest : TestBase() {
 
         // 5. Test CopyPytestNodeIdAction
         val nodeIdResult = mutableListOf<String>()
-        CopyPytestNodeIdAction().collectNodeIds(rootNode, nodeIdResult, project)
+        CopyPytestNodeIdAction().collect(rootNode, nodeIdResult, project)
         nodeIdResult.sort()
 
         // Expect: module1/test_mod1.py::test_one and module2/test_mod2.py::TestClass::test_two
@@ -110,12 +110,13 @@ class CopyActionsTest : TestBase() {
         rootProxy.addChild(proxy1)
 
         // 3. Create Tree Node wrapping Root Proxy
-        // IMPORTANT: We do NOT add children to the DefaultMutableTreeNode
+        // IMPORTANT: We ADD children to the DefaultMutableTreeNode because we use View Traversal now
         val rootNode = DefaultMutableTreeNode(rootProxy)
+        rootNode.add(DefaultMutableTreeNode(proxy1))
 
         // 4. Test CopyPytestNodeIdAction
         val nodeIdResult = mutableListOf<String>()
-        CopyPytestNodeIdAction().collectNodeIds(rootNode, nodeIdResult, project)
+        CopyPytestNodeIdAction().collect(rootNode, nodeIdResult, project)
 
         // Expect: module1/test_mod1.py::test_one
         // Current implementation fails because it iterates DefaultMutableTreeNode children (count=0)
@@ -147,12 +148,13 @@ class CopyActionsTest : TestBase() {
         rootProxy.addChild(proxy1)
 
         // 3. Create Tree Node wrapping Root Proxy
-        // IMPORTANT: We do NOT add children to the DefaultMutableTreeNode
+        // IMPORTANT: We ADD children to the DefaultMutableTreeNode because we use View Traversal now
         val rootNode = DefaultMutableTreeNode(rootProxy)
+        rootNode.add(DefaultMutableTreeNode(proxy1))
 
         // 4. Test CopyFQNAction
         val fqnResult = mutableListOf<String>()
-        CopyFQNAction().collectFQNs(rootNode, fqnResult, project)
+        CopyFQNAction().collect(rootNode, fqnResult, project)
 
         // Expect: module1.test_mod1.test_one
         assertEquals(1, fqnResult.size)
@@ -181,7 +183,7 @@ class CopyActionsTest : TestBase() {
         val rootNode = DefaultMutableTreeNode(proxy1)
 
         val fqnResult = mutableListOf<String>()
-        CopyFQNAction().collectFQNs(rootNode, fqnResult, project)
+        CopyFQNAction().collect(rootNode, fqnResult, project)
 
         assertEquals(1, fqnResult.size)
         // We want the parameter to be excluded
@@ -212,7 +214,7 @@ class CopyActionsTest : TestBase() {
         rootNode.add(DefaultMutableTreeNode(proxy2))
 
         val fqnResult = mutableListOf<String>()
-        CopyFQNAction().collectFQNs(rootNode, fqnResult, project)
+        CopyFQNAction().collect(rootNode, fqnResult, project)
 
         // Raw collection should have duplicates because we have two proxies
         assertEquals(2, fqnResult.size)

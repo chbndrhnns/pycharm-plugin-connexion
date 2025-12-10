@@ -214,6 +214,9 @@
             <action id="MyPlugin.CopyFQNs"
                     class="com.github.chbndrhnns.intellijplatformplugincopy.actions.CopyFQNAction"
                     text="Copy FQNs"/>
+            <action id="MyPlugin.CopyStacktrace"
+                    class="com.github.chbndrhnns.intellijplatformplugincopy.actions.CopyStacktraceAction"
+                    text="Copy Stacktrace"/>
         </group>
     </actions>
 </idea-plugin>
