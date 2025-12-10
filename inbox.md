@@ -32,6 +32,7 @@
 
 ## In Progress Tasks
 
+- [ ] feat: Use "change visibility" intention for private/public
 - [ ] feat: Replace expected with actual test outcome
 - [ ] feat: Jump from test to test node
 - [-] feat: Copy names of failed tests
