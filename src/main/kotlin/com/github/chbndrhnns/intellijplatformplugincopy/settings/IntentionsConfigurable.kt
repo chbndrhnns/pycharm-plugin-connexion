@@ -1,12 +1,19 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.settings
 
+import com.intellij.openapi.extensions.BaseExtensionPointName
+import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.options.BoundConfigurable
+import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.dsl.builder.bindSelected
 import com.intellij.ui.dsl.builder.panel
 
-class IntentionsConfigurable : BoundConfigurable("Intentions") {
+class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.WithEpDependencies {
     private val settings = PluginSettingsState.instance().state
+
+    override fun getDependencies(): Collection<BaseExtensionPointName<*>> {
+        return listOf(ExtensionPointName.create<Any>("com.intellij.intentionAction"))
+    }
 
     override fun createPanel(): DialogPanel {
         return panel {

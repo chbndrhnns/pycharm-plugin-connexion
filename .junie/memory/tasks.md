@@ -1,13 +1,3 @@
-[2025-12-03 21:24] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "verify highlight range source, cross-check availability guard usage across code",
-    "BOTTLENECK": "Misaligned check between targetElement range and actual inspection highlight range.",
-    "PROJECT NOTE": "Focus on isAvailable/hasBlockingInspections and PlanBuilder targetElement selection.",
-    "NEW INSTRUCTION": "WHEN investigating intention visible with errors THEN compare targetElement range to highlight ranges"
-}
-
 [2025-12-03 21:37] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -886,4 +876,14 @@
     "BOTTLENECK": "Core implementation and required resources were not completed before iterating on tests.",
     "PROJECT NOTE": "Place intentionDescriptions at src/main/resources/intentionDescriptions/ImplementAbstractMethodInChildClassesIntention/ with intentionDescription.xml, description.html, before.py.html, after.py.html.",
     "NEW INSTRUCTION": "WHEN registering a new intention in plugin.xml THEN add intentionDescriptions with description and before/after examples"
+}
+
+[2025-12-10 21:35] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "search for dynamic keywords,search for ExtensionPointName usages,search for getExtensions/extensionList",
+    "MISSING STEPS": "modify all relevant configurables,verify build,ask clarification when dependencies ambiguous",
+    "BOTTLENECK": "Ambiguity identifying which configurables truly depend on dynamic EPs caused speculative edits.",
+    "PROJECT NOTE": "IntentionsConfigurable should also declare dependency on com.intellij.intentionAction.",
+    "NEW INSTRUCTION": "WHEN configurable EP dependencies are unspecified THEN inspect plugin.xml and add matching WithEpDependencies"
 }
