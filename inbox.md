@@ -28,13 +28,15 @@
 
 ## In Progress Tasks
 
-- [x] feat: Move "copy with dependencies" intention to copy special
+- [ ] fix: Populate: need to import leaf node types
 - [-] feat: Configure dunder all inspection to be only available if __all__ is present
 - [ ] feat: Replace expected with actual test outcome
 - [ ] feat: Jump from test to test node
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Create settings group
+- [x] feat: Move "copy with dependencies" intention to copy special
 - [x] feat: Add intention: make parameter optional (`arg: str` -> `arg: str | None = None`)
 - [x] fix: do not offer "use exported" if in private child package: `from .._bases import BaseBlaModel`
 - [x] fix: do not offer make private/public on test methods and test classes
