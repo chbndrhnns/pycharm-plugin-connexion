@@ -124,6 +124,11 @@
         </intentionAction>
 
 
+        <intentionAction>
+            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest.TogglePytestSkipIntention</className>
+            <category>Test</category>
+        </intentionAction>
+
         <applicationConfigurable
                 displayName="DDD Toolkit"
                 id="com.github.chbndrhnns.intellijplatformplugincopy.settings"
