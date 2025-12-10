@@ -28,7 +28,7 @@
 
 ## In Progress Tasks
 
-- [ ] feat: Move "copy with dependencies" intention to copy special
+- [x] feat: Move "copy with dependencies" intention to copy special
 - [-] feat: Configure dunder all inspection to be only available if __all__ is present
 - [ ] feat: Replace expected with actual test outcome
 - [ ] feat: Jump from test to test node
