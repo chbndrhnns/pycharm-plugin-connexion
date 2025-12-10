@@ -39,7 +39,7 @@
   - [x] Validate FQN
   - [x] Validate pytest node ids
   - [ ] Investigate source roots implication
-  - [ ] Copy with stacktrace
+  - [x] Copy with stacktrace
 
 ## Completed Tasks (newest first)
 
