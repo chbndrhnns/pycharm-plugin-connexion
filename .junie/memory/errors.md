@@ -1,23 +1,3 @@
-[2025-12-08 18:13] - Updated by Junie - Error analysis
-{
-    "TYPE": "path error",
-    "TOOL": "open_entire_file",
-    "ERROR": "Tried to open a directory as a file",
-    "ROOT CAUSE": "A directory path was passed to open_entire_file, which expects a file path.",
-    "PROJECT NOTE": "docs/dict-access is a directory; target a concrete file under docs/ or find it via search before opening.",
-    "NEW INSTRUCTION": "WHEN target path is a directory THEN select a specific file path before calling open_entire_file"
-}
-
-[2025-12-08 18:14] - Updated by Junie - Error analysis
-{
-    "TYPE": "path error",
-    "TOOL": "open_entire_file",
-    "ERROR": "Path is a directory, not a file",
-    "ROOT CAUSE": "Attempted to open a directory with a file-opening tool that expects a file path.",
-    "PROJECT NOTE": "docs/dict-access is a directory; open a specific file inside it (e.g., docs/dict-access/README.md) or list contents first.",
-    "NEW INSTRUCTION": "WHEN open_entire_file reports directory path THEN open a concrete file inside or list contents first"
-}
-
 [2025-12-08 18:15] - Updated by Junie - Error analysis
 {
     "TYPE": "invalid args",
@@ -806,4 +786,14 @@
     "ROOT CAUSE": "A multi-line/bash-heredoc command with unescaped newlines was sent to a tool that forbids newline characters.",
     "PROJECT NOTE": "Work from the project root (/Users/cleancoder/dev/scratch/intellij-platform-plugin-copy) when creating files under src/main; use a single-line printf with \\n escapes.",
     "NEW INSTRUCTION": "WHEN bash command includes unescaped newlines THEN use a single-line printf with \\n escapes"
+}
+
+[2025-12-10 11:54] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle :test",
+    "ERROR": "Expected intention not available, but it was offered",
+    "ROOT CAUSE": "The ignore rule blocks classes starting with 'Test_' while the test used 'TestClass' (no underscore).",
+    "PROJECT NOTE": "In this repo, ChangeVisibility ignore defaults are: conftest.py, test_* modules/functions, and classes starting with 'Test_'; tests must match these exact prefixes.",
+    "NEW INSTRUCTION": "WHEN writing NotAvailable test for pytest class THEN name the class starting with 'Test_'"
 }

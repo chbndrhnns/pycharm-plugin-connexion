@@ -897,3 +897,14 @@
     "PROJECT NOTE": "PluginSettingsState.enableMakePublicIntention appears to gate all visibility intentions, including the new Change Visibility.",
     "NEW INSTRUCTION": "WHEN visibility intentions share an unrelated feature flag THEN introduce dedicated setting and update availability checks"
 }
+
+[2025-12-10 11:56] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "scan project",
+    "MISSING STEPS": "confirm pattern semantics",
+    "BOTTLENECK": "Test case pattern mismatched the intended Test_* class rule.",
+    "PROJECT NOTE": "In tests, import fixtures.assertIntentionNotAvailable to check unavailability.",
+    "NEW INSTRUCTION": "WHEN adding name-based ignore rules THEN add matching negative-availability tests before running"
+}
+
