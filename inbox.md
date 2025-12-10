@@ -11,7 +11,6 @@
 ## Pending Features
 
 - [ ] feat: search everywhere: search for partial matches in test names
-- [ ] feat: Configure dunder all inspection to be only available if __all__ is present
 - [ ] feat: Add intention: make parameter optional (`arg: str` -> `arg: str | None = None`)
 - [ ] feat: copy element with dependencies should generate a preview about the direct copy (not including dependencies)
 - [ ] When populating arguments, highlight the target function (area) when the popup appears
@@ -32,17 +31,17 @@
 
 ## In Progress Tasks
 
+- [-] feat: Configure dunder all inspection to be only available if __all__ is present
 - [ ] feat: Use "change visibility" intention for private/public
 - [ ] feat: Replace expected with actual test outcome
 - [ ] feat: Jump from test to test node
-- [-] feat: Copy names of failed tests
-  - [x] Validate FQN
-  - [x] Validate pytest node ids
-  - [ ] Investigate source roots implication
-  - [x] Copy with stacktrace
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Copy names of failed tests
+  - [x] Validate FQN
+  - [x] Validate pytest node ids
+  - [x] Copy with stacktrace
 - [x] feat: Treat references as PSI elements, pytest.mark.filterwarnings, patch()
 - [x] feat: Copy selection with imports
 - [x] feat: populate with argument names that exist in the current scope
