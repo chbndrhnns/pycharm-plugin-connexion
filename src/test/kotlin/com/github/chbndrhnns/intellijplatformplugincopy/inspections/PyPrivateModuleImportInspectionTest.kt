@@ -133,4 +133,29 @@ class PyPrivateModuleImportInspectionTest : TestBase() {
             },
         )
     }
+
+    fun testQuickFixNotOfferedInPrivateChildPackage() {
+        myFixture.configureByFiles(
+            "inspections/PyPrivateModuleImportInspection/DoNotOfferInPrivateChildPackage/mypackage/__init__.py",
+            "inspections/PyPrivateModuleImportInspection/DoNotOfferInPrivateChildPackage/mypackage/_lib.py",
+            "inspections/PyPrivateModuleImportInspection/DoNotOfferInPrivateChildPackage/mypackage/_child/consumer.py",
+        )
+
+        val consumerFile = myFixture.findFileInTempDir(
+            "inspections/PyPrivateModuleImportInspection/DoNotOfferInPrivateChildPackage/mypackage/_child/consumer.py",
+        )
+        myFixture.openFileInEditor(consumerFile!!)
+
+        myFixture.enableInspections(PyPrivateModuleImportInspection::class.java)
+        myFixture.doHighlighting()
+
+        val fixes = myFixture.getAllQuickFixes()
+        assertTrue(
+            "Quick-fix should not be offered when importing from private module in a private child package",
+            fixes.none {
+                it.familyName == "Use exported symbol from package instead of private module" ||
+                        it.familyName == "Make symbol public and import from package"
+            },
+        )
+    }
 }

@@ -1,23 +1,3 @@
-[2025-12-03 13:31] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "add implementation sketch,design UI chooser details",
-    "MISSING STEPS": "-",
-    "BOTTLENECK": "Over-detailed implementation distracted from concise, high-level guidance.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN prompt asks for high-level suggestions without coding details THEN provide concise strategy and decision rules; omit implementation and UI specifics"
-}
-
-[2025-12-03 13:35] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "run full test suite",
-    "BOTTLENECK": "Partial test execution hid a failure specific to the new scenario.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN tests are added or modified THEN run full test suite and summarize results"
-}
-
 [2025-12-03 13:54] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -908,3 +888,12 @@
     "NEW INSTRUCTION": "WHEN adding name-based ignore rules THEN add matching negative-availability tests before running"
 }
 
+[2025-12-10 12:09] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "broad code search",
+    "MISSING STEPS": "run changed test, run full test suite",
+    "BOTTLENECK": "No immediate test rerun after implementing the fix.",
+    "PROJECT NOTE": "Use VfsUtilCore.isAncestor on VirtualFile for directory ancestry checks.",
+    "NEW INSTRUCTION": "WHEN implementing a fix after reproducing with a new test THEN rerun the new test, then run the full test suite"
+}

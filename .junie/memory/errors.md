@@ -1,15 +1,5 @@
 [2025-12-08 18:15] - Updated by Junie - Error analysis
 {
-    "TYPE": "invalid args",
-    "TOOL": "open_entire_file",
-    "ERROR": "Attempted to open a directory as a file",
-    "ROOT CAUSE": "The provided path points to a directory, but open_entire_file expects a file.",
-    "PROJECT NOTE": "Path docs/dict-access is a directory; choose a specific file under it before opening.",
-    "NEW INSTRUCTION": "WHEN open_entire_file path resolves to a directory THEN list entries and open a chosen file"
-}
-
-[2025-12-08 18:15] - Updated by Junie - Error analysis
-{
     "TYPE": "path error",
     "TOOL": "open_entire_file",
     "ERROR": "Provided path is a directory, not a file",
@@ -796,4 +786,14 @@
     "ROOT CAUSE": "The ignore rule blocks classes starting with 'Test_' while the test used 'TestClass' (no underscore).",
     "PROJECT NOTE": "In this repo, ChangeVisibility ignore defaults are: conftest.py, test_* modules/functions, and classes starting with 'Test_'; tests must match these exact prefixes.",
     "NEW INSTRUCTION": "WHEN writing NotAvailable test for pytest class THEN name the class starting with 'Test_'"
+}
+
+[2025-12-10 12:04] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle :test",
+    "ERROR": "Unexpected quick-fix offered; test expected none",
+    "ROOT CAUSE": "The inspection suggests 'use exported' for imports inside private child packages, which should be excluded.",
+    "PROJECT NOTE": "Update src/main/kotlin/.../inspections/PyPrivateModuleImportInspection.kt to treat an importing file located under a private subpackage (a path segment starting with '_') of the exporting package as in-package usage and suppress quick-fixes.",
+    "NEW INSTRUCTION": "WHEN import from private module in private child package detected THEN suppress 'use exported' and 'make public' quick-fixes"
 }

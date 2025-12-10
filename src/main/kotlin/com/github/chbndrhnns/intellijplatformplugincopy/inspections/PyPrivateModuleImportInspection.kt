@@ -6,6 +6,7 @@ import com.intellij.codeInspection.LocalInspectionToolSession
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.psi.PsiElementVisitor
+import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.PyNames
 import com.jetbrains.python.inspections.PyInspection
 import com.jetbrains.python.psi.*
@@ -82,6 +83,14 @@ class PyPrivateModuleImportInspection : PyInspection() {
         // the same package should be allowed to import from private modules
         // without being forced to use the public export.
         if (file.containingDirectory == directory) return
+
+        if (PsiTreeUtil.isAncestor(directory, file, true)) {
+            var current = file.containingDirectory
+            while (current != null && current != directory) {
+                if (current.name.startsWith("_")) return
+                current = current.parentDirectory
+            }
+        }
 
         val dunderAllNames = findDunderAllNames(packageInit) ?: return
 
