@@ -40,7 +40,6 @@
 
 ## In Progress Tasks
 
-- [-] refactor: `if (fn.isAsync && returnType is PyCollectionType) {`
 - [-] refactor: `MakeParameterMandatoryIntention`
 - [-] refactor: `if (!aliasName.isNullOrBlank() && !PyBuiltinNames.isBuiltin(aliasName)) {`
 - [-] feat: Check which parts are not toggleable in settings so far
@@ -52,6 +51,7 @@
 
 ## Completed Tasks (newest first)
 
+- [x] refactor: `if (fn.isAsync && returnType is PyCollectionType) {`
 - [x] feat: Add quickfix to skip/unskip test
 - [x] fix: Suggests Coroutine for async methods after return statement
 - [x] feat: In assignments or calls, offer the annotated return types first in the suggestions
