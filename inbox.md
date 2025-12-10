@@ -9,6 +9,9 @@
 
 ## Pending Features
 
+- [ ] feat: Inspect duplicates in __all__
+- [ ] feat: introduce custom type as newtype, as well, or other custom constructs
+- [ ] feat: Introduce type alias for union type
 - [ ] feat: Make field mandatory, check call sites
 - [ ] feat: Turn dict into dataclass/pydantic model
 - [ ] feat: search everywhere: search for partial matches in test names
