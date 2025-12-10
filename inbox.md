@@ -43,8 +43,9 @@
 
 ## In Progress Tasks
 
+- [ ] fix: Suggests Coroutine for async methods after return statement
 - [ ] feat: Check which parts are not toggleable in settings so far
-- [ ] fix: Add __slots__ = () when introducing custom type for str
+- [ ] feat: Add __slots__ = () when introducing custom type for str
 - [-] feat: In assignments or calls, offer the annotated return types first in the suggestions
 - [ ] feat: Show red bubble if introduce parameter object is not available
 - [-] feat: Configure dunder all inspection to be only available if __all__ is present
