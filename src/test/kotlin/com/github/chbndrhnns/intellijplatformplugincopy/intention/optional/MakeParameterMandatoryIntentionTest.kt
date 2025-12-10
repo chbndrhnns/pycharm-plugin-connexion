@@ -117,6 +117,7 @@ class MakeParameterMandatoryIntentionTest : TestBase() {
             def func(arg: str):
                 pass
             
+            
             func(arg=...)
             """,
             "Make mandatory"

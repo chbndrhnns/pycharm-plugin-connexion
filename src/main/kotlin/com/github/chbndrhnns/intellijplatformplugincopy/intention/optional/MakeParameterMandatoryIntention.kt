@@ -10,7 +10,13 @@ import com.intellij.openapi.ui.Messages
 import com.intellij.psi.PsiFile
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.PsiTreeUtil
+import com.jetbrains.python.PyTokenTypes
+import com.jetbrains.python.codeInsight.typing.PyTypingTypeProvider
 import com.jetbrains.python.psi.*
+import com.jetbrains.python.psi.impl.mapArguments
+import com.jetbrains.python.psi.types.TypeEvalContext
+import com.jetbrains.python.refactoring.changeSignature.PyChangeSignatureProcessor
+import com.jetbrains.python.refactoring.changeSignature.PyMethodDescriptor
 
 class MakeParameterMandatoryIntention : IntentionAction, PriorityAction {
 
@@ -36,61 +42,86 @@ class MakeParameterMandatoryIntention : IntentionAction, PriorityAction {
 
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
         val element = findTargetElement(editor, file) ?: return
-        val elementName = element.name ?: return
 
-        val problematicCallSites = findCallSitesWithMissingArgument(element)
-        if (problematicCallSites.isNotEmpty()) {
-            if (!ApplicationManager.getApplication().isUnitTestMode) {
-                val message =
-                    "There are call sites that do not provide this argument. Making it mandatory will break code. Call sites will be updated with ellipsis (...). Continue?"
-                val result = Messages.showYesNoDialog(
-                    project,
-                    message,
-                    "Complications Found",
-                    Messages.getWarningIcon()
-                )
-                if (result != Messages.YES) {
-                    return
+        // Ensure element is PyAnnotationOwner before updating annotation
+        if (element !is PyAnnotationOwner) return
+
+        if (element is PyNamedParameter) {
+            val function = PsiTreeUtil.getParentOfType(element, PyFunction::class.java) ?: return
+            val problematicCallSites = findCallSitesWithMissingArgument(element, function)
+
+            if (problematicCallSites.isNotEmpty()) {
+                if (!ApplicationManager.getApplication().isUnitTestMode) {
+                    val message =
+                        "There are call sites that do not provide this argument. Making it mandatory will break code. Call sites will be updated with ellipsis (...). Continue?"
+                    val result = Messages.showYesNoDialog(
+                        project,
+                        message,
+                        "Complications Found",
+                        Messages.getWarningIcon()
+                    )
+                    if (result != Messages.YES) {
+                        return
+                    }
+                }
+
+                // Update call sites manually to ensure keyword argument usage
+                val generator = PyElementGenerator.getInstance(project)
+                val elementName = element.name ?: return
+
+                for (call in problematicCallSites) {
+                    val argumentList = call.argumentList ?: continue
+                    // We add it as a keyword argument: arg=...
+                    val keywordArg = generator.createKeywordArgument(
+                        LanguageLevel.forElement(call),
+                        elementName,
+                        "..."
+                    )
+                    argumentList.addArgument(keywordArg)
                 }
             }
-        }
 
-        val generator = PyElementGenerator.getInstance(project)
+            // 1. Update Annotation (Remove 'None')
+            updateAnnotation(element, project)
 
-        // Update call sites
-        if (element is PyNamedParameter) {
-            for (call in problematicCallSites) {
-                val argumentList = call.argumentList ?: continue
-                val keywordArg = generator.createKeywordArgument(
-                    LanguageLevel.getDefault(),
-                    elementName,
-                    "..."
-                )
-                argumentList.addArgument(keywordArg)
+            // 2. Update Definition (Remove default value) using Change Signature
+            // Use PyMethodDescriptor to get current parameters
+            val descriptor = PyMethodDescriptor(function)
+            val parameters = descriptor.parameters
+
+            // Modify the target parameter info
+            val paramInfo = parameters.find { it.name == element.name }
+            if (paramInfo != null) {
+                paramInfo.defaultValue = "..." // Value to add to missing call sites (if any left)
+                paramInfo.defaultInSignature = false // Remove default value from definition
+
+                // Execute Change Signature Refactoring
+                val processor =
+                    PyChangeSignatureProcessor(project, function, function.name!!, parameters.toTypedArray())
+                processor.run()
             }
-        }
-
-        val annotation = getAnnotation(element) ?: return
-        val currentAnnotationText = annotation.value?.text ?: return
-
-        val newAnnotationText = removeNoneFromAnnotation(currentAnnotationText)
-
-        if (element is PyNamedParameter) {
-            val newParam = generator.createParameter(
-                elementName,
-                null,
-                newAnnotationText,
-                LanguageLevel.getDefault()
-            )
-            element.replace(newParam)
         } else if (element is PyTargetExpression) {
-            val newStatementText = "$elementName: $newAnnotationText"
-
-            // Handle assignment statement (field = None) -> (field: Type)
             val parent = element.parent
+            val generator = PyElementGenerator.getInstance(project)
+
+            // 1. Update Annotation
+            updateAnnotation(element, project)
+
+            // 2. Update Assignment or Type Declaration
+            // Get the updated annotation text. Use value.text to retrieve just the type expression (e.g., "int").
+            val annotationText = element.annotation?.value?.text ?: "Any"
+            val newStatementText = "${element.name}: $annotationText"
+
             if (parent is PyAssignmentStatement) {
                 val newStatement = generator.createFromText(
-                    LanguageLevel.getDefault(),
+                    LanguageLevel.forElement(element),
+                    PyTypeDeclarationStatement::class.java,
+                    newStatementText
+                )
+                parent.replace(newStatement)
+            } else if (parent is PyTypeDeclarationStatement) {
+                val newStatement = generator.createFromText(
+                    LanguageLevel.forElement(element),
                     PyTypeDeclarationStatement::class.java,
                     newStatementText
                 )
@@ -99,102 +130,92 @@ class MakeParameterMandatoryIntention : IntentionAction, PriorityAction {
         }
     }
 
-    private fun findCallSitesWithMissingArgument(element: PyElement): List<PyCallExpression> {
-        val function = if (element is PyNamedParameter) {
-            PsiTreeUtil.getParentOfType(element, PyFunction::class.java)
-        } else {
-            // For fields, finding the constructor or class usage is harder and context dependent (dataclass etc)
-            // We'll skip field usage check for now to avoid false positives/negatives without deep analysis
-            null
-        } ?: return emptyList()
-
-        val parameter = element as? PyNamedParameter ?: return emptyList()
-        val parameterName = parameter.name ?: return emptyList()
-
-        // Find parameter index
-        val parameters = function.parameterList.parameters
-        val paramIndex = parameters.indexOf(parameter)
-        if (paramIndex == -1) return emptyList()
-
+    private fun findCallSitesWithMissingArgument(
+        element: PyNamedParameter,
+        function: PyFunction
+    ): List<PyCallExpression> {
         val references = ReferencesSearch.search(function, function.useScope).findAll()
         val missingSites = mutableListOf<PyCallExpression>()
 
         for (ref in references) {
             val callElement = ref.element.parent
             if (callElement is PyCallExpression) {
-                // Check if argument is provided
-                val argumentList = callElement.argumentList ?: continue
+                // Use codeInsightFallback to avoid heavy inference but still resolve arguments
+                val context = TypeEvalContext.codeInsightFallback(element.project)
+                // Use extension function mapArguments imported from com.jetbrains.python.psi.impl
+                val mapping = callElement.mapArguments(function, context)
 
-                // check keyword arguments
-                val keywordArg = argumentList.getKeywordArgument(parameterName)
-                if (keywordArg != null) continue
-
-                // check positional arguments
-                // This is a simplification. We assume regular args.
-                // Handling *args and **kwargs correctly requires resolving.
-                // But for a basic check:
-                val args = argumentList.arguments
-                // Count positional args (those that are not keyword args)
-                val positionalArgsCount = args.count { it !is PyKeywordArgument }
-
-                if (positionalArgsCount <= paramIndex) {
+                // Check if element is mapped in the arguments
+                val mapped = mapping.mappedParameters.values.any { it.parameter == element }
+                if (!mapped) {
                     missingSites.add(callElement)
                 }
             }
         }
-
         return missingSites
     }
 
-    private fun removeNoneFromAnnotation(text: String): String {
-        val result = text.trim()
+    private fun updateAnnotation(element: PyAnnotationOwner, project: Project) {
+        val annotation = element.annotation ?: return
+        val value = annotation.value ?: return
+        val newAnnotationText = processTypeExpression(value) ?: "Any"
 
-        // 1. Handle Pipe Union: "A | B"
-        val pipeParts = splitRespectingBrackets(result, '|')
-        if (pipeParts.size > 1) {
-            val filtered = pipeParts.map { it.trim() }.filter { it != "None" }
-            if (filtered.isEmpty()) return "Any" // Should not happen for valid types
-            if (filtered.size == 1) return removeNoneFromAnnotation(filtered[0])
-            return filtered.joinToString(" | ")
+        if (newAnnotationText != value.text) {
+            val generator = PyElementGenerator.getInstance(project)
+            val newExpression = generator.createExpressionFromText(LanguageLevel.forElement(element), newAnnotationText)
+            value.replace(newExpression)
         }
-
-        // 2. Handle Union[...]
-        if (result.startsWith("Union[") && result.endsWith("]")) {
-            val content = result.substring("Union[".length, result.length - 1)
-            val parts = splitRespectingBrackets(content, ',')
-            val filtered = parts.map { it.trim() }.filter { it != "None" }
-            if (filtered.isEmpty()) return "Any"
-            if (filtered.size == 1) return removeNoneFromAnnotation(filtered[0])
-            return "Union[${filtered.joinToString(", ")}]"
-        }
-
-        // 3. Handle Optional[...]
-        if (result.startsWith("Optional[") && result.endsWith("]")) {
-            val content = result.substring("Optional[".length, result.length - 1)
-            return removeNoneFromAnnotation(content)
-        }
-
-        return result
     }
 
-    private fun splitRespectingBrackets(text: String, delimiter: Char): List<String> {
-        val parts = mutableListOf<String>()
-        var bracketCount = 0
-        var currentPart = StringBuilder()
+    private fun processTypeExpression(expression: PyExpression): String? {
+        // Handle None literal (PyNoneLiteralExpression or reference "None")
+        if (expression is PyNoneLiteralExpression) return null
+        if (expression.text == "None") return null
 
-        for (char in text) {
-            if (char == '[') bracketCount++
-            else if (char == ']') bracketCount--
+        when (expression) {
+            is PyBinaryExpression -> {
+                if (expression.operator == PyTokenTypes.OR) { // Type | None
+                    val left = processTypeExpression(expression.leftExpression)
+                    val right = expression.rightExpression?.let { processTypeExpression(it) }
+                    return joinTypes(listOfNotNull(left, right), " | ")
+                }
+            }
 
-            if (char == delimiter && bracketCount == 0) {
-                parts.add(currentPart.toString())
-                currentPart = StringBuilder()
-            } else {
-                currentPart.append(char)
+            is PySubscriptionExpression -> {
+                val operand = expression.operand
+                val index = expression.indexExpression ?: return expression.text
+
+                // Resolve "Optional" and "Union" using TypeEvalContext to handle imports/aliases correctly
+                val context = TypeEvalContext.userInitiated(expression.project, expression.containingFile)
+
+                val qualifiedNames = PyTypingTypeProvider.resolveToQualifiedNames(operand, context)
+
+                if (qualifiedNames.any { it == "typing.Optional" || it == "Optional" }) {
+                    // Optional[T] -> T
+                    return processTypeExpression(index)
+                }
+
+                if (qualifiedNames.any { it == "typing.Union" || it == "Union" }) {
+                    // Union[A, B, None] -> Union[A, B]
+                    val elements = if (index is PyTupleExpression) index.elements.toList() else listOf(index)
+                    val processed = elements.mapNotNull { processTypeExpression(it) }
+                    return if (processed.size == 1) processed[0] else "Union[${processed.joinToString(", ")}]"
+                }
+            }
+
+            is PyReferenceExpression -> {
+                if (expression.text == "None") return null
             }
         }
-        parts.add(currentPart.toString())
-        return parts
+
+        // Default: keep the text if it's not None
+        return if (expression.text == "None") null else expression.text
+    }
+
+    private fun joinTypes(types: List<String>, separator: String): String? {
+        if (types.isEmpty()) return null
+        if (types.size == 1) return types[0]
+        return types.joinToString(separator)
     }
 
     override fun startInWriteAction(): Boolean = true
@@ -210,19 +231,10 @@ class MakeParameterMandatoryIntention : IntentionAction, PriorityAction {
 
         val target = PsiTreeUtil.getParentOfType(element, PyTargetExpression::class.java)
         if (target != null) {
-            // Check if it's a field in a class
             if (PsiTreeUtil.getParentOfType(target, PyClass::class.java) != null) {
                 return target
             }
         }
         return null
-    }
-
-    private fun getAnnotation(element: PyElement): PyAnnotation? {
-        return when (element) {
-            is PyNamedParameter -> element.annotation
-            is PyTargetExpression -> element.annotation
-            else -> null
-        }
     }
 }
