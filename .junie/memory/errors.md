@@ -1,23 +1,3 @@
-[2025-12-08 23:11] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "create",
-    "ERROR": "Unresolved reference 'git4idea' in test file",
-    "ROOT CAUSE": "The test imported git4idea classes without adding the Git plugin to the test classpath, causing unresolved symbols.",
-    "PROJECT NOTE": "Tests here compile against the configured IntelliJ platform; avoid direct git4idea dependencies or declare Git4Idea under platformPlugins and ensure Gradle sync before use.",
-    "NEW INSTRUCTION": "WHEN writing tests that reference external plugin APIs THEN avoid them and use VCS-agnostic mocks"
-}
-
-[2025-12-08 23:11] - Updated by Junie - Error analysis
-{
-    "TYPE": "build failure",
-    "TOOL": "create",
-    "ERROR": "Semantic errors from incorrect platform API usage",
-    "ROOT CAUSE": "New Kotlin code called platform APIs with wrong signatures and return-type assumptions (findMethodByName params; NavigationItem.navigate Unit).",
-    "PROJECT NOTE": "In IntelliJ Platform: NavigationItem.navigate returns Unit; processSelectedItem should call navigate and return true. For PyClass, prefer scanning methods by name when findMethodByName overloads mismatch.",
-    "NEW INSTRUCTION": "WHEN adding Kotlin code using IntelliJ/PyCharm APIs THEN verify method signatures and return types"
-}
-
 [2025-12-08 23:12] - Updated by Junie - Error analysis
 {
     "TYPE": "env/setup",
@@ -796,4 +776,24 @@
     "ROOT CAUSE": "The tool was called with only a path parameter, but it requires a lexical/semantic/exact search query.",
     "PROJECT NOTE": "To list files under a path, use the bash tool (e.g., ls) instead of search_project.",
     "NEW INSTRUCTION": "WHEN search_project call lacks query parameters THEN include lexical_search_query or semantic_search_query"
+}
+
+[2025-12-10 21:52] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle :test",
+    "ERROR": "Intention not available for ipaddress/Path types",
+    "ROOT CAUSE": "Supported types list excludes ipaddress and Path so TargetDetector never recognizes them.",
+    "PROJECT NOTE": "Extend src/main/.../customtype/CustomTypeConstants.kt SUPPORTED_BUILTINS (e.g., IPv4Address, IPv6Address, IPv4Network, IPv6Network, IPv4Interface, IPv6Interface, Path) and ensure ImportManager/PyImportService add correct imports (ipaddress.*, from pathlib import Path).",
+    "NEW INSTRUCTION": "WHEN tests expect intention for new stdlib class THEN add type to SUPPORTED_BUILTINS and import mapping"
+}
+
+[2025-12-10 21:58] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "bash",
+    "ERROR": "Unterminated or truncated Gradle test command",
+    "ROOT CAUSE": "The bash invocation passed a --tests filter with an opening quote but no closing quote, likely truncated, so the tool could not parse the command.",
+    "PROJECT NOTE": "Run tests with a complete FQN and proper quoting, e.g., ./gradlew test --tests 'com.github.chbndrhnns.intellijplatformplugincopy.completion.PyReturnCompletionTest'.",
+    "NEW INSTRUCTION": "WHEN bash command includes unterminated quotes THEN reissue it with proper balanced quoting and full test name"
 }

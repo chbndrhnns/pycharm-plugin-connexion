@@ -10,6 +10,8 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
+        <completion.contributor language="Python"
+                                implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.completion.PyReturnCompletionContributor"/>
         <psi.referenceContributor language="Python"
                                   implementation="com.github.chbndrhnns.intellijplatformplugincopy.psi.PyMockPatchReferenceContributor"/>
         <psi.referenceContributor language="Python"

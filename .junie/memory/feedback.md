@@ -438,3 +438,11 @@
     "NEW INSTRUCTION": "WHEN showing missing-arguments confirmation dialog THEN state call sites will use '...'' placeholders"
 }
 
+[2025-12-10 21:59] - Updated by Junie
+{
+    "TYPE": "preference",
+    "CATEGORY": "completion prioritization",
+    "EXPECTATION": "Annotated return types should appear first in completion suggestions at a return site",
+    "NEW INSTRUCTION": "WHEN offering completion inside a return statement THEN prioritize annotated return-type variants above others"
+}
+

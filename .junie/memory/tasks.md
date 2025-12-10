@@ -1,23 +1,3 @@
-[2025-12-03 21:37] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "list directory,scan project",
-    "MISSING STEPS": "review tests,trace availability conditions against tests",
-    "BOTTLENECK": "No coverage mapping against existing tests before concluding gaps.",
-    "PROJECT NOTE": "There is a PyIntroduceParameterObjectIntentionTest; use it to verify covered scenarios.",
-    "NEW INSTRUCTION": "WHEN assessing feature coverage THEN open related tests and enumerate covered scenarios first"
-}
-
-[2025-12-03 22:23] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "search project, update function signature, run tests",
-    "BOTTLENECK": "Type mismatch introduced by changing updateCallSites parameter without updating its signature and usages.",
-    "PROJECT NOTE": "Ensure PyImportService usage aligns with PsiNamedElement types; updating method signatures requires adjusting all callers.",
-    "NEW INSTRUCTION": "WHEN modifying a method signature THEN search project and update all call sites"
-}
-
 [2025-12-03 22:40] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -898,3 +878,12 @@
     "NEW INSTRUCTION": "WHEN new supported type is from a stdlib module THEN update normalizeName and import mapping; add passing intention tests"
 }
 
+[2025-12-10 21:59] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "search symbol globally,open unrelated inspection file",
+    "MISSING STEPS": "ensure ordering,run tests",
+    "BOTTLENECK": "Did not guarantee or verify ordering of suggestions via tests.",
+    "PROJECT NOTE": "Use a CompletionWeigher or custom sorter; TypeEvalContext.userInitiated suits completion.",
+    "NEW INSTRUCTION": "WHEN requirement mentions suggestion priority or order THEN add CompletionWeigher and assert ranking in tests"
+}
