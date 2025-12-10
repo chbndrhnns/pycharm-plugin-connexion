@@ -189,6 +189,11 @@
                 implementation="com.github.chbndrhnns.intellijplatformplugincopy.imports.RelativeImportCandidateProvider"/>
     </extensions>
 
+    <projectListeners>
+        <listener class="com.github.chbndrhnns.intellijplatformplugincopy.listeners.PythonVersionCheckerListener"
+                  topic="com.intellij.openapi.roots.ModuleRootListener"/>
+    </projectListeners>
+
     <actions>
         <action id="com.github.chbndrhnns.intellijplatformplugincopy.actions.CopyPackageContentAction"
                 class="com.github.chbndrhnns.intellijplatformplugincopy.actions.CopyPackageContentAction"
