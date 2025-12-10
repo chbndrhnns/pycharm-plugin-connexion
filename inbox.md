@@ -13,7 +13,6 @@
 
 ## Pending Features
 
-- [ ] feat: Add quickfix to skip/unskip test
 - [ ] feat: Add quickfix to parametrize test
 - [ ] feat: When implementing abstract method, present dialog to choose or show edits
 - [ ] feat: Move instance method
@@ -53,6 +52,7 @@
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Add quickfix to skip/unskip test
 - [x] fix: Suggests Coroutine for async methods after return statement
 - [x] feat: In assignments or calls, offer the annotated return types first in the suggestions
 - [x] feat: When typing "return", offer the annotated return types first in the suggestions
