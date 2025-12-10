@@ -2,6 +2,8 @@
 
 ## Pending Issues
 
+- [ ] fix: When implementing abstract method, take care of existing ellipsis
+- [ ] fix: implement abstract method is put above __init__
 - [ ] feat: Consider if this should only work for dataclass/classes, for others, there is change signature
 - [ ] refactor: `MakeParameterMandatoryIntention`
 - [ ] refactor: `if (!aliasName.isNullOrBlank() && !PyBuiltinNames.isBuiltin(aliasName)) {`
@@ -11,6 +13,7 @@
 
 ## Pending Features
 
+- [ ] feat: When implementing abstract method, present dialog to choose or show edits
 - [ ] feat: Move instance method
 - [ ] feat: Move to inner class
 - [ ] feat: Move symbol to any of the currently imported packages/modules, change references
@@ -38,7 +41,7 @@
 
 ## In Progress Tasks
 
-- [ ] feat: Implement abstract methods in child classes, starting from abstract method
+- [ ] feat: Add inspection that renders a problem in the base class if methods are missing in child classes
 - [ ] feat: Show red bubble if introduce parameter object is not available
 - [-] feat: Configure dunder all inspection to be only available if __all__ is present
 - [ ] feat: Replace expected with actual test outcome
@@ -46,6 +49,7 @@
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Implement abstract methods in child classes, starting from abstract method
 - [x] feat: Make argument mandatory
 - [x] feat: Reload plugin without restart
 - [x] fix: Populate: need to import leaf node types
