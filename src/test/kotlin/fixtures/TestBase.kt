@@ -22,7 +22,7 @@ abstract class TestBase : MyPlatformTestCase() {
                 enableRestoreSourceRootPrefix = true,
                 enableRelativeImportPreference = true,
                 enableDictAccessIntention = true,
-                enableMakePublicIntention = true,
+                enableChangeVisibilityIntention = true,
                 enableIntroduceParameterObjectIntention = true,
                 enableDataclassMissingInspection = true,
                 enablePrivateModuleImportInspection = true,

@@ -33,7 +33,7 @@ abstract class PyToggleVisibilityIntention : IntentionAction, HighPriorityAction
     override fun startInWriteAction(): Boolean = false
 
     override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
-        if (!PluginSettingsState.instance().state.enableMakePublicIntention) return false
+        if (!PluginSettingsState.instance().state.enableChangeVisibilityIntention) return false
         val symbol = findTargetSymbol(editor, file) ?: return false
         val name = symbol.name ?: return false
         if (isDunder(name)) return false

@@ -75,17 +75,6 @@
             <category>Visibility</category>
         </intentionAction>
 
-        <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.visibility.PyMakePublicIntention
-            </className>
-            <category>Visibility</category>
-        </intentionAction>
-
-        <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.visibility.PyMakePrivateIntention
-            </className>
-            <category>Visibility</category>
-        </intentionAction>
 
         <intentionAction>
             <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.dictAccess.PyDictAccessIntention</className>

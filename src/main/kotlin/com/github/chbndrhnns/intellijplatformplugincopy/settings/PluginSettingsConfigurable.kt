@@ -43,8 +43,8 @@ class PluginSettingsConfigurable : BoundConfigurable("DDD Toolkit"), SearchableC
                         .bindSelected(settings::enableDictAccessIntention)
                 }
                 row {
-                    checkBox("Enable ‘Make public/private’ intentions")
-                        .bindSelected(settings::enableMakePublicIntention)
+                    checkBox("Enable ‘Change visibility’ intention")
+                        .bindSelected(settings::enableChangeVisibilityIntention)
                 }
                 row {
                     checkBox("Enable ‘Introduce parameter object’ intention")
