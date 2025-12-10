@@ -21,7 +21,7 @@ class ImplementAbstractMethodInChildClassesIntentionTest : TestBase() {
         )
         val action = myFixture.findSingleIntention("Implement abstract method in child classes")
         myFixture.launchAction(action)
-        
+
         myFixture.checkResult(
             """
             import abc

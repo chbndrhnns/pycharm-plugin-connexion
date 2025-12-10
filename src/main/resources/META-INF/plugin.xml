@@ -181,6 +181,16 @@
                 level="WARNING"
                 implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyDataclassMissingInspection"/>
 
+        <localInspection
+                language="Python"
+                shortName="PyAbstractMethodNotImplementedInChildInspection"
+                displayName="Abstract method not implemented in child classes"
+                groupPath="Python"
+                groupName="Python"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyAbstractMethodNotImplementedInChildInspection"/>
+
         <usageFilteringRuleProvider
                 implementation="com.github.chbndrhnns.intellijplatformplugincopy.usages.PyTypeAnnotationFilteringRuleProvider"/>
 

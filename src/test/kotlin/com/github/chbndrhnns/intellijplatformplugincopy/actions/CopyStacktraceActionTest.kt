@@ -14,54 +14,54 @@ class CopyStacktraceActionTest : TestBase() {
     fun testCopyStacktraceFromFailedTest() {
         val proxy = FakeSMTestProxy("test_fail", false, null)
         proxy.setTestFailed("Error message", "Stacktrace line 1\nStacktrace line 2", true)
-        
+
         val node = DefaultMutableTreeNode(proxy)
-        
+
         val result = mutableListOf<String>()
         CopyStacktraceAction().collect(node, result, project)
-        
+
         assertEquals(1, result.size)
         // SMTestProxy.getStacktrace() returns stacktrace.
         assertEquals("Stacktrace line 1\nStacktrace line 2", result[0])
     }
-    
+
     fun testCopyStacktraceFromPassedTest() {
         val proxy = FakeSMTestProxy("test_pass", false, null)
         proxy.setFinished()
-        
+
         val node = DefaultMutableTreeNode(proxy)
-        
+
         val result = mutableListOf<String>()
         CopyStacktraceAction().collect(node, result, project)
-        
+
         assertEquals(0, result.size)
     }
 
     fun testCopyStacktraceMultiple() {
-         val rootProxy = FakeSMTestProxy("Root", true, null)
-         val rootNode = DefaultMutableTreeNode(rootProxy)
-         
-         val fail1 = FakeSMTestProxy("fail1", false, null)
-         fail1.setTestFailed("Msg1", "Trace1", true)
-         val fail1Node = DefaultMutableTreeNode(fail1)
-         rootNode.add(fail1Node)
-         
-         val pass1 = FakeSMTestProxy("pass1", false, null)
-         pass1.setFinished()
-         val pass1Node = DefaultMutableTreeNode(pass1)
-         rootNode.add(pass1Node)
+        val rootProxy = FakeSMTestProxy("Root", true, null)
+        val rootNode = DefaultMutableTreeNode(rootProxy)
 
-         val fail2 = FakeSMTestProxy("fail2", false, null)
-         fail2.setTestFailed("Msg2", "Trace2", true)
-         val fail2Node = DefaultMutableTreeNode(fail2)
-         rootNode.add(fail2Node)
-         
-         val result = mutableListOf<String>()
-         CopyStacktraceAction().collect(rootNode, result, project)
-         
-         assertEquals(2, result.size)
-         assertEquals("Trace1", result[0])
-         assertEquals("Trace2", result[1])
+        val fail1 = FakeSMTestProxy("fail1", false, null)
+        fail1.setTestFailed("Msg1", "Trace1", true)
+        val fail1Node = DefaultMutableTreeNode(fail1)
+        rootNode.add(fail1Node)
+
+        val pass1 = FakeSMTestProxy("pass1", false, null)
+        pass1.setFinished()
+        val pass1Node = DefaultMutableTreeNode(pass1)
+        rootNode.add(pass1Node)
+
+        val fail2 = FakeSMTestProxy("fail2", false, null)
+        fail2.setTestFailed("Msg2", "Trace2", true)
+        val fail2Node = DefaultMutableTreeNode(fail2)
+        rootNode.add(fail2Node)
+
+        val result = mutableListOf<String>()
+        CopyStacktraceAction().collect(rootNode, result, project)
+
+        assertEquals(2, result.size)
+        assertEquals("Trace1", result[0])
+        assertEquals("Trace2", result[1])
     }
 
     private class FakeSMTestProxy(
