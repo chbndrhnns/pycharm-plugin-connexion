@@ -43,10 +43,9 @@
 
 ## In Progress Tasks
 
-- [ ] fix: Suggests Coroutine for async methods after return statement
-- [ ] feat: Check which parts are not toggleable in settings so far
+- [ ] refactor: `if (fn.isAsync && returnType is PyCollectionType) {`
+- [-] feat: Check which parts are not toggleable in settings so far
 - [ ] feat: Add __slots__ = () when introducing custom type for str
-- [-] feat: In assignments or calls, offer the annotated return types first in the suggestions
 - [ ] feat: Show red bubble if introduce parameter object is not available
 - [-] feat: Configure dunder all inspection to be only available if __all__ is present
 - [ ] feat: Replace expected with actual test outcome
@@ -54,6 +53,8 @@
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Suggests Coroutine for async methods after return statement
+- [x] feat: In assignments or calls, offer the annotated return types first in the suggestions
 - [x] feat: When typing "return", offer the annotated return types first in the suggestions
 - [x] feat: Add inspection that renders a problem in the base class if methods are missing in child classes
 - [x] feat: Implement abstract methods in child classes, starting from abstract method
