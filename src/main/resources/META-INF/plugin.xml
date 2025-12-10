@@ -80,6 +80,11 @@
             <category>Type hint</category>
         </intentionAction>
 
+        <intentionAction>
+            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.optional.MakeParameterMandatoryIntention</className>
+            <category>Type hint</category>
+        </intentionAction>
+
 
         <intentionAction>
             <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.dictAccess.PyDictAccessIntention</className>

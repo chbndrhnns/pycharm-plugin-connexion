@@ -422,3 +422,11 @@
     "NEW INSTRUCTION": "WHEN registering CopyBlockWithDependenciesAction THEN add only to EditorPopupMenu Copy Special group, not TestTreePopupMenu"
 }
 
+[2025-12-10 16:40] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "call site fix-up",
+    "EXPECTATION": "When proceeding despite missing arguments, update each call site by adding a keyword placeholder for the now-mandatory parameter.",
+    "NEW INSTRUCTION": "WHEN user confirms despite missing call arguments THEN insert 'parameter_name=...' at each affected call site"
+}
+

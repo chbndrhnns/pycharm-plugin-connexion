@@ -1,13 +1,3 @@
-[2025-12-08 22:46] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid context",
-    "TOOL": "-",
-    "ERROR": "PSI write during preview triggered cancellation handler failure",
-    "ROOT CAUSE": "CustomTypeGenerator.insertClass performed a real PSI modification during intention preview, causing documentChanged and BackgroundHighlighter cancellation to throw.",
-    "PROJECT NOTE": "Ensure all PSI edits in IntroduceCustomTypeFromStdlibIntention preview path run inside IntentionPreviewUtils.write and operate on the preview PSI, not the live document.",
-    "NEW INSTRUCTION": "WHEN generating intention preview THEN perform all PSI edits inside IntentionPreviewUtils.write"
-}
-
 [2025-12-08 22:47] - Updated by Junie - Error analysis
 {
     "TYPE": "invalid context",
@@ -787,3 +777,24 @@
     "PROJECT NOTE": "PopulateArgumentsService uses PyValueGenerator.GenerationResult.imports to feed PyImportService; ensure alias-like leaves (e.g., NewType, type aliases) contribute their PsiNamedElement so imports are added.",
     "NEW INSTRUCTION": "WHEN generating alias-like leaf value THEN add resolved symbol to GenerationResult.imports"
 }
+
+[2025-12-10 16:13] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid API",
+    "TOOL": "search_replace",
+    "ERROR": "Deprecated AnActionEvent.createFromDataContext used",
+    "ROOT CAUSE": "The test constructs AnActionEvent via a deprecated factory that is marked for removal.",
+    "PROJECT NOTE": "In tests, prefer com.intellij.testFramework.TestActionEvent or AnActionEvent.createFromAnAction(action, place, presentation, dataContext) instead of createFromDataContext.",
+    "NEW INSTRUCTION": "WHEN creating AnActionEvent in tests THEN use TestActionEvent or createFromAnAction"
+}
+
+[2025-12-10 16:16] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "search_replace",
+    "ERROR": "Deprecated AnActionEvent.createFromDataContext used",
+    "ROOT CAUSE": "The test constructs AnActionEvent via a deprecated factory method slated for removal.",
+    "PROJECT NOTE": "In IntelliJ tests, prefer AnActionEvent.createFromAnAction(action, place, presentation, dataContext) or TestActionEvent over deprecated createFromDataContext.",
+    "NEW INSTRUCTION": "WHEN creating AnActionEvent in tests THEN use createFromAnAction with action.templatePresentation"
+}
+

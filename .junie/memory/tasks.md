@@ -1,33 +1,3 @@
-[2025-12-03 14:49] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "edit tests,add logging,rework change",
-    "MISSING STEPS": "run test,inspect diff",
-    "BOTTLENECK": "Edits were made before verifying the exact whitespace mismatch.",
-    "PROJECT NOTE": "Expected Python test outputs are newline-sensitive; trimIndent removes indentation but not trailing newline.",
-    "NEW INSTRUCTION": "WHEN whitespace-related test failure is suspected THEN run the specific test and inspect actual output"
-}
-
-[2025-12-03 14:57] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "scan project, run build",
-    "BOTTLENECK": "Signature changes were made without updating all internal callers, causing semantic errors.",
-    "PROJECT NOTE": "In IntelliJ plugins, run searches in background and confine edits to write actions.",
-    "NEW INSTRUCTION": "WHEN changing a function or method signature THEN search_project for callers and update them first"
-}
-
-[2025-12-03 19:30] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "create new intention, add debug test",
-    "MISSING STEPS": "scan project, update existing intention, add tests, run tests",
-    "BOTTLENECK": "Misinterpreted feature as needing a new intention instead of skipping the chooser.",
-    "PROJECT NOTE": "In PopulateArgumentsIntention, if computed options collapse to one, call service directly instead of popupHost.showChooser.",
-    "NEW INSTRUCTION": "WHEN populate options resolve to single choice THEN execute that option directly and skip popup chooser"
-}
-
 [2025-12-03 21:16] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -896,4 +866,34 @@
     "BOTTLENECK": "Broad signature change to generateValue without updating all callers",
     "PROJECT NOTE": "PyValueGenerator is likely used widely; prefer keeping its API stable and returning imports via GenerationResult for PopulateArgumentsService to handle.",
     "NEW INSTRUCTION": "WHEN planning to change a widely-used function signature THEN search callers and update them first"
+}
+
+[2025-12-10 16:12] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "run plugin verification, add require-restart flag",
+    "MISSING STEPS": "scan project",
+    "BOTTLENECK": "Initial reliance on verification and non-existent attribute delayed targeting the real cause.",
+    "PROJECT NOTE": "Prefer declarative <projectListeners> over programmatic messageBus listeners to stay dynamic.",
+    "NEW INSTRUCTION": "WHEN code registers listeners via message bus THEN move them to plugin.xml projectListeners"
+}
+
+[2025-12-10 16:16] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "handle intention preview,restrict enablement to target language/file type",
+    "BOTTLENECK": "Validation feedback relied on headless exception semantics in tests.",
+    "PROJECT NOTE": "In tests, assertThrows RefactoringErrorHintException instead of catching RuntimeException; also restrict enablement to Python files to avoid noisy UI in non-Python editors.",
+    "NEW INSTRUCTION": "WHEN intention preview mode is active THEN return early without side effects or UI hints"
+}
+
+[2025-12-10 16:33] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "register intention, run tests, align availability checks",
+    "BOTTLENECK": "Intention likely undiscoverable due to missing plugin.xml registration.",
+    "PROJECT NOTE": "Mirror MakeParameterOptionalIntention availability logic; ensure plugin.xml registers the new intention for tests to find it by text.",
+    "NEW INSTRUCTION": "WHEN tests for a new intention are added THEN register the intention in plugin.xml"
 }
