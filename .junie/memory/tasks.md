@@ -1,33 +1,3 @@
-[2025-12-03 11:57] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "ask user, prototype UI",
-    "BOTTLENECK": "Uncertain UI modality between floating toolbar and list popup.",
-    "PROJECT NOTE": "Existing PopupHost/JbPopupHost can be reused for the options selector.",
-    "NEW INSTRUCTION": "WHEN UI choice impacts implementation path THEN ask user to confirm floating toolbar or list popup preference"
-}
-
-[2025-12-03 12:10] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "design floating toolbar",
-    "MISSING STEPS": "implement JbPopupHost options popup, wire popup into unified intention invoke, update plugin.xml to register unified intention, deprecate old intentions, add UI tests with FakePopupHost, run tests",
-    "BOTTLENECK": "UI approach ambiguity delayed concrete JbPopupHost implementation.",
-    "PROJECT NOTE": "Repo already uses a PopupHost/JbPopupHost pattern; reuse that abstraction.",
-    "NEW INSTRUCTION": "WHEN implementing options UI for unified intention THEN use JbPopupHost list popup"
-}
-
-[2025-12-03 13:25] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "add tests, run tests, verify plugin.xml",
-    "BOTTLENECK": "No validation via tests and no verification of configuration registration.",
-    "PROJECT NOTE": "Settings infrastructure exists; ensure the Configurable remains registered in plugin.xml.",
-    "NEW INSTRUCTION": "WHEN adding a settings-controlled feature THEN add unit tests for enabled/disabled behavior and run them"
-}
-
 [2025-12-03 13:31] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -906,4 +876,24 @@
     "BOTTLENECK": "The plan solved a different feature instead of fixing the warning.",
     "PROJECT NOTE": "For IntelliJ actions, avoid presentation changes in constructors; set text in plugin.xml or in update().",
     "NEW INSTRUCTION": "WHEN inspection flags constructor presentation usage THEN move presentation setup to update or plugin.xml"
+}
+
+[2025-12-10 10:41] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "repeated failed file creation via multiline bash,changing working directory mid-edit",
+    "MISSING STEPS": "create plan,register intention,add tests,add intentionDescriptions,run tests,verify availability parity",
+    "BOTTLENECK": "Multiline bash file creation failed and wrong working directory disrupted edits.",
+    "PROJECT NOTE": "Reuse existing PopupHost/FakePopupHost and VisibilityIntentionsTest patterns; register intention and add description resources.",
+    "NEW INSTRUCTION": "WHEN adding or updating an intention THEN register in plugin.xml and add intentionDescriptions and tests"
+}
+
+[2025-12-10 10:45] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "run tests, update settings, document deprecation plan",
+    "BOTTLENECK": "Availability is gated by a possibly misnamed setting affecting all visibility intentions.",
+    "PROJECT NOTE": "PluginSettingsState.enableMakePublicIntention appears to gate all visibility intentions, including the new Change Visibility.",
+    "NEW INSTRUCTION": "WHEN visibility intentions share an unrelated feature flag THEN introduce dedicated setting and update availability checks"
 }

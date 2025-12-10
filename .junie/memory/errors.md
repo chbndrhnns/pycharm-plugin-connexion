@@ -1,43 +1,3 @@
-[2025-12-08 18:03] - Updated by Junie - Error analysis
-{
-    "TYPE": "path error",
-    "TOOL": "open_entire_file",
-    "ERROR": "Path is a directory, not a file",
-    "ROOT CAUSE": "open_entire_file was called with a directory path (docs/dict-access) instead of a file path.",
-    "PROJECT NOTE": "Under docs/, some entries are directories; select a concrete file (e.g., README.md) or list contents first.",
-    "NEW INSTRUCTION": "WHEN open_entire_file reports 'Path is a directory' THEN list directory contents and open a specific file"
-}
-
-[2025-12-08 18:05] - Updated by Junie - Error analysis
-{
-    "TYPE": "path error",
-    "TOOL": "open_entire_file",
-    "ERROR": "Path is a directory, not a file",
-    "ROOT CAUSE": "The tool was given a directory path (docs/dict-access) instead of a file path.",
-    "PROJECT NOTE": "In this repo, docs/ and src/test/testData/ contain directories; open_entire_file requires a specific file (e.g., README.md or *.py), not a folder.",
-    "NEW INSTRUCTION": "WHEN open_entire_file path points to a directory THEN select and open a specific file within"
-}
-
-[2025-12-08 18:05] - Updated by Junie - Error analysis
-{
-    "TYPE": "path error",
-    "TOOL": "open_entire_file",
-    "ERROR": "Attempted to open a directory as a file",
-    "ROOT CAUSE": "Called open_entire_file with a directory path (docs/dict-access) instead of a file path.",
-    "PROJECT NOTE": "To inspect a directory, first list or search for files (e.g., via search_project) under it, then open specific files.",
-    "NEW INSTRUCTION": "WHEN path points to a directory THEN list or search files and open a specific file"
-}
-
-[2025-12-08 18:06] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "open_entire_file",
-    "ERROR": "Path is a directory, not a file",
-    "ROOT CAUSE": "A directory path was passed to a tool that requires a file path.",
-    "PROJECT NOTE": "docs subfolders may contain multiple files; identify and open a specific file (e.g., README.md) rather than the folder.",
-    "NEW INSTRUCTION": "WHEN open_entire_file target is a directory THEN choose and open a specific file within it"
-}
-
 [2025-12-08 18:13] - Updated by Junie - Error analysis
 {
     "TYPE": "path error",
@@ -806,4 +766,44 @@
     "ROOT CAUSE": "processResult parameter is a Kotlin List, so in-place sort() is unavailable; use sorted().",
     "PROJECT NOTE": "AbstractCopyTestNodeAction.processResult takes List<String>; overrides get an immutable List and must return a new sorted list.",
     "NEW INSTRUCTION": "WHEN overriding processResult receives List THEN return result.sorted() instead of calling sort()"
+}
+
+[2025-12-10 10:34] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "bash",
+    "ERROR": "Command contains unescaped newlines; multiline commands forbidden",
+    "ROOT CAUSE": "The bash tool disallows multi-line commands, but the submitted command included newline characters.",
+    "PROJECT NOTE": "To add or edit files in this repo, prefer apply_patch/create; if using bash, emit content via a single-line printf with \\n escapes or base64.",
+    "NEW INSTRUCTION": "WHEN bash command includes newlines THEN rewrite as a single line using escapes or encoding"
+}
+
+[2025-12-10 10:35] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "bash",
+    "ERROR": "Newlines in command are not permitted",
+    "ROOT CAUSE": "The bash tool was given multi-line commands with literal newlines, which it rejects.",
+    "PROJECT NOTE": "Write files using repo-relative paths from the project root (e.g., src/main/kotlin/...), ensuring the working directory is the project root before redirecting output.",
+    "NEW INSTRUCTION": "WHEN a bash command contains literal newlines THEN use a single-line printf with escaped \\n"
+}
+
+[2025-12-10 10:38] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "bash",
+    "ERROR": "Multi-line bash command rejected",
+    "ROOT CAUSE": "The bash tool disallows unescaped newline characters within a single command.",
+    "PROJECT NOTE": "Ensure you are in the project root (/.../intellij-platform-plugin-copy) before writing files; compose file contents via a single-line printf with \\n escapes.",
+    "NEW INSTRUCTION": "WHEN bash command contains newlines THEN replace with single-line printf using \\n escapes"
+}
+
+[2025-12-10 10:41] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "bash",
+    "ERROR": "Newlines in bash command are prohibited",
+    "ROOT CAUSE": "A multi-line/bash-heredoc command with unescaped newlines was sent to a tool that forbids newline characters.",
+    "PROJECT NOTE": "Work from the project root (/Users/cleancoder/dev/scratch/intellij-platform-plugin-copy) when creating files under src/main; use a single-line printf with \\n escapes.",
+    "NEW INSTRUCTION": "WHEN bash command includes unescaped newlines THEN use a single-line printf with \\n escapes"
 }

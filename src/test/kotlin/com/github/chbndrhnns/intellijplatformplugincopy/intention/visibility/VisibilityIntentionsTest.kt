@@ -1,12 +1,26 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.visibility
 
+import fixtures.FakePopupHost
 import fixtures.TestBase
 import fixtures.assertIntentionNotAvailable
 import fixtures.doIntentionTest
 
 class VisibilityIntentionsTest : TestBase() {
 
+    private val fakePopupHost = FakePopupHost()
+
+    override fun setUp() {
+        super.setUp()
+        ChangeVisibilityIntentionHooks.popupHost = fakePopupHost
+    }
+
+    override fun tearDown() {
+        ChangeVisibilityIntentionHooks.popupHost = null
+        super.tearDown()
+    }
+
     fun testMakePublic_OnClass_RemovesLeadingUnderscore() {
+        fakePopupHost.selectedIndex = 0 // Public
         myFixture.doIntentionTest(
             "a.py",
             """
@@ -17,7 +31,7 @@ class VisibilityIntentionsTest : TestBase() {
             class Internal:
                 pass
             """,
-            "Make public"
+            "Change visibility"
         )
     }
 
@@ -29,11 +43,12 @@ class VisibilityIntentionsTest : TestBase() {
                 def __in<caret>it__(self):
                     pass
             """,
-            "Make public"
+            "Change visibility"
         )
     }
 
     fun testMakePublic_OnMangledMethod_Demangles() {
+        fakePopupHost.selectedIndex = 0 // Public
         myFixture.doIntentionTest(
             "a.py",
             """
@@ -46,11 +61,12 @@ class VisibilityIntentionsTest : TestBase() {
                 def mangled(self):
                     pass
             """,
-            "Make public"
+            "Change visibility"
         )
     }
 
     fun testMakePublic_OnTopLevelFunction_RemovesLeadingUnderscore() {
+        fakePopupHost.selectedIndex = 0 // Public
         myFixture.doIntentionTest(
             "a.py",
             """
@@ -61,11 +77,12 @@ class VisibilityIntentionsTest : TestBase() {
             def internal():
                 pass
             """,
-            "Make public"
+            "Change visibility"
         )
     }
 
     fun testMakePrivate_OnClass_AddsSingleUnderscore() {
+        fakePopupHost.selectedIndex = 1 // Private
         myFixture.doIntentionTest(
             "a.py",
             """
@@ -76,22 +93,29 @@ class VisibilityIntentionsTest : TestBase() {
             class _Public:
                 pass
             """,
-            "Make private"
+            "Change visibility"
         )
     }
 
-    fun testMakePrivate_OnAlreadyPrivate_NotAvailable() {
-        myFixture.assertIntentionNotAvailable(
+    fun testMakePrivate_OnAlreadyPrivate_NoChange() {
+        fakePopupHost.selectedIndex = 1 // Private
+        // Intention is available, but selecting Private should result in no change
+        myFixture.doIntentionTest(
             "a.py",
             """
             def _in<caret>ternal():
                 pass
             """,
-            "Make private"
+            """
+            def _internal():
+                pass
+            """,
+            "Change visibility"
         )
     }
 
     fun testMakePrivate_OnTopLevelFunction_AddsSingleUnderscore() {
+        fakePopupHost.selectedIndex = 1 // Private
         myFixture.doIntentionTest(
             "a.py",
             """
@@ -102,11 +126,12 @@ class VisibilityIntentionsTest : TestBase() {
             def _public():
                 pass
             """,
-            "Make private"
+            "Change visibility"
         )
     }
 
     fun testMakePrivate_OnMethod_AddsSingleUnderscore() {
+        fakePopupHost.selectedIndex = 1 // Private
         myFixture.doIntentionTest(
             "a.py",
             """
@@ -119,7 +144,7 @@ class VisibilityIntentionsTest : TestBase() {
                 def _public(self):
                     pass
             """,
-            "Make private"
+            "Change visibility"
         )
     }
 
@@ -131,7 +156,7 @@ class VisibilityIntentionsTest : TestBase() {
                 def __ca<caret>ll__(self):
                     pass
             """,
-            "Make private"
+            "Change visibility"
         )
     }
 
@@ -143,7 +168,7 @@ class VisibilityIntentionsTest : TestBase() {
                 def public(self):
                     p<caret>ass
             """,
-            "Make private"
+            "Change visibility"
         )
     }
 
@@ -155,7 +180,7 @@ class VisibilityIntentionsTest : TestBase() {
                 def _private(self):
                     p<caret>ass
             """,
-            "Make public"
+            "Change visibility"
         )
     }
 }
