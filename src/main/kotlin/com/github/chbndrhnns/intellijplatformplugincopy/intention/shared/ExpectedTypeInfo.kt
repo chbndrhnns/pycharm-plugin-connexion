@@ -227,7 +227,18 @@ internal object ExpectedTypeInfo {
             val retAnnExpr = fn?.annotation?.value
             if (retAnnExpr is PyExpression) {
                 val named = (retAnnExpr as? PyReferenceExpression)?.reference?.resolve() as? PsiNamedElement
-                val returnType = fn.let { ctx.getReturnType(it) }
+                var returnType = fn.let { ctx.getReturnType(it) }
+
+                if (fn.isAsync && returnType is PyCollectionType) {
+                    val qName = returnType.classQName
+                    if (qName == "typing.Coroutine" || qName == "collections.abc.Coroutine") {
+                        val args = returnType.elementTypes
+                        if (args.size >= 3) {
+                            returnType = args[2]
+                        }
+                    }
+                }
+
                 return TypeInfo(returnType, retAnnExpr, named)
             }
         }
