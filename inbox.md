@@ -40,7 +40,6 @@
 
 ## In Progress Tasks
 
-- [-] refactor: `MakeParameterMandatoryIntention`
 - [-] refactor: `if (!aliasName.isNullOrBlank() && !PyBuiltinNames.isBuiltin(aliasName)) {`
 - [-] feat: Check which parts are not toggleable in settings so far
 - [ ] feat: Add __slots__ = () when introducing custom type for str
@@ -51,6 +50,7 @@
 
 ## Completed Tasks (newest first)
 
+- [x] refactor: `MakeParameterMandatoryIntention`
 - [x] refactor: `if (fn.isAsync && returnType is PyCollectionType) {`
 - [x] feat: Add quickfix to skip/unskip test
 - [x] fix: Suggests Coroutine for async methods after return statement
