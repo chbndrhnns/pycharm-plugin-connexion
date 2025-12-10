@@ -9,6 +9,7 @@
 
 ## Pending Features
 
+- [ ] feat: Make field mandatory, check call sites
 - [ ] feat: Turn dict into dataclass/pydantic model
 - [ ] feat: search everywhere: search for partial matches in test names
 - [ ] feat: copy element with dependencies should generate a preview about the direct copy (not including dependencies)
@@ -30,6 +31,8 @@
 
 ## In Progress Tasks
 
+- [-] feat: Reload plugin without restart
+- [-] feat: Show red bubble if introduce parameter object is not available
 - [-] feat: Configure dunder all inspection to be only available if __all__ is present
 - [ ] feat: Replace expected with actual test outcome
 - [ ] feat: Jump from test to test node
