@@ -1,13 +1,3 @@
-[2025-12-03 14:13] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "reformat, run tests",
-    "BOTTLENECK": "Dataclass insertion used a non-sibling anchor causing PSI addBefore assertion.",
-    "PROJECT NOTE": "When inserting into PyFile, anchor must be a direct child of the file.",
-    "NEW INSTRUCTION": "WHEN inserting before a method inside a class THEN ascend to file-level anchor and insert"
-}
-
 [2025-12-03 14:49] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -896,4 +886,14 @@
     "BOTTLENECK": "Mixed group added to both editor and test tree caused wrong menu placement.",
     "PROJECT NOTE": "Split Copy Special into two groups: editor-only vs test-tree-only to avoid cross-listing.",
     "NEW INSTRUCTION": "WHEN adding editor-only action THEN register only in EditorPopupMenu, not TestTreePopupMenu"
+}
+
+[2025-12-10 16:01] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "modify PopulateArgumentsService",
+    "MISSING STEPS": "locate call sites,adjust function signature usage,run build",
+    "BOTTLENECK": "Broad signature change to generateValue without updating all callers",
+    "PROJECT NOTE": "PyValueGenerator is likely used widely; prefer keeping its API stable and returning imports via GenerationResult for PopulateArgumentsService to handle.",
+    "NEW INSTRUCTION": "WHEN planning to change a widely-used function signature THEN search callers and update them first"
 }

@@ -3,11 +3,14 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.populate
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.isDataclassClass
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyBuiltinNames
 import com.intellij.psi.PsiNamedElement
+import com.intellij.psi.util.QualifiedName
 import com.jetbrains.python.PyNames
+import com.jetbrains.python.codeInsight.controlflow.ScopeOwner
 import com.jetbrains.python.psi.LanguageLevel
 import com.jetbrains.python.psi.PyCallExpression
 import com.jetbrains.python.psi.PyClass
 import com.jetbrains.python.psi.PyElementGenerator
+import com.jetbrains.python.psi.resolve.PyResolveUtil
 import com.jetbrains.python.psi.types.*
 
 /**
@@ -22,15 +25,16 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
         context: TypeEvalContext,
         depth: Int,
         generator: PyElementGenerator,
-        languageLevel: LanguageLevel
+        languageLevel: LanguageLevel,
+        scopeOwner: ScopeOwner
     ): GenerationResult {
         if (depth > MAX_RECURSION_DEPTH || type == null) return defaultResult()
 
         return when (type) {
-            is PyUnionType -> generateUnionValue(type, context, depth, generator, languageLevel)
-            is PyCollectionType -> generateCollectionValue(type, context, depth, generator, languageLevel)
-            is PyClassType -> generateClassTypeValue(type, context, depth, generator, languageLevel)
-            is PyClassLikeType -> generateAliasLikeValue(type)
+            is PyUnionType -> generateUnionValue(type, context, depth, generator, languageLevel, scopeOwner)
+            is PyCollectionType -> generateCollectionValue(type, context, depth, generator, languageLevel, scopeOwner)
+            is PyClassType -> generateClassTypeValue(type, context, depth, generator, languageLevel, scopeOwner)
+            is PyClassLikeType -> generateAliasLikeValue(type, context, scopeOwner)
             else -> defaultResult()
         }
     }
@@ -40,14 +44,15 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
         context: TypeEvalContext,
         depth: Int,
         generator: PyElementGenerator,
-        languageLevel: LanguageLevel
+        languageLevel: LanguageLevel,
+        scopeOwner: ScopeOwner
     ): GenerationResult {
         val pyClass = type.pyClass
         return if (isDataclassClass(pyClass)) {
-            generateDataclassValue(pyClass, context, depth, generator, languageLevel)
+            generateDataclassValue(pyClass, context, depth, generator, languageLevel, scopeOwner)
         } else {
             // Some providers represent typing.NewType/aliases as PyClassType but without a backing PyClass.
-            generateAliasFromClassType(type) ?: defaultResult()
+            generateAliasFromClassType(type, context, scopeOwner) ?: defaultResult()
         }
     }
 
@@ -56,12 +61,13 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
         context: TypeEvalContext,
         depth: Int,
         generator: PyElementGenerator,
-        languageLevel: LanguageLevel
+        languageLevel: LanguageLevel,
+        scopeOwner: ScopeOwner
     ): GenerationResult {
         val normalized = type.name?.let(::normalizeName) ?: return defaultResult()
         val elemType = type.elementTypes.firstOrNull() ?: return defaultResult()
 
-        val elemResult = generateValue(elemType, context, depth + 1, generator, languageLevel)
+        val elemResult = generateValue(elemType, context, depth + 1, generator, languageLevel, scopeOwner)
         val text = when (normalized) {
             "list" -> "[${elemResult.text}]"
             PyNames.SET -> "{${elemResult.text}}"
@@ -75,14 +81,15 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
         context: TypeEvalContext,
         depth: Int,
         generator: PyElementGenerator,
-        languageLevel: LanguageLevel
+        languageLevel: LanguageLevel,
+        scopeOwner: ScopeOwner
     ): GenerationResult {
         // Prefer a dataclass alternative inside a union
         val member = type.members.firstOrNull { m ->
             (m as? PyClassType)?.pyClass?.let { isDataclassClass(it) } == true
         } ?: return defaultResult()
 
-        return generateValue(member, context, depth, generator, languageLevel)
+        return generateValue(member, context, depth, generator, languageLevel, scopeOwner)
     }
 
     private fun generateDataclassValue(
@@ -90,7 +97,8 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
         context: TypeEvalContext,
         depth: Int,
         generator: PyElementGenerator,
-        languageLevel: LanguageLevel
+        languageLevel: LanguageLevel,
+        scopeOwner: ScopeOwner
     ): GenerationResult {
         val className = pyClass.name ?: return defaultResult()
         val call = generator.createExpressionFromText(languageLevel, "$className()") as? PyCallExpression
@@ -100,7 +108,7 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
         val requiredImports = linkedSetOf<PsiNamedElement>(pyClass)
 
         for (field in fieldExtractor.extractDataclassFields(pyClass, context)) {
-            val fieldResult = generateValue(field.type, context, depth + 1, generator, languageLevel)
+            val fieldResult = generateValue(field.type, context, depth + 1, generator, languageLevel, scopeOwner)
             var valueText = fieldResult.text
 
             // If a leaf fell back to ellipsis and the annotation is alias-like (a resolvable symbol),
@@ -126,24 +134,44 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
      * generate a constructor-like call `Name(...)` so leaves are wrapped with an instance placeholder.
      * Falls back to `...` for builtin types and unknown names.
      */
-    private fun generateAliasLikeValue(type: PyClassLikeType): GenerationResult {
+    private fun generateAliasLikeValue(
+        type: PyClassLikeType,
+        context: TypeEvalContext,
+        scopeOwner: ScopeOwner
+    ): GenerationResult {
         val name = type.name ?: type.classQName?.substringAfterLast('.')
-        return wrapAliasNameOrDefault(name)
+        val qName = type.classQName
+        val resolved = if (qName != null) resolveInScope(qName, scopeOwner, context) else null
+        return wrapAliasNameOrDefault(name, resolved)
     }
 
-    private fun generateAliasFromClassType(type: PyClassType): GenerationResult? {
+    private fun generateAliasFromClassType(
+        type: PyClassType,
+        context: TypeEvalContext,
+        scopeOwner: ScopeOwner
+    ): GenerationResult? {
         val name = type.name ?: type.classQName?.substringAfterLast('.') ?: return null
         val pyClass = type.pyClass
         // If there is a real class and its simple name equals the alias name, do not treat as alias.
         if (pyClass?.name == name) return null
-        return wrapAliasNameOrDefault(name).takeUnless { it === DEFAULT_RESULT_OBJ }
+
+        val qName = type.classQName
+        val resolved = if (qName != null) resolveInScope(qName, scopeOwner, context) else null
+
+        return wrapAliasNameOrDefault(name, resolved).takeUnless { it === DEFAULT_RESULT_OBJ }
     }
 
-    private fun wrapAliasNameOrDefault(name: String?): GenerationResult {
+    private fun wrapAliasNameOrDefault(name: String?, element: PsiNamedElement? = null): GenerationResult {
         val simple = name?.takeIf { it.isNotBlank() } ?: return defaultResult()
         if (PyBuiltinNames.isBuiltin(simple)) return defaultResult()
-        // Could be further refined by checking scope/qualification and adding imports if needed.
-        return GenerationResult("$simple(...)", emptySet())
+        val imports = if (element != null) setOf(element) else emptySet()
+        return GenerationResult("$simple(...)", imports)
+    }
+
+    private fun resolveInScope(qName: String, scopeOwner: ScopeOwner, context: TypeEvalContext): PsiNamedElement? {
+        val qualifiedName = QualifiedName.fromDottedString(qName)
+        val resolved = PyResolveUtil.resolveQualifiedNameInScope(qualifiedName, scopeOwner, context)
+        return resolved.firstOrNull() as? PsiNamedElement
     }
 
     // --- Utilities -------------------------------------------------------------------------------

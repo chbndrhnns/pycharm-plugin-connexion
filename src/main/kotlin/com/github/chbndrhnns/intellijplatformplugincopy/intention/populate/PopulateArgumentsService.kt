@@ -4,6 +4,7 @@ import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyBuilt
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.PyImportService
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.QualifiedName
 import com.jetbrains.python.codeInsight.controlflow.ControlFlowCache
@@ -120,20 +121,29 @@ class PopulateArgumentsService {
                 if (found) {
                     PyValueGenerator.GenerationResult(name, emptySet())
                 } else {
-                    valueGenerator.generateValue(type, context, 0, generator, languageLevel)
+                    valueGenerator.generateValue(type, context, 0, generator, languageLevel, file)
                 }
             } else {
-                valueGenerator.generateValue(type, context, 0, generator, languageLevel)
+                valueGenerator.generateValue(type, context, 0, generator, languageLevel, file)
             }
 
-            // If we only have a leaf "..." and the dataclass field annotation is an alias
-            // (e.g. NewType), prefer wrapping with that alias at the top level too.
+            // If we only have a leaf "..." or a generated alias, ensure we have the correct import
+            // by looking at the dataclass field annotation (e.g. for NewType).
             var finalResult = result
-            if (finalResult.text == "..." && calleeClass != null) {
+            if (calleeClass != null) {
                 val field = calleeClass.findClassAttribute(name, true, context)
-                val aliasName = (field?.annotation?.value as? PyReferenceExpression)?.name
+                val aliasRef = field?.annotation?.value as? PyReferenceExpression
+                val aliasName = aliasRef?.name
+
                 if (!aliasName.isNullOrBlank() && !PyBuiltinNames.isBuiltin(aliasName)) {
-                    finalResult = PyValueGenerator.GenerationResult("$aliasName(...)", emptySet())
+                    val expectedText = "$aliasName(...)"
+                    if (finalResult.text == "..." || finalResult.text == expectedText) {
+                        val resolved = aliasRef.reference.resolve() as? PsiNamedElement
+                        // If we resolved the alias, and it's missing from imports or we are upgrading from "...", use it.
+                        if (resolved != null && (finalResult.text == "..." || !finalResult.imports.contains(resolved))) {
+                            finalResult = PyValueGenerator.GenerationResult(expectedText, setOf(resolved))
+                        }
+                    }
                 }
             }
 
