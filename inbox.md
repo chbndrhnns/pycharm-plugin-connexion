@@ -2,12 +2,14 @@
 
 ## Pending Issues
 
+- [ ] refactor: `if (!aliasName.isNullOrBlank() && !PyBuiltinNames.isBuiltin(aliasName)) {`
 - [ ] fix: Add pytest nodes to separate view in search everywhere (currently, `pytest` seems not respected)
 - [ ] fix: cancel introduce type rename dialog still keeps it
 - [ ] refactor: How to find if the caret is inside parentheses? `[PopulateArgumentsService.findCallExpression`
 
 ## Pending Features
 
+- [ ] feat: Turn dict into dataclass/pydantic model
 - [ ] feat: search everywhere: search for partial matches in test names
 - [ ] feat: copy element with dependencies should generate a preview about the direct copy (not including dependencies)
 - [ ] When populating arguments, highlight the target function (area) when the popup appears
@@ -28,13 +30,13 @@
 
 ## In Progress Tasks
 
-- [ ] fix: Populate: need to import leaf node types
 - [-] feat: Configure dunder all inspection to be only available if __all__ is present
 - [ ] feat: Replace expected with actual test outcome
 - [ ] feat: Jump from test to test node
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Populate: need to import leaf node types
 - [x] feat: Create settings group
 - [x] feat: Move "copy with dependencies" intention to copy special
 - [x] feat: Add intention: make parameter optional (`arg: str` -> `arg: str | None = None`)
