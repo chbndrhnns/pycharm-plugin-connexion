@@ -4,6 +4,30 @@ import fixtures.TestBase
 
 class ParametrizePytestTestIntentionTest : TestBase() {
 
+    fun testParametrizeTopLevelFunctionNoArgs() {
+        myFixture.configureByText(
+            "test_foo.py",
+            """
+            def test_so<caret>mething():
+                assert True
+            """.trimIndent(),
+        )
+
+        val intention = myFixture.findSingleIntention("Parametrize pytest test")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            import pytest
+
+
+            @pytest.mark.parametrize("arg", [])
+            def test_something(arg):
+                assert True
+        """.trimIndent()
+        )
+    }
+
     fun testParametrizeTopLevelFunction() {
         myFixture.configureByText(
             "test_foo.py",
@@ -22,7 +46,7 @@ class ParametrizePytestTestIntentionTest : TestBase() {
 
 
             @pytest.mark.parametrize("arg", [])
-            def test_something(arg some_fixture):
+            def test_something(arg, some_fixture):
                 assert True
         """.trimIndent()
         )
@@ -48,7 +72,7 @@ class ParametrizePytestTestIntentionTest : TestBase() {
             
             class TestClass:
                 @pytest.mark.parametrize("arg", [])
-                def test_something(arg self, some_fixture):
+                def test_something(self, arg, some_fixture):
                     assert True
         """.trimIndent()
         )
@@ -76,7 +100,7 @@ class ParametrizePytestTestIntentionTest : TestBase() {
             class TestOuter:
                 class Inner:
                     @pytest.mark.parametrize("arg", [])
-                    def test_something(arg self, some_fixture):
+                    def test_something(self, arg, some_fixture):
                         assert True
         """.trimIndent()
         )
@@ -127,9 +151,9 @@ class ParametrizePytestTestIntentionTest : TestBase() {
             """
             import pytest
 
-            
+
             @pytest.mark.parametrize("arg", [])
-            def test_something(arg some_fixture):
+            def test_something(arg, some_fixture):
                 assert True
         """.trimIndent()
         )

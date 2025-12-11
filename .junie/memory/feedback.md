@@ -454,3 +454,11 @@
     "NEW INSTRUCTION": "WHEN caret on function or method name identifier THEN treat as valid target for availability"
 }
 
+[2025-12-11 09:28] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "parametrize intention",
+    "EXPECTATION": "Fix the ParametrizePytestTest intention implementation to satisfy the existing tests; do not modify the tests.",
+    "NEW INSTRUCTION": "WHEN working on ParametrizePytestTest intention THEN fix implementation and leave tests unchanged"
+}
+

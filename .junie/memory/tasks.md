@@ -1,33 +1,3 @@
-[2025-12-04 14:02] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "run tests (unsupported tool)",
-    "MISSING STEPS": "run high-priority test",
-    "BOTTLENECK": "Used an unavailable test tool and skipped the specified test run.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN special instruction names tests to run THEN run Gradle tests via bash and summarize"
-}
-
-[2025-12-04 14:20] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "update plugin.xml, verify action availability",
-    "BOTTLENECK": "Action not registered in RefactoringQuickList group.",
-    "PROJECT NOTE": "Add an <add-to-group group-id=\"RefactoringQuickList\"/> entry for the action in plugin.xml.",
-    "NEW INSTRUCTION": "WHEN plugin.xml lacks RefactoringQuickList registration THEN add add-to-group RefactoringQuickList entry"
-}
-
-[2025-12-04 14:50] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "create alternate test suite",
-    "MISSING STEPS": "scan project, append tests, run tests, fix build",
-    "BOTTLENECK": "Duplicate test file creation led to syntax errors and rework.",
-    "PROJECT NOTE": "A test file with the intended name already exists; Kotlin package declarations must use dots.",
-    "NEW INSTRUCTION": "WHEN file creation fails because file exists THEN open file and append new tests"
-}
-
 [2025-12-04 15:27] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -888,3 +858,12 @@
     "NEW INSTRUCTION": "WHEN tests cover only parameter positions THEN add tests for name and call callee"
 }
 
+[2025-12-11 09:41] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "add debug test",
+    "MISSING STEPS": "scan project, open tests, open implementation, edit code, run tests",
+    "BOTTLENECK": "No implementation changes were made despite clear failing test expectations.",
+    "PROJECT NOTE": "Tests compare transformed file text; inspect ParametrizePytestTestIntentionTest to derive expected edits.",
+    "NEW INSTRUCTION": "WHEN tests fail with FileComparisonFailedError THEN open tests and implementation, patch transformation, rerun suite"
+}

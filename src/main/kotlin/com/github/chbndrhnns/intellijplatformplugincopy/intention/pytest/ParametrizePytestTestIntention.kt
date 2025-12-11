@@ -6,11 +6,12 @@ import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
+import com.jetbrains.python.PyTokenTypes
 import com.jetbrains.python.codeInsight.imports.AddImportHelper
 import com.jetbrains.python.psi.*
+import com.jetbrains.python.psi.impl.PyPsiUtils
 
 class ParametrizePytestTestIntention : IntentionAction, HighPriorityAction {
 
@@ -22,109 +23,88 @@ class ParametrizePytestTestIntention : IntentionAction, HighPriorityAction {
         if (!PluginSettingsState.instance().state.enableParametrizePytestTestIntention) return false
         if (file !is PyFile) return false
 
-        val pyFunction = findEnclosingFunction(file, editor.caretModel.offset) ?: return false
+        val element = file.findElementAt(editor.caretModel.offset) ?: return false
+        val pyFunction = PsiTreeUtil.getParentOfType(element, PyFunction::class.java) ?: return false
 
         val name = pyFunction.name ?: return false
         if (!name.startsWith("test_")) return false
 
-        if (isAlreadyParametrized(pyFunction)) return false
-
-        return true
+        return !isAlreadyParametrized(pyFunction)
     }
 
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
         if (file !is PyFile) return
-
-        val pyFunction = findEnclosingFunction(file, editor.caretModel.offset) ?: return
-
-        val generator = PyElementGenerator.getInstance(project)
-        val languageLevel = LanguageLevel.getLatest()
+        val element = file.findElementAt(editor.caretModel.offset) ?: return
+        val pyFunction = PsiTreeUtil.getParentOfType(element, PyFunction::class.java) ?: return
 
         ensurePytestImported(file)
-        addParametrizeDecorator(pyFunction, generator)
-        addFirstParameter(pyFunction, generator, languageLevel)
+
+        // Use existing helper to add or merge decorator
+        PyUtil.addDecorator(pyFunction, "@pytest.mark.parametrize(\"arg\", [])")
+
+        addFirstParameter(pyFunction, project)
     }
 
     override fun generatePreview(project: Project, editor: Editor, file: PsiFile): IntentionPreviewInfo =
         IntentionPreviewInfo.DIFF
 
-    /**
-     * Find the `PyFunction` at caret using PSI utilities, ignoring decorators etc.
-     */
-    private fun findEnclosingFunction(file: PyFile, offset: Int): PyFunction? {
-        val element = file.findElementAt(offset) ?: return null
-        return PsiTreeUtil.getParentOfType(element, PyFunction::class.java, /* strict = */ false)
-    }
-
-    /**
-     * True if the function already has a decorator that resolves to `pytest.mark.parametrize`.
-     */
     private fun isAlreadyParametrized(pyFunction: PyFunction): Boolean {
         val decorators = pyFunction.decoratorList?.decorators ?: return false
         return decorators.any { decorator ->
-            resolvesToPytestParametrize(decorator)
+            val callee = decorator.callee as? PyQualifiedExpression
+            val qName = callee?.asQualifiedName()?.toString()
+            qName == "pytest.mark.parametrize" ||
+                    qName == "_pytest.mark.parametrize" ||
+                    qName?.endsWith(".pytest.mark.parametrize") == true
         }
     }
 
-    private fun resolvesToPytestParametrize(decorator: PyDecorator): Boolean {
-        val callee = decorator.callee as? PyQualifiedExpression ?: return false
-        val qName = callee.asQualifiedName()?.toString() ?: return false
-
-        return qName == "pytest.mark.parametrize" ||
-                qName == "_pytest.mark.parametrize" ||
-                qName.endsWith(".pytest.mark.parametrize")
-    }
-
-    /** Ensure that `import pytest` is present (uses built‑in import helper). */
     private fun ensurePytestImported(file: PyFile) {
         AddImportHelper.addImportStatement(
             file,
             "pytest",
             null,
             AddImportHelper.ImportPriority.THIRD_PARTY,
-            null,
+            null
         )
     }
 
-    /** Add `@pytest.mark.parametrize("arg", [])` before existing decorators using PSI generator. */
-    private fun addParametrizeDecorator(
-        pyFunction: PyFunction,
-        generator: PyElementGenerator,
-    ) {
-        val decoratorText = "@pytest.mark.parametrize(\"arg\", [])"
-        val existingDecoratorList = pyFunction.decoratorList
-
-        val newDecoratorList: PyDecoratorList = if (existingDecoratorList != null) {
-            // Rebuild the whole decorator list via PSI instead of concatenating strings manually
-            val existingTexts = existingDecoratorList.decorators.map(PsiElement::getText)
-            val allTexts = listOf(decoratorText) + existingTexts
-            generator.createDecoratorList(*allTexts.toTypedArray())
-        } else {
-            generator.createDecoratorList(decoratorText)
-        }
-
-        if (existingDecoratorList != null) {
-            existingDecoratorList.replace(newDecoratorList)
-        } else {
-            pyFunction.addBefore(newDecoratorList, pyFunction.firstChild)
-        }
-    }
-
-    /** Add a first parameter `arg` using the PSI generator. */
-    private fun addFirstParameter(
-        pyFunction: PyFunction,
-        generator: PyElementGenerator,
-        languageLevel: LanguageLevel,
-    ) {
+    private fun addFirstParameter(pyFunction: PyFunction, project: Project) {
+        val generator = PyElementGenerator.getInstance(project)
         val parameterList = pyFunction.parameterList
-        val firstParam = generator.createParameter("arg", null, null, languageLevel)
+        val firstParam = generator.createParameter("arg")
 
         val existingParams = parameterList.parameters
-        if (existingParams.isEmpty()) {
-            parameterList.add(firstParam)
+
+        // Find anchor: first non-self/cls parameter to insert before
+        val nonSelfClsAnchor = existingParams.firstOrNull { param ->
+            val name = param.name
+            name != "self" && name != "cls"
+        }
+
+        if (nonSelfClsAnchor != null) {
+            // Insert before the anchor.
+            // isFirst=true ensures no comma is added *before* our new param (assuming existing comma structure is valid)
+            // isLast=false ensures a comma is added *after* our new param (separating it from the anchor)
+            PyUtil.addListNode(parameterList, firstParam, nonSelfClsAnchor.node, true, false, true)
         } else {
-            parameterList.addBefore(firstParam, existingParams.first())
+            // Append at the end (after self/cls or in empty list)
+            val rpar = parameterList.node.findChildByType(PyTokenTypes.RPAR)
+            if (rpar != null) {
+                // Determine if we need a comma before the new parameter
+                val prev = PyPsiUtils.getPrevNonWhitespaceSibling(rpar)
+                val hasTrailingComma = prev?.elementType == PyTokenTypes.COMMA
+                val isListEmpty = existingParams.isEmpty()
+
+                // If list is empty or already has a trailing comma, we don't need a leading comma for the new item
+                val isFirst = isListEmpty || hasTrailingComma
+
+                // Insert before ')'
+                PyUtil.addListNode(parameterList, firstParam, rpar, isFirst, true, true)
+            } else {
+                // Fallback for malformed parameter list
+                parameterList.addParameter(firstParam)
+            }
         }
     }
-
 }

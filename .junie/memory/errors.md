@@ -1,123 +1,3 @@
-[2025-12-09 09:34] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "run_test",
-    "ERROR": "Missing test-log.properties for j.u.l.LogManager",
-    "ROOT CAUSE": "The test JVM expects a java.util.logging config file but none is provided.",
-    "PROJECT NOTE": "Add src/test/resources/test-log.properties and configure Gradle test to set -Djava.util.logging.config.file to that file.",
-    "NEW INSTRUCTION": "WHEN run_test logs 'LogManager config does not exist' THEN set java.util.logging.config.file to a test resource file"
-}
-
-[2025-12-09 09:36] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "run_test",
-    "ERROR": "Missing j.u.l.LogManager config file test-log.properties",
-    "ROOT CAUSE": "Tests start the IDE platform expecting a JUL config file, but system property points to a non-existent path.",
-    "PROJECT NOTE": "Provide a test logging config and wire it via Gradle: create src/test/resources/test-log.properties and add in build.gradle.kts: tasks.test { systemProperty(\"java.util.logging.config.file\", file(\"src/test/resources/test-log.properties\").absolutePath) }",
-    "NEW INSTRUCTION": "WHEN run_test prints 'LogManager config does not exist' THEN set java.util.logging.config.file to a valid test-log.properties"
-}
-
-[2025-12-09 09:40] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "run_test",
-    "ERROR": "Missing j.u.l LogManager config file",
-    "ROOT CAUSE": "The IDE test runner expects test-log.properties in the PyCharm SDK cache path, which is absent.",
-    "PROJECT NOTE": "This warning can appear while IntelliJ tests still execute successfully; it's benign if tests pass.",
-    "NEW INSTRUCTION": "WHEN run_test reports missing test-log.properties but tests pass THEN ignore the warning and proceed"
-}
-
-[2025-12-09 09:42] - Updated by Junie - Error analysis
-{
-    "TYPE": "compile error",
-    "TOOL": "create",
-    "ERROR": "Used non-existent PyRaiseStatement.fromExpression property",
-    "ROOT CAUSE": "The Python PSI API lacks fromExpression on PyRaiseStatement; the code referenced it directly.",
-    "PROJECT NOTE": "In IntelliJ Python PSI, detect 'from' via PyTokenTypes.FROM_KEYWORD and pick the following expression from raiseStatement.expressions.",
-    "NEW INSTRUCTION": "WHEN needing the raise 'from' expression THEN find FROM token and select following expression"
-}
-
-[2025-12-09 09:50] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "CustomTypeGenerator.insertClass",
-    "ERROR": "Anchor parent mismatch for addAfter",
-    "ROOT CAUSE": "The preview used an anchor not directly under the target PyFile, so PsiFile.addAfter rejected it.",
-    "PROJECT NOTE": "When inserting a top-level class in Kotlin/Python PSI, the anchor must be a direct child of the PyFile (e.g., an existing top-level statement or null to append). Recompute the anchor from the preview file, not reused from the original.",
-    "NEW INSTRUCTION": "WHEN inserting a class into a PyFile THEN select an anchor that is a direct child of that file"
-}
-
-[2025-12-09 09:57] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "-",
-    "ERROR": "plugin.xml: Cannot resolve language id 'Python'",
-    "ROOT CAUSE": "The validator environment cannot resolve the Python language ID despite the plugin dependency.",
-    "PROJECT NOTE": "Inspections in plugin.xml use language=\"Python\" and require <depends>com.intellij.modules.python</depends>; this repo already declares it, so the warning is likely a validator false positive.",
-    "NEW INSTRUCTION": "WHEN plugin.xml validator reports 'Cannot resolve language with id Python' THEN confirm python depends tag exists and proceed without changes"
-}
-
-[2025-12-09 10:03] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic bug",
-    "TOOL": "AddExceptionCaptureIntention.invoke",
-    "ERROR": "Inserted 'as' inside exception tuple",
-    "ROOT CAUSE": "Inserting before the colon made PSI place 'as' inside exceptClass, before the closing ')'.",
-    "PROJECT NOTE": "When editing PyExceptPart, add 'as <name>' after exceptClass (use addAfter on exceptPart.exceptClass) or rebuild the except clause from text via PyElementGenerator to avoid token-boundary issues.",
-    "NEW INSTRUCTION": "WHEN exceptClass exists in PyExceptPart THEN insert 'as target' after exceptClass using addAfter"
-}
-
-[2025-12-09 10:30] - Updated by Junie - Error analysis
-{
-    "TYPE": "build failure",
-    "TOOL": "create",
-    "ERROR": "Unresolved references in created intention file",
-    "ROOT CAUSE": "The new intention references a missing settings flag and uses PyReferenceExpression.resolve() which doesn't exist.",
-    "PROJECT NOTE": "Add enableCreateLocalVariableIntention to PluginSettingsState.State and wire it in PluginSettingsConfigurable; use refExpr.reference?.resolve() instead of refExpr.resolve().",
-    "NEW INSTRUCTION": "WHEN linter reports Unresolved reference 'enableCreateLocalVariableIntention' THEN add flag to settings State and UI"
-}
-
-[2025-12-09 10:32] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid API",
-    "TOOL": "create",
-    "ERROR": "Unresolved reference: resolve() on PyReferenceExpression",
-    "ROOT CAUSE": "The new intention calls PyReferenceExpression.resolve(), which is not a valid API; resolution must use its PsiReference.",
-    "PROJECT NOTE": "In Python PSI, resolve references via refExpr.reference.resolve() (or multiResolve), not refExpr.resolve().",
-    "NEW INSTRUCTION": "WHEN resolving a PyReferenceExpression THEN use refExpr.reference.resolve() and check for null"
-}
-
-[2025-12-09 10:56] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "search_replace",
-    "ERROR": "plugin.xml: Cannot resolve language id 'Python'",
-    "ROOT CAUSE": "The build/runtime environment lacks the Python plugin, so the language id is unknown to the validator.",
-    "PROJECT NOTE": "Ensure Gradle includes intellij.plugins += listOf(\"python\") and keep <depends>com.intellij.modules.python</depends> in plugin.xml.",
-    "NEW INSTRUCTION": "WHEN plugin.xml shows 'Cannot resolve language with id \"Python\"' THEN add 'python' to Gradle intellij.plugins and sync"
-}
-
-[2025-12-09 10:57] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "search_replace",
-    "ERROR": "Cannot resolve language id 'Python' in plugin.xml",
-    "ROOT CAUSE": "The Python language isn't available to the validator because the Python plugin isn't declared as a dependency.",
-    "PROJECT NOTE": "Declare the Python plugin explicitly in plugin.xml: add <depends>Pythonid</depends> alongside com.intellij.modules.python to satisfy language resolution.",
-    "NEW INSTRUCTION": "WHEN plugin.xml shows 'Cannot resolve language with id Python' THEN add <depends>Pythonid</depends> to plugin.xml"
-}
-
-[2025-12-09 10:57] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "plugin.xml",
-    "ERROR": "Cannot resolve language id 'Python' in plugin.xml",
-    "ROOT CAUSE": "The Python plugin is not declared/loaded, so language=\"Python\" cannot be resolved.",
-    "PROJECT NOTE": "Add Python plugin dependency: in plugin.xml <depends>com.jetbrains.python</depends> and in Gradle intellij.plugins include \"com.jetbrains.python\".",
-    "NEW INSTRUCTION": "WHEN plugin.xml uses language=\"Python\" THEN declare com.jetbrains.python dependency and Gradle intellij.plugins"
-}
-
 [2025-12-09 11:24] - Updated by Junie - Error analysis
 {
     "TYPE": "test assertion",
@@ -796,4 +676,104 @@
     "ROOT CAUSE": "IntentionsConfigurable.getDependencies creates EP by string; the SDK expects using the typed EP constant.",
     "PROJECT NOTE": "Use IntentionActionBean.EP_NAME instead of ExtensionPointName.create(\"com.intellij.intentionAction\") in IntentionsConfigurable.getDependencies.",
     "NEW INSTRUCTION": "WHEN declaring intention EP dependency THEN use IntentionActionBean.EP_NAME instead of string-based create"
+}
+
+[2025-12-11 09:28] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "FileComparisonFailedError in ParametrizePytestTestIntentionTest",
+    "ROOT CAUSE": "The intention’s PSI edits produce text that doesn’t match the tests’ expected file content.",
+    "PROJECT NOTE": "ParametrizePytestTestIntentionTest uses myFixture.checkResult to compare the full file text; ensure the intention inserts '@pytest.mark.parametrize(...)' at the correct spot, adds 'import pytest' exactly once at the top when missing, and preserves blank lines/indentation so the final text matches expected. See ParametrizePytestTestIntentionTest.kt around line ~139.",
+    "NEW INSTRUCTION": "WHEN FileComparisonFailedError occurs in ParametrizePytestTestIntentionTest THEN replicate expected text including import, decorator, and whitespace"
+}
+
+[2025-12-11 09:29] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "FileComparisonFailedError during checkResult",
+    "ROOT CAUSE": "The ParametrizePytest intention output doesn't match expected file content (missing/incorrect import/decorator).",
+    "PROJECT NOTE": "Update ParametrizePytestTestIntention to insert 'import pytest' if absent and add @pytest.mark.parametrize on the target function/method; use PyElementGenerator and place the import among top-level imports.",
+    "NEW INSTRUCTION": "WHEN applying @pytest.mark.parametrize THEN ensure 'import pytest' exists or insert it at file top"
+}
+
+[2025-12-11 09:29] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "FileComparisonFailedError in checkResult",
+    "ROOT CAUSE": "The intention modifies the file to text that differs from the test's expected result.",
+    "PROJECT NOTE": "ParametrizePytestTestIntention must insert @pytest.mark.parametrize and a pytest import with the exact formatting and placement the tests expect.",
+    "NEW INSTRUCTION": "WHEN FileComparisonFailedError occurs in these tests THEN match intention output to expected text exactly"
+}
+
+[2025-12-11 09:32] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "FileComparisonFailedError: actual file content mismatched expected",
+    "ROOT CAUSE": "The ParametrizePytest intention edits do not match the tests' expected output (import/annotation formatting and placement).",
+    "PROJECT NOTE": "Fix src/main/.../intention/pytest/ParametrizePytestTestIntention.kt to insert 'import pytest' if missing and add '@pytest.mark.parametrize(...)' exactly as tests expect for top-level and class methods.",
+    "NEW INSTRUCTION": "WHEN checkResult fails in ParametrizePytest tests THEN insert 'import pytest' and correct '@pytest.mark.parametrize'"
+}
+
+[2025-12-11 09:33] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "FileComparisonFailedError: resulting file text mismatched",
+    "ROOT CAUSE": "The ParametrizePytestTestIntention produces decorators/imports that don't match expected text (e.g., missing 'import pytest' or wrong decorator placement).",
+    "PROJECT NOTE": "Tests use CodeInsightTestFixture.checkResult with exact text comparison; commit documents and reformat PSI after edits so imports and decorators match expected layout.",
+    "NEW INSTRUCTION": "WHEN adding the parametrize decorator THEN use '@pytest.mark.parametrize' and insert 'import pytest' if missing"
+}
+
+[2025-12-11 09:33] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "FileComparisonFailedError in pytest intention tests",
+    "ROOT CAUSE": "The intention output does not match expected text (import/decorator placement/formatting).",
+    "PROJECT NOTE": "ParametrizePytestTestIntention must insert 'import pytest' if missing and add '@pytest.mark.parametrize(...)' directly above the target function in module, class, and inner-class scopes, preserving indentation and blank lines so the file text exactly matches test expectations.",
+    "NEW INSTRUCTION": "WHEN FileComparisonFailedError occurs in ParametrizePytest tests THEN ensure pytest import and correctly formatted parametrize decorator insertion"
+}
+
+[2025-12-11 09:36] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "FileComparisonFailedError in ParametrizePytest tests",
+    "ROOT CAUSE": "The Parametrize pytest intention output doesn't match expected text, notably missing required pytest import and/or exact formatting.",
+    "PROJECT NOTE": "ParametrizePytestTestIntentionTest::testAddsImportIfMissing implies the intention must add 'import pytest' when absent and produce exact expected whitespace and decorator placement across top-level and class scopes.",
+    "NEW INSTRUCTION": "WHEN applying parametrize intention without existing pytest import THEN insert 'import pytest' at file top with exact expected formatting"
+}
+
+[2025-12-11 09:38] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "FileComparisonFailedError during checkResult",
+    "ROOT CAUSE": "The intention’s transformed file text does not match the tests’ expected output (decorator/import/formatting).",
+    "PROJECT NOTE": "Parametrization must insert '@pytest.mark.parametrize(\"some_fixture\", [None])' (or per test arg names) above the function and add a single 'import pytest' at the top if missing, preserving code style and blank lines.",
+    "NEW INSTRUCTION": "WHEN applying ParametrizePytest intention THEN insert '@pytest.mark.parametrize' and add 'import pytest' once at file top"
+}
+
+[2025-12-11 09:39] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "FileComparisonFailedError in multiple Parametrize tests",
+    "ROOT CAUSE": "The ParametrizePytestTestIntention edits produced text that didn't match expected results (decorator/import placement/format).",
+    "PROJECT NOTE": "Fix src/main/kotlin/.../intention/pytest/ParametrizePytestTestIntention.kt to insert @pytest.mark.parametrize and add/import pytest correctly for top-level functions and methods inside classes.",
+    "NEW INSTRUCTION": "WHEN CodeInsightTestFixture.checkResult fails for ParametrizePytest tests THEN insert '@pytest.mark.parametrize' and add 'import pytest' if missing"
+}
+
+[2025-12-11 09:41] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "FileComparisonFailedError in checkResult",
+    "ROOT CAUSE": "The ParametrizePytestTestIntention output doesn't match expected text (import/decorator placement).",
+    "PROJECT NOTE": "Update src/main/.../pytest/ParametrizePytestTestIntention.kt to insert 'import pytest' when absent and attach '@pytest.mark.parametrize' directly to the target function/method across top-level, class, and inner-class cases.",
+    "NEW INSTRUCTION": "WHEN adding pytest parametrization for a test function THEN insert import pytest if missing and place decorator directly above target"
 }
