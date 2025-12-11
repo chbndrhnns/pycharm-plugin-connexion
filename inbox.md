@@ -2,6 +2,7 @@
 
 ## Pending Issues
 
+- [ ] fix: When introducing parameter object, respect * and create named parameter
 - [ ] fix: When implementing abstract method, take care of existing ellipsis
 - [ ] fix: implement abstract method is put above __init__
 - [ ] feat: Consider if this should only work for dataclass/classes, for others, there is change signature
@@ -11,7 +12,7 @@
 
 ## Pending Features
 
-- [ ] feat: Add quickfix to parametrize test
+- [ ] feat: Make introduce parameter object available on call site
 - [ ] feat: When implementing abstract method, present dialog to choose or show edits
 - [ ] feat: Move instance method
 - [ ] feat: Move to inner class
@@ -40,8 +41,7 @@
 
 ## In Progress Tasks
 
-- [-] refactor: `if (!aliasName.isNullOrBlank() && !PyBuiltinNames.isBuiltin(aliasName)) {`
-- [-] feat: Check which parts are not toggleable in settings so far
+- [-] feat: Add quickfix to parametrize test
 - [ ] feat: Add __slots__ = () when introducing custom type for str
 - [ ] feat: Show red bubble if introduce parameter object is not available
 - [-] feat: Configure dunder all inspection to be only available if __all__ is present
@@ -50,6 +50,8 @@
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Check which parts are not toggleable in settings so far
+- [x] refactor: `if (!aliasName.isNullOrBlank() && !PyBuiltinNames.isBuiltin(aliasName)) {`
 - [x] refactor: `MakeParameterMandatoryIntention`
 - [x] refactor: `if (fn.isAsync && returnType is PyCollectionType) {`
 - [x] feat: Add quickfix to skip/unskip test
