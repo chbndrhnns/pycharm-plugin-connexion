@@ -40,8 +40,6 @@
 
 ## In Progress Tasks
 
-- [-] feat: Add quickfix to parametrize test
-  - [ ] arg ends up outside of parentheses if no args
 - [ ] feat: Add __slots__ = () when introducing custom type for str
 - [ ] feat: Show red bubble if introduce parameter object is not available
 - [-] feat: Configure dunder all inspection to be only available if __all__ is present
@@ -50,6 +48,8 @@
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Add quickfix to parametrize test
+  - [x] arg ends up outside of parentheses if no args
 - [x] feat: Introduce parameter object should be available on call site method name
 - [x] feat: Check which parts are not toggleable in settings so far
 - [x] refactor: `if (!aliasName.isNullOrBlank() && !PyBuiltinNames.isBuiltin(aliasName)) {`
