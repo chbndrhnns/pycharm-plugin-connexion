@@ -53,6 +53,56 @@ class IntroduceParameterObjectRefactoringActionTest : TestBase() {
         )
     }
 
+    fun testActionIsAvailableOnFunctionNameAtDeclarationSite() {
+        myFixture.configureByText(
+            "test.py", """
+            def fo<caret>o(a: int, b: str, c: float):
+                pass
+        """.trimIndent()
+        )
+
+        val action = IntroduceParameterObjectRefactoringAction()
+        val dataContext = SimpleDataContext.builder()
+            .add(CommonDataKeys.PROJECT, project)
+            .add(CommonDataKeys.EDITOR, myFixture.editor)
+            .add(CommonDataKeys.PSI_FILE, myFixture.file)
+            .build()
+
+        val event = createTestActionEvent(action, dataContext)
+        action.update(event)
+
+        assertTrue(
+            "Action should be enabled when caret is on function name at declaration site",
+            event.presentation.isEnabledAndVisible
+        )
+    }
+
+    fun testActionIsAvailableOnFunctionNameAtCallSite() {
+        myFixture.configureByText(
+            "test.py", """
+            def foo(a: int, b: str, c: float):
+                pass
+
+            fo<caret>o(1, "hello", 3.14)
+        """.trimIndent()
+        )
+
+        val action = IntroduceParameterObjectRefactoringAction()
+        val dataContext = SimpleDataContext.builder()
+            .add(CommonDataKeys.PROJECT, project)
+            .add(CommonDataKeys.EDITOR, myFixture.editor)
+            .add(CommonDataKeys.PSI_FILE, myFixture.file)
+            .build()
+
+        val event = createTestActionEvent(action, dataContext)
+        action.update(event)
+
+        assertTrue(
+            "Action should be enabled when caret is on function name at call site",
+            event.presentation.isEnabledAndVisible
+        )
+    }
+
     fun testActionIsNotAvailableForFunctionWithOneParameter() {
         myFixture.configureByText(
             "test.py", """

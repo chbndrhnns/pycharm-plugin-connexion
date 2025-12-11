@@ -446,3 +446,11 @@
     "NEW INSTRUCTION": "WHEN offering completion inside a return statement THEN prioritize annotated return-type variants above others"
 }
 
+[2025-12-11 09:14] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "refactoring availability",
+    "EXPECTATION": "Introduce Parameter Object should be available when the caret is on a function/method name.",
+    "NEW INSTRUCTION": "WHEN caret on function or method name identifier THEN treat as valid target for availability"
+}
+

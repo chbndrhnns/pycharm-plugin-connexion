@@ -7,12 +7,12 @@ import com.jetbrains.python.psi.*
 internal object IntroduceParameterObjectTarget {
 
     fun find(element: PsiElement): PyFunction? {
-        val function = PsiTreeUtil.getParentOfType(element, PyFunction::class.java)
+        val function = element as? PyFunction ?: PsiTreeUtil.getParentOfType(element, PyFunction::class.java)
         if (function != null) {
             val inName = function.nameIdentifier?.let { PsiTreeUtil.isAncestor(it, element, false) } == true
             val inParameters = PsiTreeUtil.isAncestor(function.parameterList, element, false)
 
-            if (inName || inParameters) {
+            if (element == function || inName || inParameters) {
                 return function
             }
         }

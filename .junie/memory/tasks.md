@@ -1,23 +1,3 @@
-[2025-12-04 13:08] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "open plugin.xml,open settings file",
-    "MISSING STEPS": "implement availability check,rerun tests",
-    "BOTTLENECK": "No code change implemented to restrict availability to caret inside argument list.",
-    "PROJECT NOTE": "Dataclass tests require from dataclasses import dataclass in fixtures.",
-    "NEW INSTRUCTION": "WHEN caret-position behavior is required THEN add argument-list caret check in availability logic"
-}
-
-[2025-12-04 13:16] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "delete file",
-    "MISSING STEPS": "open file,edit file,review doc,submit changes",
-    "BOTTLENECK": "Recreating the doc without reviewing led to risk of lost or truncated content.",
-    "PROJECT NOTE": "docs/parameter-object/state.md already existed; prefer in-place edits to preserve content.",
-    "NEW INSTRUCTION": "WHEN modifying an existing documentation file THEN open it, edit in place, and submit"
-}
-
 [2025-12-04 14:02] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -877,3 +857,34 @@
     "PROJECT NOTE": "Mirror TogglePytestSkipIntention patterns for class structure, resources, and tests.",
     "NEW INSTRUCTION": "WHEN adding a new intention THEN first implement intention class and its tests before UI toggles"
 }
+
+[2025-12-11 08:42] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "scan project (duplicate), update status (duplicate)",
+    "MISSING STEPS": "add tests, modify implementation",
+    "BOTTLENECK": "No failing test reproduces the '*' and named-argument issue.",
+    "PROJECT NOTE": "Variadic tests cover '*' and '/' but not enforcing named argument creation when '*' makes params keyword-only; add a targeted test for that call-site behavior.",
+    "NEW INSTRUCTION": "WHEN all related tests pass but inbox notes a bug THEN write a minimal failing test first"
+}
+
+[2025-12-11 09:12] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "review target, add tests, run build",
+    "BOTTLENECK": "Availability was delegated to the target without verifying/adjusting target coverage or adding tests.",
+    "PROJECT NOTE": "IntroduceParameterObjectTarget centralizes caret-position eligibility and should be the single source of truth.",
+    "NEW INSTRUCTION": "WHEN expanding caret-position availability THEN implement logic in IntroduceParameterObjectTarget and add tests"
+}
+
+[2025-12-11 09:16] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "update refactoring action availability, add tests",
+    "BOTTLENECK": "Caret-on-name and call-callee positions were not validated by tests.",
+    "PROJECT NOTE": "BaseRefactoringAction needs isEnabledOnElementInsideEditor to delegate to IntroduceParameterObjectTarget.isAvailable.",
+    "NEW INSTRUCTION": "WHEN tests cover only parameter positions THEN add tests for name and call callee"
+}
+
