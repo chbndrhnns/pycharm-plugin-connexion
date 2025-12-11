@@ -30,7 +30,7 @@ class PytestConsoleFilterTest : TestBase() {
         val result = filter.applyFilter(line, line.length)
         assertNotNull(result)
         val item = result!!.resultItems.first()
-        assertEquals(0, item.highlightStartOffset)
+        assertEquals(2, item.highlightStartOffset)
         assertEquals(line.length, item.highlightEndOffset)
     }
 

@@ -18,7 +18,7 @@ class PytestConsoleFilter(private val project: Project) : Filter {
             val filePath = matcher.group(1)
             val nodeId = matcher.group(2)
 
-            val startOffset = entireLength - line.length + matcher.start()
+            val startOffset = entireLength - line.length + matcher.start(1)
             val endOffset = entireLength - line.length + matcher.end()
 
             return Filter.Result(startOffset, endOffset, PytestNodeHyperlinkInfo(project, filePath, nodeId))

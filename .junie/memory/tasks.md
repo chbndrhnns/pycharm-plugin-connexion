@@ -867,3 +867,13 @@
     "PROJECT NOTE": "Tests embed Python code as Kotlin triple-quoted strings; maintain quotes and argument separators.",
     "NEW INSTRUCTION": "WHEN Kotlin test data strings are edited THEN run full tests and fix failures"
 }
+
+[2025-12-11 10:57] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "broad search",
+    "MISSING STEPS": "run tests before change",
+    "BOTTLENECK": "No baseline test run before applying the fix.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN starting a bug fix THEN run relevant tests to capture baseline"
+}
