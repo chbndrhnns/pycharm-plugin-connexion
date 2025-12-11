@@ -22,6 +22,12 @@ class PyIntroduceParameterObjectProcessor(
     private val configSelector: ((List<PyNamedParameter>, String) -> IntroduceParameterObjectSettings?)? = null
 ) {
 
+    private data class CallSiteUpdateInfo(
+        val callExpression: PyCallExpression,
+        val newArgumentListText: String,
+        val needsDataclassImport: Boolean
+    )
+
     fun run() {
         val project = function.project
 
@@ -49,7 +55,7 @@ class PyIntroduceParameterObjectProcessor(
         val parameterName = settings.parameterName
 
         var paramUsages: Map<PyNamedParameter, Collection<PsiReference>> = emptyMap()
-        var functionUsages: Collection<PsiReference> = emptyList()
+        var callSiteUpdates: List<CallSiteUpdateInfo> = emptyList()
 
         runWithModalProgressBlocking(project, "Searching for usages...") {
             readAction {
@@ -61,7 +67,16 @@ class PyIntroduceParameterObjectProcessor(
                     }
                 }
                 paramUsages = pUsages
-                functionUsages = ReferencesSearch.search(function, GlobalSearchScope.projectScope(project)).findAll()
+                val functionUsages =
+                    ReferencesSearch.search(function, GlobalSearchScope.projectScope(project)).findAll()
+
+                callSiteUpdates = prepareCallSiteUpdates(
+                    project,
+                    function,
+                    dataclassName,
+                    params,
+                    functionUsages
+                )
             }
         }
 
@@ -77,10 +92,10 @@ class PyIntroduceParameterObjectProcessor(
                     settings.generateSlots,
                     settings.generateKwOnly
                 )
-            
-            addDataclassImport(function)
+
+                addDataclassImport(function)
                 updateFunctionBody(project, function, params, paramUsages, parameterName)
-            updateCallSites(project, function, dataclass, params, functionUsages)
+                applyCallSiteUpdates(project, function, dataclass, callSiteUpdates)
                 replaceFunctionSignature(project, function, dataclassName, params, parameterName)
         }
     }
@@ -320,36 +335,33 @@ class PyIntroduceParameterObjectProcessor(
         }
     }
 
-    private fun updateCallSites(
+    private fun prepareCallSiteUpdates(
         project: Project,
         function: PyFunction,
-        dataclass: PyClass,
+        dataclassName: String,
         params: List<PyNamedParameter>,
         functionUsages: Collection<PsiReference>
-    ) {
-        val generator = PyElementGenerator.getInstance(project)
-        val languageLevel = LanguageLevel.forElement(function)
-        val dataclassName = dataclass.name ?: return
+    ): List<CallSiteUpdateInfo> {
+        val result = mutableListOf<CallSiteUpdateInfo>()
 
         val allParams = function.parameterList.parameters.toList()
-        if (allParams.isEmpty()) return
+        if (allParams.isEmpty()) return emptyList()
 
-        // We assume the first extracted parameter defines the position of the new 'params' argument.
-        val firstExtractedParam = params.firstOrNull() ?: return
+        val firstExtractedParam = params.firstOrNull() ?: return emptyList()
 
-        val resolveContext = PyResolveContext.defaultContext(TypeEvalContext.codeAnalysis(project, function.containingFile))
+        val resolveContext = PyResolveContext.defaultContext(
+            TypeEvalContext.codeAnalysis(project, function.containingFile)
+        )
 
         for (ref in functionUsages) {
             val element = ref.element
             val call = PsiTreeUtil.getParentOfType(element, PyCallExpression::class.java) ?: continue
             if (call.callee != element && call.callee?.reference?.resolve() != function) continue
 
-            // 1. Use PSI helper to map arguments to parameters
             val mapping = call.multiMapArguments(resolveContext).firstOrNull {
                 it.callableType?.callable == function
             } ?: continue
 
-            // Group arguments by the parameter they are mapped to
             val paramToArgs = mapping.mappedParameters.entries
                 .groupBy({ it.value.parameter }, { it.key })
 
@@ -358,14 +370,12 @@ class PyIntroduceParameterObjectProcessor(
 
             dataclassArgsList.append("$dataclassName(")
 
-            // 2. Build Dataclass constructor arguments
             var firstDcArg = true
             for (p in params) {
                 val args = paramToArgs[p]
                 if (!args.isNullOrEmpty()) {
                     val argExpr = args.first()
 
-                    // If the argument is a keyword argument (name=value), we only want the value.
                     val argText = if (argExpr is PyKeywordArgument) {
                         argExpr.valueExpression?.text ?: "None"
                     } else {
@@ -379,10 +389,8 @@ class PyIntroduceParameterObjectProcessor(
             }
             dataclassArgsList.append(")")
 
-            // 3. Build new Function call arguments
             var firstFuncArg = true
             for (p in allParams) {
-                // Insert the new Dataclass argument at the position of the first extracted parameter
                 if (p == firstExtractedParam) {
                     if (!firstFuncArg) newArgsList.append(", ")
                     newArgsList.append(dataclassArgsList)
@@ -390,17 +398,14 @@ class PyIntroduceParameterObjectProcessor(
                 }
 
                 if (p in params) {
-                    // Parameter is extracted, so we skip adding its original argument here
                     continue
                 } else {
-                    // Skip separators and implicit parameters
                     if (p is PySlashParameter || p is PySingleStarParameter) continue
 
                     val args = paramToArgs[p]
                     if (args != null) {
                         for (arg in args) {
                             if (!firstFuncArg) newArgsList.append(", ")
-                            // For remaining arguments, we keep them as is (including keyword name if present)
                             newArgsList.append(arg.text)
                             firstFuncArg = false
                         }
@@ -408,9 +413,38 @@ class PyIntroduceParameterObjectProcessor(
                 }
             }
 
-            // 4. Replace arguments using Generator
+            val usageFile = element.containingFile
+            val needsImport = usageFile != function.containingFile && usageFile is PyFile && element is PyElement
+
+            result.add(
+                CallSiteUpdateInfo(
+                    callExpression = call,
+                    newArgumentListText = newArgsList.toString(),
+                    needsDataclassImport = needsImport
+                )
+            )
+        }
+
+        return result
+    }
+
+    private fun applyCallSiteUpdates(
+        project: Project,
+        function: PyFunction,
+        dataclass: PyClass,
+        callSiteUpdates: List<CallSiteUpdateInfo>
+    ) {
+        if (callSiteUpdates.isEmpty()) return
+
+        val generator = PyElementGenerator.getInstance(project)
+        val languageLevel = LanguageLevel.forElement(function)
+
+        for (updateInfo in callSiteUpdates) {
+            val call = updateInfo.callExpression
+            val newArgsText = updateInfo.newArgumentListText
+
             val newArgListElement = try {
-                generator.createArgumentList(languageLevel, "($newArgsList)")
+                generator.createArgumentList(languageLevel, "($newArgsText)")
             } catch (e: Exception) {
                 null
             }
@@ -419,10 +453,11 @@ class PyIntroduceParameterObjectProcessor(
                 call.argumentList?.replace(newArgListElement)
             }
 
-            // 5. Handle cross-file import
-            val usageFile = element.containingFile
-            if (usageFile != function.containingFile && usageFile is PyFile && element is PyElement) {
-                AddImportHelper.addImport(dataclass, usageFile, element)
+            if (updateInfo.needsDataclassImport) {
+                val usageFile = call.containingFile
+                if (usageFile is PyFile) {
+                    AddImportHelper.addImport(dataclass, usageFile, call)
+                }
             }
         }
     }
