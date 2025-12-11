@@ -32,7 +32,6 @@ class PyIntroduceParameterObjectAction : AnAction() {
     }
 
     override fun actionPerformed(e: AnActionEvent) {
-        val project = e.project ?: return
         val editor = e.getData(CommonDataKeys.EDITOR) ?: return
         val psiFile = e.getData(CommonDataKeys.PSI_FILE) ?: return
 
