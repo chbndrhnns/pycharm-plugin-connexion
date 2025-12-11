@@ -42,6 +42,7 @@
 ## In Progress Tasks
 
 - [-] feat: Add quickfix to parametrize test
+  - [ ] arg ends up outside of parentheses if no args
 - [ ] feat: Add __slots__ = () when introducing custom type for str
 - [ ] feat: Show red bubble if introduce parameter object is not available
 - [-] feat: Configure dunder all inspection to be only available if __all__ is present
