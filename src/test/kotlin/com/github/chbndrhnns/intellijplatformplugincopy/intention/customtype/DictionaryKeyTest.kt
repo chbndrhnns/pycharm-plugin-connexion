@@ -14,7 +14,7 @@ class DictionaryKeyTest : TestBase() {
             """,
             """
             class Customstr(str):
-                pass
+                __slots__ = ()
 
 
             d: dict[Customstr, int] = {}

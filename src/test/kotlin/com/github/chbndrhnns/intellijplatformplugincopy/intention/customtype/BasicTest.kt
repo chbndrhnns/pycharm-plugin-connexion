@@ -50,7 +50,7 @@ class BasicTest : TestBase() {
 
 
             class MyConstant(str):
-                pass
+                __slots__ = ()
 
 
             MY_CONSTANT: Final[MyConstant] = MyConstant("VALUE")
@@ -232,7 +232,7 @@ class BasicTest : TestBase() {
             """,
             """
             class Customstr(str):
-                pass
+                __slots__ = ()
             
             
             val = dict({Customstr("a"): 1, "b": 2, "c": 3})
@@ -250,7 +250,7 @@ class BasicTest : TestBase() {
             """,
             """
             class Customstr(str):
-                pass
+                __slots__ = ()
             
             
             abc: Customstr = Customstr("text")
@@ -269,7 +269,7 @@ class BasicTest : TestBase() {
             """,
             """
             class Customstr(str):
-                pass
+                __slots__ = ()
             
             
             abc: Customstr = Customstr("text")
@@ -289,7 +289,7 @@ class BasicTest : TestBase() {
             """,
             """
             class Customstr(str):
-                pass
+                __slots__ = ()
 
 
             def do(a: Customstr):

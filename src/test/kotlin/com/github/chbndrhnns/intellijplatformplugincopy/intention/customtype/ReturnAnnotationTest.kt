@@ -34,7 +34,7 @@ class ReturnAnnotationTest : TestBase() {
             """,
             """
             class Customstr(str):
-                pass
+                __slots__ = ()
 
 
             def get() -> int | Customstr | None:

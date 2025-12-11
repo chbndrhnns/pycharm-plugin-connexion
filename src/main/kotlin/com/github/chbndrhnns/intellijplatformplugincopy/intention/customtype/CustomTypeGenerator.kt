@@ -82,9 +82,10 @@ class CustomTypeGenerator {
         // the generated definition is always of the form
         //
         //   class Name(<builtin>):
-        //       pass
+        //       <body>
         //
         // without adding extra generic parameters on the custom class.
-        return "class $name($builtin):\n    pass"
+        val body = if (builtin == "str") "__slots__ = ()" else "pass"
+        return "class $name($builtin):\n    $body"
     }
 }

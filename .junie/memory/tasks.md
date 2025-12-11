@@ -1,13 +1,3 @@
-[2025-12-04 15:27] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "update helpers, scan project, add tests, run tests",
-    "BOTTLENECK": "Signature changes introduced compile errors until helper methods were adapted.",
-    "PROJECT NOTE": "Add tests in PyIntroduceParameterObjectCasesTest using myFixture.checkResult to assert generated code.",
-    "NEW INSTRUCTION": "WHEN modifying method signatures or parameters THEN search project and update all definitions and call sites immediately"
-}
-
 [2025-12-04 21:09] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -866,4 +856,14 @@
     "BOTTLENECK": "No implementation changes were made despite clear failing test expectations.",
     "PROJECT NOTE": "Tests compare transformed file text; inspect ParametrizePytestTestIntentionTest to derive expected edits.",
     "NEW INSTRUCTION": "WHEN tests fail with FileComparisonFailedError THEN open tests and implementation, patch transformation, rerun suite"
+}
+
+[2025-12-11 10:18] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "repeat file inspection,excess status updates",
+    "MISSING STEPS": "run tests,scan project,update all affected tests",
+    "BOTTLENECK": "No test run to catch broken Kotlin string literals.",
+    "PROJECT NOTE": "Tests embed Python code as Kotlin triple-quoted strings; maintain quotes and argument separators.",
+    "NEW INSTRUCTION": "WHEN Kotlin test data strings are edited THEN run full tests and fix failures"
 }

@@ -14,7 +14,7 @@ class ParameterTest : TestBase() {
             """,
             """
             class Customstr(str):
-                pass
+                __slots__ = ()
             
             
             def do(val: int | Customstr | None = Customstr("2")): 
@@ -58,7 +58,7 @@ class ParameterTest : TestBase() {
             """,
             """
             class Customstr(str):
-                pass
+                __slots__ = ()
 
 
             class C:
@@ -85,7 +85,7 @@ class ParameterTest : TestBase() {
             """,
             """
             class Customstr(str):
-                pass
+                __slots__ = ()
             
             
             class C:

@@ -38,7 +38,7 @@ class AnnotationTest : TestBase() {
             """,
             """
             class Customstr(str):
-                pass
+                __slots__ = ()
 
 
             class CustomWrapper: ...
@@ -63,7 +63,7 @@ class AnnotationTest : TestBase() {
             """,
             """
             class Customstr(str):
-                pass
+                __slots__ = ()
             
             
             val: int | Customstr | None = Customstr("hello")

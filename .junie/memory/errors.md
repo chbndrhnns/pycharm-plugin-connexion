@@ -1,23 +1,3 @@
-[2025-12-09 11:24] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Chooser option 'local' not found",
-    "ROOT CAUSE": "The new local-scope population option is not implemented or added to the chooser list.",
-    "PROJECT NOTE": "PopulateArgumentsIntention builds chooser items from PopulateOptions.ALL_OPTIONS/NON_RECURSIVE_OPTIONS; extend PopulateOptions (plus label()) to add a 'use locals' variant and include it only when at least one parameter name matches a local symbol.",
-    "NEW INSTRUCTION": "WHEN building chooser items for PopulateArguments THEN include 'use locals' option if any local name matches"
-}
-
-[2025-12-09 11:26] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Chooser lacked expected 'local' option",
-    "ROOT CAUSE": "The new test expects a chooser item for using local symbols, but PopulateOptions/Intention code does not define or render such an option yet.",
-    "PROJECT NOTE": "Add a new PopulateOptions variant (e.g., useLocalScope=true) to ALL_OPTIONS/NON_RECURSIVE_OPTIONS and update label() so the chooser shows a 'from locals' item.",
-    "NEW INSTRUCTION": "WHEN tests expect a new chooser option THEN add and render that option before running tests"
-}
-
 [2025-12-09 11:29] - Updated by Junie - Error analysis
 {
     "TYPE": "test assertion",
@@ -776,4 +756,34 @@
     "ROOT CAUSE": "The ParametrizePytestTestIntention output doesn't match expected text (import/decorator placement).",
     "PROJECT NOTE": "Update src/main/.../pytest/ParametrizePytestTestIntention.kt to insert 'import pytest' when absent and attach '@pytest.mark.parametrize' directly to the target function/method across top-level, class, and inner-class cases.",
     "NEW INSTRUCTION": "WHEN adding pytest parametrization for a test function THEN insert import pytest if missing and place decorator directly above target"
+}
+
+[2025-12-11 10:11] - Updated by Junie - Error analysis
+{
+    "TYPE": "tool failure",
+    "TOOL": "get_file_structure",
+    "ERROR": "File structure could not be displayed",
+    "ROOT CAUSE": "The tool cannot parse this file type or structure for the requested Kotlin file.",
+    "PROJECT NOTE": "To inspect Kotlin source contents, use get_file to read the raw text instead of get_file_structure.",
+    "NEW INSTRUCTION": "WHEN get_file_structure reports parsing not supported THEN use get_file to retrieve file content"
+}
+
+[2025-12-11 10:17] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "apply_patch",
+    "ERROR": "Inserted raw Python code into Kotlin test caused syntax errors",
+    "ROOT CAUSE": "The patch added Python lines outside Kotlin string literals in LiteralsTest.kt, breaking syntax.",
+    "PROJECT NOTE": "Test expectations in src/test/.../*.kt are triple-quoted Kotlin strings passed to myFixture.doIntentionTest; modify content inside those strings and preserve trimIndent/quotes.",
+    "NEW INSTRUCTION": "WHEN editing Kotlin test expected output THEN modify inside triple-quoted strings only"
+}
+
+[2025-12-11 10:17] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid edit",
+    "TOOL": "apply_patch",
+    "ERROR": "Broke Kotlin test by malformed triple-quoted string patch",
+    "ROOT CAUSE": "Patched expected Python code outside the Kotlin triple-quoted string, corrupting syntax.",
+    "PROJECT NOTE": "Tests use myFixture.doIntentionTest with before/after Python embedded in Kotlin triple-quoted strings; edits must remain inside those strings.",
+    "NEW INSTRUCTION": "WHEN editing Kotlin test expected Python text THEN modify inside the triple-quoted strings only"
 }

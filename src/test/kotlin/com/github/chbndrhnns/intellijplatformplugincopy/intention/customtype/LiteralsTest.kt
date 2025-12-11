@@ -17,7 +17,7 @@ class LiteralsTest : TestBase() {
             """,
             """
             class Customstr(str):
-                pass
+                __slots__ = ()
 
 
             def expect_str(s: Customstr) -> None:
@@ -41,7 +41,7 @@ class LiteralsTest : TestBase() {
             """,
             """
             class Customstr(str):
-                pass
+                __slots__ = ()
 
 
             def expect_str(s: Customstr) -> None:
@@ -62,7 +62,7 @@ class LiteralsTest : TestBase() {
             """,
             """
             class Customstr(str):
-                pass
+                __slots__ = ()
 
 
             val = Customstr("str")
@@ -169,7 +169,7 @@ class LiteralsTest : TestBase() {
             """,
             """
             class OutputDir(str):
-                pass
+                __slots__ = ()
 
 
             def extract_saved_reels(self, output_dir: OutputDir = OutputDir("saved_reels")):
