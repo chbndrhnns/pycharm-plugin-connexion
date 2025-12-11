@@ -173,6 +173,12 @@ class PyMissingInDunderAllInspection : PyInspection() {
 
             if (isAllowlistedModule(moduleFile) || isAllowlistedModule(packageInit)) return
 
+            // Only enforce exports for private implementation modules (e.g. _client.py).
+            // Public modules remain eligible for the quick-fix when invoked manually
+            // but should not surface inspection warnings.
+            val isPrivateModule = moduleFile.name.removeSuffix(".py").startsWith("_")
+            if (!isPrivateModule) return
+
             // For the package __init__.py we want slightly different
             // semantics than for the in-file check in [checkInitFileExports]:
             //
@@ -211,25 +217,10 @@ class PyMissingInDunderAllInspection : PyInspection() {
                     val importStatement = findImportSymbol(element, moduleFile)
                     val problemElement: PsiElement = importStatement ?: (getNameIdentifier(element) ?: element)
 
-                    // UX rule: exporting symbols via __all__ should be
-                    // discoverable via the lightbulb both for public and
-                    // private modules, but we only want a *warning* in the
-                    // IDE when the implementation module itself is private
-                    // (e.g. ``_client.py``). Public modules should still be
-                    // able to invoke the export action manually via
-                    // Alt+Enter on the symbol or import, but with a weak
-                    // warning that doesn't clutter the UI.
-                    val isPrivateModule = moduleFile.name.removeSuffix(".py").startsWith("_")
-                    val highlightType = if (isPrivateModule) {
-                        ProblemHighlightType.GENERIC_ERROR_OR_WARNING
-                    } else {
-                        ProblemHighlightType.WEAK_WARNING
-                    }
-
                     holder.registerProblem(
                         problemElement,
                         "Symbol '$name' is not exported in package __all__",
-                        highlightType,
+                        ProblemHighlightType.GENERIC_ERROR_OR_WARNING,
                         PyAddSymbolToAllQuickFix(name),
                     )
                 }

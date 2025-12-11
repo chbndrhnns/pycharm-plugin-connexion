@@ -1,43 +1,3 @@
-[2025-12-09 11:29] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "Gradle (:test)",
-    "ERROR": "Chooser item containing 'local' not found",
-    "ROOT CAUSE": "The new test expects a chooser option for locals, but the option and label are not implemented yet.",
-    "PROJECT NOTE": "Chooser entries are rendered via PopulateOptions.label(); tests should select by that exact label text.",
-    "NEW INSTRUCTION": "WHEN writing chooser-selection tests THEN match the exact PopulateOptions.label() string"
-}
-
-[2025-12-09 11:31] - Updated by Junie - Error analysis
-{
-    "TYPE": "missing context",
-    "TOOL": "run_test",
-    "ERROR": "Unresolved reference in test source file",
-    "ROOT CAUSE": "The new test references PopulateArgumentsIntentionHooks, which is not defined in the project.",
-    "PROJECT NOTE": "Chooser stubbing must use an existing hook; if none exists, add a test-only hooks object under the same package to expose a mutable PopupHost for tests.",
-    "NEW INSTRUCTION": "WHEN a test references helper hooks THEN verify they exist or add a test-only stub in test sources"
-}
-
-[2025-12-09 12:14] - Updated by Junie - Error analysis
-{
-    "TYPE": "build failure",
-    "TOOL": "create",
-    "ERROR": "Wrong PyPsiFacade.resolveQualifiedName API usage",
-    "ROOT CAUSE": "Used String and element instead of QualifiedName and PyQualifiedNameResolveContext and assumed single result.",
-    "PROJECT NOTE": "In this SDK, call PyPsiFacade.resolveQualifiedName(QualifiedName, PyQualifiedNameResolveContext) and handle a List<PsiElement>; build QualifiedName via QualifiedName.fromDottedString and context via PyQualifiedNameResolveContext based on PyResolveContext/anchor.",
-    "NEW INSTRUCTION": "WHEN calling PyPsiFacade.resolveQualifiedName THEN pass QualifiedName and PyQualifiedNameResolveContext, handle list"
-}
-
-[2025-12-09 12:15] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "create",
-    "ERROR": "Wrong types passed to resolveQualifiedName API",
-    "ROOT CAUSE": "The Kotlin code called PyPsiFacade.resolveQualifiedName with String and element, but the API expects QualifiedName and PyResolveContext and returns a List<PsiElement>.",
-    "PROJECT NOTE": "Use QualifiedName.fromDottedString(name) and PyResolveContext.defaultContext(); convert returned List<PsiElement> to PsiElementResolveResult[].",
-    "NEW INSTRUCTION": "WHEN using PyPsiFacade.resolveQualifiedName THEN pass QualifiedName and PyResolveContext and map list to results"
-}
-
 [2025-12-09 12:18] - Updated by Junie - Error analysis
 {
     "TYPE": "invalid args",
@@ -786,4 +746,34 @@
     "ROOT CAUSE": "Patched expected Python code outside the Kotlin triple-quoted string, corrupting syntax.",
     "PROJECT NOTE": "Tests use myFixture.doIntentionTest with before/after Python embedded in Kotlin triple-quoted strings; edits must remain inside those strings.",
     "NEW INSTRUCTION": "WHEN editing Kotlin test expected Python text THEN modify inside the triple-quoted strings only"
+}
+
+[2025-12-11 10:32] - Updated by Junie - Error analysis
+{
+    "TYPE": "tool failure",
+    "TOOL": "get_file_structure",
+    "ERROR": "File structure parsing failed",
+    "ROOT CAUSE": "The tool cannot parse Kotlin files or failed on this large Kotlin source.",
+    "PROJECT NOTE": "Target file: src/main/kotlin/.../inspections/PyMissingInDunderAllInspection.kt; prefer reading raw content when structure view is unsupported.",
+    "NEW INSTRUCTION": "WHEN get_file_structure returns unsupported or parsing failed THEN read the file via raw file-read tool"
+}
+
+[2025-12-11 10:36] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle :test",
+    "ERROR": "Inspection tests failed: expected warnings not produced",
+    "ROOT CAUSE": "Inspection now skips public modules, but existing tests still use public module names and expect quick-fixes.",
+    "PROJECT NOTE": "Update src/test/testData/inspections/PyMissingInDunderAllInspection/* tests to use private modules (e.g., _module.py) and align expected outputs; failing ones include ModuleMissingFromPackageAllFix*.",
+    "NEW INSTRUCTION": "WHEN PyMissingInDunderAllInspection tests fail after scope change THEN rename test modules to '_' prefix and update expectations"
+}
+
+[2025-12-11 10:37] - Updated by Junie - Error analysis
+{
+    "TYPE": "test failure",
+    "TOOL": "Gradle :test",
+    "ERROR": "Assertions failed in inspection tests",
+    "ROOT CAUSE": "Inspection now skips public modules, but tests still expect public-module warnings/fixes.",
+    "PROJECT NOTE": "Update PyMissingInDunderAllInspection test data under src/test/testData/...: rename modules to private (e.g., _module.py) and adjust expected __init__.py results; tests like ModuleMissingFromPackageAllFix and ..._NoAll currently assume public modules are inspected.",
+    "NEW INSTRUCTION": "WHEN Gradle tests fail in PyMissingInDunderAllInspectionTest THEN update fixtures to private module names and expectations"
 }

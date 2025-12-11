@@ -462,3 +462,11 @@
     "NEW INSTRUCTION": "WHEN working on ParametrizePytestTest intention THEN fix implementation and leave tests unchanged"
 }
 
+[2025-12-11 10:31] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "non-exported symbols inspection",
+    "EXPECTATION": "Inspection should trigger only for private modules; public modules must not be flagged, and a test should verify this behavior.",
+    "NEW INSTRUCTION": "WHEN running non-exported symbol inspection THEN only flag symbols in private modules"
+}
+

@@ -2,4 +2,4 @@
 
 __all__ = ["PublicClass"]
 
-from .module import PublicClass
+from ._module import PublicClass

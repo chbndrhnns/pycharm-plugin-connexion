@@ -34,9 +34,9 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
         val basePath = "inspections/PyMissingInDunderAllInspection/$testName"
 
         myFixture.doMultiFileInspectionTest(
-            files = listOf("$basePath/__init__.py", "$basePath/client.py", "$basePath/other.py"),
+            files = listOf("$basePath/__init__.py", "$basePath/_client.py", "$basePath/other.py"),
             inspection = PyMissingInDunderAllInspection::class.java,
-            targetFile = "$basePath/client.py",
+            targetFile = "$basePath/_client.py",
             checkHighlighting = false,
             checkWeakWarnings = true,
             fixFamilyName = "Add to __all__",
@@ -61,19 +61,15 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
         )
     }
 
-    fun testPublicModuleMissingFromPackageAllFix_NoAll() {
+    fun testPublicModuleNotInspected() {
         val testName = "PublicModuleMissingFromPackageAllFix_NoAll"
         val basePath = "inspections/PyMissingInDunderAllInspection/$testName"
 
         myFixture.doMultiFileInspectionTest(
             files = listOf("$basePath/__init__.py", "$basePath/module.py"),
             inspection = PyMissingInDunderAllInspection::class.java,
-            targetFile = "$basePath/module.py",
-            checkHighlighting = false,
-            checkWeakWarnings = true,
-            fixFamilyName = "Add to __all__",
-            resultFileToCheck = "$basePath/__init__.py",
-            expectedResultFile = "inspections/PyMissingInDunderAllInspection/${testName}_after/__init__.py"
+            checkHighlighting = true,
+            checkWeakWarnings = false,
         )
     }
 
@@ -256,7 +252,7 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
     private fun doModuleTest(testName: String) {
         val basePath = "inspections/PyMissingInDunderAllInspection"
         myFixture.doMultiFileInspectionTest(
-            files = listOf("$basePath/$testName/__init__.py", "$basePath/$testName/module.py"),
+            files = listOf("$basePath/$testName/__init__.py", "$basePath/$testName/_module.py"),
             inspection = PyMissingInDunderAllInspection::class.java,
             checkHighlighting = true,
             checkWeakWarnings = false
@@ -267,9 +263,9 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
         val basePath = "inspections/PyMissingInDunderAllInspection"
 
         myFixture.doMultiFileInspectionTest(
-            files = listOf("$basePath/$testName/__init__.py", "$basePath/$testName/module.py"),
+            files = listOf("$basePath/$testName/__init__.py", "$basePath/$testName/_module.py"),
             inspection = PyMissingInDunderAllInspection::class.java,
-            targetFile = "$basePath/$testName/module.py",
+            targetFile = "$basePath/$testName/_module.py",
             checkHighlighting = false,
             checkWeakWarnings = true,
             fixFamilyName = "Add to __all__",
