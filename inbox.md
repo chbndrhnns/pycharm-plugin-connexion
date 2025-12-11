@@ -40,7 +40,6 @@
 
 ## In Progress Tasks
 
-- [-] fix: When introducing parameter object, respect * and create named parameter
 - [-] feat: Add quickfix to parametrize test
   - [ ] arg ends up outside of parentheses if no args
 - [ ] feat: Add __slots__ = () when introducing custom type for str
@@ -51,6 +50,7 @@
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Introduce parameter object should be available on call site method name
 - [x] feat: Check which parts are not toggleable in settings so far
 - [x] refactor: `if (!aliasName.isNullOrBlank() && !PyBuiltinNames.isBuiltin(aliasName)) {`
 - [x] refactor: `MakeParameterMandatoryIntention`
