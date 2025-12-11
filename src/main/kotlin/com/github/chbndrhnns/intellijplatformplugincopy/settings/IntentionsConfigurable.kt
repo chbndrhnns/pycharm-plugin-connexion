@@ -81,6 +81,10 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                 checkBox("‘Toggle pytest skip’ intention")
                     .bindSelected(settings::enableTogglePytestSkipIntention)
             }
+            row {
+                checkBox("‘Parametrize pytest test’ intention")
+                    .bindSelected(settings::enableParametrizePytestTestIntention)
+            }
         }
     }
 }

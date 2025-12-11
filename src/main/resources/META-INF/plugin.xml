@@ -129,6 +129,11 @@
             <category>Test</category>
         </intentionAction>
 
+        <intentionAction>
+            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest.ParametrizePytestTestIntention</className>
+            <category>Test</category>
+        </intentionAction>
+
         <applicationConfigurable
                 displayName="DDD Toolkit"
                 id="com.github.chbndrhnns.intellijplatformplugincopy.settings"

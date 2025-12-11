@@ -1,43 +1,3 @@
-[2025-12-04 11:34] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "run tests, implement logic, verify fixes",
-    "BOTTLENECK": "No test run prevented feedback loop for required logic changes.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN new tests are added or changed THEN run all tests and report failures"
-}
-
-[2025-12-04 11:54] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "update availability, implement logic, run full test suite",
-    "BOTTLENECK": "Intention not available because variadic/separator params are filtered out.",
-    "PROJECT NOTE": "collectParameters excludes *args/**kwargs and separators; replaceFunctionSignature/updateCallSites must preserve them.",
-    "NEW INSTRUCTION": "WHEN tests fail with 'Introduce parameter object' not in THEN update availability and parameter collection for *, /, *args, **kwargs"
-}
-
-[2025-12-04 12:40] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "add ad-hoc println debugging",
-    "MISSING STEPS": "run new test before change, remove debug code",
-    "BOTTLENECK": "Skipped running the newly added test before implementing the fix.",
-    "PROJECT NOTE": "Tests likely compare exact output formatting; ensure expected text matches generated imports and spacing.",
-    "NEW INSTRUCTION": "WHEN a new test is added THEN run that single test to confirm it fails"
-}
-
-[2025-12-04 13:03] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "run full test suite, submit changes",
-    "BOTTLENECK": "Skipped running the full test suite to catch regressions before submitting.",
-    "PROJECT NOTE": "Ensure underscore filtering is applied consistently in required-only parameter paths too.",
-    "NEW INSTRUCTION": "WHEN targeted tests pass after implementing a fix THEN run the full test suite and summarize"
-}
-
 [2025-12-04 13:08] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -876,4 +836,44 @@
     "BOTTLENECK": "Did not actually review full plugin.xml; relied on secondary docs.",
     "PROJECT NOTE": "plugin.xml view was truncated; you must scroll to see component declarations.",
     "NEW INSTRUCTION": "WHEN plugin.xml view shows truncated or partial content THEN scroll down to review entire file"
+}
+
+[2025-12-11 07:30] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "search project (exact string), duplicate file inspection",
+    "MISSING STEPS": "apply patch, run build, submit",
+    "BOTTLENECK": "Used bash for multi-line edit instead of apply_patch.",
+    "PROJECT NOTE": "Centralize deferral in PythonVersionNotifier so startup and listener both honor indexing completion.",
+    "NEW INSTRUCTION": "WHEN editing a file with multi-line changes THEN use apply_patch to modify the file"
+}
+
+[2025-12-11 08:17] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "broad search",
+    "MISSING STEPS": "update settings UI, register intention, summarize test results",
+    "BOTTLENECK": "Initial search was too broad and noisy, slowing navigation.",
+    "PROJECT NOTE": "Mirror TogglePytestSkipIntention for class/package naming and intentionDescriptions structure.",
+    "NEW INSTRUCTION": "WHEN search_project warns more than 100 results THEN refine query with specific package or class"
+}
+
+[2025-12-11 08:18] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "open file (duplicate)",
+    "MISSING STEPS": "scan project, identify write action scope",
+    "BOTTLENECK": "Root-cause was inferred without explicitly locating the write-action boundaries first.",
+    "PROJECT NOTE": "updateCallSites runs inside WriteCommandAction; heavy resolution must be done before entering write action.",
+    "NEW INSTRUCTION": "WHEN stacktrace mentions write action or runBlockingCancellable forbidden THEN search_project for WriteCommandAction and map methods invoked inside its block"
+}
+
+[2025-12-11 08:21] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "update status",
+    "MISSING STEPS": "scan project, open reference tests, implement intention, add resources, add tests, run tests",
+    "BOTTLENECK": "The agent changed settings before confirming file patterns and adding the core intention and tests.",
+    "PROJECT NOTE": "Mirror TogglePytestSkipIntention patterns for class structure, resources, and tests.",
+    "NEW INSTRUCTION": "WHEN adding a new intention THEN first implement intention class and its tests before UI toggles"
 }

@@ -1,53 +1,3 @@
-[2025-12-08 23:12] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "create",
-    "ERROR": "Unresolved reference 'git4idea' in test file",
-    "ROOT CAUSE": "Git plugin classes were not on the test compile classpath, so git4idea symbols could not resolve.",
-    "PROJECT NOTE": "Do not rely on git4idea in tests here; use VCS-agnostic service/mocks, or declare Git4Idea as a bundled plugin dependency in the Gradle intellijPlatform pluginDependencies block if truly required.",
-    "NEW INSTRUCTION": "WHEN external IDE plugin classes are unresolved in tests THEN replace with VCS-agnostic mocks or project APIs"
-}
-
-[2025-12-08 23:12] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "create",
-    "ERROR": "Unresolved reference 'git4idea' in new test file",
-    "ROOT CAUSE": "The test imports Git plugin APIs without the plugin on the test classpath.",
-    "PROJECT NOTE": "If Git APIs are needed, add 'Git4Idea' to platformBundledPlugins in gradle.properties and run tests via Gradle; otherwise keep tests VCS-agnostic.",
-    "NEW INSTRUCTION": "WHEN importing git4idea causes unresolved references THEN write a VCS-agnostic high-level test without plugin imports"
-}
-
-[2025-12-08 23:15] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "search_replace",
-    "ERROR": "Compared Unit? to Boolean in processSelectedItem",
-    "ROOT CAUSE": "NavigationItem.navigate returns Unit, but code compared it to Boolean causing a type mismatch.",
-    "PROJECT NOTE": "In IntelliJ Platform, NavigationItem.navigate(boolean requestFocus) returns Unit; do not compare its result.",
-    "NEW INSTRUCTION": "WHEN processSelectedItem uses NavigationItem.navigate return value THEN call navigate(true) and return true without comparison"
-}
-
-[2025-12-09 00:14] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "run_test",
-    "ERROR": "Missing test-log.properties for j.u.l.LogManager",
-    "ROOT CAUSE": "The test JVM expects a java.util.logging configuration file at a non-existent path.",
-    "PROJECT NOTE": "Provide a JUL config under src/test/resources/test-log.properties and set system property java.util.logging.config.file to it in the Gradle test task.",
-    "NEW INSTRUCTION": "WHEN run_test reports missing test-log.properties THEN set java.util.logging.config.file to a valid resource path"
-}
-
-[2025-12-09 09:34] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "run_test",
-    "ERROR": "Missing j.u.l LogManager config file",
-    "ROOT CAUSE": "The IntelliJ test runner looked for a JUL test-log.properties that isn't present in the IDE cache.",
-    "PROJECT NOTE": "Gradle IntelliJ tests may print JUL config missing yet still execute fully; optionally set -Djava.util.logging.config.file to a valid properties file in test resources to silence it.",
-    "NEW INSTRUCTION": "WHEN run_test prints 'LogManager config file does not exist' THEN proceed if tests summary shows all passed"
-}
-
 [2025-12-09 09:34] - Updated by Junie - Error analysis
 {
     "TYPE": "env/setup",
@@ -796,4 +746,54 @@
     "ROOT CAUSE": "The bash invocation passed a --tests filter with an opening quote but no closing quote, likely truncated, so the tool could not parse the command.",
     "PROJECT NOTE": "Run tests with a complete FQN and proper quoting, e.g., ./gradlew test --tests 'com.github.chbndrhnns.intellijplatformplugincopy.completion.PyReturnCompletionTest'.",
     "NEW INSTRUCTION": "WHEN bash command includes unterminated quotes THEN reissue it with proper balanced quoting and full test name"
+}
+
+[2025-12-11 07:29] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "search_replace",
+    "ERROR": "Cannot resolve extension point 'com.intellij.intentionAction'",
+    "ROOT CAUSE": "The validator environment cannot resolve this IntelliJ extension point though it exists at build/runtime.",
+    "PROJECT NOTE": "IntentionsConfigurable.getDependencies uses EP 'com.intellij.intentionAction', which is correct; this repo often shows validator false positives for platform EPs.",
+    "NEW INSTRUCTION": "WHEN validator flags unresolved 'com.intellij.intentionAction' EP THEN keep code unchanged and continue"
+}
+
+[2025-12-11 08:18] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "apply_patch",
+    "ERROR": "Cannot resolve extension point intentionAction",
+    "ROOT CAUSE": "IntentionsConfigurable.getDependencies uses ExtensionPointName.create<Any>(\"com.intellij.intentionAction\"), which mismatches the EP bean type and breaks resolution.",
+    "PROJECT NOTE": "Use the correct bean type for the EP: ExtensionPointName.create<com.intellij.codeInsight.intention.IntentionActionBean>(\"com.intellij.intentionAction\"); alternatively remove getDependencies() if not required.",
+    "NEW INSTRUCTION": "WHEN getDependencies reports unresolved intentionAction EP THEN use IntentionActionBean as the EP type"
+}
+
+[2025-12-11 08:18] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "apply_patch",
+    "ERROR": "Cannot resolve extension point 'com.intellij.intentionAction'",
+    "ROOT CAUSE": "Configurable.getDependencies references an EP ID not resolvable in the current SDK.",
+    "PROJECT NOTE": "If the platform SDK lacks 'com.intellij.intentionAction', omit getDependencies() or use a resolvable EP for this SDK.",
+    "NEW INSTRUCTION": "WHEN IDE reports unresolved extension point ID THEN remove getDependencies override or use a valid EP ID"
+}
+
+[2025-12-11 08:19] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "apply_patch",
+    "ERROR": "Cannot resolve extension point id",
+    "ROOT CAUSE": "IntentionsConfigurable.getDependencies uses a raw EP id string the validator cannot resolve; use the platform EP constant.",
+    "PROJECT NOTE": "In settings IntentionsConfigurable, depend on IntentionActionBean.EP_NAME instead of \"com.intellij.intentionAction\".",
+    "NEW INSTRUCTION": "WHEN declaring EP dependency for intentions THEN use IntentionActionBean.EP_NAME constant"
+}
+
+[2025-12-11 08:21] - Updated by Junie - Error analysis
+{
+    "TYPE": "build failure",
+    "TOOL": "apply_patch",
+    "ERROR": "Cannot resolve extension point 'com.intellij.intentionAction'",
+    "ROOT CAUSE": "IntentionsConfigurable.getDependencies creates EP by string; the SDK expects using the typed EP constant.",
+    "PROJECT NOTE": "Use IntentionActionBean.EP_NAME instead of ExtensionPointName.create(\"com.intellij.intentionAction\") in IntentionsConfigurable.getDependencies.",
+    "NEW INSTRUCTION": "WHEN declaring intention EP dependency THEN use IntentionActionBean.EP_NAME instead of string-based create"
 }
