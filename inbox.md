@@ -2,6 +2,7 @@
 
 ## Pending Issues
 
+- [ ] fix: When preferrin relative import inside same package, do not add candidate if relative import exists already
 - [ ] fix: Parse tests in console
   - [ ] Strip spaces in the beginning
   - [ ] Parse args with single quotes correctly, like ` tests/test_.py::test_this[<class 'src.MyClass'>]`
@@ -13,6 +14,8 @@
 
 ## Pending Features
 
+- [ ] feat: Annotate constant with `Final[T]`
+- [ ] feat: Treat unresolved references as errors
 - [ ] feat: Wrap with pytest.raises()
 - [ ] feat: Move symbol to top level (or one scope up?)
 - [ ] feat: Add pytest nodes to separate view in search everywhere (currently, `pytest` seems not respected)
@@ -46,12 +49,12 @@
 
 ## In Progress Tasks
 
-- [-] feat: Configure dunder all inspection to be only available if __all__ is present
 - [ ] feat: Replace expected with actual test outcome
 - [ ] feat: Jump from test to test node
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Configure dunder all inspection to be only available if __all__ is present
 - [x] feat: Add __slots__ = () when introducing custom type for str
 - [x] feat: Add quickfix to parametrize test
   - [x] arg ends up outside of parentheses if no args
