@@ -2,15 +2,20 @@
 
 ## Pending Issues
 
+- [ ] fix: Parse tests in console
+  - [ ] Strip spaces in the beginning
+  - [ ] Parse args with single quotes correctly, like ` tests/test_.py::test_this[<class 'src.MyClass'>]`
 - [ ] fix: When implementing abstract method, take care of existing ellipsis
 - [ ] fix: implement abstract method is put above __init__
 - [ ] feat: Consider if this should only work for dataclass/classes, for others, there is change signature
-- [ ] fix: Add pytest nodes to separate view in search everywhere (currently, `pytest` seems not respected)
 - [ ] fix: cancel introduce type rename dialog still keeps it
 - [ ] refactor: How to find if the caret is inside parentheses? `[PopulateArgumentsService.findCallExpression`
 
 ## Pending Features
 
+- [ ] feat: Wrap with pytest.raises()
+- [ ] feat: Move symbol to top level (or one scope up?)
+- [ ] feat: Add pytest nodes to separate view in search everywhere (currently, `pytest` seems not respected)
 - [ ] feat: Make introduce parameter object available on call site
 - [ ] feat: When implementing abstract method, present dialog to choose or show edits
 - [ ] feat: Move instance method
@@ -37,17 +42,17 @@
 - [ ] feat: Block list: Do not allow names from typing or collections.abc.
 - [ ] feat: Configure default base classes
 - [ ] commit: if it fails for hooks, add option keep selection of files (docs/keep-commit-selection/spec.md, stash)
+- [ ] feat: Show red bubble if introduce parameter object is not available
 
 ## In Progress Tasks
 
-- [ ] feat: Add __slots__ = () when introducing custom type for str
-- [ ] feat: Show red bubble if introduce parameter object is not available
 - [-] feat: Configure dunder all inspection to be only available if __all__ is present
 - [ ] feat: Replace expected with actual test outcome
 - [ ] feat: Jump from test to test node
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Add __slots__ = () when introducing custom type for str
 - [x] feat: Add quickfix to parametrize test
   - [x] arg ends up outside of parentheses if no args
 - [x] feat: Introduce parameter object should be available on call site method name
