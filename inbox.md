@@ -2,10 +2,7 @@
 
 ## Pending Issues
 
-- [ ] fix: When preferrin relative import inside same package, do not add candidate if relative import exists already
-- [ ] fix: Parse tests in console
-  - [ ] Strip spaces in the beginning
-  - [ ] Parse args with single quotes correctly, like ` tests/test_.py::test_this[<class 'src.MyClass'>]`
+- [ ] fix: When prefering relative import inside same package, do not add candidate if relative import exists already
 - [ ] fix: When implementing abstract method, take care of existing ellipsis
 - [ ] fix: implement abstract method is put above __init__
 - [ ] feat: Consider if this should only work for dataclass/classes, for others, there is change signature
@@ -54,6 +51,9 @@
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Parse tests in console: Parse args with single quotes correctly, like
+  `tests/test_.py::test_this[<class 'src.MyClass'>]`
+- [x] fix: Parse tests in console: Strip spaces in the beginning
 - [x] feat: Configure dunder all inspection to be only available if __all__ is present
 - [x] feat: Add __slots__ = () when introducing custom type for str
 - [x] feat: Add quickfix to parametrize test
