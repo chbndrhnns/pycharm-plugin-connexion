@@ -2,7 +2,6 @@
 
 ## Pending Issues
 
-- [ ] fix: When introducing parameter object, respect * and create named parameter
 - [ ] fix: When implementing abstract method, take care of existing ellipsis
 - [ ] fix: implement abstract method is put above __init__
 - [ ] feat: Consider if this should only work for dataclass/classes, for others, there is change signature
@@ -41,6 +40,7 @@
 
 ## In Progress Tasks
 
+- [-] fix: When introducing parameter object, respect * and create named parameter
 - [-] feat: Add quickfix to parametrize test
   - [ ] arg ends up outside of parentheses if no args
 - [ ] feat: Add __slots__ = () when introducing custom type for str
