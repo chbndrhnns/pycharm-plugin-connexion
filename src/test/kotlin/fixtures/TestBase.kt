@@ -47,6 +47,8 @@ abstract class TestBase : MyPlatformTestCase() {
                 enableCopyPytestNodeIdsAction = true,
                 enableCopyFQNsAction = true,
                 enableCopyStacktraceAction = true,
+                enableTogglePytestSkipIntention = true,
+                enableParametrizePytestTestIntention = true,
             ),
         )
         PythonTestSetup.createAndRegisterSdk(
