@@ -470,3 +470,27 @@
     "NEW INSTRUCTION": "WHEN running non-exported symbol inspection THEN only flag symbols in private modules"
 }
 
+[2025-12-11 11:01] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "pytest console filter",
+    "EXPECTATION": "Node ids that include single quotes inside parameter brackets should be matched and linked correctly as one node id.",
+    "NEW INSTRUCTION": "WHEN node id contains single quotes in brackets THEN allow them in hyperlink match range"
+}
+
+[2025-12-11 11:14] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "pytest console filter",
+    "EXPECTATION": "Hyperlink should end exactly at the node id, stopping at the closing ']' when parameters are present, even with embedded single quotes or trailing console decorations.",
+    "NEW INSTRUCTION": "WHEN node id contains '[' parameters THEN end hyperlink at the first matching ']' before whitespace"
+}
+
+[2025-12-11 11:18] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "pytest console filter",
+    "EXPECTATION": "Hyperlink detection should not rely on explicit status keywords; it must stop exactly at the node id boundary (closing ']' for parametrized, otherwise first whitespace).",
+    "NEW INSTRUCTION": "WHEN parsing pytest console lines THEN end hyperlink at node id without referencing status words"
+}
+

@@ -777,3 +777,14 @@
     "PROJECT NOTE": "Update PyMissingInDunderAllInspection test data under src/test/testData/...: rename modules to private (e.g., _module.py) and adjust expected __init__.py results; tests like ModuleMissingFromPackageAllFix and ..._NoAll currently assume public modules are inspected.",
     "NEW INSTRUCTION": "WHEN Gradle tests fail in PyMissingInDunderAllInspectionTest THEN update fixtures to private module names and expectations"
 }
+
+[2025-12-11 11:05] - Updated by Junie - Error analysis
+{
+    "TYPE": "syntax error",
+    "TOOL": "apply_patch",
+    "ERROR": "Unbalanced quotes in Kotlin regex string caused syntax error",
+    "ROOT CAUSE": "The updated Pattern.compile string included an extra quote inside the lookahead, breaking Kotlin parsing.",
+    "PROJECT NOTE": "In PytestConsoleFilter.kt, regex strings must have balanced quotes and properly escaped backslashes; consider using triple-quoted strings for complex patterns.",
+    "NEW INSTRUCTION": "WHEN editing Kotlin regex in PytestConsoleFilter THEN ensure balanced quotes and escapes before saving"
+}
+

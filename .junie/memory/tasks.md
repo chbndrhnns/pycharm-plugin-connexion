@@ -1,13 +1,3 @@
-[2025-12-04 21:09] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "search project",
-    "MISSING STEPS": "cleanup imports",
-    "BOTTLENECK": "Helper placed in feature package reduces reuse and consistency across tests.",
-    "PROJECT NOTE": "Place shared test utilities under fixtures to align with existing helpers.",
-    "NEW INSTRUCTION": "WHEN multiple tests duplicate UiInterceptors for IntroduceParameterObjectDialog THEN create fixtures helper and replace per-test interceptors across files"
-}
-
 [2025-12-04 21:14] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -876,4 +866,14 @@
     "BOTTLENECK": "No baseline test run before applying the fix.",
     "PROJECT NOTE": "-",
     "NEW INSTRUCTION": "WHEN starting a bug fix THEN run relevant tests to capture baseline"
+}
+
+[2025-12-11 11:08] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "run tests",
+    "BOTTLENECK": "Malformed regex string introduced a syntax error and was not validated by tests.",
+    "PROJECT NOTE": "Node id regex should allow quotes/brackets and stop before trailing status using a non-greedy group with whitespace lookahead.",
+    "NEW INSTRUCTION": "WHEN editing PytestConsoleFilter regex THEN run ./gradlew test and correct syntax or failing assertions immediately"
 }

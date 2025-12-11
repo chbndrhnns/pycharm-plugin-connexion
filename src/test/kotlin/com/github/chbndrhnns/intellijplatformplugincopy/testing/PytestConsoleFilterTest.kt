@@ -64,4 +64,36 @@ class PytestConsoleFilterTest : TestBase() {
         // The match stops before the space.
         assertEquals(23, item.highlightEndOffset)
     }
+
+    fun testParseWithColorizedStatus() {
+        val filter = PytestConsoleFilter(project)
+        val line = "test_file.py::test_func \u001B[32mPASSED\u001B[0m"
+        val result = filter.applyFilter(line, line.length)
+        assertNotNull(result)
+        val item = result!!.resultItems.first()
+        assertEquals(0, item.highlightStartOffset)
+        assertEquals("test_file.py::test_func".length, item.highlightEndOffset)
+    }
+
+    fun testParseWithQuotedNodeId() {
+        val filter = PytestConsoleFilter(project)
+        val line = "tests/test_.py::test_this[<class 'src.MyClass'>]"
+        val result = filter.applyFilter(line, line.length)
+        assertNotNull(result)
+        val item = result!!.resultItems.first()
+        assertEquals(0, item.highlightStartOffset)
+        assertEquals(line.length, item.highlightEndOffset)
+    }
+
+    fun testParseStopsAfterClosingBracketBeforeProgress() {
+        val filter = PytestConsoleFilter(project)
+        val line =
+            " tests/unit/test_integrity.py::test_no_skip_markers_on_adapter_fixture[<class 'src.adapters.outbound._openstack._os_network_repo.HttpOpenstackNetworkRepository'>] ✓                                                                                                            48% ████▉ "
+        val result = filter.applyFilter(line, line.length)
+        assertNotNull(result)
+        val item = result!!.resultItems.first()
+        assertEquals(1, item.highlightStartOffset)
+        val expectedEnd = line.indexOf(']') + 1
+        assertEquals(expectedEnd, item.highlightEndOffset)
+    }
 }
