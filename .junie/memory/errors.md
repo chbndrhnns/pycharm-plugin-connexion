@@ -1,43 +1,3 @@
-[2025-12-09 22:30] - Updated by Junie - Error analysis
-{
-    "TYPE": "test failure",
-    "TOOL": "run_test",
-    "ERROR": "Intentional fail() caused test run to error",
-    "ROOT CAUSE": "A diagnostic test deliberately calls fail(), converting the debug run into a build error.",
-    "PROJECT NOTE": "Large failure messages can break Gradle’s XML reports; prefer stdout/stderr for diagnostics.",
-    "NEW INSTRUCTION": "WHEN adding temporary debug output in tests THEN print logs and keep tests passing"
-}
-
-[2025-12-09 23:19] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "search_replace",
-    "ERROR": "Unresolved reference 'PackageIndex'",
-    "ROOT CAUSE": "Replaced a deprecated API with a non-existent class for this SDK version.",
-    "PROJECT NOTE": "This project’s PyCharm SDK does not include com.intellij.openapi.roots.PackageIndex; do not import it as a replacement.",
-    "NEW INSTRUCTION": "WHEN import becomes unresolved after an edit THEN undo change and verify correct SDK API before retrying"
-}
-
-[2025-12-09 23:22] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid API",
-    "TOOL": "search_replace",
-    "ERROR": "Unresolved reference 'PackageIndex'",
-    "ROOT CAUSE": "Replaced a deprecated API with PackageIndex, which is unavailable in the project’s SDK version.",
-    "PROJECT NOTE": "For package name lookup by directory, keep ProjectRootManager.getInstance(project).fileIndex.getPackageNameByDirectory with @Suppress(\"DEPRECATION\") unless com.intellij.openapi.roots.PackageIndex exists in the targeted platform.",
-    "NEW INSTRUCTION": "WHEN replacing a deprecated IntelliJ API THEN verify target class exists in current SDK before editing"
-}
-
-[2025-12-09 23:31] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "Gradle :test",
-    "ERROR": "Could not read Gradle transforms workspace metadata.bin",
-    "ROOT CAUSE": "The Gradle transforms cache is corrupted while configuring IntelliJ platform test dependencies.",
-    "PROJECT NOTE": "This IntelliJ plugin project relies on Gradle-managed IDE artifacts; cache corruption in ~/.gradle/caches/transforms can break configuration. Refresh dependencies from project root.",
-    "NEW INSTRUCTION": "WHEN Gradle reports 'Could not read workspace metadata' THEN run './gradlew --refresh-dependencies cleanTest test'"
-}
-
 [2025-12-09 23:45] - Updated by Junie - Error analysis
 {
     "TYPE": "logic bug",
@@ -777,3 +737,44 @@
     "PROJECT NOTE": "myFixture.checkResult compares the entire file text; inspect build/test-results/test/TEST-...StripSignatureTypeAnnotationsIntentionTest.xml to see actual vs expected and mind indentation/spacing.",
     "NEW INSTRUCTION": "WHEN FileComparisonFailedError appears in intention test THEN open XML report and align intention output with expected"
 }
+
+[2025-12-12 18:40] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle :test",
+    "ERROR": "Unexpected missing-__all__ warning for library import",
+    "ROOT CAUSE": "The inspection filters only PyFromImportStatement; PyImportStatement aliases still trigger warnings.",
+    "PROJECT NOTE": "In PyMissingInDunderAllInspection.kt, handle both PyFromImportStatement and PyImportStatement; use ProjectRootManager.fileIndex to treat only source-content resolutions as user code.",
+    "NEW INSTRUCTION": "WHEN inspecting __init__.py imports THEN skip elements resolving outside project source content"
+}
+
+[2025-12-12 18:41] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle :test",
+    "ERROR": "Unexpected 'not exported in __all__' highlight in test",
+    "ROOT CAUSE": "Import filtering to skip third‑party symbols in __init__.py is incomplete, so some imports still trigger the warning.",
+    "PROJECT NOTE": "In PyMissingInDunderAllInspection.checkInitFileExports, apply the same resolvesToUserCode gate to both PyFromImportStatement and PyImportStatement.",
+    "NEW INSTRUCTION": "WHEN scanning __init__.py import statements THEN skip if targets are outside project sources"
+}
+
+[2025-12-12 18:43] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle :test",
+    "ERROR": "Assertion failed: unexpected 'not exported in __all__' warning",
+    "ROOT CAUSE": "The import filter uses PyImportElement.multiResolve(), which doesn't reliably point to source files, so third‑party from-imports were still inspected.",
+    "PROJECT NOTE": "Tests mark third‑party code via PsiTestUtil.addExcludedRoot; detect user code with ProjectRootManager.getInstance(project).fileIndex.isInSourceContent(vFile).",
+    "NEW INSTRUCTION": "WHEN from-import in __init__.py resolves outside source content THEN skip missing __all__ check"
+}
+
+[2025-12-12 19:56] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid threading",
+    "TOOL": "JumpToPytestNodeInTestTreeAction",
+    "ERROR": "PSI requested on EDT during update()",
+    "ROOT CAUSE": "update() runs on EDT but queries psi.File via DataContext, which must run in BGT.",
+    "PROJECT NOTE": "JumpToPytestNodeInTestTreeAction.update at line 25 accesses PSI; override getActionUpdateThread() to return BGT or avoid PSI in update.",
+    "NEW INSTRUCTION": "WHEN action update reads PSI or slow data THEN return ActionUpdateThread.BGT for the action"
+}
+

@@ -59,6 +59,17 @@ object PytestNodeIdGenerator {
         )
     }
 
+    fun fromPsiElement(element: PsiElement, project: Project): String? {
+        val file = element.containingFile?.virtualFile ?: return null
+        return calculateNodeId(
+            element = element,
+            file = file,
+            project = project,
+            metainfo = null,
+            pathFqn = null
+        )
+    }
+
     private fun findModuleFromProtocol(protocol: String, project: Project): Module? {
         val matcher = PROTOCOL_PATTERN.matcher(protocol)
         if (!matcher.matches()) return null
@@ -79,7 +90,7 @@ object PytestNodeIdGenerator {
         file: VirtualFile,
         project: Project,
         metainfo: String?,
-        pathFqn: String
+        pathFqn: String?
     ): String {
         // A. File Part (Relative path with / separator)
         val relativePath = ProjectFileIndex.getInstance(project)
@@ -95,7 +106,7 @@ object PytestNodeIdGenerator {
         val pyFile = element.containingFile as? PyFile
         val fileQName = pyFile?.getQName()
 
-        if (fileQName != null) {
+        if (!pathFqn.isNullOrBlank() && fileQName != null) {
             val pathQN = QualifiedName.fromDottedString(pathFqn)
 
             // Check if the path actually starts with the file's QName
@@ -149,6 +160,6 @@ object PytestNodeIdGenerator {
         }
 
         if (parts.isEmpty()) return relativePath
-        return "$relativePath::${parts.joinToString("::")}"
+        return "$relativePath::${parts.joinToString("::")}" 
     }
 }

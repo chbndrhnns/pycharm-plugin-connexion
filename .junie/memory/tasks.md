@@ -1,63 +1,3 @@
-[2025-12-08 22:11] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "add debug logging",
-    "MISSING STEPS": "inspect existing tests, scan project",
-    "BOTTLENECK": "New test used wrong base/imports due to not reusing existing fixtures.",
-    "PROJECT NOTE": "Tests should follow UnwrapBasicTest.kt using fixtures.TestBase and fixtures.doIntentionTest.",
-    "NEW INSTRUCTION": "WHEN adding a new test file THEN open a similar existing test and mirror imports and helpers"
-}
-
-[2025-12-08 22:56] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "run tests,create reproduction test case",
-    "MISSING STEPS": "open files,apply patch,reformat code,run build,verify preview handling",
-    "BOTTLENECK": "No code changes were applied to address the preview write context.",
-    "PROJECT NOTE": "Route preview via IntentionPreviewInfo.DIFF and pass isPreview to applier in invoke.",
-    "NEW INSTRUCTION": "WHEN IntentionPreviewUtils.isIntentionPreviewActive() is true THEN perform PSI edits via IntentionPreviewUtils.write and bypass WriteCommandAction"
-}
-
-[2025-12-08 23:02] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "broad search",
-    "MISSING STEPS": "run tests, submit",
-    "BOTTLENECK": "No test run after applying the code change to verify the fix.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN code or tests are modified THEN run target tests and summarize outcomes"
-}
-
-[2025-12-08 23:12] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "edit dependencies,create failing integration test,flip dependencies again",
-    "MISSING STEPS": "add high-level test,run tests,implement listener,register listener,implement banner",
-    "BOTTLENECK": "Chasing git4idea dependency names stalled progress before writing the requested high-level test.",
-    "PROJECT NOTE": "Use existing fixtures (TestBase) and myFixture.checkResult for tests per repo conventions.",
-    "NEW INSTRUCTION": "WHEN starting a feature implementation THEN first add a failing high-level test using TestBase"
-}
-
-[2025-12-08 23:15] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "update plugin.xml, add tests, run tests",
-    "BOTTLENECK": "Time lost fixing API mismatches from unverified IntelliJ SDK method signatures.",
-    "PROJECT NOTE": "Register the SearchEverywhere contributor Factory under com.intellij.searchEverywhereContributor in plugin.xml.",
-    "NEW INSTRUCTION": "WHEN implementing IntelliJ API interactions THEN verify method signatures in SDK before coding"
-}
-
-[2025-12-09 00:09] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "get file structure",
-    "MISSING STEPS": "open target file",
-    "BOTTLENECK": "Brittle bulk search-replace without first viewing the target file.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN task references a specific file THEN open the file before editing"
-}
-
 [2025-12-09 00:22] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -886,4 +826,54 @@
     "BOTTLENECK": "Action visibility logic was not implemented to filter for failed tests.",
     "PROJECT NOTE": "Adjust CopyStacktraceAction.update to inspect TestTreeView selection and gate visibility by SMTestProxy.isDefect stacktraces; add a corresponding update-visibility test.",
     "NEW INSTRUCTION": "WHEN action update depends on TestTreeView selection THEN enable only if selection has defective leaf"
+}
+
+[2025-12-12 15:26] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "propose fix without editing code",
+    "MISSING STEPS": "edit code, add tests, run tests, submit",
+    "BOTTLENECK": "The agent described a patch but never applied changes or added tests.",
+    "PROJECT NOTE": "ExpectedTypeInfo.kt centralizes type extraction; modify contributor and extend existing completion tests.",
+    "NEW INSTRUCTION": "WHEN proposing code changes in answer THEN apply patch, add tests, and run targeted tests"
+}
+
+[2025-12-12 15:47] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "summarize changes",
+    "MISSING STEPS": "scan tests for conflicting expectations,confirm requirement change against existing behavior/tests",
+    "BOTTLENECK": "Requirements conflict with existing tests that expect intention inside tests.",
+    "PROJECT NOTE": "Current TogglePytestSkipIntentionTest has positive tests for function/class skip that must be removed or flipped.",
+    "NEW INSTRUCTION": "WHEN new task conflicts with existing tests THEN ask_user to confirm intended behavior"
+}
+
+[2025-12-12 18:19] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "change availability to module-only, add negative tests for functions/classes",
+    "MISSING STEPS": "implement function-level availability, implement class-level availability on class name, add availability tests per scope, align isAvailable with invoke behavior",
+    "BOTTLENECK": "Availability logic was set to module-only, contradicting scope-specific requirements.",
+    "PROJECT NOTE": "TogglePytestSkipIntention.isAvailable blocks functions/classes while invoke supports decorator toggling; tests enforce the wrong availability.",
+    "NEW INSTRUCTION": "WHEN feature has scope-specific availability rules THEN add scope tests and implement matching isAvailable"
+}
+
+[2025-12-12 18:46] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "get file structure,update status",
+    "MISSING STEPS": "-",
+    "BOTTLENECK": "Pinpointing where aliased imports were treated as exportable.",
+    "PROJECT NOTE": "There is an existing focused test suite for this inspection; extending it is straightforward.",
+    "NEW INSTRUCTION": "WHEN change targets a known file THEN open that file directly"
+}
+
+[2025-12-12 19:52] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "restate plan,excessive searching",
+    "MISSING STEPS": "implement action,implement navigator,add tests,run tests",
+    "BOTTLENECK": "Failure to integrate with TestTreeView/Run toolwindow selection APIs.",
+    "PROJECT NOTE": "Leverage AbstractCopyTestNodeAction and TestProxyExtractor patterns; add a selector for TestTreeView nodes by pytest node id.",
+    "NEW INSTRUCTION": "WHEN feature requests editor-to-test-tree navigation THEN implement editor action selecting matching TestTreeView node"
 }

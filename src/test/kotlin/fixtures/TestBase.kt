@@ -10,47 +10,48 @@ abstract class TestBase : MyPlatformTestCase() {
         // Reset plugin settings to a known baseline after the IntelliJ test application is initialized
         val svc = PluginSettingsState.instance()
         svc.loadState(
-            PluginSettingsState.State(
-                enableWrapWithExpectedTypeIntention = true,
-                enableWrapItemsWithExpectedTypeIntention = true,
-                enableUnwrapToExpectedTypeIntention = true,
-                enableUnwrapItemsToExpectedTypeIntention = true,
-                enableIntroduceCustomTypeFromStdlibIntention = true,
-                enablePopulateArgumentsIntention = true,
-                enablePyMissingInDunderAllInspection = true,
-                enableCopyPackageContentAction = true,
-                enableRestoreSourceRootPrefix = true,
-                enableRelativeImportPreference = true,
-                enableDictAccessIntention = true,
-                enableChangeVisibilityIntention = true,
-                enableIntroduceParameterObjectIntention = true,
-                enableDataclassMissingInspection = true,
-                enablePrivateModuleImportInspection = true,
-                enableCopyBuildNumberAction = true,
-                enableCreateLocalVariableIntention = true,
-                enableStructureViewPrivateMembersFilter = true,
-                enableMakeParameterOptionalIntention = true,
-                enableMakeParameterMandatoryIntention = true,
-                enableAddExceptionCaptureIntention = true,
-                enableWrapExceptionsWithParenthesesIntention = true,
-                enableImplementAbstractMethodInChildClassesIntention = true,
-                enableAbstractMethodNotImplementedInspection = true,
-                enablePyReturnCompletionContributor = true,
-                enablePyMockPatchReferenceContributor = true,
-                enablePyFilterWarningsReferenceContributor = true,
-                enableTypeAnnotationUsageFilteringRule = true,
-                enablePyMessageConsoleFilter = true,
-                enablePytestIdentifierSearchEverywhereContributor = true,
-                enableIntroduceParameterObjectAction = true,
-                enableIntroduceParameterObjectRefactoringAction = true,
-                enableCopyBlockWithDependenciesAction = true,
-                enableCopyPytestNodeIdsAction = true,
-                enableCopyFQNsAction = true,
-                enableCopyStacktraceAction = true,
-                enableTogglePytestSkipIntention = true,
-                enableParametrizePytestTestIntention = true,
-                enableStripSignatureTypeAnnotationsIntention = true,
-            ),
+            PluginSettingsState.State().apply {
+                enableWrapWithExpectedTypeIntention = true
+                enableWrapItemsWithExpectedTypeIntention = true
+                enableUnwrapToExpectedTypeIntention = true
+                enableUnwrapItemsToExpectedTypeIntention = true
+                enableIntroduceCustomTypeFromStdlibIntention = true
+                enablePopulateArgumentsIntention = true
+                enablePyMissingInDunderAllInspection = true
+                enableCopyPackageContentAction = true
+                enableRestoreSourceRootPrefix = true
+                enableRelativeImportPreference = true
+                enableDictAccessIntention = true
+                enableChangeVisibilityIntention = true
+                enableIntroduceParameterObjectIntention = true
+                enableDataclassMissingInspection = true
+                enablePrivateModuleImportInspection = true
+                enableCopyBuildNumberAction = true
+                enableCreateLocalVariableIntention = true
+                enableStructureViewPrivateMembersFilter = true
+                enableMakeParameterOptionalIntention = true
+                enableMakeParameterMandatoryIntention = true
+                enableAddExceptionCaptureIntention = true
+                enableWrapExceptionsWithParenthesesIntention = true
+                enableImplementAbstractMethodInChildClassesIntention = true
+                enableAbstractMethodNotImplementedInspection = true
+                enablePyReturnCompletionContributor = true
+                enablePyMockPatchReferenceContributor = true
+                enablePyFilterWarningsReferenceContributor = true
+                enableTypeAnnotationUsageFilteringRule = true
+                enablePyMessageConsoleFilter = true
+                enablePytestIdentifierSearchEverywhereContributor = true
+                enableIntroduceParameterObjectAction = true
+                enableIntroduceParameterObjectRefactoringAction = true
+                enableCopyBlockWithDependenciesAction = true
+                enableCopyPytestNodeIdsAction = true
+                enableCopyFQNsAction = true
+                enableCopyStacktraceAction = true
+                enableJumpToPytestNodeInTestTreeAction = true
+                enableTogglePytestSkipIntention = true
+                enableParametrizePytestTestIntention = true
+                enableStripSignatureTypeAnnotationsIntention = true
+            },
         )
         PythonTestSetup.createAndRegisterSdk(
             root = myFixture.tempDirFixture.getFile("/")!!,

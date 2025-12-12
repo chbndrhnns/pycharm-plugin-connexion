@@ -26,6 +26,9 @@ class PytestNodeIdGeneratorTest : TestBase() {
 
         val record = PytestNodeIdGenerator.parseProxy(proxy, project)
         assertEquals("test_simple.py::test_foo", record!!.nodeid)
+
+        val fromPsi = PytestNodeIdGenerator.fromPsiElement(function, project)
+        assertEquals("test_simple.py::test_foo", fromPsi)
     }
 
     fun testClassMethod() {

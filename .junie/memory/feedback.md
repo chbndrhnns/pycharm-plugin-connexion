@@ -558,3 +558,35 @@
     "NEW INSTRUCTION": "WHEN caret is within attribute access expression THEN do not add expected-type completion suggestions"
 }
 
+[2025-12-12 15:45] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "intention availability",
+    "EXPECTATION": "Offer the pytest skip intention only at module-level; never inside tests or any non-module-level scope.",
+    "NEW INSTRUCTION": "WHEN caret is inside any class or function THEN do not show TogglePytestSkipIntention"
+}
+
+[2025-12-12 18:17] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "pytest skip intention",
+    "EXPECTATION": "Function-level skip should be available on functions/methods and inside bodies; class-level skip should be available when the caret is on the class name.",
+    "NEW INSTRUCTION": "WHEN caret in function/method body or on class name THEN offer corresponding skip level"
+}
+
+[2025-12-12 18:43] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "exports __all__",
+    "EXPECTATION": "Do not suggest adding import alias names (from 'import X as Y') to __all__.",
+    "NEW INSTRUCTION": "WHEN symbol is an import-as alias THEN do not suggest adding to __all__"
+}
+
+[2025-12-12 19:55] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "action threading",
+    "EXPECTATION": "Do not read PSI in update on EDT; switch action update to BGT when PSI_FILE is needed",
+    "NEW INSTRUCTION": "WHEN AnAction.update reads PSI_FILE THEN return BGT in getActionUpdateThread"
+}
+

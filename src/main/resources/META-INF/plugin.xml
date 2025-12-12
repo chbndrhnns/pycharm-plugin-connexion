@@ -287,5 +287,12 @@
                     class="com.github.chbndrhnns.intellijplatformplugincopy.actions.CopyStacktraceAction"
                     text="Copy Stacktrace"/>
         </group>
+
+        <action id="MyPlugin.JumpToPytestNodeInTestTree"
+                class="com.github.chbndrhnns.intellijplatformplugincopy.actions.JumpToPytestNodeInTestTreeAction"
+                text="Jump to Test Tree Node"
+                description="Selects the corresponding pytest node in the active test tree">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
     </actions>
 </idea-plugin>

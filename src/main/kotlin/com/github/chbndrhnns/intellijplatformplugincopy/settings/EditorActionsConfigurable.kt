@@ -42,6 +42,10 @@ class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
                 checkBox("‘Copy Stacktrace’ action (Test Tree)")
                     .bindSelected(settings::enableCopyStacktraceAction)
             }
+            row {
+                checkBox("‘Jump to Test Tree Node’ action (editor)")
+                    .bindSelected(settings::enableJumpToPytestNodeInTestTreeAction)
+            }
 
             // Added: Editor/Contributor integrations
             row {
