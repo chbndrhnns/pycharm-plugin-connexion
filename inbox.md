@@ -12,6 +12,7 @@
 
 ## Pending Features
 
+- [ ] feat: Offer wrap in exception calls
 - [ ] feat: When a local field exists with the same name as the parameter, show `param=param` as a suggestion
 - [ ] feat: When suggesting the expected type and it is an inner class, reference it using outer_class.inner_class
   syntax, recursively
