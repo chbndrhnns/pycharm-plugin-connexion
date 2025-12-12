@@ -55,7 +55,7 @@
 ## In Progress Tasks
 
 - [ ] feat: Replace expected with actual test outcome
-- [ ] feat: Jump from test to test node
+- [-] feat: Jump from test to test node
 
 ## Completed Tasks (newest first)
 
