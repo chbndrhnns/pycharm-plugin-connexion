@@ -11,6 +11,7 @@
 
 ## Pending Features
 
+- [ ] feat: "Choose implementation" should search in class names, as well.
 - [ ] feat: Remove signature annotations
 - [ ] feat: Implement method from abstractmethod site
 - [ ] feat: Intention: Make function abstract (add @abc.abstractmethod or @abstractmethod)
