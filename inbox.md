@@ -54,12 +54,12 @@
 
 ## In Progress Tasks
 
-- [-] feat: When a local field exists with the same name as the parameter, show `param=param` as a suggestion
 - [ ] feat: Replace expected with actual test outcome
 - [ ] feat: Jump from test to test node
 
 ## Completed Tasks (newest first)
 
+- [x] feat: When a local field exists with the same name as the parameter, show `param=param` as a suggestion
 - [x] fix: module-level pytest skip should only be available when caret is on module-level scope
 - [x] fix: When suggesting expected types, skip LiteralStr instances or similar
 - [x] fix: Do not add completion suggestion for expected type when we have `item.` already
