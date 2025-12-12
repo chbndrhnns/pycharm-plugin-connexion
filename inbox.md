@@ -2,6 +2,7 @@
 
 ## Pending Issues
 
+- [ ] fix: populate arguments from locals should only include required arguments
 - [ ] fix: When prefering relative import inside same package, do not add candidate if relative import exists already
 - [ ] fix: When implementing abstract method, take care of existing ellipsis
 - [ ] fix: implement abstract method is put above __init__
@@ -11,6 +12,9 @@
 
 ## Pending Features
 
+- [ ] feat: When a local field exists with the same name as the parameter, show `param=param` as a suggestion
+- [ ] feat: When suggesting the expected type and it is an inner class, reference it using outer_class.inner_class
+  syntax, recursively
 - [ ] feat: "Choose implementation" should search in class names, as well.
 - [ ] feat: Remove signature annotations
 - [ ] feat: Implement method from abstractmethod site
