@@ -85,6 +85,10 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                 checkBox("‘Parametrize pytest test’ intention")
                     .bindSelected(settings::enableParametrizePytestTestIntention)
             }
+            row {
+                checkBox("‘Strip signature type annotations’ intention")
+                    .bindSelected(settings::enableStripSignatureTypeAnnotationsIntention)
+            }
         }
     }
 }

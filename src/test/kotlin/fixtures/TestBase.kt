@@ -49,6 +49,7 @@ abstract class TestBase : MyPlatformTestCase() {
                 enableCopyStacktraceAction = true,
                 enableTogglePytestSkipIntention = true,
                 enableParametrizePytestTestIntention = true,
+                enableStripSignatureTypeAnnotationsIntention = true,
             ),
         )
         PythonTestSetup.createAndRegisterSdk(

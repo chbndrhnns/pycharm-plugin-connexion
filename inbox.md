@@ -10,12 +10,9 @@
 
 ## Pending Features
 
-- [ ] feat: When a local field exists with the same name as the parameter, show `param=param` as a suggestion
 - [ ] feat: When suggesting the expected type and it is an inner class, reference it using outer_class.inner_class
   syntax, recursively
 - [ ] feat: "Choose implementation" should search in class names, as well.
-- [ ] feat: Remove signature annotations
-- [ ] feat: Implement method from abstractmethod site
 - [ ] feat: Intention: Make function abstract (add @abc.abstractmethod or @abstractmethod)
 - [ ] feat: Ignore third-party packages in import suggestions
 - [ ] feat: Annotate constant with `Final[T]`
@@ -53,6 +50,9 @@
 
 ## In Progress Tasks
 
+- [-] feat: Implement method from abstractmethod sitae
+- [-] feat: When a local field exists with the same name as the parameter, show `param=param` as a suggestion
+- [-] feat: Remove signature annotations
 - [ ] feat: Replace expected with actual test outcome
 - [ ] feat: Jump from test to test node
 

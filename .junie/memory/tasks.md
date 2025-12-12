@@ -1,63 +1,3 @@
-[2025-12-08 10:33] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "search project, open tests",
-    "MISSING STEPS": "-",
-    "BOTTLENECK": "Overly broad project search produced excessive results and noise.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN search warns about too many results THEN refine query with narrower, targeted terms"
-}
-
-[2025-12-08 12:15] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "search other intention, rerun tests",
-    "MISSING STEPS": "run full test suite, add class-body test",
-    "BOTTLENECK": "Availability detection ignored caret-on-identifier requirement.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN fixing intention availability THEN add negative tests for method and class bodies"
-}
-
-[2025-12-08 12:17] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "add tests, run tests",
-    "BOTTLENECK": "No symmetric test ensured Make public follows the same availability constraint.",
-    "PROJECT NOTE": "Shared PyToggleVisibilityIntention change already applies to Make public.",
-    "NEW INSTRUCTION": "WHEN changing shared visibility targeting THEN add symmetric tests for Make public and Make private"
-}
-
-[2025-12-08 13:08] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "run full test suite",
-    "BOTTLENECK": "Skipping a full test run could hide regressions elsewhere.",
-    "PROJECT NOTE": "Centralize availability exclusions in TargetDetector to control intention scope consistently.",
-    "NEW INSTRUCTION": "WHEN reproduction test passes locally THEN run full test suite and summarize results"
-}
-
-[2025-12-08 13:28] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "temporarily comment out reformat,add debug print twice",
-    "MISSING STEPS": "run full test suite,submit changes",
-    "BOTTLENECK": "Incorrect PSI context detection for decorator calls caused wrong reformatting.",
-    "PROJECT NOTE": "Decorator calls appear as PyCallExpressionImpl with a PyDecoratorImpl parent.",
-    "NEW INSTRUCTION": "WHEN changing formatting behavior THEN run full test suite after targeted tests"
-}
-
-[2025-12-08 17:30] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "scroll file repeatedly,update status repeatedly",
-    "MISSING STEPS": "search project,run single failing test,inspect availability logic first",
-    "BOTTLENECK": "Focused on TargetDetector instead of the intention’s availability logic.",
-    "PROJECT NOTE": "IntroduceCustomTypeFromStdlibIntention contains the availability gate via hasBlockingInspections.",
-    "NEW INSTRUCTION": "WHEN intention availability needs adjusting THEN search_project for intention class and inspect isAvailable logic"
-}
-
 [2025-12-08 17:58] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -886,4 +826,54 @@
     "BOTTLENECK": "Failure diagnosis stalled at file comparison mismatch without inspecting the actual diff.",
     "PROJECT NOTE": "Constructor positional args now map to __init__ via offset; verify wrap applier uses inferred ctor name for raise-calls.",
     "NEW INSTRUCTION": "WHEN test fails with FileComparisonFailedError THEN open actual vs expected diff and fix accordingly"
+}
+
+[2025-12-12 13:40] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "add test for no suggestions in positional-arg context",
+    "BOTTLENECK": "Correctly detecting keyword-name position and resolving in-scope symbols.",
+    "PROJECT NOTE": "Leverage existing PyParameterAnalyzer and PopulateArgumentsService for missing params and scope resolution.",
+    "NEW INSTRUCTION": "WHEN creating new completion contributor THEN register in plugin.xml and add targeted tests"
+}
+
+[2025-12-12 13:41] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "explore unrelated code",
+    "MISSING STEPS": "implement feature, add tests, run tests",
+    "BOTTLENECK": "No actual code or test changes were applied to the repository.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN task requires adding tests THEN create test files and run tests"
+}
+
+[2025-12-12 13:46] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "optimal",
+    "REDUNDANT STEPS": "repeat investigation, status updates",
+    "MISSING STEPS": "register intention, add intention descriptions, add tests, run tests",
+    "BOTTLENECK": "Intention not registered and untested, blocking discovery and validation.",
+    "PROJECT NOTE": "Register via <intentionAction> in plugin.xml and add resources under src/main/resources/intentionDescriptions/StripSignatureTypeAnnotationsIntention/ with description.html and before.py/after.py.",
+    "NEW INSTRUCTION": "WHEN new intention class is created THEN register intention and add intentionDescriptions resources"
+}
+
+[2025-12-12 14:00] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "run full test suite",
+    "MISSING STEPS": "create guidelines file, add example test, run example test, delete example test, write validated commands",
+    "BOTTLENECK": "Did not create .junie/guidelines.md or implement the example test workflow.",
+    "PROJECT NOTE": "Running a focused test class succeeds; full suite currently fails and is slow.",
+    "NEW INSTRUCTION": "WHEN guidelines task mentions runnable test example THEN create .junie/guidelines.md, add minimal test, run it, delete it, avoid full suite"
+}
+
+[2025-12-12 14:23] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "add ad-hoc debug tests,edit test expectations prematurely,delete debug tests mid-investigation",
+    "MISSING STEPS": "inspect failure diff,review and fix implementation,run intention.populate tests",
+    "BOTTLENECK": "Focused on changing tests instead of fixing the intention logic.",
+    "PROJECT NOTE": "Use the XML test report to see actual vs expected editor text produced by myFixture.checkResult.",
+    "NEW INSTRUCTION": "WHEN intention test fails with FileComparisonFailedError THEN open report and fix intention code"
 }

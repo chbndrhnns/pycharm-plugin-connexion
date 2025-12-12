@@ -46,6 +46,7 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enableCopyStacktraceAction: Boolean = true,
         var enableTogglePytestSkipIntention: Boolean = true,
         var enableParametrizePytestTestIntention: Boolean = true,
+        var enableStripSignatureTypeAnnotationsIntention: Boolean = true,
     )
 
     private var myState = State()

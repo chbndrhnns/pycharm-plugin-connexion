@@ -1,0 +1,10 @@
+def foo(x: int, y: str) -> bool:
+    return True
+
+
+class A:
+    def bar(self, x: int, *args: str, **kwargs: int) -> None:
+        pass
+
+
+foo(<caret>)

@@ -1,0 +1,10 @@
+def foo(x, y):
+    return True
+
+
+class A:
+    def bar(self, x, *args, **kwargs):
+        pass
+
+
+foo(<caret>)
