@@ -51,14 +51,14 @@
 
 ## In Progress Tasks
 
-- [-] feat: Remove "Update usages" quick fix menu
 - [R] feat: Toggle skip marker from test panel
 - [R] feat: Add "from None" to exception if no err is provided, modify if "err/" or so is added later
-- [R] feat: Intention: Make function abstract (add @abc.abstractmethod or @abstractmethod)
+- [-] feat: Intention: Make function abstract (add @abc.abstractmethod or @abstractmethod)
 - [ ] feat: Replace expected with actual test outcome
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Remove "Update usages" quick fix menu
 - [x] feat: Jump from test to test node
 - [x] feat: When a local field exists with the same name as the parameter, show `param=param` as a suggestion
 - [x] fix: module-level pytest skip should only be available when caret is on module-level scope
