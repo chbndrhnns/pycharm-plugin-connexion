@@ -2,11 +2,6 @@
 
 ## Pending Issues
 
-- [ ] fix: When suggesting expected types, skip LiteralStr instances or similar
-- [ ] fix: copy stack trace should only be available for failed test
-- [ ] fix: Import `import bla as xyz` triggers warning about not exported in all
-- [ ] fix: Do not add completion suggestion for expected type when we have `item.` already
-- [ ] fix: module-level pytest skip should only be available when caret is on module-level scope
 - [ ] fix: When prefering relative import inside same package, do not add candidate if relative import exists already
 - [ ] fix: implement abstract method is put above __init__
 - [ ] feat: Consider if this should only work for dataclass/classes, for others, there is change signature
@@ -57,8 +52,8 @@
 
 ## In Progress Tasks
 
+- [-] fix: When suggesting expected types, skip LiteralStr instances or similar
 - [-] fix: Import `import bla as xyz` triggers warning about not exported in all
-- [x] fix: Do not add completion suggestion for expected type when we have `item.` already
 - [-] fix: module-level pytest skip should only be available when caret is on module-level scope
 - [-] feat: When a local field exists with the same name as the parameter, show `param=param` as a suggestion
 - [ ] feat: Replace expected with actual test outcome
@@ -66,6 +61,7 @@
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Do not add completion suggestion for expected type when we have `item.` already
 - [x] fix: copy stack trace should only be available for failed test
 - [x] feat: Implement method from abstractmethod sitae
 - [x] feat: Remove signature annotations
