@@ -1,13 +1,3 @@
-[2025-12-08 21:15] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "inspect tryFromAnnotation,handle typing.get_args,ensure availability check caches plan",
-    "MISSING STEPS": "run full test suite",
-    "BOTTLENECK": "Locating the precise PSI context to suppress intention availability.",
-    "PROJECT NOTE": "Negative intention availability assertions are provided via fixtures.assertIntentionNotAvailable.",
-    "NEW INSTRUCTION": "WHEN task says “do not offer intention” THEN add a negative availability test first"
-}
-
 [2025-12-08 22:11] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -888,3 +878,12 @@
     "NEW INSTRUCTION": "WHEN broader attribute-access suppression is requested THEN implement separately with dedicated tests"
 }
 
+[2025-12-12 15:20] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "update action, add tests, run tests",
+    "BOTTLENECK": "Action visibility logic was not implemented to filter for failed tests.",
+    "PROJECT NOTE": "Adjust CopyStacktraceAction.update to inspect TestTreeView selection and gate visibility by SMTestProxy.isDefect stacktraces; add a corresponding update-visibility test.",
+    "NEW INSTRUCTION": "WHEN action update depends on TestTreeView selection THEN enable only if selection has defective leaf"
+}

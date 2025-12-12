@@ -2,6 +2,7 @@
 
 ## Pending Issues
 
+- [ ] fix: When suggesting expected types, skip LiteralStr instances or similar
 - [ ] fix: copy stack trace should only be available for failed test
 - [ ] fix: Import `import bla as xyz` triggers warning about not exported in all
 - [ ] fix: Do not add completion suggestion for expected type when we have `item.` already
@@ -56,7 +57,6 @@
 
 ## In Progress Tasks
 
-- [-] fix: copy stack trace should only be available for failed test
 - [-] fix: Import `import bla as xyz` triggers warning about not exported in all
 - [x] fix: Do not add completion suggestion for expected type when we have `item.` already
 - [-] fix: module-level pytest skip should only be available when caret is on module-level scope
@@ -66,6 +66,7 @@
 
 ## Completed Tasks (newest first)
 
+- [x] fix: copy stack trace should only be available for failed test
 - [x] feat: Implement method from abstractmethod sitae
 - [x] feat: Remove signature annotations
 - [x] fix: When implementing abstract method, take care of existing ellipsis

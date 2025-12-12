@@ -3,11 +3,18 @@ package com.github.chbndrhnns.intellijplatformplugincopy.actions
 import com.intellij.execution.Location
 import com.intellij.execution.PsiLocation
 import com.intellij.execution.testframework.sm.runner.SMTestProxy
+import com.intellij.execution.testframework.sm.runner.ui.SMTRunnerTestTreeView
+import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.actionSystem.PlatformDataKeys
+import com.intellij.openapi.actionSystem.impl.SimpleDataContext
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.testFramework.TestActionEvent
 import fixtures.TestBase
 import javax.swing.tree.DefaultMutableTreeNode
+import javax.swing.tree.DefaultTreeModel
+import javax.swing.tree.TreePath
 
 class CopyStacktraceActionTest : TestBase() {
 
@@ -62,6 +69,83 @@ class CopyStacktraceActionTest : TestBase() {
         assertEquals(2, result.size)
         assertEquals("Trace1", result[0])
         assertEquals("Trace2", result[1])
+    }
+
+    fun testUpdateVisibility_onlyForFailedTests() {
+        val action = CopyStacktraceAction()
+
+        val rootProxy = FakeSMTestProxy("Root", true, null)
+        val rootNode = DefaultMutableTreeNode(rootProxy)
+
+        val passed = FakeSMTestProxy("test_pass", false, null)
+        passed.setFinished()
+        val passedNode = DefaultMutableTreeNode(passed)
+        rootNode.add(passedNode)
+
+        val failed = FakeSMTestProxy("test_fail", false, null)
+        failed.setTestFailed("Error", "Trace1\nTrace2", true)
+        val failedNode = DefaultMutableTreeNode(failed)
+        rootNode.add(failedNode)
+
+        val view = SMTRunnerTestTreeView()
+        view.model = DefaultTreeModel(rootNode)
+
+        fun updateWithSelection(node: DefaultMutableTreeNode): Boolean {
+            view.selectionPath = TreePath(node.path)
+
+            val dataContext = SimpleDataContext.builder()
+                .add(CommonDataKeys.PROJECT, project)
+                .add(PlatformDataKeys.CONTEXT_COMPONENT, view)
+                .build()
+
+            val event = TestActionEvent.createTestEvent(action, dataContext)
+
+            action.update(event)
+            return event.presentation.isEnabledAndVisible
+        }
+
+        assertFalse(
+            "Copy stacktrace must not be visible for a passed test node",
+            updateWithSelection(passedNode)
+        )
+
+        assertTrue(
+            "Copy stacktrace must be visible for a failed test node",
+            updateWithSelection(failedNode)
+        )
+    }
+
+    fun testUpdateVisibility_suiteSelectionWithFailedChild_isVisible() {
+        val action = CopyStacktraceAction()
+
+        val suite = FakeSMTestProxy("Suite", true, null)
+        val suiteNode = DefaultMutableTreeNode(suite)
+
+        val passed = FakeSMTestProxy("pass", false, null)
+        passed.setFinished()
+        suiteNode.add(DefaultMutableTreeNode(passed))
+
+        val failed = FakeSMTestProxy("fail", false, null)
+        failed.setTestFailed("Error", "Trace", true)
+        suiteNode.add(DefaultMutableTreeNode(failed))
+
+        val view = SMTRunnerTestTreeView()
+        view.model = DefaultTreeModel(suiteNode)
+        view.selectionPath = TreePath(suiteNode.path)
+
+        val dataContext = SimpleDataContext.builder()
+            .add(CommonDataKeys.PROJECT, project)
+            .add(PlatformDataKeys.CONTEXT_COMPONENT, view)
+            .build()
+
+        val event = TestActionEvent.createTestEvent(action, dataContext)
+
+        action.update(event)
+
+        assertTrue(
+            "Copy stacktrace should be visible when selecting a suite that contains at least one failed leaf test",
+            event.presentation.isEnabledAndVisible
+        )
     }
 
     private class FakeSMTestProxy(
