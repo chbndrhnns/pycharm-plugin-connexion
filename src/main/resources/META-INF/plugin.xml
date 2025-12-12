@@ -12,6 +12,8 @@
     <extensions defaultExtensionNs="com.intellij">
         <completion.contributor language="Python"
                                 implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.completion.PyExpectedTypeCompletionContributor"/>
+        <completion.contributor language="Python"
+                                implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.completion.PyNamedArgumentFromScopeCompletionContributor"/>
         <psi.referenceContributor language="Python"
                                   implementation="com.github.chbndrhnns.intellijplatformplugincopy.psi.PyMockPatchReferenceContributor"/>
         <psi.referenceContributor language="Python"
