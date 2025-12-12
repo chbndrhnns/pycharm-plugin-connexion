@@ -1,15 +1,5 @@
 [2025-12-09 23:45] - Updated by Junie - Error analysis
 {
-    "TYPE": "logic bug",
-    "TOOL": "run_test",
-    "ERROR": "Test assertion failed: collected 0 node IDs from root",
-    "ROOT CAUSE": "collectNodeIds only iterates DefaultMutableTreeNode children and ignores SMTestProxy subtree when UI nodes are missing under the root.",
-    "PROJECT NOTE": "In Test Results root, UI tree nodes may be collapsed or absent; use SMTestProxy.getChildren() for traversal when a proxy is present.",
-    "NEW INSTRUCTION": "WHEN tree node has zero children but proxy has children THEN traverse SMTestProxy subtree to collect node IDs"
-}
-
-[2025-12-09 23:45] - Updated by Junie - Error analysis
-{
     "TYPE": "test assertion",
     "TOOL": "run_test",
     "ERROR": "Test failed: expected 1 node id, found 0",
@@ -778,3 +768,12 @@
     "NEW INSTRUCTION": "WHEN action update reads PSI or slow data THEN return ActionUpdateThread.BGT for the action"
 }
 
+[2025-12-12 20:59] - Updated by Junie - Error analysis
+{
+    "TYPE": "timeout",
+    "TOOL": "bash",
+    "ERROR": "Command execution timed out on zipgrep app.jar",
+    "ROOT CAUSE": "zipgrep attempted to scan a very large JAR and exceeded the tool time limit.",
+    "PROJECT NOTE": "IDE platform JARs live under Gradle transforms; prefer jar tf | grep or javap against app.jar to query classes quickly.",
+    "NEW INSTRUCTION": "WHEN searching inside large JAR with zipgrep THEN use 'jar tf | grep' and limit with head"
+}

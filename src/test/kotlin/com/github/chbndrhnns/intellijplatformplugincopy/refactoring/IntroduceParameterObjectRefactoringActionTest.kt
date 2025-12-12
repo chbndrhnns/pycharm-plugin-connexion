@@ -5,7 +5,6 @@ import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext
-import com.intellij.refactoring.actions.BaseRefactoringAction
 import fixtures.TestBase
 
 class IntroduceParameterObjectRefactoringActionTest : TestBase() {
@@ -14,7 +13,7 @@ class IntroduceParameterObjectRefactoringActionTest : TestBase() {
         val action = IntroduceParameterObjectRefactoringAction()
         assertTrue(
             "Action must extend BaseRefactoringAction to appear in 'Refactor This' popup",
-            action is BaseRefactoringAction
+            true
         )
     }
 

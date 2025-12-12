@@ -1,33 +1,3 @@
-[2025-12-09 00:28] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "add negative tests, expand edge-case tests, verify cross-platform paths",
-    "BOTTLENECK": "Insufficient negative tests for ambiguous patterns leading to false positives.",
-    "PROJECT NOTE": "Tighten regex or validation to avoid matching lines like file.py:: (no node), Windows drive paths, or pytest summary lines.",
-    "NEW INSTRUCTION": "WHEN implementing a console filter or parser THEN add negative tests covering common false-positive patterns and path variants"
-}
-
-[2025-12-09 07:36] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "focus non-modal first,heuristic success detection via changelist diff,reflection-based restore for non-modal handler",
-    "MISSING STEPS": "use modal checkin handler,wire factory in plugin.xml,handle cancel/fail paths for modal,add modal-specific tests",
-    "BOTTLENECK": "Wrong lifecycle hook; CommitWorkflowListener.executionEnded is not called by the modal dialog.",
-    "PROJECT NOTE": "For modal commits, use CheckinHandler via VcsCheckinHandlerFactory; commit workflow hooks target non-modal UI.",
-    "NEW INSTRUCTION": "WHEN commit originates from modal dialog THEN register VcsCheckinHandlerFactory and implement CheckinHandler"
-}
-
-[2025-12-09 08:14] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "keep non-modal listener",
-    "MISSING STEPS": "add modal cancel hook,add modal cancellation test,manual verify in IDE",
-    "BOTTLENECK": "Cancellation detection relied on panel being Disposable, which is false for modal dialog.",
-    "PROJECT NOTE": "CommitProjectPanelAdapter is not Disposable; cancellation should be detected via the owning DialogWrapper close/cancel events.",
-    "NEW INSTRUCTION": "WHEN modal commit panel is not Disposable THEN attach DialogWrapper close listener to detect cancellation"
-}
-
 [2025-12-09 09:42] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -876,4 +846,34 @@
     "BOTTLENECK": "Node-id generation and tree matching skip classes and parametrized leaves.",
     "PROJECT NOTE": "Extend TestTreeNodeFinder to match exact leaf using param values from decorators.",
     "NEW INSTRUCTION": "WHEN caret is on test class or parametrize value THEN compute exact node-id and select leaf"
+}
+
+[2025-12-12 20:55] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "add tests, implement action, extract shared toggler, register action, run tests, run build",
+    "BOTTLENECK": "The plan was not executed into concrete tests or code changes.",
+    "PROJECT NOTE": "Reuse TogglePytestSkipIntention logic via a shared toggler and mirror testing patterns from TogglePytestSkipIntentionTest and PytestNodeIdGeneratorTest.",
+    "NEW INSTRUCTION": "WHEN task requests plan and tests THEN write tests and run full test suite"
+}
+
+[2025-12-12 20:55] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "explore optional inspection",
+    "MISSING STEPS": "implement intention, add resources, register intention, add tests, run tests",
+    "BOTTLENECK": "No implementation or tests were executed after planning.",
+    "PROJECT NOTE": "Follow the registration and resource patterns used by existing exception intentions.",
+    "NEW INSTRUCTION": "WHEN proposing new intention THEN implement it, add resources and tests, run full tests"
+}
+
+[2025-12-12 20:58] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "search project (duplicate),open unrelated file",
+    "MISSING STEPS": "add tests,run tests",
+    "BOTTLENECK": "No tests were actually created or executed.",
+    "PROJECT NOTE": "Reuse AbstractMethodUtils and existing inspection/quick-fix test patterns for new inspection.",
+    "NEW INSTRUCTION": "WHEN task requires creating tests THEN add test files and run all tests"
 }

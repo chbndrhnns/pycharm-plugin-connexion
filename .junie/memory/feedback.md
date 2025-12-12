@@ -598,3 +598,11 @@
     "NEW INSTRUCTION": "WHEN jump invoked from class or parametrize value THEN build precise node id and select matching node"
 }
 
+[2025-12-12 20:46] - Updated by Junie
+{
+    "TYPE": "preference",
+    "CATEGORY": "quickfix toggle",
+    "EXPECTATION": "Provide a user setting to enable/disable the 'Update usages to reflect signature change' quick fix, defaulting to disabled since they usually do not want it shown.",
+    "NEW INSTRUCTION": "WHEN computing availability of this quick fix AND setting is disabled THEN do not offer the quick fix"
+}
+
