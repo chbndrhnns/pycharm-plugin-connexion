@@ -2,6 +2,7 @@
 
 ## Pending Issues
 
+- [ ] fix: Introduce type fails for pytest.mark.parametrize
 - [ ] fix: When prefering relative import inside same package, do not add candidate if relative import exists already
 - [ ] fix: implement abstract method is put above __init__
 - [ ] feat: Consider if this should only work for dataclass/classes, for others, there is change signature
@@ -51,12 +52,12 @@
 
 ## In Progress Tasks
 
-- [R] feat: Toggle skip marker from test panel
 - [R] feat: Add "from None" to exception if no err is provided, modify if "err/" or so is added later
 - [ ] feat: Replace expected with actual test outcome
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Toggle skip marker from test panel
 - [-] feat: Intention: Make function abstract (add @abc.abstractmethod or @abstractmethod)
 - [x] feat: Remove "Update usages" quick fix menu
 - [x] feat: Jump from test to test node
