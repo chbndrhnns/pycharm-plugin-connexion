@@ -1,23 +1,3 @@
-[2025-12-04 21:14] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "scan project, update remaining tests",
-    "BOTTLENECK": "No project-wide search to enumerate all affected tests before refactoring.",
-    "PROJECT NOTE": "Also refactor PyIntroduceParameterObjectIntentionTest and PyIntroduceParameterObjectNameCollisionTest to use the shared helper.",
-    "NEW INSTRUCTION": "WHEN task involves refactoring duplicated test setup THEN run search_project to find and refactor all tests"
-}
-
-[2025-12-04 21:23] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "refactor data structures,add unused helpers",
-    "MISSING STEPS": "scan project,check service API,run build,run tests",
-    "BOTTLENECK": "Changed imports element type without updating all consumers and import service usage.",
-    "PROJECT NOTE": "Verify PyImportService.ensureImportedIfNeeded signature and supported element types before refactoring.",
-    "NEW INSTRUCTION": "WHEN generating value uses alias name like MyStr(...) THEN resolve alias to PsiNamedElement and call PyImportService.ensureImportedIfNeeded"
-}
-
 [2025-12-04 21:37] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -877,3 +857,34 @@
     "PROJECT NOTE": "Node id regex should allow quotes/brackets and stop before trailing status using a non-greedy group with whitespace lookahead.",
     "NEW INSTRUCTION": "WHEN editing PytestConsoleFilter regex THEN run ./gradlew test and correct syntax or failing assertions immediately"
 }
+
+[2025-12-12 10:00] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "add tests",
+    "BOTTLENECK": "No new tests covered pytest-sugar progress/status edge cases.",
+    "PROJECT NOTE": "Add pytest-sugar lines to PytestConsoleFilterTest to guard link truncation.",
+    "NEW INSTRUCTION": "WHEN altering node-id parsing logic THEN add tests covering pytest-sugar progress output"
+}
+
+[2025-12-12 10:04] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "ask user for raw console line,verify hyperlink range on provided sample",
+    "BOTTLENECK": "Lack of an exact raw console sample to reproduce precisely.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN user reports console parsing issue without raw sample THEN ask for exact console line and context"
+}
+
+[2025-12-12 10:09] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "run tests, inspect resolver",
+    "BOTTLENECK": "No verification run after adding the new test.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN new unit tests are added THEN run ./gradlew test and fix issues"
+}
+

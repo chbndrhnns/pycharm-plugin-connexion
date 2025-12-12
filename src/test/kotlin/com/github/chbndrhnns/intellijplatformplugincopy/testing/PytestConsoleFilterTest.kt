@@ -96,4 +96,17 @@ class PytestConsoleFilterTest : TestBase() {
         val expectedEnd = line.indexOf(']') + 1
         assertEquals(expectedEnd, item.highlightEndOffset)
     }
+
+    fun testParseWithNestedBracketsInsideParametrization() {
+        val filter = PytestConsoleFilter(project)
+        val line =
+            "tests/unit/test_integrity.py::test_integration_test_marker[tests/integration/adapters/outbound/openstack/test_os_network_repo.py::TestCreate::test_returns_existing_networks_in_error[FakeOpenstackNetworkRepository]]"
+
+        val result = filter.applyFilter(line, line.length)
+        assertNotNull(result)
+        val item = result!!.resultItems.first()
+        assertEquals(0, item.highlightStartOffset)
+        // The node id legitimately ends with "]]" here (nested parametrization).
+        assertEquals(line.length, item.highlightEndOffset)
+    }
 }

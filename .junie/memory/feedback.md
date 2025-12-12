@@ -494,3 +494,27 @@
     "NEW INSTRUCTION": "WHEN parsing pytest console lines THEN end hyperlink at node id without referencing status words"
 }
 
+[2025-12-12 09:56] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "pytest console filter",
+    "EXPECTATION": "In pytest-sugar output, hyperlinking must stop exactly at the end of the node id instead of extending to the line end.",
+    "NEW INSTRUCTION": "WHEN parsing pytest-sugar console lines THEN end hyperlink at node id boundary"
+}
+
+[2025-12-12 10:03] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "console output integrity",
+    "EXPECTATION": "The console text must remain unchanged; no extra closing bracket should appear in the displayed node id.",
+    "NEW INSTRUCTION": "WHEN applying pytest console filter THEN do not modify text, only set hyperlink range"
+}
+
+[2025-12-12 10:05] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "console output integrity",
+    "EXPECTATION": "Do not modify the console output text; no extra closing bracket should appear in the displayed node id.",
+    "NEW INSTRUCTION": "WHEN rendering hyperlink around pytest node id THEN leave original console text unchanged"
+}
+
