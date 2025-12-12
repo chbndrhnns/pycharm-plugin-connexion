@@ -550,3 +550,11 @@
     "NEW INSTRUCTION": "WHEN modifying populate intention code THEN run intention.populate tests and summarize failures"
 }
 
+[2025-12-12 15:01] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "expected type completion",
+    "EXPECTATION": "Suppress expected-type suggestions for any attribute access, including cases like item.a<caret>, not just immediately after a dot.",
+    "NEW INSTRUCTION": "WHEN caret is within attribute access expression THEN do not add expected-type completion suggestions"
+}
+

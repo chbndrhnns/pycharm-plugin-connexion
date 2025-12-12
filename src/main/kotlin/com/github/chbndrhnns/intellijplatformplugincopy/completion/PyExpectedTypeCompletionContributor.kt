@@ -9,6 +9,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.ProcessingContext
 import com.jetbrains.python.PythonLanguage
 import com.jetbrains.python.psi.PyExpression
+import com.jetbrains.python.psi.PyReferenceExpression
 import com.jetbrains.python.psi.types.PyUnionType
 import com.jetbrains.python.psi.types.TypeEvalContext
 
@@ -28,6 +29,11 @@ class PyExpectedTypeCompletionContributor : CompletionContributor() {
                     }
                     val position = parameters.position
                     val expression = PsiTreeUtil.getParentOfType(position, PyExpression::class.java) ?: return
+
+                    if (expression is PyReferenceExpression && expression.isQualified) {
+                        // Do not offer on attribute access
+                        return
+                    }
 
                     val typeEvalContext = TypeEvalContext.codeAnalysis(position.project, position.containingFile)
 

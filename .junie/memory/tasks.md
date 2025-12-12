@@ -1,33 +1,3 @@
-[2025-12-08 17:58] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "get file structure,semantic search,search symbol",
-    "MISSING STEPS": "add tests,run tests",
-    "BOTTLENECK": "Availability guard added without adding and running tests to validate behavior.",
-    "PROJECT NOTE": "IntroduceParameterObject tests should assert availability and results via myFixture.checkResult.",
-    "NEW INSTRUCTION": "WHEN changing intention availability logic THEN add availability tests and run IntroduceParameterObject suite"
-}
-
-[2025-12-08 20:10] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "-",
-    "BOTTLENECK": "Tried to run tests with an unsupported tool instead of using bash/gradle.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN tests must be executed THEN run Gradle tests via bash with the test class"
-}
-
-[2025-12-08 20:39] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "run build, update plugin.xml, add startup notification, gate inspections, gate intentions, add tests, run tests",
-    "BOTTLENECK": "Unresolved/incorrect SDK API usage in PythonVersionGuard caused compilation errors and stalled progress.",
-    "PROJECT NOTE": "Prefer file.languageLevel for PSI checks; when deriving project level, use ModuleManager modules or fall back safely.",
-    "NEW INSTRUCTION": "WHEN creating a new core guard utility THEN run build and resolve API errors before integrating elsewhere"
-}
-
 [2025-12-08 21:15] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -877,3 +847,44 @@
     "PROJECT NOTE": "Use the XML test report to see actual vs expected editor text produced by myFixture.checkResult.",
     "NEW INSTRUCTION": "WHEN intention test fails with FileComparisonFailedError THEN open report and fix intention code"
 }
+
+[2025-12-12 14:57] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "add tests, implement fix, run tests, run build",
+    "BOTTLENECK": "No code change or test execution was performed to validate the analysis.",
+    "PROJECT NOTE": "TogglePytestSkipIntention.kt exists and tests have helpers to assert intention availability.",
+    "NEW INSTRUCTION": "WHEN proposing tests in analysis THEN add test files and run the full test suite"
+}
+
+[2025-12-12 14:57] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "scan project (repeated), open unrelated tests",
+    "MISSING STEPS": "implement fix, add tests, run tests",
+    "BOTTLENECK": "No code change or test execution to verify the requirement.",
+    "PROJECT NOTE": "Extend CopyStacktraceActionTest.kt using TestBase to cover update visibility.",
+    "NEW INSTRUCTION": "WHEN bug fix requires action visibility change THEN implement update logic and add tests, then run tests"
+}
+
+[2025-12-12 15:00] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "run focused tests, run full test suite",
+    "BOTTLENECK": "No tests were executed to validate the new guard and tests.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN completion logic or tests are changed THEN run focused PyExpectedTypeCompletionTest and fix failures"
+}
+
+[2025-12-12 15:05] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "-",
+    "BOTTLENECK": "Ambiguity between dot-only vs any attribute-access suppression scope.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN broader attribute-access suppression is requested THEN implement separately with dedicated tests"
+}
+
