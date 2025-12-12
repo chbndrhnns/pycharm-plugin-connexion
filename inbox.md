@@ -11,6 +11,10 @@
 
 ## Pending Features
 
+- [ ] feat: Remove signature annotations
+- [ ] feat: Implement method from abstractmethod site
+- [ ] feat: Intention: Make function abstract (add @abc.abstractmethod or @abstractmethod)
+- [ ] feat: Ignore third-party packages in import suggestions
 - [ ] feat: Annotate constant with `Final[T]`
 - [ ] feat: Treat unresolved references as errors
 - [ ] feat: Wrap with pytest.raises()
