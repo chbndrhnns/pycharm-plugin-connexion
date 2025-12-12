@@ -52,6 +52,7 @@ abstract class TestBase : MyPlatformTestCase() {
                 enableTogglePytestSkipIntention = true
                 enableParametrizePytestTestIntention = true
                 enableStripSignatureTypeAnnotationsIntention = true
+                suppressSuggestedRefactoringSignatureChangeIntention = true
             },
         )
         PythonTestSetup.createAndRegisterSdk(

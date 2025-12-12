@@ -227,6 +227,10 @@
 
         <searchEverywhereContributor
                 implementation="com.github.chbndrhnns.intellijplatformplugincopy.searcheverywhere.PytestIdentifierContributor$Factory"/>
+
+        <intentionMenuContributor
+                implementation="com.github.chbndrhnns.intellijplatformplugincopy.intention.suppressor.SuppressSuggestedRefactoringIntentionMenuContributor"
+                order="last"/>
     </extensions>
 
     <extensions defaultExtensionNs="Pythonid">

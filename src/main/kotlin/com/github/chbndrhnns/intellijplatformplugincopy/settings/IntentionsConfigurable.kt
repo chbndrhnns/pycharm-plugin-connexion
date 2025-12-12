@@ -89,6 +89,10 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                 checkBox("‘Strip signature type annotations’ intention")
                     .bindSelected(settings::enableStripSignatureTypeAnnotationsIntention)
             }
+            row {
+                checkBox("Hide ‘Suggested Refactoring: Update … to reflect signature change’ intention")
+                    .bindSelected(settings::suppressSuggestedRefactoringSignatureChangeIntention)
+            }
         }
     }
 }

@@ -49,6 +49,7 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enableTogglePytestSkipIntention: Boolean = true,
         var enableParametrizePytestTestIntention: Boolean = true,
         var enableStripSignatureTypeAnnotationsIntention: Boolean = true,
+        var suppressSuggestedRefactoringSignatureChangeIntention: Boolean = true,
     )
 
     private var myState = State()
