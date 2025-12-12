@@ -46,6 +46,10 @@ class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
                 checkBox("‘Jump to Test Tree Node’ action (editor)")
                     .bindSelected(settings::enableJumpToPytestNodeInTestTreeAction)
             }
+            row {
+                checkBox("‘Toggle pytest skip’ action (Test Tree)")
+                    .bindSelected(settings::enableTogglePytestSkipFromTestTreeAction)
+            }
 
             // Added: Editor/Contributor integrations
             row {

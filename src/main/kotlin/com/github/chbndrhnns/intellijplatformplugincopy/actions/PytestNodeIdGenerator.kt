@@ -10,6 +10,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNamedElement
+import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.QualifiedName
 import com.jetbrains.python.extensions.getQName
@@ -24,6 +25,21 @@ object PytestNodeIdGenerator {
     fun parseProxy(proxy: SMTestProxy, project: Project): PytestTestRecord? {
         val locationUrl = proxy.locationUrl ?: return null
         val metainfo = proxy.metainfo
+
+        // Fast path: many proxies can resolve their PSI location directly without re-parsing the URL.
+        // This is both cheaper and avoids file-index work on EDT.
+        val directElement = proxy.getLocation(project, GlobalSearchScope.projectScope(project))?.psiElement
+        if (directElement != null) {
+            val file = directElement.containingFile?.virtualFile ?: return null
+            val nodeid = calculateNodeId(directElement, file, project, metainfo, pathFqn = null)
+            return PytestTestRecord(
+                nodeid = nodeid,
+                psiElement = directElement,
+                file = file,
+                locationUrl = locationUrl,
+                metainfo = metainfo
+            )
+        }
 
         // 1. Split protocol and path
         if (!locationUrl.contains("://")) return null
@@ -171,7 +187,7 @@ object PytestNodeIdGenerator {
 
         if (virtualFile == null) return null
 
-        return ProjectFileIndex.getInstance(project).getModuleForFile(virtualFile)
+        return com.intellij.openapi.roots.ProjectFileIndex.getInstance(project).getModuleForFile(virtualFile)
     }
 
     private fun calculateNodeId(
@@ -182,10 +198,7 @@ object PytestNodeIdGenerator {
         pathFqn: String?
     ): String {
         // A. File Part (Relative path with / separator)
-        val relativePath = ProjectFileIndex.getInstance(project)
-            .getContentRootForFile(file)
-            ?.let { root -> VfsUtilCore.getRelativePath(file, root) }
-            ?: file.path
+        val relativePath = projectRelativePath(file, project)
 
         // B. Suffix Calculation
 
@@ -250,5 +263,11 @@ object PytestNodeIdGenerator {
 
         if (parts.isEmpty()) return relativePath
         return "$relativePath::${parts.joinToString("::")}" 
+    }
+
+    private fun projectRelativePath(file: VirtualFile, project: Project): String {
+        val contentRoot = ProjectFileIndex.getInstance(project).getContentRootForFile(file)
+        val rel = contentRoot?.let { root -> VfsUtilCore.getRelativePath(file, root) }
+        return rel ?: file.path
     }
 }

@@ -1,13 +1,3 @@
-[2025-12-09 09:42] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "run tests, align intention text",
-    "BOTTLENECK": "Tests were not executed, hiding a probable intention text/name mismatch.",
-    "PROJECT NOTE": "The test utility likely matches intentions by getText; keep a stable text string.",
-    "NEW INSTRUCTION": "WHEN using doIntentionTest with an intention name THEN set getText to that exact string"
-}
-
 [2025-12-09 09:58] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -888,3 +878,12 @@
     "NEW INSTRUCTION": "WHEN plugin.xml is edited or new Kotlin class added THEN Run Gradle compile tests and resolve any compilation errors before proceeding."
 }
 
+[2025-12-12 23:47] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "switch to EDT before write, wrap write in invokeAndWait",
+    "BOTTLENECK": "Write actions executed off EDT violated TransactionGuard.",
+    "PROJECT NOTE": "PytestSkipToggler uses PyUtil.addDecorator which must run under EDT transaction.",
+    "NEW INSTRUCTION": "WHEN background read resolves PSI target THEN invokeAndWait on EDT, then run WriteCommandAction for PSI edits"
+}

@@ -297,6 +297,13 @@
                     text="Copy Stacktrace"/>
         </group>
 
+        <action id="MyPlugin.TogglePytestSkipFromTestTree"
+                class="com.github.chbndrhnns.intellijplatformplugincopy.actions.TogglePytestSkipFromTestTreeAction"
+                text="Toggle Pytest Skip"
+                description="Toggles pytest skip marker for the selected test node (function/class/module)">
+            <add-to-group group-id="TestTreePopupMenu" anchor="last"/>
+        </action>
+
         <action id="MyPlugin.JumpToPytestNodeInTestTree"
                 class="com.github.chbndrhnns.intellijplatformplugincopy.actions.JumpToPytestNodeInTestTreeAction"
                 text="Jump to Test Tree Node"

@@ -46,6 +46,7 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enableCopyFQNsAction: Boolean = true,
         var enableCopyStacktraceAction: Boolean = true,
         var enableJumpToPytestNodeInTestTreeAction: Boolean = true,
+        var enableTogglePytestSkipFromTestTreeAction: Boolean = true,
         var enableTogglePytestSkipIntention: Boolean = true,
         var enableParametrizePytestTestIntention: Boolean = true,
         var enableStripSignatureTypeAnnotationsIntention: Boolean = true,

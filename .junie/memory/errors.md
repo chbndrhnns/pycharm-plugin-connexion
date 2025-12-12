@@ -1,83 +1,3 @@
-[2025-12-10 10:35] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "bash",
-    "ERROR": "Newlines in command are not permitted",
-    "ROOT CAUSE": "The bash tool was given multi-line commands with literal newlines, which it rejects.",
-    "PROJECT NOTE": "Write files using repo-relative paths from the project root (e.g., src/main/kotlin/...), ensuring the working directory is the project root before redirecting output.",
-    "NEW INSTRUCTION": "WHEN a bash command contains literal newlines THEN use a single-line printf with escaped \\n"
-}
-
-[2025-12-10 10:38] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "bash",
-    "ERROR": "Multi-line bash command rejected",
-    "ROOT CAUSE": "The bash tool disallows unescaped newline characters within a single command.",
-    "PROJECT NOTE": "Ensure you are in the project root (/.../intellij-platform-plugin-copy) before writing files; compose file contents via a single-line printf with \\n escapes.",
-    "NEW INSTRUCTION": "WHEN bash command contains newlines THEN replace with single-line printf using \\n escapes"
-}
-
-[2025-12-10 10:41] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "bash",
-    "ERROR": "Newlines in bash command are prohibited",
-    "ROOT CAUSE": "A multi-line/bash-heredoc command with unescaped newlines was sent to a tool that forbids newline characters.",
-    "PROJECT NOTE": "Work from the project root (/Users/cleancoder/dev/scratch/intellij-platform-plugin-copy) when creating files under src/main; use a single-line printf with \\n escapes.",
-    "NEW INSTRUCTION": "WHEN bash command includes unescaped newlines THEN use a single-line printf with \\n escapes"
-}
-
-[2025-12-10 11:54] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "Gradle :test",
-    "ERROR": "Expected intention not available, but it was offered",
-    "ROOT CAUSE": "The ignore rule blocks classes starting with 'Test_' while the test used 'TestClass' (no underscore).",
-    "PROJECT NOTE": "In this repo, ChangeVisibility ignore defaults are: conftest.py, test_* modules/functions, and classes starting with 'Test_'; tests must match these exact prefixes.",
-    "NEW INSTRUCTION": "WHEN writing NotAvailable test for pytest class THEN name the class starting with 'Test_'"
-}
-
-[2025-12-10 12:04] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "Gradle :test",
-    "ERROR": "Unexpected quick-fix offered; test expected none",
-    "ROOT CAUSE": "The inspection suggests 'use exported' for imports inside private child packages, which should be excluded.",
-    "PROJECT NOTE": "Update src/main/kotlin/.../inspections/PyPrivateModuleImportInspection.kt to treat an importing file located under a private subpackage (a path segment starting with '_') of the exporting package as in-package usage and suppress quick-fixes.",
-    "NEW INSTRUCTION": "WHEN import from private module in private child package detected THEN suppress 'use exported' and 'make public' quick-fixes"
-}
-
-[2025-12-10 15:48] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "Gradle :test",
-    "ERROR": "Expected file content mismatch in intention test",
-    "ROOT CAUSE": "PopulateArguments did not add imports for leaf alias types (e.g., NewType), so the generated code lacked the required from .types import UserId.",
-    "PROJECT NOTE": "Update PyValueGenerator.kt to include the defining PsiElement for alias/leaf types in GenerationResult.imports, and in PopulateArgumentsService.kt merge those imports and call PyImportService to add them.",
-    "NEW INSTRUCTION": "WHEN generated value uses external alias/leaf type THEN add its import via PyImportService"
-}
-
-[2025-12-10 15:51] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": ":test",
-    "ERROR": "FileComparisonFailedError: intention output mismatch",
-    "ROOT CAUSE": "Populate arguments did not import the leaf alias (NewType), so expected output differed.",
-    "PROJECT NOTE": "doIntentionTest compares entire file text; when wrapping leaves like UserId(...), the defining symbol must be added to imports.",
-    "NEW INSTRUCTION": "WHEN generating Alias(...) for a leaf type THEN resolve its symbol and add to imports"
-}
-
-[2025-12-10 15:52] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "bash",
-    "ERROR": "Expected/actual file content mismatch in test",
-    "ROOT CAUSE": "Populate did not import the leaf alias type (e.g., NewType target), so generated code lacked the required import.",
-    "PROJECT NOTE": "PopulateArgumentsService relies on PyValueGenerator.GenerationResult.imports to feed PyImportService; ensure alias-like leaves contribute their PsiNamedElement so imports are added.",
-    "NEW INSTRUCTION": "WHEN generating Alias(...) for a leaf type THEN add the resolved alias PsiNamedElement to imports"
-}
-
 [2025-12-10 15:54] - Updated by Junie - Error analysis
 {
     "TYPE": "test assertion",
@@ -786,4 +706,74 @@
     "ROOT CAUSE": "The file structure tool couldn't parse the Kotlin file and returned unsupported.",
     "PROJECT NOTE": "When file structure parsing fails, directly open the file to inspect contents.",
     "NEW INSTRUCTION": "WHEN get_file_structure reports not possible to display THEN open the file at line 1 using open"
+}
+
+[2025-12-12 23:32] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "TogglePytestSkipFromTestTreeAction.update / PytestNodeIdGenerator.calculateNodeId",
+    "ERROR": "Slow operations are prohibited on EDT",
+    "ROOT CAUSE": "ProjectFileIndex/WorkspaceFileIndex is queried on the EDT inside update/parse.",
+    "PROJECT NOTE": "Move PytestNodeIdGenerator.calculateNodeId calls off EDT; in TogglePytestSkipFromTestTreeAction.update use ActionUpdateThread.BGT and compute nodeId via ReadAction.nonBlocking, updating presentation on UI thread only.",
+    "NEW INSTRUCTION": "WHEN accessing ProjectFileIndex or WorkspaceFileIndex THEN use ReadAction.nonBlocking off EDT"
+}
+
+[2025-12-12 23:36] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "TogglePytestSkipFromTestTreeAction.update",
+    "ERROR": "Slow operations are prohibited on EDT",
+    "ROOT CAUSE": "update runs on EDT but computes node ids hitting WorkspaceFileIndex via PytestNodeIdGenerator.",
+    "PROJECT NOTE": "Mirror JumpToPytestNodeInTestTreeAction: override getActionUpdateThread() to BGT and wrap PSI/index reads in ReadAction; avoid heavy work in update on EDT.",
+    "NEW INSTRUCTION": "WHEN action update needs PSI or file index THEN use ActionUpdateThread.BGT and ReadAction"
+}
+
+[2025-12-12 23:39] - Updated by Junie - Error analysis
+{
+    "TYPE": "threading",
+    "TOOL": "TogglePytestSkipFromTestTreeAction.update",
+    "ERROR": "Slow operations are prohibited on EDT",
+    "ROOT CAUSE": "update() triggers WorkspaceFileIndex via ProjectFileIndex on EDT through node-id calculation.",
+    "PROJECT NOTE": "PytestNodeIdGenerator.calculateNodeId calls ProjectFileIndex.getContentRootForFile, which must not run on EDT; ensure getActionUpdateThread() returns BGT and perform node-id/file-index work in ReadAction or defer to actionPerformed.",
+    "NEW INSTRUCTION": "WHEN action update needs ProjectFileIndex or node-id THEN set update thread BGT and compute in ReadAction"
+}
+
+[2025-12-12 23:41] - Updated by Junie - Error analysis
+{
+    "TYPE": "threading violation",
+    "TOOL": "TogglePytestSkipFromTestTreeAction.update",
+    "ERROR": "Slow operations are prohibited on EDT",
+    "ROOT CAUSE": "update() triggers PytestNodeIdGenerator.calculateNodeId which hits ProjectFileIndex on EDT.",
+    "PROJECT NOTE": "Match JumpToPytestNodeInTestTreeAction: set getActionUpdateThread()=BGT and perform PSI/file-index work via ReadAction in update/actionPerformed; avoid node-id/file-index resolution on EDT.",
+    "NEW INSTRUCTION": "WHEN action update needs file index or PSI resolution THEN run update on BGT and wrap in ReadAction"
+}
+
+[2025-12-12 23:41] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid threading",
+    "TOOL": "TogglePytestSkipFromTestTreeAction.update",
+    "ERROR": "Slow operations executed on EDT in action update()",
+    "ROOT CAUSE": "update() calls PytestNodeIdGenerator.calculateNodeId which touches WorkspaceFileIndex on EDT.",
+    "PROJECT NOTE": "Ensure TogglePytestSkipFromTestTreeAction overrides getActionUpdateThread() = BGT and wrap PSI/index access in ReadAction like JumpToPytestNodeInTestTreeAction.",
+    "NEW INSTRUCTION": "WHEN AnAction.update needs PSI or file index THEN run on BGT and wrap in ReadAction"
+}
+
+[2025-12-12 23:47] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid context",
+    "TOOL": "TogglePytestSkipFromTestTreeAction",
+    "ERROR": "Write-unsafe context: PSI change outside write-safe context",
+    "ROOT CAUSE": "PSI edits were scheduled on UI via finishOnUiThread using an unsafe modality (likely 'any'), triggering TransactionGuard.",
+    "PROJECT NOTE": "In TogglePytestSkipFromTestTreeAction, avoid ModalityState.any() for UI callbacks; use ModalityState.nonModal() or default and perform edits inside WriteCommandAction.runWriteCommandAction.",
+    "NEW INSTRUCTION": "WHEN finishOnUiThread uses ModalityState.any THEN use nonModal and wrap edits in WriteCommandAction"
+}
+
+[2025-12-12 23:48] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid context",
+    "TOOL": "TogglePytestSkipFromTestTreeAction",
+    "ERROR": "PSI write executed from non write-safe modality",
+    "ROOT CAUSE": "The write action was scheduled with ModalityState.any, violating TransactionGuard write-safety.",
+    "PROJECT NOTE": "In TogglePytestSkipFromTestTreeAction, avoid finishOnUiThread(ModalityState.any); use default/nonModal and wrap edits in TransactionGuard.submitTransaction plus WriteCommandAction.",
+    "NEW INSTRUCTION": "WHEN scheduling UI write after ReadAction.nonBlocking THEN use default modality and TransactionGuard.submitTransaction"
 }
