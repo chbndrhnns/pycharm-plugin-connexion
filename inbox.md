@@ -52,12 +52,12 @@
 
 - [-] feat: Implement method from abstractmethod sitae
 - [-] feat: When a local field exists with the same name as the parameter, show `param=param` as a suggestion
-- [-] feat: Remove signature annotations
 - [ ] feat: Replace expected with actual test outcome
 - [ ] feat: Jump from test to test node
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Remove signature annotations
 - [x] fix: When implementing abstract method, take care of existing ellipsis
 - [x] fix: populate arguments from locals should only include required arguments
 - [x] feat: Offer wrap in exception calls
