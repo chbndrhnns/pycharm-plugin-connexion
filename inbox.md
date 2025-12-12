@@ -5,7 +5,6 @@
 - [ ] fix: copy stack trace should only be available for failed test
 - [ ] fix: Import `import bla as xyz` triggers warning about not exported in all
 - [ ] fix: Do not add completion suggestion for expected type when we have `item.` already
-- [ ] test: Fix failing tests
 - [ ] fix: module-level pytest skip should only be available when caret is on module-level scope
 - [ ] fix: When prefering relative import inside same package, do not add candidate if relative import exists already
 - [ ] fix: implement abstract method is put above __init__
@@ -15,6 +14,7 @@
 
 ## Pending Features
 
+- [ ] Toggle skip marker from test panel
 - [ ] feat: Add "from None" to exception if no err is provided, modify if "err/" or so is added later
 - [ ] feat: When suggesting the expected type and it is an inner class, reference it using outer_class.inner_class
   syntax, recursively
