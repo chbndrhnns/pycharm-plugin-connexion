@@ -11,6 +11,7 @@
 
 ## Pending Features
 
+- [ ] feat: Remove "Update usages" quick fix menu
 - [ ] feat: Move test inside of class
 - [ ] feat: Toggle skip marker from test panel
 - [ ] feat: Add "from None" to exception if no err is provided, modify if "err/" or so is added later

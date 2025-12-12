@@ -37,4 +37,31 @@ class TestTreeNodeFinderTest : TestBase() {
         assertNotNull(path)
         assertSame(leaf, (path!!.lastPathComponent as DefaultMutableTreeNode).userObject)
     }
+
+    fun testFindsSuiteNodeForClassTarget() {
+        val suite = SMTestProxy("TestMyClass", true, null)
+        val leaf = SMTestProxy("test_foo", false, null)
+
+        val root = DefaultMutableTreeNode("root").apply {
+            add(DefaultMutableTreeNode(suite).apply {
+                add(DefaultMutableTreeNode(leaf))
+            })
+        }
+
+        val path = TestTreeNodeFinder.findPath(
+            root,
+            nodeIdProvider = { proxy ->
+                when (proxy) {
+                    leaf -> "a.py::TestMyClass::test_foo"
+                    // Simulate the common case where the suite node has no resolvable node id.
+                    suite -> null
+                    else -> null
+                }
+            },
+            targetNodeId = "a.py::TestMyClass"
+        )
+
+        assertNotNull(path)
+        assertSame(suite, (path!!.lastPathComponent as DefaultMutableTreeNode).userObject)
+    }
 }

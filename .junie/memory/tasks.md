@@ -1,13 +1,3 @@
-[2025-12-09 00:22] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "add navigation tests, consult docs",
-    "BOTTLENECK": "Tests validate highlighting only and do not verify hyperlink resolution.",
-    "PROJECT NOTE": "plugin.xml shows existing Python language id warnings unrelated to this change.",
-    "NEW INSTRUCTION": "WHEN adding a console hyperlink THEN assert navigate opens the expected test element"
-}
-
 [2025-12-09 00:28] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -876,4 +866,14 @@
     "BOTTLENECK": "Failure to integrate with TestTreeView/Run toolwindow selection APIs.",
     "PROJECT NOTE": "Leverage AbstractCopyTestNodeAction and TestProxyExtractor patterns; add a selector for TestTreeView nodes by pytest node id.",
     "NEW INSTRUCTION": "WHEN feature requests editor-to-test-tree navigation THEN implement editor action selecting matching TestTreeView node"
+}
+
+[2025-12-12 20:23] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "support class jump, support parametrized leaf jump, add tests, run tests",
+    "BOTTLENECK": "Node-id generation and tree matching skip classes and parametrized leaves.",
+    "PROJECT NOTE": "Extend TestTreeNodeFinder to match exact leaf using param values from decorators.",
+    "NEW INSTRUCTION": "WHEN caret is on test class or parametrize value THEN compute exact node-id and select leaf"
 }

@@ -10,11 +10,10 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNamedElement
+import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.QualifiedName
 import com.jetbrains.python.extensions.getQName
-import com.jetbrains.python.psi.PyClass
-import com.jetbrains.python.psi.PyFile
-import com.jetbrains.python.psi.PyFunction
+import com.jetbrains.python.psi.*
 import com.jetbrains.python.testing.PyTestsLocator
 import java.util.regex.Pattern
 
@@ -68,6 +67,96 @@ object PytestNodeIdGenerator {
             metainfo = null,
             pathFqn = null
         )
+    }
+
+    fun fromCaretElement(elementAtCaret: PsiElement, project: Project): String? {
+        val offset = elementAtCaret.textOffset
+
+        val function = PsiTreeUtil.getParentOfType(elementAtCaret, PyFunction::class.java, false)
+        if (function != null) {
+            val base = fromPsiElement(function, project) ?: return null
+            val paramId = inferParametrizedIdFromCaret(function, elementAtCaret)
+            return if (paramId != null) "$base[$paramId]" else base
+        }
+
+        val clazz = PsiTreeUtil.getParentOfType(elementAtCaret, PyClass::class.java, false)
+        if (clazz != null) {
+            return fromPsiElement(clazz, project)
+        }
+
+        // Fallback: when caret is inside a decorator PSI subtree, the nearest PyFunction/PyClass
+        // might not be reachable directly from the leaf (depending on stubs/PSI structure).
+        val decorator = PsiTreeUtil.getParentOfType(elementAtCaret, PyDecorator::class.java, false)
+        if (decorator != null) {
+            val decoratable = PsiTreeUtil.getParentOfType(decorator, PyDecoratable::class.java, false)
+            when (decoratable) {
+                is PyFunction -> {
+                    val base = fromPsiElement(decoratable, project) ?: return null
+                    val paramId = inferParametrizedIdFromCaret(decoratable, elementAtCaret)
+                    return if (paramId != null) "$base[$paramId]" else base
+                }
+
+                is PyClass -> return fromPsiElement(decoratable, project)
+            }
+        }
+
+        // Last-resort: locate the top-level container that spans this offset.
+        // This covers PSI shapes where decorator arguments are not nested under the function/class.
+        // This is used for jumping non-leaf elements in the test tree
+        val pyFile = elementAtCaret.containingFile as? PyFile
+        if (pyFile != null) {
+            val topLevelFunction = pyFile.topLevelFunctions.firstOrNull { fn ->
+                fn.textRange.containsOffset(offset) || fn.decoratorList?.textRange?.containsOffset(offset) == true
+            }
+            if (topLevelFunction != null) {
+                val base = fromPsiElement(topLevelFunction, project) ?: return null
+                val paramId = inferParametrizedIdFromCaret(topLevelFunction, elementAtCaret)
+                return if (paramId != null) "$base[$paramId]" else base
+            }
+
+            val topLevelClass = pyFile.topLevelClasses.firstOrNull { cls ->
+                cls.textRange.containsOffset(offset) || cls.decoratorList?.textRange?.containsOffset(offset) == true
+            }
+            if (topLevelClass != null) {
+                return fromPsiElement(topLevelClass, project)
+            }
+        }
+
+        return null
+    }
+
+    private fun inferParametrizedIdFromCaret(function: PyFunction, elementAtCaret: PsiElement): String? {
+        val decorators = function.decoratorList?.decorators ?: return null
+
+        val parametrizeDecorator = decorators.firstOrNull { decorator ->
+            val callee = decorator.callee as? PyQualifiedExpression
+            val qName = callee?.asQualifiedName()?.toString()
+            qName == "pytest.mark.parametrize" ||
+                    qName == "_pytest.mark.parametrize" ||
+                    qName?.endsWith(".pytest.mark.parametrize") == true
+        } ?: return null
+
+        val argList = parametrizeDecorator.argumentList ?: return null
+        val args = argList.arguments
+
+        // Typical: parametrize("arg", [1, 2, 3])
+        val valuesArg =
+            args.drop(1).firstOrNull { it is PyListLiteralExpression || it is PyTupleExpression } as? PsiElement
+                ?: return null
+
+        val offset = elementAtCaret.textOffset
+        if (!valuesArg.textRange.containsOffset(offset)) return null
+
+        val selectedValue = when (valuesArg) {
+            is PyListLiteralExpression -> valuesArg.elements.firstOrNull { it.textRange.containsOffset(offset) }
+            is PyTupleExpression -> valuesArg.elements.firstOrNull { it.textRange.containsOffset(offset) }
+            else -> null
+        } ?: return null
+
+        return when (selectedValue) {
+            is PyStringLiteralExpression -> selectedValue.stringValue
+            else -> selectedValue.text
+        }
     }
 
     private fun findModuleFromProtocol(protocol: String, project: Project): Module? {

@@ -6,6 +6,7 @@ import com.intellij.execution.testframework.sm.runner.SMTestProxy
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
+import com.jetbrains.python.psi.PyFile
 import com.jetbrains.python.psi.PyFunction
 import fixtures.TestBase
 
@@ -66,6 +67,33 @@ class PytestNodeIdGeneratorTest : TestBase() {
 
         val record = PytestNodeIdGenerator.parseProxy(proxy, project)
         assertEquals("test_nested.py::TestOuter::TestInner::test_inner", record!!.nodeid)
+    }
+
+    fun testParametrizedFromCaretElementSelectsLeaf() {
+        myFixture.configureByText(
+            "test_param.py",
+            """
+            import pytest
+
+
+            @pytest.mark.parametrize("arg", [1, 2, 3,])
+            def test_jump(arg):
+                assert False
+            """.trimIndent()
+        )
+
+        val offset = myFixture.file.text.indexOf("2")
+        assertTrue(offset >= 0)
+        val valueLeaf = myFixture.file.findElementAt(offset)!!
+
+        val pyFile = myFixture.file as PyFile
+        val function = pyFile.topLevelFunctions.firstOrNull { it.name == "test_jump" }
+        assertNotNull(function)
+        assertNotNull(function!!.decoratorList)
+        assertTrue(function.decoratorList!!.text.contains("parametrize"))
+
+        val nodeId = PytestNodeIdGenerator.fromCaretElement(valueLeaf, project)
+        assertEquals("test_param.py::test_jump[2]", nodeId)
     }
 
     private class FakeSMTestProxy(

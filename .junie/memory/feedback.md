@@ -590,3 +590,11 @@
     "NEW INSTRUCTION": "WHEN AnAction.update reads PSI_FILE THEN return BGT in getActionUpdateThread"
 }
 
+[2025-12-12 20:11] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "jump to test tree",
+    "EXPECTATION": "Jump should select the class node when invoked on a test class, and select the specific parametrized test leaf when invoked on a concrete value in a @pytest.mark.parametrize list.",
+    "NEW INSTRUCTION": "WHEN jump invoked from class or parametrize value THEN build precise node id and select matching node"
+}
+

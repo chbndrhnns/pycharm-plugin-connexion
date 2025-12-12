@@ -47,16 +47,7 @@ class JumpToPytestNodeInTestTreeAction : AnAction() {
 
         val nodeId = ReadAction.compute<String?, RuntimeException> {
             val elementAtCaret = psiFile.findElementAt(editor.caretModel.offset) ?: return@compute null
-            val target: Any? = PsiTreeUtil.getParentOfType(elementAtCaret, PyFunction::class.java, false)
-                ?: PsiTreeUtil.getParentOfType(elementAtCaret, PyClass::class.java, false)
-
-            val psiElement = when (target) {
-                is PyFunction -> target
-                is PyClass -> target
-                else -> return@compute null
-            }
-
-            PytestNodeIdGenerator.fromPsiElement(psiElement, project)
+            PytestNodeIdGenerator.fromCaretElement(elementAtCaret, project)
         } ?: return
 
         PytestTestTreeNavigator.selectAndReveal(project, nodeId)
