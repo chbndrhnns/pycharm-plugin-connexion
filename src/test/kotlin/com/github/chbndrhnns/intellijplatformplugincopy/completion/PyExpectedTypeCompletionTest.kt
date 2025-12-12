@@ -241,4 +241,53 @@ class PyExpectedTypeCompletionTest : TestBase() {
         assertNotNull(variants)
         assertFalse("Should not contain 'MyArg', found: $variants", variants!!.contains("MyArg"))
     }
+
+    fun testSkipLiteralStringExpectedTypeInReturnCompletion() {
+        myFixture.configureByText(
+            "test_literal_string.py", """
+            import typing
+
+            def foo() -> typing.LiteralString:
+                return <caret>
+        """.trimIndent()
+        )
+
+        val variants = myFixture.getCompletionVariants("test_literal_string.py")
+        assertNotNull(variants)
+        assertFalse(
+            "Should not contain 'LiteralString' (or qualified variants), found: $variants",
+            variants!!.any { it.contains("LiteralString", ignoreCase = true) }
+        )
+        assertFalse(
+            "Should not contain 'LiteralStr' (or qualified variants), found: $variants",
+            variants.any { it.contains("LiteralStr", ignoreCase = true) }
+        )
+        assertFalse(
+            "Should not contain literal suggestions like Literal[...], found: $variants",
+            variants.any { it.startsWith("Literal[") }
+        )
+    }
+
+    fun testUnionKeepsOtherMembersButSkipsLiteralString() {
+        myFixture.configureByText(
+            "test_union_literal_string.py", """
+            import typing
+
+            def foo() -> int | typing.LiteralString:
+                return <caret>
+        """.trimIndent()
+        )
+
+        val variants = myFixture.getCompletionVariants("test_union_literal_string.py")
+        assertNotNull(variants)
+        assertTrue("Should contain 'int', found: $variants", variants!!.contains("int"))
+        assertFalse(
+            "Should not contain 'LiteralString' (or qualified variants), found: $variants",
+            variants.any { it.contains("LiteralString", ignoreCase = true) }
+        )
+        assertFalse(
+            "Should not contain literal suggestions like Literal[...], found: $variants",
+            variants.any { it.startsWith("Literal[") }
+        )
+    }
 }

@@ -10,6 +10,7 @@ import com.intellij.util.ProcessingContext
 import com.jetbrains.python.PythonLanguage
 import com.jetbrains.python.psi.PyExpression
 import com.jetbrains.python.psi.PyReferenceExpression
+import com.jetbrains.python.psi.types.PyType
 import com.jetbrains.python.psi.types.PyUnionType
 import com.jetbrains.python.psi.types.TypeEvalContext
 
@@ -47,17 +48,35 @@ class PyExpectedTypeCompletionContributor : CompletionContributor() {
                         listOf(expectedType)
                     }
 
-                    types.forEach { type ->
-                        val typeName = type?.name
-                        if (typeName != null) {
+                    types
+                        .asSequence()
+                        .filterNotNull()
+                        .filterNot { shouldSkipExpectedTypeSuggestion(it) }
+                        .mapNotNull { it.name }
+                        .distinct()
+                        .forEach { typeName ->
                             val element = LookupElementBuilder.create(typeName)
                                 .withTypeText("Expected type")
                             val prioritized = PrioritizedLookupElement.withPriority(element, 100.0)
                             result.addElement(prioritized)
                         }
-                    }
                 }
             }
         )
+    }
+
+    private fun shouldSkipExpectedTypeSuggestion(type: PyType): Boolean {
+        val name = type.name ?: return true
+
+        // `typing.LiteralString` (Py3.11+) and some internal literal-string types can appear as these.
+        if (name.contains("LiteralString", ignoreCase = true)) return true
+        if (name.contains("LiteralStr", ignoreCase = true)) return true
+
+        if (name.equals("Literal", ignoreCase = true) || name.equals("typing.Literal", ignoreCase = true)) return true
+
+        // Generic literal types like `Literal["x"]` shouldn’t be offered as expected-type suggestions.
+        if (name.startsWith("Literal[")) return true
+
+        return false
     }
 }
