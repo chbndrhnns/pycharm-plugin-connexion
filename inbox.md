@@ -7,6 +7,7 @@
 - [ ] feat: Consider if this should only work for dataclass/classes, for others, there is change signature
 - [ ] fix: cancel introduce type rename dialog still keeps it
 - [ ] refactor: How to find if the caret is inside parentheses? `[PopulateArgumentsService.findCallExpression`
+- [ ] fix: Import `import bla as xyz` triggers warning about not exported in all -> repro?
 
 ## Pending Features
 
@@ -53,7 +54,6 @@
 
 ## In Progress Tasks
 
-- [-] fix: Import `import bla as xyz` triggers warning about not exported in all
 - [-] feat: When a local field exists with the same name as the parameter, show `param=param` as a suggestion
 - [ ] feat: Replace expected with actual test outcome
 - [ ] feat: Jump from test to test node
