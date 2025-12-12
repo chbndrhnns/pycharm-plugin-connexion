@@ -10,7 +10,8 @@
 
 ## Pending Features
 
-- [ ] Toggle skip marker from test panel
+- [ ] feat: Move test inside of class
+- [ ] feat: Toggle skip marker from test panel
 - [ ] feat: Add "from None" to exception if no err is provided, modify if "err/" or so is added later
 - [ ] feat: When suggesting the expected type and it is an inner class, reference it using outer_class.inner_class
   syntax, recursively
