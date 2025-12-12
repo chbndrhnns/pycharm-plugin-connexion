@@ -1,23 +1,3 @@
-[2025-12-04 21:37] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "add debug logging",
-    "MISSING STEPS": "inspect test failure diff,validate popup selection index,align expected formatting policy",
-    "BOTTLENECK": "The agent did not inspect the failing test diff to adjust implementation or expectations.",
-    "PROJECT NOTE": "Existing intention tests typically expect no trailing comma for single-element containers.",
-    "NEW INSTRUCTION": "WHEN test fails with FileComparisonFailedError THEN open diff and adjust expectations or formatting"
-}
-
-[2025-12-05 18:00] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "run related tests",
-    "BOTTLENECK": "Discriminating string aliases from resolvable symbols in value generation.",
-    "PROJECT NOTE": "Pydantic Field(alias=\"...\") yields a string; never treat it as callable.",
-    "NEW INSTRUCTION": "WHEN changing PyValueGenerator value-wrapping or alias handling THEN run populate intention tests to detect regressions"
-}
-
 [2025-12-06 08:02] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -888,3 +868,22 @@
     "NEW INSTRUCTION": "WHEN new unit tests are added THEN run ./gradlew test and fix issues"
 }
 
+[2025-12-12 10:13] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "add integration test,verify console filter end-to-end",
+    "BOTTLENECK": "No end-to-end test ensured console hyperlink navigation works via PytestConsoleFilter.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN fixing resolver parsing THEN add console filter integration test for node ids"
+}
+
+[2025-12-12 10:22] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "scan project, update docs",
+    "BOTTLENECK": "No holistic search for other node-id parsers beyond the resolver.",
+    "PROJECT NOTE": "PytestConsoleFilter also handles node-id boundaries; add note that dot-separated Class.test comes from pytest-sugar.",
+    "NEW INSTRUCTION": "WHEN modifying pytest node id parsing THEN scan project for all related parsers and docs"
+}

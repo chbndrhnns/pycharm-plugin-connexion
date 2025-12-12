@@ -12,7 +12,8 @@ import com.jetbrains.python.psi.PyFile
 class PytestIdentifierResolver(private val project: Project) {
 
     fun resolve(pattern: String): PsiElement? {
-        val parts = StringUtil.split(pattern, "::")
+        val rawParts = StringUtil.split(pattern, "::")
+        val parts = normalizePytestNodeIdParts(rawParts)
         if (parts.isEmpty()) return null
 
         // Extract file path and elements (class, function)
@@ -63,6 +64,35 @@ class PytestIdentifierResolver(private val project: Project) {
         }
 
         return null
+    }
+
+    private fun normalizePytestNodeIdParts(rawParts: List<String>): List<String> {
+        if (rawParts.isEmpty()) return emptyList()
+        if (rawParts.size == 1) return rawParts
+
+        val normalized = ArrayList<String>(rawParts.size + 2)
+        normalized.add(rawParts.first())
+
+        for (i in 1 until rawParts.size) {
+            normalized.addAll(splitContainerSegment(rawParts[i]))
+        }
+
+        return normalized
+    }
+
+    /**
+     * Pytest node ids are canonically separated by `::`.
+     *
+     * When `pytest-sugar` is active, the console may render the post-file container chain as a single
+     * dot-separated segment (e.g. `TestGetAll.test_returns_all`), while still keeping `::` between the
+     * file part and the container part.
+     */
+    private fun splitContainerSegment(rawSegment: String): List<String> {
+        val segmentWithoutParams = stripParametrization(rawSegment)
+        return segmentWithoutParams
+            .split('.')
+            .map { it.trim() }
+            .filter { it.isNotBlank() }
     }
 
     private fun stripParametrization(name: String): String {
