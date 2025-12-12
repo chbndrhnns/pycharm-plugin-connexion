@@ -41,14 +41,14 @@ data class PopulateOptions(
             PopulateOptions(PopulateMode.REQUIRED_ONLY, recursive = false),
             PopulateOptions(PopulateMode.ALL, recursive = true),
             PopulateOptions(PopulateMode.REQUIRED_ONLY, recursive = true),
-            PopulateOptions(PopulateMode.ALL, recursive = false, useLocalScope = true)
+            PopulateOptions(PopulateMode.REQUIRED_ONLY, recursive = false, useLocalScope = true)
         )
 
         /** Options without recursive variants (when recursive is not applicable). */
         val NON_RECURSIVE_OPTIONS = listOf(
             PopulateOptions(PopulateMode.ALL, recursive = false),
             PopulateOptions(PopulateMode.REQUIRED_ONLY, recursive = false),
-            PopulateOptions(PopulateMode.ALL, recursive = false, useLocalScope = true)
+            PopulateOptions(PopulateMode.REQUIRED_ONLY, recursive = false, useLocalScope = true)
         )
     }
 }

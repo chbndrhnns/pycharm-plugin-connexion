@@ -163,6 +163,50 @@ class RecursiveArgumentsIntentionTest : TestBase() {
         }
     }
 
+    fun testRecursiveDataclassPopulation_IncludesInheritedFields() {
+        withPopulatePopupSelection(index = 2) {
+            myFixture.doIntentionTest(
+                "a.py",
+                """
+            from dataclasses import dataclass
+
+            @dataclass
+            class Base:
+                base: int
+
+            @dataclass
+            class Leaf:
+                val: int
+
+            @dataclass
+            class Child(Base):
+                leaf: Leaf
+
+            c = Child(<caret>)
+            """,
+                """
+            from dataclasses import dataclass
+
+            @dataclass
+            class Base:
+                base: int
+
+            @dataclass
+            class Leaf:
+                val: int
+
+            @dataclass
+            class Child(Base):
+                leaf: Leaf
+
+            c = Child(base=..., leaf=Leaf(val=...))
+
+            """,
+                "Populate arguments..."
+            )
+        }
+    }
+
     fun testRecursionLimit() {
         withPopulatePopupSelection(index = 2) {
             myFixture.doIntentionTest(

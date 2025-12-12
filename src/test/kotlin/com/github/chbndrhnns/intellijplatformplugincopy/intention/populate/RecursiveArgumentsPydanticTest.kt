@@ -94,4 +94,49 @@ class RecursiveArgumentsPydanticTest : TestBase() {
             )
         }
     }
+
+    fun testPydanticAlias_InheritedFromBaseClass() {
+        withPopulatePopupSelection(index = 2) {
+            myFixture.doIntentionTest(
+                "a.py",
+                """
+            from typing import dataclass_transform
+
+            class Field:
+                def __init__(self, alias=None, **kwargs): pass
+
+            @dataclass_transform(field_specifiers=(Field,))
+            class BaseModel:
+                pass
+
+            class BaseUser(BaseModel):
+                name: str = Field(alias="userName")
+
+            class ChildUser(BaseUser):
+                age: int
+
+            u = ChildUser(<caret>)
+            """,
+                """
+            from typing import dataclass_transform
+
+            class Field:
+                def __init__(self, alias=None, **kwargs): pass
+
+            @dataclass_transform(field_specifiers=(Field,))
+            class BaseModel:
+                pass
+
+            class BaseUser(BaseModel):
+                name: str = Field(alias="userName")
+
+            class ChildUser(BaseUser):
+                age: int
+
+            u = ChildUser(userName=..., age=...)
+            """,
+                "Populate arguments..."
+            )
+        }
+    }
 }

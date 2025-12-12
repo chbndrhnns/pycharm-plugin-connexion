@@ -25,7 +25,11 @@ class PyDataclassFieldExtractor {
                 .filter { it.name != null && !it.isSelf && !it.isPositionalContainer && !it.isKeywordContainer }
                 .mapNotNull { param ->
                     val name = param.name ?: return@mapNotNull null
+                    // Guard against providers that may return a callable signature containing parameters
+                    // that don't actually correspond to fields of this dataclass.
+                    // (This can lead to nested dataclass values receiving sibling parameters.)
                     val classAttr = pyClass.findClassAttribute(name, /* inherited = */ true, context)
+                        ?: return@mapNotNull null
                     val alias = classAttr?.let { extractAliasFromTarget(it, resolveCtx) }
                     FieldSpec(
                         name = alias?.first ?: name,

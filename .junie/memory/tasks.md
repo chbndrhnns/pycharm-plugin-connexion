@@ -1,33 +1,3 @@
-[2025-12-06 08:02] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "inspect intention infrastructure,review test patterns,repeat status updates without new actions",
-    "MISSING STEPS": "implement intention,add tests,register intention,run tests",
-    "BOTTLENECK": "Stuck in analysis loop without moving to code and tests.",
-    "PROJECT NOTE": "Intention tests use inline doIntentionTest; prefer Kotlin tests over external testData.",
-    "NEW INSTRUCTION": "WHEN same plan is logged twice consecutively THEN create intention skeleton and a failing test"
-}
-
-[2025-12-06 08:12] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "register intention, run tests, add intention description",
-    "BOTTLENECK": "Implementation proceeded without registering the intention or running tests early.",
-    "PROJECT NOTE": "IntelliJ intentions require plugin.xml registration; tests will not find the action until registered.",
-    "NEW INSTRUCTION": "WHEN creating a new intention class THEN add plugin.xml registration and run tests immediately"
-}
-
-[2025-12-06 11:29] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "repeat status updates,inspect syntax errors in caret-marked files",
-    "MISSING STEPS": "scan docs for coverage,open test class,add tests,run tests,summarize results",
-    "BOTTLENECK": "New test data were created but the test class was not updated or executed.",
-    "PROJECT NOTE": "Test methods must map to testData files and use doTest/doTestNotAvailable; add methods in PyDictAccessIntentionTest.",
-    "NEW INSTRUCTION": "WHEN new testData files are added THEN add matching test methods and run tests"
-}
-
 [2025-12-07 10:34] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -886,4 +856,34 @@
     "BOTTLENECK": "No holistic search for other node-id parsers beyond the resolver.",
     "PROJECT NOTE": "PytestConsoleFilter also handles node-id boundaries; add note that dot-separated Class.test comes from pytest-sugar.",
     "NEW INSTRUCTION": "WHEN modifying pytest node id parsing THEN scan project for all related parsers and docs"
+}
+
+[2025-12-12 10:33] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "inspect popup option ordering",
+    "MISSING STEPS": "run minimal targeted tests before broader suite, search tests for existing inheritance cases",
+    "BOTTLENECK": "The crafted test did not reproduce the suspected base-annotation issue, stalling validation.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN added test does not fail as expected THEN broaden scenario to overriding method without annotations"
+}
+
+[2025-12-12 10:37] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "run related tests",
+    "BOTTLENECK": "Locating the correct wiring where 'from locals' selects the populate mode.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN changing PopulateOptions or mode selection THEN run all populate intention tests"
+}
+
+[2025-12-12 10:42] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "adjust parameter selection, add test, run tests",
+    "BOTTLENECK": "Locals mode excludes optional params before checking for local matches.",
+    "PROJECT NOTE": "In PopulateArgumentsService.populateArguments, compute candidates for locals independently of REQUIRED_ONLY.",
+    "NEW INSTRUCTION": "WHEN useLocalScope option is active THEN include optional params only with local matches"
 }

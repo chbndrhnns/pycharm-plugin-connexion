@@ -71,9 +71,14 @@ class PopulateArgumentsService {
         options: PopulateOptions,
         context: TypeEvalContext
     ) {
-        val missing = when (options.mode) {
-            PopulateMode.ALL -> getMissingParameters(call, context)
-            PopulateMode.REQUIRED_ONLY -> getMissingRequiredParameters(call, context)
+        val missing = if (options.useLocalScope) {
+            // In locals-mode we may also fill optional/defaulted params, but only when a local match exists.
+            getMissingParameters(call, context)
+        } else {
+            when (options.mode) {
+                PopulateMode.ALL -> getMissingParameters(call, context)
+                PopulateMode.REQUIRED_ONLY -> getMissingRequiredParameters(call, context)
+            }
         }
         if (missing.isEmpty()) return
 
@@ -101,6 +106,14 @@ class PopulateArgumentsService {
             ?.resolve()
             ?.let { it as? PyClass }
 
+        fun sanitizeNoEllipsis(result: PyValueGenerator.GenerationResult): PyValueGenerator.GenerationResult {
+            return if (result.text.contains("...")) {
+                PyValueGenerator.GenerationResult("None", emptySet())
+            } else {
+                result
+            }
+        }
+
         val paramData = missing.mapNotNull { param ->
             val name = param.name ?: return@mapNotNull null
             val type = param.getType(context)
@@ -120,8 +133,13 @@ class PopulateArgumentsService {
 
                 if (found) {
                     PyValueGenerator.GenerationResult(name, emptySet())
+                } else if (param.hasDefaultValue()) {
+                    // Optional/defaulted params should only be populated when we can map from locals.
+                    // If we can't, leave them untouched.
+                    return@mapNotNull null
                 } else {
-                    valueGenerator.generateValue(type, context, 0, generator, languageLevel, file)
+                    // Required param with no local match: fall back to generated value, but never use ellipsis.
+                    sanitizeNoEllipsis(valueGenerator.generateValue(type, context, 0, generator, languageLevel, file))
                 }
             } else {
                 valueGenerator.generateValue(type, context, 0, generator, languageLevel, file)
@@ -147,31 +165,56 @@ class PopulateArgumentsService {
                 }
             }
 
+            if (options.useLocalScope) {
+                // Locals-mode must never insert ellipsis placeholders.
+                finalResult = sanitizeNoEllipsis(finalResult)
+            }
+
             Triple(param, name, finalResult)
         }
 
-        // First, create placeholder keyword arguments for all missing params
-        for ((_, name, _) in paramData) {
-            val kwArg = generator.createKeywordArgument(languageLevel, name, "None")
-            argumentList.addArgument(kwArg)
-        }
+        // Apply arguments.
+        // When the call currently has *no* arguments, it is more robust to replace the whole argument list
+        // with a freshly parsed one, rather than relying on incremental PSI insertions (which can sometimes
+        // lead to arguments being inserted into nested calls).
+        if (argumentList.arguments.isEmpty()) {
+            val argsText = paramData.joinToString(", ") { (_, name, result) -> "$name=${result.text}" }
+            val calleeText = call.callee?.text ?: return
+            val parsedCall =
+                generator.createExpressionFromText(languageLevel, "$calleeText($argsText)") as? PyCallExpression
+                    ?: return
+            val newArgList = parsedCall.argumentList ?: return
 
-        // Then, replace placeholder values and ensure imports
-        for ((_, name, result) in paramData) {
-            val kwArg = argumentList.arguments.filterIsInstance<PyKeywordArgument>().find { it.keyword == name }
-            if (kwArg != null) {
-                val valueExpr = generator.createExpressionFromText(languageLevel, result.text)
-                val replaced = kwArg.valueExpression?.replace(valueExpr) as? PyExpression ?: continue
+            val replacedArgList = argumentList.replace(newArgList) as? PyArgumentList ?: return
 
-                // Ensure imports for all classes used in generation
-                for (cls in result.imports) {
-                    imports.ensureImportedIfNeeded(file, replaced, cls)
+            // Ensure imports for all inserted values
+            for ((_, name, result) in paramData) {
+                val kwArg = replacedArgList.arguments.filterIsInstance<PyKeywordArgument>().find { it.keyword == name }
+                val valueExpression = kwArg?.valueExpression
+                if (valueExpression != null) {
+                    for (cls in result.imports) {
+                        imports.ensureImportedIfNeeded(file, valueExpression, cls)
+                    }
+                }
+            }
+        } else {
+            // Otherwise, append missing keyword arguments and ensure imports.
+            for ((_, name, result) in paramData) {
+                val kwArg = generator.createKeywordArgument(languageLevel, name, result.text)
+                val added = argumentList.addArgument(kwArg) as? PyKeywordArgument
+                val valueExpression = (added ?: kwArg).valueExpression
+                if (valueExpression != null) {
+                    for (cls in result.imports) {
+                        imports.ensureImportedIfNeeded(file, valueExpression, cls)
+                    }
                 }
             }
         }
 
         if (call !is PyDecorator && call.parent !is PyDecorator) {
-            CodeStyleManager.getInstance(project).reformat(argumentList)
+            // `argumentList` may have been replaced above; always re-fetch from the call to avoid
+            // formatting a stale/detached PSI element.
+            call.argumentList?.let { CodeStyleManager.getInstance(project).reformat(it) }
         }
     }
 }

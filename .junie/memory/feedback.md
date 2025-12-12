@@ -518,3 +518,35 @@
     "NEW INSTRUCTION": "WHEN rendering hyperlink around pytest node id THEN leave original console text unchanged"
 }
 
+[2025-12-12 10:39] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "populate from locals",
+    "EXPECTATION": "Also populate optional/defaulted parameters when a matching local variable exists, and never insert ellipsis for them.",
+    "NEW INSTRUCTION": "WHEN populating from locals AND optional param matches local THEN insert keyword with local and omit ellipsis"
+}
+
+[2025-12-12 10:43] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "populate from locals",
+    "EXPECTATION": "Optional/defaulted parameters should be populated when a matching local variable exists, not skipped, and no ellipsis should be inserted.",
+    "NEW INSTRUCTION": "WHEN populating from locals AND optional param matches local THEN insert keyword with local and omit ellipsis"
+}
+
+[2025-12-12 12:26] - Updated by Junie
+{
+    "TYPE": "negative",
+    "CATEGORY": "tests regression",
+    "EXPECTATION": "Tests under intention.populate should pass; investigate and fix regressions introduced by recent changes.",
+    "NEW INSTRUCTION": "WHEN tests in populate intention package fail THEN investigate and fix regressions before proceeding"
+}
+
+[2025-12-12 12:33] - Updated by Junie
+{
+    "TYPE": "negative",
+    "CATEGORY": "tests regression",
+    "EXPECTATION": "After changing populate-arguments behavior, run the populate intention tests, report failures, and fix regressions so all tests pass.",
+    "NEW INSTRUCTION": "WHEN modifying populate intention code THEN run intention.populate tests and summarize failures"
+}
+
