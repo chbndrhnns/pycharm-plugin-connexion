@@ -1,13 +1,3 @@
-[2025-12-07 10:34] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "register intention,implement new intention",
-    "MISSING STEPS": "scan project,review existing tests,align testData format,create/update test class,run tests",
-    "BOTTLENECK": "Diverged into a new intention and created invalid testData with caret markers.",
-    "PROJECT NOTE": "Reuse existing PyDictAccessIntention test class conventions; ensure testData files conform to repository parsing constraints.",
-    "NEW INSTRUCTION": "WHEN adding tests for an intention THEN scan existing intention tests and mirror testData format"
-}
-
 [2025-12-08 10:33] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -886,4 +876,14 @@
     "BOTTLENECK": "Locals mode excludes optional params before checking for local matches.",
     "PROJECT NOTE": "In PopulateArgumentsService.populateArguments, compute candidates for locals independently of REQUIRED_ONLY.",
     "NEW INSTRUCTION": "WHEN useLocalScope option is active THEN include optional params only with local matches"
+}
+
+[2025-12-12 13:15] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "repeat plan updates",
+    "MISSING STEPS": "inspect failing diff, adjust expected output or applier",
+    "BOTTLENECK": "Failure diagnosis stalled at file comparison mismatch without inspecting the actual diff.",
+    "PROJECT NOTE": "Constructor positional args now map to __init__ via offset; verify wrap applier uses inferred ctor name for raise-calls.",
+    "NEW INSTRUCTION": "WHEN test fails with FileComparisonFailedError THEN open actual vs expected diff and fix accordingly"
 }

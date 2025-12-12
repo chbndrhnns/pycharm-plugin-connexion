@@ -290,12 +290,9 @@ internal object ExpectedTypeInfo {
                 // For class constructors (Client(val=...)), prefer __init__ parameter info if available.
                 val init = callee.findInitOrNew(true, ctx)
                 if (init is PyFunction) {
-                    // Only handle keyword arguments for now as positional mapping needs
-                    // implicit 'self' adjustment which functionParamTypeInfo doesn't support yet.
-                    if (kw != null) {
-                        val fromInit = functionParamTypeInfo(init, argList, argIndex, kw, ctx)
-                        if (fromInit != null) return fromInit
-                    }
+                    val offset = 1 // implicit `self` for __init__
+                    val fromInit = functionParamTypeInfo(init, argList, argIndex, kw, ctx, offset)
+                    if (fromInit != null) return fromInit
                 }
 
                 null

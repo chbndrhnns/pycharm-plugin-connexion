@@ -1,23 +1,3 @@
-[2025-12-09 12:18] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "bash",
-    "ERROR": "Multiline bash command is prohibited",
-    "ROOT CAUSE": "The bash tool received two independent commands separated by a newline, which it disallows.",
-    "PROJECT NOTE": "This environment’s bash tool forbids newline-separated commands; chain with && or run separately.",
-    "NEW INSTRUCTION": "WHEN bash command contains a newline THEN run each command in a separate bash call"
-}
-
-[2025-12-09 12:19] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "create",
-    "ERROR": "Wrong types passed to resolveQualifiedName",
-    "ROOT CAUSE": "The code used String and a PSI element for resolveQualifiedName, which requires a QualifiedName and PyQualifiedNameResolveContext and returns a list.",
-    "PROJECT NOTE": "With IntelliJ Python API, build QualifiedName via QualifiedName.fromDottedString(value) and context via PyResolveContext.defaultContext().withFoothold(element).toQualifiedNameResolveContext(project); map returned PsiElements to PsiElementResolveResult.",
-    "NEW INSTRUCTION": "WHEN calling PyPsiFacade.resolveQualifiedName THEN construct QualifiedName/context and map returned elements to results"
-}
-
 [2025-12-09 12:21] - Updated by Junie - Error analysis
 {
     "TYPE": "invalid args",
@@ -786,5 +766,25 @@
     "ROOT CAUSE": "The updated Pattern.compile string included an extra quote inside the lookahead, breaking Kotlin parsing.",
     "PROJECT NOTE": "In PytestConsoleFilter.kt, regex strings must have balanced quotes and properly escaped backslashes; consider using triple-quoted strings for complex patterns.",
     "NEW INSTRUCTION": "WHEN editing Kotlin regex in PytestConsoleFilter THEN ensure balanced quotes and escapes before saving"
+}
+
+[2025-12-12 13:13] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle :test",
+    "ERROR": "FileComparisonFailedError: intention output mismatch",
+    "ROOT CAUSE": "The applied wrap intention produced code differing from the test’s expected output.",
+    "PROJECT NOTE": "Inspect the HTML diff at build/reports/tests/test/index.html to see actual vs expected.",
+    "NEW INSTRUCTION": "WHEN FileComparisonFailedError occurs in intention test THEN inspect HTML report and align output"
+}
+
+[2025-12-12 13:16] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle :test",
+    "ERROR": "FileComparisonFailedError in intention output",
+    "ROOT CAUSE": "The wrap applier produced a different callee form (likely qualified builtins) than tests expect.",
+    "PROJECT NOTE": "doIntentionTest compares full file text; builtins must be rendered as unqualified names like str().",
+    "NEW INSTRUCTION": "WHEN expected constructor resolves to a builtin THEN render unqualified name without module prefix"
 }
 

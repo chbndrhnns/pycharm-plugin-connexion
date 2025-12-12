@@ -187,4 +187,29 @@ class WrapBasicTest : TestBase() {
             "Wrap with"
         )
     }
+
+    fun testRaiseCallArgument_IntToStr_WrapOffered() {
+        myFixture.doIntentionTest(
+            "a.py",
+            """
+            class MyError(Exception):
+                def __init__(self, msg: str) -> None:
+                    super().__init__(msg)
+
+
+            def run():
+                raise MyError(<caret>123)
+            """,
+            """
+            class MyError(Exception):
+                def __init__(self, msg: str) -> None:
+                    super().__init__(msg)
+
+
+            def run():
+                raise MyError("123")
+            """,
+            "Wrap with str()"
+        )
+    }
 }
