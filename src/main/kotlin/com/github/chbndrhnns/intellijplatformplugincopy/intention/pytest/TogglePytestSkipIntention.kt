@@ -17,7 +17,16 @@ import javax.swing.Icon
 
 class TogglePytestSkipIntention : IntentionAction, HighPriorityAction, Iconable {
 
-    override fun getText(): String = "Toggle pytest skip"
+    private enum class Scope(val label: String) {
+        FUNCTION("function"),
+        CLASS("class"),
+        MODULE("module"),
+    }
+
+    @Volatile
+    private var cachedText: String = "Toggle pytest skip"
+
+    override fun getText(): String = cachedText
     override fun getFamilyName(): String = "Toggle pytest skip"
     override fun getIcon(@Iconable.IconFlags flags: Int): Icon? = null
     override fun startInWriteAction(): Boolean = true
@@ -26,22 +35,9 @@ class TogglePytestSkipIntention : IntentionAction, HighPriorityAction, Iconable 
         if (!PluginSettingsState.instance().state.enableTogglePytestSkipIntention) return false
         if (file !is PyFile) return false
 
-        val element = file.findElementAt(editor.caretModel.offset) ?: return false
-
-        val pyFunction = PsiTreeUtil.getParentOfType(element, PyFunction::class.java)
-        if (pyFunction != null && pyFunction.name?.startsWith("test_") == true) {
-            return true
-        }
-
-        val pyClass = PsiTreeUtil.getParentOfType(element, PyClass::class.java)
-        if (pyClass != null && pyClass.name?.startsWith("Test") == true) {
-            return true
-        }
-
-        val pyFile = file as PyFile
-        // For module level, we are available if it looks like a test file.
-        // We only show it if we are not inside a class/function (or we fell through)
-        return pyFile.name.startsWith("test_") || pyFile.name.endsWith("_test.py")
+        val scope = determineScope(editor, file) ?: return false
+        cachedText = "Toggle pytest skip (${scope.label})"
+        return true
     }
 
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
@@ -69,6 +65,25 @@ class TogglePytestSkipIntention : IntentionAction, HighPriorityAction, Iconable 
 
     override fun generatePreview(project: Project, editor: Editor, file: PsiFile): IntentionPreviewInfo {
         return IntentionPreviewInfo.DIFF
+    }
+
+    private fun determineScope(editor: Editor, file: PyFile): Scope? {
+        val offset = editor.caretModel.offset
+        val element = file.findElementAt(offset) ?: return null
+
+        val pyFunction = PsiTreeUtil.getParentOfType(element, PyFunction::class.java)
+        if (pyFunction != null) {
+            return if (pyFunction.name?.startsWith("test_") == true) Scope.FUNCTION else null
+        }
+
+        val pyClass = PsiTreeUtil.getParentOfType(element, PyClass::class.java)
+        if (pyClass != null) {
+            if (pyClass.name?.startsWith("Test") != true) return null
+            val nameIdentifier = pyClass.nameIdentifier ?: return null
+            return if (nameIdentifier.textRange.containsOffset(offset)) Scope.CLASS else null
+        }
+
+        return if (file.name.startsWith("test_") || file.name.endsWith("_test.py")) Scope.MODULE else null
     }
 
     private fun toggleDecorator(element: PyDecoratable, file: PyFile) {
