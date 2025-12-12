@@ -2,9 +2,7 @@
 
 ## Pending Issues
 
-- [ ] fix: populate arguments from locals should only include required arguments
 - [ ] fix: When prefering relative import inside same package, do not add candidate if relative import exists already
-- [ ] fix: When implementing abstract method, take care of existing ellipsis
 - [ ] fix: implement abstract method is put above __init__
 - [ ] feat: Consider if this should only work for dataclass/classes, for others, there is change signature
 - [ ] fix: cancel introduce type rename dialog still keeps it
@@ -12,7 +10,6 @@
 
 ## Pending Features
 
-- [ ] feat: Offer wrap in exception calls
 - [ ] feat: When a local field exists with the same name as the parameter, show `param=param` as a suggestion
 - [ ] feat: When suggesting the expected type and it is an inner class, reference it using outer_class.inner_class
   syntax, recursively
@@ -61,6 +58,9 @@
 
 ## Completed Tasks (newest first)
 
+- [x] fix: When implementing abstract method, take care of existing ellipsis
+- [x] fix: populate arguments from locals should only include required arguments
+- [x] feat: Offer wrap in exception calls
 - [x] fix: Parse tests in console: Parse args with single quotes correctly, like
   `tests/test_.py::test_this[<class 'src.MyClass'>]`
 - [x] fix: Parse tests in console: Strip spaces in the beginning
