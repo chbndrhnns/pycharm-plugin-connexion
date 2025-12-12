@@ -1,8 +1,8 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.inspections
+package com.github.chbndrhnns.intellijplatformplugincopy.intention.abstractmethod
 
 import fixtures.TestBase
 
-class PyMakeMemberAbstractInAbstractClassInspectionTest : TestBase() {
+class PyMakeMemberAbstractInAbstractClassIntention : TestBase() {
 
     fun testOfferedOnMethodInAbcBaseClass() {
         myFixture.configureByText(
@@ -11,13 +11,10 @@ class PyMakeMemberAbstractInAbstractClassInspectionTest : TestBase() {
             import abc
 
             class Base(abc.ABC):
-                def <caret><warning descr="Member in abstract class should be abstract">foo</warning>(self):
+                def <caret>foo(self):
                     pass
             """.trimIndent()
         )
-
-        myFixture.enableInspections(PyMakeMemberAbstractInAbstractClassInspection::class.java)
-        myFixture.checkHighlighting(true, false, false)
 
         val fix = myFixture.findSingleIntention("Make member abstract")
         myFixture.launchAction(fix)
@@ -41,13 +38,10 @@ class PyMakeMemberAbstractInAbstractClassInspectionTest : TestBase() {
             import abc
 
             class Base(metaclass=abc.ABCMeta):
-                def <caret><warning descr="Member in abstract class should be abstract">foo</warning>(self):
+                def <caret>foo(self):
                     pass
             """.trimIndent()
         )
-
-        myFixture.enableInspections(PyMakeMemberAbstractInAbstractClassInspection::class.java)
-        myFixture.checkHighlighting(true, false, false)
 
         val fix = myFixture.findSingleIntention("Make member abstract")
         myFixture.launchAction(fix)
@@ -72,13 +66,10 @@ class PyMakeMemberAbstractInAbstractClassInspectionTest : TestBase() {
 
             class Base(abc.ABC):
                 @property
-                def <caret><warning descr="Member in abstract class should be abstract">name</warning>(self) -> str:
+                def <caret>name(self) -> str:
                     return "x"
             """.trimIndent()
         )
-
-        myFixture.enableInspections(PyMakeMemberAbstractInAbstractClassInspection::class.java)
-        myFixture.checkHighlighting(true, false, false)
 
         val fix = myFixture.findSingleIntention("Make member abstract")
         myFixture.launchAction(fix)
@@ -104,17 +95,14 @@ class PyMakeMemberAbstractInAbstractClassInspectionTest : TestBase() {
 
             class Base(abc.ABC):
                 @abc.abstractmethod
-                def foo(self):
+                def <caret>foo(self):
                     pass
             """.trimIndent()
         )
 
-        myFixture.enableInspections(PyMakeMemberAbstractInAbstractClassInspection::class.java)
-        myFixture.checkHighlighting(true, false, false)
-
-        val fixes = myFixture.getAllQuickFixes().map { it.familyName }
-        if (fixes.contains("Make member abstract")) {
-            throw AssertionError("Unexpected quick-fix 'Make member abstract' available. Available: $fixes")
+        val intentions = myFixture.availableIntentions.map { it.text }
+        if (intentions.contains("Make member abstract")) {
+            throw AssertionError("Unexpected intention 'Make member abstract' available. Available: $intentions")
         }
     }
 
@@ -125,13 +113,10 @@ class PyMakeMemberAbstractInAbstractClassInspectionTest : TestBase() {
             from abc import ABC
 
             class Base(ABC):
-                def <caret><warning descr="Member in abstract class should be abstract">foo</warning>(self):
+                def <caret>foo(self):
                     pass
             """.trimIndent()
         )
-
-        myFixture.enableInspections(PyMakeMemberAbstractInAbstractClassInspection::class.java)
-        myFixture.checkHighlighting(true, false, false)
 
         val fix = myFixture.findSingleIntention("Make member abstract")
         myFixture.launchAction(fix)
@@ -139,13 +124,13 @@ class PyMakeMemberAbstractInAbstractClassInspectionTest : TestBase() {
         myFixture.checkResult(
             """
                 from abc import ABC, abstractmethod
-                
-                
+
+
                 class Base(ABC):
                     @abstractmethod
                     def foo(self):
                         pass
-            """.trimIndent()
+        """.trimIndent()
         )
     }
 }

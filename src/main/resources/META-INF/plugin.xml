@@ -141,6 +141,11 @@
             <category>Test</category>
         </intentionAction>
 
+        <intentionAction>
+            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.abstractmethod.MakeMemberAbstractInAbstractClassIntention</className>
+            <category>Abstract methods</category>
+        </intentionAction>
+
         <applicationConfigurable
                 displayName="DDD Toolkit"
                 id="com.github.chbndrhnns.intellijplatformplugincopy.settings"
@@ -209,16 +214,6 @@
                 enabledByDefault="true"
                 level="WARNING"
                 implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyAbstractMethodNotImplementedInChildInspection"/>
-
-        <localInspection
-                language="Python"
-                shortName="PyMakeMemberAbstractInAbstractClassInspection"
-                displayName="Make member abstract in abstract class"
-                groupPath="Python"
-                groupName="Python"
-                enabledByDefault="true"
-                level="WARNING"
-                implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyMakeMemberAbstractInAbstractClassInspection"/>
 
         <usageFilteringRuleProvider
                 implementation="com.github.chbndrhnns.intellijplatformplugincopy.usages.PyTypeAnnotationFilteringRuleProvider"/>

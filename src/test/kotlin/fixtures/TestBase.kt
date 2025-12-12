@@ -35,7 +35,7 @@ abstract class TestBase : MyPlatformTestCase() {
                 enableWrapExceptionsWithParenthesesIntention = true
                 enableImplementAbstractMethodInChildClassesIntention = true
                 enableAbstractMethodNotImplementedInspection = true
-                enableMakeMemberAbstractInAbstractClassInspection = true
+                enableMakeMemberAbstractInAbstractClassIntention = true
                 enablePyReturnCompletionContributor = true
                 enablePyMockPatchReferenceContributor = true
                 enablePyFilterWarningsReferenceContributor = true

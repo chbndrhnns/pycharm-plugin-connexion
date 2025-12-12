@@ -1,113 +1,3 @@
-[2025-12-09 23:45] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Test failed: expected 1 node id, found 0",
-    "ROOT CAUSE": "collectNodeIds only traverses DefaultMutableTreeNode children and ignores SMTestProxy children when the view node lacks children.",
-    "PROJECT NOTE": "In CopyPytestNodeIdAction.collectNodeIds, fall back to traversing SMTestProxy.children when a tree node wraps an SMTestProxy suite but the tree has no children (common for 'Test Results' root).",
-    "NEW INSTRUCTION": "WHEN tree node has SMTestProxy and no tree children THEN traverse proxy.children recursively"
-}
-
-[2025-12-09 23:49] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "run_test",
-    "ERROR": "Gradle immutable workspace cache modified",
-    "ROOT CAUSE": "The Gradle transforms cache for the IDE distribution was altered/corrupted, aborting initialization.",
-    "PROJECT NOTE": "This IntelliJ Platform plugin build unpacks the IDE into Gradle's transforms cache; fix by clearing the affected transforms cache and rerunning with --refresh-dependencies (optionally run gradlew --stop then clean build).",
-    "NEW INSTRUCTION": "WHEN Gradle reports immutable workspace modified in transforms THEN delete Gradle transforms cache and rerun with --refresh-dependencies"
-}
-
-[2025-12-09 23:50] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "run_test",
-    "ERROR": "Immutable Gradle cache workspace modified; IntelliJ Platform init failed",
-    "ROOT CAUSE": "The Gradle IntelliJ plugin detected a corrupted/modifed IDE cache under ~/.gradle/caches/transforms.",
-    "PROJECT NOTE": "This is an IntelliJ Platform plugin project; corrupted IDE cache in Gradle transforms prevents :initializeIntellijPlatformPlugin from running.",
-    "NEW INSTRUCTION": "WHEN Gradle reports immutable workspace modified in transforms THEN delete that cache and run clean with refresh-dependencies"
-}
-
-[2025-12-09 23:50] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "run_test",
-    "ERROR": "Gradle immutable workspace cache modified",
-    "ROOT CAUSE": "The IntelliJ Platform IDE distribution in Gradle's transforms cache is corrupted or externally changed.",
-    "PROJECT NOTE": "This is an IntelliJ Platform plugin project; when initializeIntellijPlatformPlugin fails with immutable workspace errors, clear the IDE distribution cache or refresh dependencies before running tests.",
-    "NEW INSTRUCTION": "WHEN Gradle initializeIntellijPlatformPlugin reports immutable workspace modified THEN run './gradlew clean --refresh-dependencies test' from project root"
-}
-
-[2025-12-10 00:05] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "collectFQNs didn't traverse SMTestProxy children",
-    "ROOT CAUSE": "CopyFQNAction.collectFQNs iterates DefaultMutableTreeNode children only, ignoring SMTestProxy children when UI tree is empty.",
-    "PROJECT NOTE": "Align CopyFQNAction traversal with CopyPytestNodeIdAction: if userObject is SMTestProxy, recurse over proxy.children and build dotted names; only fall back to DefaultMutableTreeNode traversal when no proxy is present.",
-    "NEW INSTRUCTION": "WHEN node userObject is SMTestProxy THEN recurse over proxy.children instead of UI tree children"
-}
-
-[2025-12-10 00:05] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "FQN collection from root proxy returned empty list",
-    "ROOT CAUSE": "CopyFQNAction iterates DefaultMutableTreeNode children instead of SMTestProxy children when invoked on the root.",
-    "PROJECT NOTE": "Update src/main/kotlin/.../actions/CopyFQNAction.kt to mirror CopyPytestNodeIdAction: if userObject is SMTestProxy, recurse over proxy.children and collect FQNs; then sort results.",
-    "NEW INSTRUCTION": "WHEN tree node wraps SMTestProxy THEN traverse proxy children recursively to collect FQNs"
-}
-
-[2025-12-10 00:07] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "CustomTypeGenerator.insertClass",
-    "ERROR": "Anchor parent mismatch for addAfter",
-    "ROOT CAUSE": "The anchor passed to addAfter was not a direct child of the target PyFile.",
-    "PROJECT NOTE": "When inserting a top-level class in a PyFile, call file.addAfter/Before with an anchor that is a direct child (e.g., last top-level statement) or null to append.",
-    "NEW INSTRUCTION": "WHEN anchor parent differs from target file THEN use a direct child anchor or null"
-}
-
-[2025-12-10 00:11] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "-",
-    "ERROR": "plugin.xml: Cannot resolve language id 'Python'",
-    "ROOT CAUSE": "The validation environment lacked the Python plugin, so the 'Python' language id was unknown.",
-    "PROJECT NOTE": "Declare dependency on the Python plugin: add <depends>com.jetbrains.python</depends> (or 'Pythonid' for older IDEs) in plugin.xml and include 'com.jetbrains.python' in platformPlugins in gradle.properties.",
-    "NEW INSTRUCTION": "WHEN plugin.xml references Python language or APIs THEN declare com.jetbrains.python dependency and enable platformPlugins accordingly"
-}
-
-[2025-12-10 07:57] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "create",
-    "ERROR": "Unresolved reference 'sort' on List",
-    "ROOT CAUSE": "Code called mutating sort() on a read-only Kotlin List instead of using sorted().",
-    "PROJECT NOTE": "In this repo, action hooks like processResult use List<String>; prefer result.sorted() over in-place sorting.",
-    "NEW INSTRUCTION": "WHEN sorting a Kotlin List result THEN return result.sorted() instead of mutating"
-}
-
-[2025-12-10 07:59] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "create",
-    "ERROR": "Unresolved reference 'sort' on List",
-    "ROOT CAUSE": "processResult parameter is a Kotlin List, so in-place sort() is unavailable; use sorted().",
-    "PROJECT NOTE": "AbstractCopyTestNodeAction.processResult takes List<String>; overrides get an immutable List and must return a new sorted list.",
-    "NEW INSTRUCTION": "WHEN overriding processResult receives List THEN return result.sorted() instead of calling sort()"
-}
-
-[2025-12-10 10:34] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "bash",
-    "ERROR": "Command contains unescaped newlines; multiline commands forbidden",
-    "ROOT CAUSE": "The bash tool disallows multi-line commands, but the submitted command included newline characters.",
-    "PROJECT NOTE": "To add or edit files in this repo, prefer apply_patch/create; if using bash, emit content via a single-line printf with \\n escapes or base64.",
-    "NEW INSTRUCTION": "WHEN bash command includes newlines THEN rewrite as a single line using escapes or encoding"
-}
-
 [2025-12-10 10:35] - Updated by Junie - Error analysis
 {
     "TYPE": "invalid args",
@@ -776,4 +666,124 @@
     "ROOT CAUSE": "zipgrep attempted to scan a very large JAR and exceeded the tool time limit.",
     "PROJECT NOTE": "IDE platform JARs live under Gradle transforms; prefer jar tf | grep or javap against app.jar to query classes quickly.",
     "NEW INSTRUCTION": "WHEN searching inside large JAR with zipgrep THEN use 'jar tf | grep' and limit with head"
+}
+
+[2025-12-12 21:38] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "apply_patch",
+    "ERROR": "Method override signature mismatch for collectActions",
+    "ROOT CAUSE": "Used an outdated IntentionMenuContributor API adding Project and missing offset parameter.",
+    "PROJECT NOTE": "This SDK expects IntentionMenuContributor.collectActions(Editor, PsiFile, ShowIntentionsPass.IntentionsInfo, Int passId, Int offset); no Project parameter.",
+    "NEW INSTRUCTION": "WHEN override reports 'collectActions overrides nothing' THEN match the SDK signature with offset parameter"
+}
+
+[2025-12-12 21:39] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "apply_patch",
+    "ERROR": "Wrong collectActions signature; overrides nothing",
+    "ROOT CAUSE": "Used an outdated IntentionMenuContributor API including Project param instead of the current (Editor, PsiFile, IntentionsInfo, passId, offset) signature.",
+    "PROJECT NOTE": "In this IntelliJ plugin, IntentionMenuContributor.collectActions must be: (Editor, PsiFile, ShowIntentionsPass.IntentionsInfo, Int, Int); register via <intentionMenuContributor> in plugin.xml.",
+    "NEW INSTRUCTION": "WHEN implementing IntentionMenuContributor.collectActions THEN use (Editor,PsiFile,IntentionsInfo,passId,offset) signature"
+}
+
+[2025-12-12 21:51] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing class",
+    "TOOL": "open",
+    "ERROR": "plugin.xml cannot resolve inspection class",
+    "ROOT CAUSE": "plugin.xml registers PyMakeMemberAbstractInAbstractClassInspection but the class is not implemented on the classpath.",
+    "PROJECT NOTE": "Implement src/main/kotlin/com/github/chbndrhnns/intellijplatformplugincopy/inspections/PyMakeMemberAbstractInAbstractClassInspection.kt and ensure the package matches plugin.xml implementationClass.",
+    "NEW INSTRUCTION": "WHEN plugin.xml shows Cannot resolve class for inspection THEN add missing class or fix implementationClass package"
+}
+
+[2025-12-12 22:25] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "FileComparisonFailedError in ParametrizePytestTestIntentionTest",
+    "ROOT CAUSE": "The intention generates parametrize decorator/import with formatting or placement differing from the test’s expected file text.",
+    "PROJECT NOTE": "These tests compare the entire file text; ensure '@pytest.mark.parametrize(...)' is inserted on the target test function, 'import pytest' is added exactly once at the correct top-level position, and spacing/newlines match the fixture expectations.",
+    "NEW INSTRUCTION": "WHEN FileComparisonFailedError in ParametrizePytestTestIntentionTest THEN match expected decorator and import formatting exactly"
+}
+
+[2025-12-12 22:41] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing class",
+    "TOOL": "open",
+    "ERROR": "plugin.xml registers unresolved inspection class",
+    "ROOT CAUSE": "plugin.xml references PyMakeMemberAbstractInAbstractClassInspection, but no such class exists or it’s mispackaged; feature should be an intention, not an inspection.",
+    "PROJECT NOTE": "Register this feature under the intentionAction EP, not inspections; ensure the class FQN matches plugin.xml and resides under src/main/kotlin in the declared package.",
+    "NEW INSTRUCTION": "WHEN plugin.xml references nonexistent class THEN update FQN to existing intention or create class"
+}
+
+[2025-12-12 22:42] - Updated by Junie - Error analysis
+{
+    "TYPE": "tool failure",
+    "TOOL": "get_file_structure",
+    "ERROR": "File structure not displayed; unsupported or parse failed",
+    "ROOT CAUSE": "The file structure tool could not parse the Kotlin source and declined to render it.",
+    "PROJECT NOTE": "When structure view fails on .kt files, use open to read and navigate by lines.",
+    "NEW INSTRUCTION": "WHEN get_file_structure reports unsupported or parsing failed THEN use open and inspect lines directly"
+}
+
+[2025-12-12 22:43] - Updated by Junie - Error analysis
+{
+    "TYPE": "tool failure",
+    "TOOL": "get_file_structure",
+    "ERROR": "File structure not displayable for target file",
+    "ROOT CAUSE": "The file structure tool could not parse the Kotlin file type or parsing failed.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN get_file_structure reports not possible to display THEN use open to view the file content"
+}
+
+[2025-12-12 22:45] - Updated by Junie - Error analysis
+{
+    "TYPE": "tool failure",
+    "TOOL": "get_file_structure",
+    "ERROR": "File structure not displayable/parsing failed",
+    "ROOT CAUSE": "The get_file_structure tool could not parse the Kotlin file and returned no structure.",
+    "PROJECT NOTE": "Use the open tool to view Kotlin files directly and navigate with scroll when structure parsing fails.",
+    "NEW INSTRUCTION": "WHEN get_file_structure reports not possible THEN open the file and inspect manually"
+}
+
+[2025-12-12 22:45] - Updated by Junie - Error analysis
+{
+    "TYPE": "tool failure",
+    "TOOL": "get_file_structure",
+    "ERROR": "File structure view unavailable for this Kotlin file",
+    "ROOT CAUSE": "The file-structure tool could not parse the Kotlin source to build a tree.",
+    "PROJECT NOTE": "When structure parsing fails for Kotlin, directly open the file to inspect content.",
+    "NEW INSTRUCTION": "WHEN get_file_structure reports not possible to display THEN use open to read the file content"
+}
+
+[2025-12-12 22:45] - Updated by Junie - Error analysis
+{
+    "TYPE": "tool failure",
+    "TOOL": "get_file_structure",
+    "ERROR": "File structure parsing unsupported or failed",
+    "ROOT CAUSE": "The get_file_structure tool could not parse the Kotlin file format for structure.",
+    "PROJECT NOTE": "Use the open tool to inspect Kotlin files directly when structure view is unavailable.",
+    "NEW INSTRUCTION": "WHEN get_file_structure reports not possible to display THEN use open to view file contents"
+}
+
+[2025-12-12 22:45] - Updated by Junie - Error analysis
+{
+    "TYPE": "tool failure",
+    "TOOL": "get_file_structure",
+    "ERROR": "File structure unavailable; unsupported type or parsing failed",
+    "ROOT CAUSE": "The file structure tool could not parse the Kotlin file or doesn't support it.",
+    "PROJECT NOTE": "Use the open tool to read Kotlin files when structure view fails.",
+    "NEW INSTRUCTION": "WHEN get_file_structure returns unsupported or parsing failed THEN open the file directly with open"
+}
+
+[2025-12-12 22:45] - Updated by Junie - Error analysis
+{
+    "TYPE": "tool failure",
+    "TOOL": "get_file_structure",
+    "ERROR": "Could not display file structure for file type",
+    "ROOT CAUSE": "The file structure tool couldn't parse the Kotlin file and returned unsupported.",
+    "PROJECT NOTE": "When file structure parsing fails, directly open the file to inspect contents.",
+    "NEW INSTRUCTION": "WHEN get_file_structure reports not possible to display THEN open the file at line 1 using open"
 }

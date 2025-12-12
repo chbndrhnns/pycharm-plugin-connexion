@@ -78,6 +78,10 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                     .bindSelected(settings::enableImplementAbstractMethodInChildClassesIntention)
             }
             row {
+                checkBox("‘Make member abstract in abstract class’ intention")
+                    .bindSelected(settings::enableMakeMemberAbstractInAbstractClassIntention)
+            }
+            row {
                 checkBox("‘Toggle pytest skip’ intention")
                     .bindSelected(settings::enableTogglePytestSkipIntention)
             }

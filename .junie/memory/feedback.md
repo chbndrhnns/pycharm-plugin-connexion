@@ -606,3 +606,19 @@
     "NEW INSTRUCTION": "WHEN computing availability of this quick fix AND setting is disabled THEN do not offer the quick fix"
 }
 
+[2025-12-12 22:13] - Updated by Junie
+{
+    "TYPE": "preference",
+    "CATEGORY": "quickfix toggle",
+    "EXPECTATION": "Provide a user setting to enable/disable the 'Update usages to reflect signature change' quick fix, defaulting to disabled",
+    "NEW INSTRUCTION": "WHEN computing availability of 'Update usages' quick fix AND setting disabled THEN suppress it from all intention lists"
+}
+
+[2025-12-12 22:40] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "intention vs quickfix",
+    "EXPECTATION": "Implement the feature as an intention action, not as an inspection quick fix; do not add an inspection.",
+    "NEW INSTRUCTION": "WHEN user says 'no quickfix, just intention' THEN implement IntentionAction and avoid inspection hooks"
+}
+

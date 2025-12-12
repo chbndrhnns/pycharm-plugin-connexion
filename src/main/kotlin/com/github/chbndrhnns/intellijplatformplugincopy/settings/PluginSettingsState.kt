@@ -32,7 +32,7 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enableWrapExceptionsWithParenthesesIntention: Boolean = true,
         var enableImplementAbstractMethodInChildClassesIntention: Boolean = true,
         var enableAbstractMethodNotImplementedInspection: Boolean = true,
-        var enableMakeMemberAbstractInAbstractClassInspection: Boolean = true,
+        var enableMakeMemberAbstractInAbstractClassIntention: Boolean = true,
         var enablePyReturnCompletionContributor: Boolean = true,
         var enablePyMockPatchReferenceContributor: Boolean = true,
         var enablePyFilterWarningsReferenceContributor: Boolean = true,

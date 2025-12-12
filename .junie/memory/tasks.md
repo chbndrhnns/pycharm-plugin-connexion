@@ -877,3 +877,14 @@
     "PROJECT NOTE": "Reuse AbstractMethodUtils and existing inspection/quick-fix test patterns for new inspection.",
     "NEW INSTRUCTION": "WHEN task requires creating tests THEN add test files and run all tests"
 }
+
+[2025-12-12 21:40] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "run build, add tests",
+    "BOTTLENECK": "API signature mismatch for collectActions caused compilation error before verification.",
+    "PROJECT NOTE": "Project has an existing unresolved inspection class in plugin.xml that may break builds.",
+    "NEW INSTRUCTION": "WHEN plugin.xml is edited or new Kotlin class added THEN Run Gradle compile tests and resolve any compilation errors before proceeding."
+}
+
