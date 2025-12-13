@@ -24,11 +24,7 @@ class MakeParameterOptionalIntention : IntentionAction, PriorityAction {
 
         // Check if already optional
         val annotationText = annotation.text
-        if (annotationText.contains("None") || annotationText.contains("Optional")) {
-            return false
-        }
-
-        return true
+        return !(annotationText.contains("None") || annotationText.contains("Optional"))
     }
 
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
@@ -40,17 +36,17 @@ class MakeParameterOptionalIntention : IntentionAction, PriorityAction {
         val newAnnotationText = "$currentAnnotationText | None"
 
         if (element is PyNamedParameter) {
-            val defaultValueText = if (element.hasDefaultValue()) element.defaultValue!!.text else "None"
+            val paramName = element.name ?: return
+            val defaultValueText = if (element.hasDefaultValue()) element.defaultValue?.text ?: "None" else "None"
             val newParam = generator.createParameter(
-                element.name!!,
+                paramName,
                 defaultValueText,
                 newAnnotationText,
                 LanguageLevel.getDefault()
             )
             element.replace(newParam)
         } else if (element is PyTargetExpression) {
-            val defaultValueText =
-                if (element.findAssignedValue() != null) element.findAssignedValue()!!.text else "None"
+            val defaultValueText = element.findAssignedValue()?.text ?: "None"
             val newStatementText = "${element.name}: $newAnnotationText = $defaultValueText"
 
             // We need to replace the statement containing the target expression

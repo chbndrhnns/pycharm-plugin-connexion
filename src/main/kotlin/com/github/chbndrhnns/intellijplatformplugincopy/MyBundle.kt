@@ -13,6 +13,7 @@ object MyBundle : DynamicBundle(BUNDLE) {
     fun message(@PropertyKey(resourceBundle = BUNDLE) key: String, vararg params: Any) =
         getMessage(key, *params)
 
+    // Suppression needed: standard IntelliJ bundle API method provided for lazy message resolution
     @Suppress("unused")
     @JvmStatic
     fun messagePointer(@PropertyKey(resourceBundle = BUNDLE) key: String, vararg params: Any) =

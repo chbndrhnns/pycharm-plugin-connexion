@@ -135,11 +135,12 @@ class UsageRewriter {
     }
 
     private fun updateParameterType(parameter: PyNamedParameter, newTypeAnnotation: String) {
+        val paramName = parameter.name ?: return
         val project = parameter.project
         val generator = PyElementGenerator.getInstance(project)
         val defaultValue = parameter.defaultValueText
         val newParameter = generator.createParameter(
-            parameter.name!!,
+            paramName,
             defaultValue,
             newTypeAnnotation,
             LanguageLevel.forElement(parameter)

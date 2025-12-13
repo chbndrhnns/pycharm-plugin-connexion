@@ -41,6 +41,7 @@ class SpecificImportPathProvider : PyCanonicalPathProvider {
         // instead of the promoted package path (e.g. 'domain') which QualifiedNameFinder might prefer.
         val parent = virtualFile.parent ?: return null
 
+        // Suppression needed: getPackageNameByDirectory is deprecated but no direct replacement API exists
         @Suppress("DEPRECATION")
         val packageName = fileIndex.getPackageNameByDirectory(parent) ?: return null
         val fileName = virtualFile.nameWithoutExtension

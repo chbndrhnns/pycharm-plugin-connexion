@@ -14,7 +14,7 @@ class PyDottedSegmentReference(
 ) : PsiPolyVariantReferenceBase<PyStringLiteralExpression>(element, range) {
 
     override fun multiResolve(incompleteCode: Boolean): Array<ResolveResult> {
-        val valueRange = element.stringValueTextRange
+        element.stringValueTextRange
         // fullPathOffsetInElement is the offset where 'fullPath' starts relative to element start.
         // rangeInElement is relative to element start.
         
@@ -35,8 +35,7 @@ class PyDottedSegmentReference(
         val segmentStartInPath = rangeInElement.startOffset - fullPathOffsetInElement
         
         if (segmentStartInPath <= 0) {
-            // First segment, or invalid.
-            // TODO: Add support for top-level module completion if needed.
+            // First segment or invalid - top-level module completion not supported
             return emptyArray()
         }
         

@@ -88,7 +88,8 @@ class PytestIdentifierContributor(private val myProject: Project) : WeightedSear
 
     class Factory : SearchEverywhereContributorFactory<PsiElement> {
         override fun createContributor(initEvent: AnActionEvent): SearchEverywhereContributor<PsiElement> {
-            return PytestIdentifierContributor(initEvent.project!!)
+            val project = requireNotNull(initEvent.project) { "Project is required for PytestIdentifierContributor" }
+            return PytestIdentifierContributor(project)
         }
     }
 }

@@ -31,15 +31,14 @@ object PyResolveUtils {
             }
         }
 
-        if (current == null) return null
+        var result = current ?: return null
 
         for (i in 1 until parts.size) {
             val part = parts[i]
-            val next = findMember(current!!, part)
-            if (next == null) return null
-            current = next
+            val next = findMember(result, part) ?: return null
+            result = next
         }
-        return current
+        return result
     }
 
     private fun findTopLevelModule(project: Project, name: String): PsiElement? {

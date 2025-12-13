@@ -153,11 +153,11 @@ class PyTryExceptToDictGetIntention : PsiElementBaseIntentionAction() {
             return null
         }
 
-        if (key == null || target == null) return null
+        if (key == null || target == null || dict == null) return null
 
         // Check Mapping type
         val context = TypeEvalContext.codeAnalysis(tryExcept.project, tryExcept.containingFile)
-        val dictType = context.getType(dict!!)
+        val dictType = context.getType(dict)
         if (dictType == null || !PyABCUtil.isSubtype(dictType, PyNames.MAPPING, context)) {
             // If type inference fails, we assume it's not a mapping.
             return null

@@ -39,6 +39,7 @@ abstract class HeavyTestBase : UsefulTestCase() {
         // underlying implementation already creates a module, so
         // myFixture.module will be non-null once the CodeInsight fixture is
         // created.
+        // Suppression needed: IntelliJ test framework API returns raw generic types
         @Suppress("UNCHECKED_CAST")
         val fixtureBuilder = fixtureFactory.createFixtureBuilder(name)
         projectFixture = fixtureBuilder.fixture

@@ -91,13 +91,14 @@ class MakeParameterMandatoryIntention : IntentionAction, PriorityAction {
 
             // Modify the target parameter info
             val paramInfo = parameters.find { it.name == element.name }
-            if (paramInfo != null) {
+            val functionName = function.name
+            if (paramInfo != null && functionName != null) {
                 paramInfo.defaultValue = "..." // Value to add to missing call sites (if any left)
                 paramInfo.defaultInSignature = false // Remove default value from definition
 
                 // Execute Change Signature Refactoring
                 val processor =
-                    PyChangeSignatureProcessor(project, function, function.name!!, parameters.toTypedArray())
+                    PyChangeSignatureProcessor(project, function, functionName, parameters.toTypedArray())
                 processor.run()
             }
         } else if (element is PyTargetExpression) {

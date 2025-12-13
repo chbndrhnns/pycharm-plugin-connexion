@@ -52,6 +52,7 @@ class PyMissingInDunderAllInspection : PyInspection() {
 
     private class Visitor(
         private val holder: ProblemsHolder,
+        // Suppression needed: session parameter required by IntelliJ inspection API but not used here
         @Suppress("unused") private val session: LocalInspectionToolSession,
     ) : PyElementVisitor() {
 

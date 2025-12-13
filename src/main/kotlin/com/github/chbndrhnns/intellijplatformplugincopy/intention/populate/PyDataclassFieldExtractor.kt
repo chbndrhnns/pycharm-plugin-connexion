@@ -79,7 +79,8 @@ class PyDataclassFieldExtractor {
                     val aliasText = stringValueOf(aliasKw) ?: stringValueOf(nameKw)
                     val aliasRef = aliasKw?.let { resolveFirstNamed(it, resolveCtx) }
                     if (aliasText != null || aliasRef != null) {
-                        return (aliasText ?: target.name!! /* fallback to same name */) to (aliasText to aliasRef)
+                        val effectiveName = aliasText ?: target.name ?: return null
+                        return effectiveName to (aliasText to aliasRef)
                     }
                 }
             }
@@ -103,7 +104,8 @@ class PyDataclassFieldExtractor {
                                         val aliasText = stringValueOf(arg)
                                         val aliasRef = arg?.let { resolveFirstNamed(it, resolveCtx) }
                                         if (aliasText != null || aliasRef != null) {
-                                            return (aliasText ?: target.name!!) to (aliasText to aliasRef)
+                                            val effectiveName = aliasText ?: target.name ?: return null
+                                            return effectiveName to (aliasText to aliasRef)
                                         }
                                     }
                                 }
@@ -116,8 +118,10 @@ class PyDataclassFieldExtractor {
                                 is PyReferenceExpression -> {
                                     val resolved = meta.getReference(resolveCtx)?.multiResolve(false)
                                         ?.firstOrNull()?.element as? PsiNamedElement
-                                    if (resolved != null) return (resolved.name
-                                        ?: target.name!!) to (resolved.name to resolved)
+                                    if (resolved != null) {
+                                        val effectiveName = resolved.name ?: target.name ?: return null
+                                        return effectiveName to (resolved.name to resolved)
+                                    }
                                 }
                             }
                         }

@@ -35,7 +35,7 @@ class PyParameterAnalyzer {
             .filter { !it.isPositionalContainer && !it.isKeywordContainer }
             .filter { param -> !mapped.values.contains(param) }
             .filter { it.name != null }
-            .filter { !it.name!!.startsWith("_") }
+            .filter { it.name?.startsWith("_") != true }
             .toList()
     }
 
@@ -64,7 +64,7 @@ class PyParameterAnalyzer {
         // even if the *missing parameter types* are not themselves dataclasses.
         val calleeClass = (call.callee as? PyReferenceExpression)
             ?.reference
-            ?.resolve() as? com.jetbrains.python.psi.PyClass
+            ?.resolve() as? PyClass
 
         // Pydantic-style models (and other dataclass-like frameworks) advertise constructor/field behavior
         // via `@dataclass_transform`. In those cases, recursive mode is meaningful even though we are not
@@ -100,7 +100,7 @@ class PyParameterAnalyzer {
                 val n = type.name ?: type.classQName?.substringAfterLast('.')
                 // Treat as alias-like when there is no concrete class behind it.
                 val isAlias = type.pyClass == null || (n != null && type.pyClass?.name != n)
-                isAlias && !n.isNullOrBlank() && !PyBuiltinNames.isBuiltin(n!!)
+                isAlias && !n.isNullOrBlank() && !PyBuiltinNames.isBuiltin(n)
             }
 
             is PyUnionType -> type.members.any { isAliasLikeNonBuiltin(it) }
