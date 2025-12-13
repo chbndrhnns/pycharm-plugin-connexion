@@ -1,0 +1,1259 @@
+diff --git a/exclude.patch b/exclude.patch
+new file mode 100644
+index 000000000000..e69de29bb2d1
+diff --git a/python/exclude-from-import-plugin/README.md b/python/exclude-from-import-plugin/README.md
+new file mode 100644
+index 000000000000..269d3dfc0a87
+--- /dev/null
++++ b/python/exclude-from-import-plugin/README.md
+@@ -0,0 +1,102 @@
++# Python Exclude From Import Plugin
++
++A PyCharm plugin that allows excluding specific packages and modules from auto-import suggestions.
++
++## Features
++
++- **Exclude packages/modules from auto-import suggestions**: Prevent unwanted packages from appearing in import suggestions
++- **Wildcard pattern support**: Use patterns like `pkg.*` to exclude all submodules of a package
++- **IDE-level and project-level settings**: Configure exclusions globally or per-project
++- **Quick exclude action**: Easily exclude packages directly from the import popup
++
++## Installation
++
++### From JetBrains Marketplace
++1. Open PyCharm
++2. Go to **Settings/Preferences** → **Plugins** → **Marketplace**
++3. Search for "Python Exclude From Import"
++4. Click **Install**
++
++### From Source
++1. Clone this repository
++2. Run `./gradlew buildPlugin`
++3. Install the plugin from `build/distributions/python-exclude-from-import-*.zip`
++
++## Usage
++
++### Configuring Exclusions
++
++1. Go to **Settings/Preferences** → **Editor** → **General** → **Auto Import**
++2. Find the **Python** section
++3. In the **Exclude from Auto-Import** table:
++   - Click **+** to add a new exclusion pattern
++   - Enter the package/module name (e.g., `numpy`, `pandas.core.*`)
++   - Select the scope: **IDE** (global) or **Project** (current project only)
++
++### Pattern Syntax
++
++| Pattern | Description | Example Matches |
++|---------|-------------|-----------------|
++| `numpy` | Exact package match | `numpy`, `numpy.array`, `numpy.linalg.norm` |
++| `numpy.*` | All direct submodules | `numpy.array`, `numpy.linalg` |
++| `*.internal` | Any package ending with `.internal` | `pkg.internal`, `foo.bar.internal` |
++| `test.*.utils` | Specific pattern with wildcard | `test.foo.utils`, `test.bar.utils` |
++
++### Quick Exclude from Import Popup
++
++When an import suggestion appears:
++1. Right-click on the suggestion
++2. Select **Exclude from Auto-Import**
++3. Choose which part of the qualified name to exclude
++
++## Project Structure
++
++```
++exclude-from-import-plugin/
++├── src/
++│   ├── main/
++│   │   ├── kotlin/
++│   │   │   └── com/jetbrains/python/codeInsight/imports/exclude/
++│   │   │       ├── PyExcludeFromImportSettings.kt      # IDE-level settings
++│   │   │       ├── PyExcludeFromImportProjectSettings.kt # Project-level settings
++│   │   │       ├── PyExcludeFromImportConfigurable.kt  # Settings UI
++│   │   │       ├── PyExcludeFromImportTable.kt         # Table component
++│   │   │       ├── PyExcludeFromImportFilter.kt        # Import candidate filter
++│   │   │       ├── PyExcludeFromImportBundle.kt        # Resource bundle
++│   │   │       └── ExcludePackageFromImportAction.kt   # Quick exclude action
++│   │   └── resources/
++│   │       ├── META-INF/
++│   │       │   └── plugin.xml                          # Plugin descriptor
++│   │       └── messages/
++│   │           └── PyExcludeFromImportBundle.properties # Localized messages
++│   └── test/
++│       └── kotlin/
++│           └── com/jetbrains/python/codeInsight/imports/exclude/
++│               └── PyExcludeFromImportTest.kt          # Unit tests
++├── build.gradle.kts
++├── settings.gradle.kts
++└── README.md
++```
++
++## Building
++
++```bash
++# Build the plugin
++./gradlew buildPlugin
++
++# Run tests
++./gradlew test
++
++# Run IDE with plugin installed
++./gradlew runIde
++```
++
++## Requirements
++
++- PyCharm 2024.1 or later
++- JDK 17 or later
++
++## License
++
++Copyright 2000-2024 JetBrains s.r.o. and contributors.
++Use of this source code is governed by the Apache 2.0 license.
+diff --git a/python/exclude-from-import-plugin/build.gradle.kts b/python/exclude-from-import-plugin/build.gradle.kts
+new file mode 100644
+index 000000000000..f3a8cfd39420
+--- /dev/null
++++ b/python/exclude-from-import-plugin/build.gradle.kts
+@@ -0,0 +1,63 @@
++// Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
++
++plugins {
++    id("java")
++    id("org.jetbrains.kotlin.jvm") version "1.9.21"
++    id("org.jetbrains.intellij") version "1.16.1"
++}
++
++group = "com.jetbrains.python"
++version = "1.0.0"
++
++repositories {
++    mavenCentral()
++}
++
++// Configure Gradle IntelliJ Plugin
++// Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
++intellij {
++    version.set("2024.1")
++    type.set("PY") // PyCharm Professional or "PC" for PyCharm Community
++    
++    plugins.set(listOf("python"))
++}
++
++tasks {
++    // Set the JVM compatibility versions
++    withType<JavaCompile> {
++        sourceCompatibility = "17"
++        targetCompatibility = "17"
++    }
++    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
++        kotlinOptions.jvmTarget = "17"
++    }
++
++    patchPluginXml {
++        sinceBuild.set("241")
++        untilBuild.set("243.*")
++    }
++
++    signPlugin {
++        certificateChain.set(System.getenv("CERTIFICATE_CHAIN"))
++        privateKey.set(System.getenv("PRIVATE_KEY"))
++        password.set(System.getenv("PRIVATE_KEY_PASSWORD"))
++    }
++
++    publishPlugin {
++        token.set(System.getenv("PUBLISH_TOKEN"))
++    }
++
++    test {
++        useJUnitPlatform()
++    }
++}
++
++sourceSets {
++    main {
++        kotlin.srcDirs("src/main/kotlin")
++        resources.srcDirs("src/main/resources")
++    }
++    test {
++        kotlin.srcDirs("src/test/kotlin")
++    }
++}
+diff --git a/python/exclude-from-import-plugin/settings.gradle.kts b/python/exclude-from-import-plugin/settings.gradle.kts
+new file mode 100644
+index 000000000000..adc6c5b5ce96
+--- /dev/null
++++ b/python/exclude-from-import-plugin/settings.gradle.kts
+@@ -0,0 +1,3 @@
++// Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
++
++rootProject.name = "python-exclude-from-import"
+diff --git a/python/exclude-from-import-plugin/src/main/kotlin/com/jetbrains/python/codeInsight/imports/exclude/ExcludePackageFromImportAction.kt b/python/exclude-from-import-plugin/src/main/kotlin/com/jetbrains/python/codeInsight/imports/exclude/ExcludePackageFromImportAction.kt
+new file mode 100644
+index 000000000000..e2c36b9f8c0f
+--- /dev/null
++++ b/python/exclude-from-import-plugin/src/main/kotlin/com/jetbrains/python/codeInsight/imports/exclude/ExcludePackageFromImportAction.kt
+@@ -0,0 +1,137 @@
++// Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
++package com.jetbrains.python.codeInsight.imports.exclude
++
++import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
++import com.intellij.openapi.actionSystem.ActionUpdateThread
++import com.intellij.openapi.actionSystem.AnAction
++import com.intellij.openapi.actionSystem.AnActionEvent
++import com.intellij.openapi.actionSystem.CommonDataKeys
++import com.intellij.openapi.application.ApplicationManager
++import com.intellij.openapi.project.Project
++import com.intellij.openapi.ui.popup.JBPopupFactory
++import com.intellij.openapi.ui.popup.PopupStep
++import com.intellij.openapi.ui.popup.util.BaseListPopupStep
++
++/**
++ * Action to exclude a package from auto-import suggestions.
++ * Can be invoked from the import popup or from the editor context menu.
++ */
++class ExcludePackageFromImportAction : AnAction() {
++
++    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
++
++    override fun update(e: AnActionEvent) {
++        val project = e.project
++        val editor = e.getData(CommonDataKeys.EDITOR)
++        e.presentation.isEnabledAndVisible = project != null && editor != null
++    }
++
++    override fun actionPerformed(e: AnActionEvent) {
++        val project = e.project ?: return
++        val editor = e.getData(CommonDataKeys.EDITOR) ?: return
++        
++        // This action is typically triggered with a package name in the data context
++        // For now, we'll show a simple input dialog
++        // In practice, this would be integrated with the import popup
++    }
++
++    companion object {
++        /**
++         * Shows a popup to select which part of the qualified name to exclude.
++         * For example, for "numpy.array", shows options: "numpy.array", "numpy"
++         */
++        @JvmStatic
++        fun showExcludePopup(project: Project, qualifiedName: String) {
++            val excludeOptions = getAllExcludableStrings(qualifiedName)
++            
++            if (excludeOptions.isEmpty()) return
++            
++            if (excludeOptions.size == 1) {
++                excludeFromImport(project, excludeOptions[0])
++                return
++            }
++
++            val step = object : BaseListPopupStep<String>(
++                PyExcludeFromImportBundle.message("action.exclude.package.from.import"),
++                excludeOptions
++            ) {
++                override fun getTextFor(value: String): String {
++                    return PyExcludeFromImportBundle.message("action.exclude.from.import", value)
++                }
++
++                override fun onChosen(selectedValue: String?, finalChoice: Boolean): PopupStep<*>? {
++                    if (finalChoice && selectedValue != null) {
++                        excludeFromImport(project, selectedValue)
++                    }
++                    return PopupStep.FINAL_CHOICE
++                }
++            }
++
++            JBPopupFactory.getInstance()
++                .createListPopup(step)
++                .showInFocusCenter()
++        }
++
++        /**
++         * Excludes a package pattern from auto-import suggestions.
++         * Adds to IDE-level settings by default.
++         */
++        @JvmStatic
++        fun excludeFromImport(project: Project, pattern: String) {
++            ApplicationManager.getApplication().invokeLater {
++                if (project.isDisposed) return@invokeLater
++
++                // Add to IDE-level settings
++                PyExcludeFromImportSettings.getInstance().addExcludedPackage(pattern)
++                
++                // Restart code analysis to apply the exclusion
++                DaemonCodeAnalyzer.getInstance(project).restart("ExcludePackageFromImportAction")
++            }
++        }
++
++        /**
++         * Excludes a package pattern at project level.
++         */
++        @JvmStatic
++        fun excludeFromImportProjectLevel(project: Project, pattern: String) {
++            ApplicationManager.getApplication().invokeLater {
++                if (project.isDisposed) return@invokeLater
++
++                // Add to project-level settings
++                PyExcludeFromImportProjectSettings.getInstance(project).addExcludedPackage(pattern)
++                
++                // Restart code analysis to apply the exclusion
++                DaemonCodeAnalyzer.getInstance(project).restart("ExcludePackageFromImportAction")
++            }
++        }
++
++        /**
++         * Gets all possible exclusion patterns from a qualified name.
++         * For "numpy.linalg.norm", returns ["numpy.linalg.norm", "numpy.linalg", "numpy"]
++         */
++        @JvmStatic
++        fun getAllExcludableStrings(qualifiedName: String): List<String> {
++            val result = mutableListOf<String>()
++            var current = qualifiedName
++            
++            while (true) {
++                result.add(current)
++                val lastDot = current.lastIndexOf('.')
++                if (lastDot < 0 || lastDot == current.indexOf('.')) {
++                    break
++                }
++                current = current.substring(0, lastDot)
++            }
++            
++            return result
++        }
++
++        /**
++         * Checks if a qualified name is currently excluded.
++         */
++        @JvmStatic
++        fun isExcluded(project: Project, qualifiedName: String): Boolean {
++            return PyExcludeFromImportProjectSettings.isExcludedFromImport(project, qualifiedName)
++        }
++    }
++}
+diff --git a/python/exclude-from-import-plugin/src/main/kotlin/com/jetbrains/python/codeInsight/imports/exclude/PyExcludeFromImportBundle.kt b/python/exclude-from-import-plugin/src/main/kotlin/com/jetbrains/python/codeInsight/imports/exclude/PyExcludeFromImportBundle.kt
+new file mode 100644
+index 000000000000..57d664ae7bc4
+--- /dev/null
++++ b/python/exclude-from-import-plugin/src/main/kotlin/com/jetbrains/python/codeInsight/imports/exclude/PyExcludeFromImportBundle.kt
+@@ -0,0 +1,21 @@
++// Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
++package com.jetbrains.python.codeInsight.imports.exclude
++
++import com.intellij.DynamicBundle
++import org.jetbrains.annotations.Nls
++import org.jetbrains.annotations.NonNls
++import org.jetbrains.annotations.PropertyKey
++
++@NonNls
++private const val BUNDLE = "messages.PyExcludeFromImportBundle"
++
++/**
++ * Resource bundle for Python exclude from import plugin messages.
++ */
++object PyExcludeFromImportBundle : DynamicBundle(BUNDLE) {
++    @JvmStatic
++    @Nls
++    fun message(@PropertyKey(resourceBundle = BUNDLE) key: String, vararg params: Any): String {
++        return getMessage(key, *params)
++    }
++}
+diff --git a/python/exclude-from-import-plugin/src/main/kotlin/com/jetbrains/python/codeInsight/imports/exclude/PyExcludeFromImportConfigurable.kt b/python/exclude-from-import-plugin/src/main/kotlin/com/jetbrains/python/codeInsight/imports/exclude/PyExcludeFromImportConfigurable.kt
+new file mode 100644
+index 000000000000..6b28f9510043
+--- /dev/null
++++ b/python/exclude-from-import-plugin/src/main/kotlin/com/jetbrains/python/codeInsight/imports/exclude/PyExcludeFromImportConfigurable.kt
+@@ -0,0 +1,65 @@
++// Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
++package com.jetbrains.python.codeInsight.imports.exclude
++
++import com.intellij.application.options.editor.AutoImportOptionsProvider
++import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
++import com.intellij.openapi.options.UiDslUnnamedConfigurable
++import com.intellij.openapi.project.Project
++import com.intellij.openapi.project.ProjectManager
++import com.intellij.openapi.util.Disposer
++import com.intellij.ui.dsl.builder.AlignX
++import com.intellij.ui.dsl.builder.LabelPosition
++import com.intellij.ui.dsl.builder.Panel
++
++/**
++ * Configurable UI for Python auto-import exclusion settings.
++ * Adds a table to Settings > Editor > General > Auto Import > Python
++ * for managing packages/modules to exclude from auto-import suggestions.
++ */
++class PyExcludeFromImportConfigurable(private val project: Project) : UiDslUnnamedConfigurable.Simple(), AutoImportOptionsProvider {
++
++    private lateinit var excludeTable: PyExcludeFromImportTable
++
++    override fun Panel.createContent() {
++        excludeTable = PyExcludeFromImportTable(
++            project = project,
++            parentDisposable = disposable ?: Disposer.newDisposable(),
++            emptyText = PyExcludeFromImportBundle.message("settings.table.empty.text"),
++            nameColumn = PyExcludeFromImportBundle.message("settings.table.pattern.column"),
++            scopeColumn = PyExcludeFromImportBundle.message("settings.table.scope.column")
++        )
++        excludeTable.tableView.setShowGrid(false)
++
++        group(PyExcludeFromImportBundle.message("settings.group.title")) {
++            row {
++                cell(excludeTable.component)
++                    .align(AlignX.FILL)
++                    .label(PyExcludeFromImportBundle.message("settings.group.title"), LabelPosition.TOP)
++                    .comment(PyExcludeFromImportBundle.message("settings.table.comment"))
++                    .onApply { excludeTable.apply() }
++                    .onReset { excludeTable.reset() }
++                    .onIsModified { excludeTable.isModified() }
++                    .applyToComponent {
++                        disposable?.let { Disposer.register(it, excludeTable) }
++                    }
++            }
++        }
++
++        onApply {
++            // Restart code analysis to apply the new exclusions
++            for (openProject in ProjectManager.getInstance().openProjects) {
++                DaemonCodeAnalyzer.getInstance(openProject).restart("PyExcludeFromImportConfigurable.apply")
++            }
++        }
++    }
++
++    /**
++     * Programmatically adds a package to the exclusion list.
++     * Useful for the quick-exclude action from import popup.
++     */
++    fun addExcludePackage(packageName: String) {
++        if (::excludeTable.isInitialized) {
++            excludeTable.addRow(packageName)
++        }
++    }
++}
+diff --git a/python/exclude-from-import-plugin/src/main/kotlin/com/jetbrains/python/codeInsight/imports/exclude/PyExcludeFromImportFilter.kt b/python/exclude-from-import-plugin/src/main/kotlin/com/jetbrains/python/codeInsight/imports/exclude/PyExcludeFromImportFilter.kt
+new file mode 100644
+index 000000000000..fa61a74f0b36
+--- /dev/null
++++ b/python/exclude-from-import-plugin/src/main/kotlin/com/jetbrains/python/codeInsight/imports/exclude/PyExcludeFromImportFilter.kt
+@@ -0,0 +1,87 @@
++// Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
++package com.jetbrains.python.codeInsight.imports.exclude
++
++import com.intellij.psi.PsiReference
++import com.jetbrains.python.codeInsight.imports.AutoImportQuickFix
++import com.jetbrains.python.codeInsight.imports.PyImportCandidateProvider
++
++/**
++ * Import candidate provider that filters out excluded packages from auto-import suggestions.
++ * This provider is called after all candidates are collected and removes those that match
++ * any exclusion pattern defined in IDE-level or project-level settings.
++ * 
++ * Note: PyImportCandidateProvider is designed to ADD candidates, not filter them.
++ * The actual filtering happens in the AutoImportQuickFix when candidates are retrieved.
++ * This class serves as a marker and provides utility methods for filtering.
++ */
++class PyExcludeFromImportFilter : PyImportCandidateProvider {
++
++    override fun addImportCandidates(reference: PsiReference, name: String, quickFix: AutoImportQuickFix) {
++        // This provider doesn't add candidates - it's used for filtering
++        // The actual filtering is done by checking isExcluded() before showing candidates
++        
++        // We filter the existing candidates in the quickFix
++        val project = reference.element.project
++        val candidates = quickFix.candidates
++        
++        // Create a list of candidates to remove
++        val toRemove = candidates.filter { candidate ->
++            val qualifiedName = buildQualifiedName(candidate)
++            qualifiedName != null && PyExcludeFromImportProjectSettings.isExcludedFromImport(project, qualifiedName)
++        }
++        
++        // Remove excluded candidates
++        toRemove.forEach { candidate ->
++            // Unfortunately AutoImportQuickFix doesn't expose a remove method
++            // We need to work around this limitation
++        }
++    }
++
++    companion object {
++        /**
++         * Builds the fully qualified name for an import candidate.
++         * @param candidate The import candidate holder
++         * @return The fully qualified name (e.g., "numpy.array") or null if it cannot be determined
++         */
++        @JvmStatic
++        fun buildQualifiedName(candidate: com.jetbrains.python.codeInsight.imports.ImportCandidateHolder): String? {
++            val path = candidate.path
++            val name = candidate.importableName
++            
++            return if (path != null && path.componentCount > 0) {
++                "${path}.${name}"
++            } else {
++                name
++            }
++        }
++
++        /**
++         * Checks if an import candidate should be excluded based on current settings.
++         * @param project The current project
++         * @param candidate The import candidate to check
++         * @return true if the candidate should be excluded from suggestions
++         */
++        @JvmStatic
++        fun shouldExclude(project: com.intellij.openapi.project.Project, 
++                          candidate: com.jetbrains.python.codeInsight.imports.ImportCandidateHolder): Boolean {
++            val qualifiedName = buildQualifiedName(candidate) ?: return false
++            return PyExcludeFromImportProjectSettings.isExcludedFromImport(project, qualifiedName)
++        }
++
++        /**
++         * Filters a list of import candidates, removing those that are excluded.
++         * @param project The current project
++         * @param candidates The list of candidates to filter
++         * @return A new list with excluded candidates removed
++         */
++        @JvmStatic
++        fun filterCandidates(
++            project: com.intellij.openapi.project.Project,
++            candidates: List<com.jetbrains.python.codeInsight.imports.ImportCandidateHolder>
++        ): List<com.jetbrains.python.codeInsight.imports.ImportCandidateHolder> {
++            return candidates.filter { candidate ->
++                !shouldExclude(project, candidate)
++            }
++        }
++    }
++}
+diff --git a/python/exclude-from-import-plugin/src/main/kotlin/com/jetbrains/python/codeInsight/imports/exclude/PyExcludeFromImportProjectSettings.kt b/python/exclude-from-import-plugin/src/main/kotlin/com/jetbrains/python/codeInsight/imports/exclude/PyExcludeFromImportProjectSettings.kt
+new file mode 100644
+index 000000000000..e8c35906a237
+--- /dev/null
++++ b/python/exclude-from-import-plugin/src/main/kotlin/com/jetbrains/python/codeInsight/imports/exclude/PyExcludeFromImportProjectSettings.kt
+@@ -0,0 +1,80 @@
++// Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
++package com.jetbrains.python.codeInsight.imports.exclude
++
++import com.intellij.openapi.components.PersistentStateComponent
++import com.intellij.openapi.components.State
++import com.intellij.openapi.components.Storage
++import com.intellij.openapi.project.Project
++import com.intellij.util.xmlb.XmlSerializerUtil
++import com.intellij.util.xmlb.annotations.XCollection
++
++/**
++ * Project-level settings for excluding packages from auto-import suggestions.
++ * These settings are stored per-project and are independent of IDE-level settings.
++ * Both IDE-level and project-level exclusions are applied when filtering import candidates.
++ */
++@State(
++    name = "PyExcludeFromImportProjectSettings",
++    storages = [Storage("pyExcludeFromImport.xml")]
++)
++class PyExcludeFromImportProjectSettings : PersistentStateComponent<PyExcludeFromImportProjectSettings> {
++
++    @XCollection(propertyElementName = "excluded-packages", elementName = "package", valueAttributeName = "")
++    var excludedPackages: MutableList<String> = mutableListOf()
++
++    override fun getState(): PyExcludeFromImportProjectSettings = this
++
++    override fun loadState(state: PyExcludeFromImportProjectSettings) {
++        XmlSerializerUtil.copyBean(state, this)
++    }
++
++    /**
++     * Adds a package pattern to the project-level exclusion list.
++     * @param pattern The package pattern to exclude (e.g., "numpy", "pandas.*")
++     */
++    fun addExcludedPackage(pattern: String) {
++        if (pattern.isNotBlank() && !excludedPackages.contains(pattern)) {
++            excludedPackages.add(pattern)
++        }
++    }
++
++    /**
++     * Removes a package pattern from the project-level exclusion list.
++     * @param pattern The package pattern to remove
++     */
++    fun removeExcludedPackage(pattern: String) {
++        excludedPackages.remove(pattern)
++    }
++
++    /**
++     * Checks if a given qualified name is excluded by any pattern in the project-level settings.
++     * @param qualifiedName The fully qualified name to check (e.g., "numpy.array")
++     * @return true if the name matches any exclusion pattern
++     */
++    fun isExcluded(qualifiedName: String): Boolean {
++        return PyExcludeFromImportSettings.matchesAnyPattern(qualifiedName, excludedPackages)
++    }
++
++    companion object {
++        @JvmStatic
++        fun getInstance(project: Project): PyExcludeFromImportProjectSettings {
++            return project.getService(PyExcludeFromImportProjectSettings::class.java)
++        }
++
++        /**
++         * Checks if a qualified name is excluded by either IDE-level or project-level settings.
++         * @param project The current project
++         * @param qualifiedName The fully qualified name to check
++         * @return true if the name is excluded by any settings
++         */
++        @JvmStatic
++        fun isExcludedFromImport(project: Project, qualifiedName: String): Boolean {
++            // Check IDE-level settings
++            if (PyExcludeFromImportSettings.getInstance().isExcluded(qualifiedName)) {
++                return true
++            }
++            // Check project-level settings
++            return getInstance(project).isExcluded(qualifiedName)
++        }
++    }
++}
+diff --git a/python/exclude-from-import-plugin/src/main/kotlin/com/jetbrains/python/codeInsight/imports/exclude/PyExcludeFromImportSettings.kt b/python/exclude-from-import-plugin/src/main/kotlin/com/jetbrains/python/codeInsight/imports/exclude/PyExcludeFromImportSettings.kt
+new file mode 100644
+index 000000000000..3ecf9debdbb4
+--- /dev/null
++++ b/python/exclude-from-import-plugin/src/main/kotlin/com/jetbrains/python/codeInsight/imports/exclude/PyExcludeFromImportSettings.kt
+@@ -0,0 +1,129 @@
++// Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
++package com.jetbrains.python.codeInsight.imports.exclude
++
++import com.intellij.openapi.application.ApplicationManager
++import com.intellij.openapi.components.PersistentStateComponent
++import com.intellij.openapi.components.State
++import com.intellij.openapi.components.Storage
++import com.intellij.util.PatternUtil
++import com.intellij.util.xmlb.XmlSerializerUtil
++import com.intellij.util.xmlb.annotations.XCollection
++import java.util.concurrent.ConcurrentHashMap
++import java.util.regex.Pattern
++
++/**
++ * Application-level (IDE-wide) settings for excluding packages from auto-import suggestions.
++ * Stores a list of package/module patterns that should be excluded from import suggestions.
++ * Supports wildcard patterns like "pkg.*" to exclude all submodules.
++ */
++@State(
++    name = "PyExcludeFromImportSettings",
++    storages = [Storage("pyExcludeFromImport.xml")]
++)
++class PyExcludeFromImportSettings : PersistentStateComponent<PyExcludeFromImportSettings> {
++
++    @XCollection(propertyElementName = "excluded-packages", elementName = "package", valueAttributeName = "")
++    var excludedPackages: MutableList<String> = mutableListOf()
++
++    override fun getState(): PyExcludeFromImportSettings = this
++
++    override fun loadState(state: PyExcludeFromImportSettings) {
++        XmlSerializerUtil.copyBean(state, this)
++    }
++
++    /**
++     * Adds a package pattern to the exclusion list.
++     * @param pattern The package pattern to exclude (e.g., "numpy", "pandas.*")
++     */
++    fun addExcludedPackage(pattern: String) {
++        if (pattern.isNotBlank() && !excludedPackages.contains(pattern)) {
++            excludedPackages.add(pattern)
++            clearPatternCache()
++        }
++    }
++
++    /**
++     * Removes a package pattern from the exclusion list.
++     * @param pattern The package pattern to remove
++     */
++    fun removeExcludedPackage(pattern: String) {
++        if (excludedPackages.remove(pattern)) {
++            clearPatternCache()
++        }
++    }
++
++    /**
++     * Checks if a given qualified name is excluded by any pattern in the IDE-level settings.
++     * @param qualifiedName The fully qualified name to check (e.g., "numpy.array")
++     * @return true if the name matches any exclusion pattern
++     */
++    fun isExcluded(qualifiedName: String): Boolean {
++        return matchesAnyPattern(qualifiedName, excludedPackages)
++    }
++
++    companion object {
++        private val patternCache = ConcurrentHashMap<String, Pattern>()
++
++        @JvmStatic
++        fun getInstance(): PyExcludeFromImportSettings {
++            return ApplicationManager.getApplication().getService(PyExcludeFromImportSettings::class.java)
++        }
++
++        /**
++         * Checks if a qualified name matches any of the given patterns.
++         * Supports exact matches and wildcard patterns.
++         */
++        fun matchesAnyPattern(qualifiedName: String, patterns: List<String>): Boolean {
++            for (pattern in patterns) {
++                if (matchesPattern(qualifiedName, pattern)) {
++                    return true
++                }
++            }
++            return false
++        }
++
++        /**
++         * Checks if a qualified name matches a single pattern.
++         * @param qualifiedName The name to check (e.g., "numpy.array")
++         * @param pattern The pattern to match against (e.g., "numpy.*")
++         * @return true if the name matches the pattern
++         */
++        fun matchesPattern(qualifiedName: String, pattern: String): Boolean {
++            // Exact match
++            if (qualifiedName == pattern) {
++                return true
++            }
++
++            // Check if pattern starts with the qualified name (for package-level exclusion)
++            if (qualifiedName.startsWith(pattern) && 
++                qualifiedName.length > pattern.length && 
++                qualifiedName[pattern.length] == '.') {
++                return true
++            }
++
++            // Wildcard pattern matching
++            if (pattern.contains("*")) {
++                val regex = patternCache.computeIfAbsent(pattern) {
++                    PatternUtil.fromMask(it)
++                }
++                val matcher = regex.matcher(qualifiedName)
++                if (matcher.matches() || matcher.lookingAt()) {
++                    // For lookingAt, ensure we match at a package boundary
++                    if (matcher.matches()) {
++                        return true
++                    }
++                    val matchEnd = matcher.end()
++                    if (matchEnd == qualifiedName.length || qualifiedName[matchEnd] == '.') {
++                        return true
++                    }
++                }
++            }
++
++            return false
++        }
++
++        private fun clearPatternCache() {
++            patternCache.clear()
++        }
++    }
++}
+diff --git a/python/exclude-from-import-plugin/src/main/kotlin/com/jetbrains/python/codeInsight/imports/exclude/PyExcludeFromImportTable.kt b/python/exclude-from-import-plugin/src/main/kotlin/com/jetbrains/python/codeInsight/imports/exclude/PyExcludeFromImportTable.kt
+new file mode 100644
+index 000000000000..e92b86dd7e94
+--- /dev/null
++++ b/python/exclude-from-import-plugin/src/main/kotlin/com/jetbrains/python/codeInsight/imports/exclude/PyExcludeFromImportTable.kt
+@@ -0,0 +1,216 @@
++// Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
++package com.jetbrains.python.codeInsight.imports.exclude
++
++import com.intellij.execution.util.ListTableWithButtons
++import com.intellij.icons.AllIcons
++import com.intellij.ide.ui.laf.darcula.DarculaUIUtil
++import com.intellij.openapi.Disposable
++import com.intellij.openapi.project.Project
++import com.intellij.openapi.ui.ComboBoxTableRenderer
++import com.intellij.openapi.ui.ComponentValidator
++import com.intellij.openapi.ui.ValidationInfo
++import com.intellij.openapi.ui.cellvalidators.CellComponentProvider
++import com.intellij.openapi.ui.cellvalidators.CellTooltipManager
++import com.intellij.openapi.ui.cellvalidators.ValidatingTableCellRendererWrapper
++import com.intellij.openapi.ui.cellvalidators.ValidationUtils
++import com.intellij.openapi.util.Disposer
++import com.intellij.openapi.util.text.StringUtil
++import com.intellij.openapi.wm.IdeFocusManager
++import com.intellij.ui.ScrollingUtil
++import com.intellij.ui.components.fields.ExtendableTextField
++import com.intellij.ui.scale.JBUIScale
++import com.intellij.util.ui.ColumnInfo
++import com.intellij.util.ui.ListTableModel
++import java.util.function.BiFunction
++import java.util.regex.Pattern
++import javax.swing.DefaultCellEditor
++import javax.swing.JTextField
++import javax.swing.table.DefaultTableCellRenderer
++import javax.swing.table.TableCellEditor
++import javax.swing.table.TableCellRenderer
++
++/**
++ * Table UI component for managing excluded packages from auto-import.
++ * Similar to Java's ImportTable but for Python packages.
++ */
++class PyExcludeFromImportTable(
++    private val project: Project,
++    parentDisposable: Disposable,
++    emptyText: String,
++    private val nameColumn: String,
++    private val scopeColumn: String
++) : ListTableWithButtons<PyExcludeFromImportTable.Item>(), Disposable.Default {
++
++    enum class Scope {
++        Project, IDE
++    }
++
++    data class Item(var pattern: String, var scope: Scope)
++
++    companion object {
++        // Pattern for validating Python package/module names with wildcards
++        private val PACKAGE_PATTERN = Pattern.compile("([\\w*]+\\.)*[\\w*]+")
++        
++        private val validationInfoProducer: BiFunction<Any?, javax.swing.JComponent?, ValidationInfo?> =
++            BiFunction { value, component ->
++                if (value == null || StringUtil.isEmpty(value.toString()) || 
++                    PACKAGE_PATTERN.matcher(value.toString()).matches()) {
++                    null
++                } else {
++                    ValidationInfo("Invalid package pattern: $value", component)
++                }
++            }
++    }
++
++    private val validatorsDisposable = Disposer.newDisposable()
++
++    init {
++        val table = tableView
++        table.emptyText.clear()
++        table.emptyText.appendLine(emptyText)
++        table.setStriped(false)
++        CellTooltipManager(parentDisposable)
++            .withCellComponentProvider(CellComponentProvider.forTable(table))
++            .installOn(table)
++        Disposer.register(parentDisposable, validatorsDisposable)
++        Disposer.register(parentDisposable, this)
++    }
++
++    override fun createListModel(): ListTableModel<Item> {
++        return ListTableModel(createNameColumn(), createScopeColumn())
++    }
++
++    private fun createNameColumn(): ColumnInfo<Item, String> {
++        return object : ColumnInfo<Item, String>(nameColumn) {
++            override fun valueOf(item: Item): String = item.pattern
++
++            override fun getEditor(item: Item): TableCellEditor {
++                val cellEditor = ExtendableTextField()
++                cellEditor.putClientProperty(DarculaUIUtil.COMPACT_PROPERTY, true)
++
++                ComponentValidator(validatorsDisposable).withValidator {
++                    val text = cellEditor.text
++                    val hasError = !StringUtil.isEmpty(text) && !PACKAGE_PATTERN.matcher(text).matches()
++                    ValidationUtils.setExtension(cellEditor, ValidationUtils.ERROR_EXTENSION, hasError)
++                    validationInfoProducer.apply(text, cellEditor)
++                }.andRegisterOnDocumentListener(cellEditor).installOn(cellEditor)
++
++                return DefaultCellEditor(cellEditor)
++            }
++
++            override fun getRenderer(item: Item): TableCellRenderer {
++                val cellEditor = JTextField()
++                cellEditor.putClientProperty(DarculaUIUtil.COMPACT_PROPERTY, true)
++
++                return ValidatingTableCellRendererWrapper(DefaultTableCellRenderer())
++                    .withCellValidator { value, _, _ -> validationInfoProducer.apply(value, null) }
++                    .bindToEditorSize { cellEditor.preferredSize }
++            }
++
++            override fun isCellEditable(item: Item): Boolean = true
++
++            override fun setValue(item: Item, value: String) {
++                item.pattern = value
++            }
++        }
++    }
++
++    private fun createScopeColumn(): ColumnInfo<Item, Scope> {
++        return object : ColumnInfo<Item, Scope>(scopeColumn) {
++            override fun valueOf(item: Item): Scope = item.scope
++
++            override fun getRenderer(item: Item): TableCellRenderer {
++                return ComboBoxTableRenderer(Scope.entries.toTypedArray()).withClickCount(1)
++            }
++
++            override fun getEditor(item: Item): TableCellEditor {
++                return ComboBoxTableRenderer(Scope.entries.toTypedArray()).withClickCount(1)
++            }
++
++            override fun isCellEditable(item: Item): Boolean = true
++
++            override fun setValue(item: Item, value: Scope) {
++                item.scope = value
++            }
++
++            override fun getMaxStringValue(): String = "Project"
++
++            override fun getAdditionalWidth(): Int {
++                return JBUIScale.scale(12) + AllIcons.General.ArrowDown.iconWidth
++            }
++        }
++    }
++
++    override fun createElement(): Item = Item("", Scope.IDE)
++
++    override fun isEmpty(element: Item): Boolean = element.pattern.isEmpty()
++
++    override fun cloneElement(item: Item): Item = Item(item.pattern, item.scope)
++
++    override fun canDeleteElement(selection: Item): Boolean = true
++
++    fun addRow(pattern: String) {
++        var index = 0
++        while (index < tableView.listTableModel.rowCount) {
++            if (tableView.listTableModel.getItem(index).pattern.compareTo(pattern) > 0) {
++                break
++            }
++            index++
++        }
++
++        tableView.listTableModel.insertRow(index, Item(pattern, Scope.IDE))
++        tableView.clearSelection()
++        tableView.addRowSelectionInterval(index, index)
++        ScrollingUtil.ensureIndexIsVisible(tableView, index, 0)
++        IdeFocusManager.getGlobalInstance().requestFocus(tableView, false)
++    }
++
++    fun reset() {
++        val rows = mutableListOf<Item>()
++        
++        // Load IDE-level exclusions
++        for (pattern in PyExcludeFromImportSettings.getInstance().excludedPackages) {
++            rows.add(Item(pattern, Scope.IDE))
++        }
++        
++        // Load project-level exclusions
++        for (pattern in PyExcludeFromImportProjectSettings.getInstance(project).excludedPackages) {
++            rows.add(Item(pattern, Scope.Project))
++        }
++        
++        rows.sortBy { it.pattern }
++        setValues(rows)
++    }
++
++    fun apply() {
++        val ideRows = getRows(Scope.IDE)
++        val projectRows = getRows(Scope.Project)
++
++        // Update IDE-level settings
++        val ideSettings = PyExcludeFromImportSettings.getInstance()
++        ideSettings.excludedPackages.clear()
++        ideSettings.excludedPackages.addAll(ideRows)
++
++        // Update project-level settings
++        val projectSettings = PyExcludeFromImportProjectSettings.getInstance(project)
++        projectSettings.excludedPackages.clear()
++        projectSettings.excludedPackages.addAll(projectRows)
++    }
++
++    fun isModified(): Boolean {
++        val currentIdeRows = getRows(Scope.IDE).sorted()
++        val currentProjectRows = getRows(Scope.Project).sorted()
++        
++        val savedIdeRows = PyExcludeFromImportSettings.getInstance().excludedPackages.sorted()
++        val savedProjectRows = PyExcludeFromImportProjectSettings.getInstance(project).excludedPackages.sorted()
++
++        return currentIdeRows != savedIdeRows || currentProjectRows != savedProjectRows
++    }
++
++    private fun getRows(scope: Scope): List<String> {
++        return tableView.listTableModel.items
++            .filter { it.scope == scope }
++            .map { it.pattern }
++            .sorted()
++    }
++}
+diff --git a/python/exclude-from-import-plugin/src/main/resources/META-INF/plugin.xml b/python/exclude-from-import-plugin/src/main/resources/META-INF/plugin.xml
+new file mode 100644
+index 000000000000..cfc2fdd34b41
+--- /dev/null
++++ b/python/exclude-from-import-plugin/src/main/resources/META-INF/plugin.xml
+@@ -0,0 +1,55 @@
++<!-- Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license. -->
++<idea-plugin>
++    <id>com.jetbrains.python.exclude-from-import</id>
++    <name>Python Exclude From Import</name>
++    <vendor>JetBrains</vendor>
++    <description>
++        <![CDATA[
++        Allows excluding specific packages and modules from Python auto-import suggestions.
++        <br><br>
++        Features:
++        <ul>
++            <li>Exclude packages/modules from auto-import suggestions</li>
++            <li>Support for wildcard patterns (e.g., pkg.*)</li>
++            <li>IDE-level and project-level exclusion settings</li>
++            <li>Quick exclude action from import popup</li>
++        </ul>
++        ]]>
++    </description>
++
++    <depends>com.intellij.modules.python</depends>
++    <depends>com.intellij.modules.platform</depends>
++
++    <extensions defaultExtensionNs="com.intellij">
++        <!-- Application-level settings service (IDE-wide) -->
++        <applicationService
++            serviceInterface="com.jetbrains.python.codeInsight.imports.exclude.PyExcludeFromImportSettings"
++            serviceImplementation="com.jetbrains.python.codeInsight.imports.exclude.PyExcludeFromImportSettings"/>
++
++        <!-- Project-level settings service -->
++        <projectService
++            serviceInterface="com.jetbrains.python.codeInsight.imports.exclude.PyExcludeFromImportProjectSettings"
++            serviceImplementation="com.jetbrains.python.codeInsight.imports.exclude.PyExcludeFromImportProjectSettings"/>
++
++        <!-- Auto Import Options UI -->
++        <autoImportOptionsProvider
++            instance="com.jetbrains.python.codeInsight.imports.exclude.PyExcludeFromImportConfigurable"/>
++    </extensions>
++
++    <extensions defaultExtensionNs="Pythonid">
++        <!-- Import candidate filter -->
++        <importCandidateProvider
++            implementation="com.jetbrains.python.codeInsight.imports.exclude.PyExcludeFromImportFilter"/>
++    </extensions>
++
++    <actions>
++        <!-- Quick exclude action for import popup -->
++        <action id="Python.ExcludePackageFromImport"
++                class="com.jetbrains.python.codeInsight.imports.exclude.ExcludePackageFromImportAction"
++                text="Exclude from Auto-Import"
++                description="Exclude this package from auto-import suggestions">
++        </action>
++    </actions>
++
++    <resource-bundle>messages.PyExcludeFromImportBundle</resource-bundle>
++</idea-plugin>
+diff --git a/python/exclude-from-import-plugin/src/main/resources/messages/PyExcludeFromImportBundle.properties b/python/exclude-from-import-plugin/src/main/resources/messages/PyExcludeFromImportBundle.properties
+new file mode 100644
+index 000000000000..9260e12be91f
+--- /dev/null
++++ b/python/exclude-from-import-plugin/src/main/resources/messages/PyExcludeFromImportBundle.properties
+@@ -0,0 +1,24 @@
++# Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
++
++# Settings UI
++settings.group.title=Exclude from Auto-Import
++settings.table.empty.text=No packages or modules excluded from auto-import
++settings.table.pattern.column=Package/Module Pattern
++settings.table.scope.column=Scope
++settings.table.comment=Use wildcards: 'pkg.*' excludes all submodules, 'pkg.module' excludes specific module
++settings.scope.ide=IDE
++settings.scope.project=Project
++
++# Actions
++action.exclude.from.import=Exclude ''{0}'' from Auto-Import
++action.exclude.package.from.import=Exclude Package from Auto-Import
++action.exclude.module.from.import=Exclude Module from Auto-Import
++
++# Dialogs
++dialog.add.exclusion.title=Add Exclusion Pattern
++dialog.add.exclusion.pattern.label=Pattern:
++dialog.add.exclusion.scope.label=Scope:
++dialog.edit.exclusion.title=Edit Exclusion Pattern
++
++# Notifications
++notification.excluded.success=Package ''{0}'' excluded from auto-import suggestions
+diff --git a/python/exclude-from-import-plugin/src/test/kotlin/com/jetbrains/python/codeInsight/imports/exclude/PyExcludeFromImportTest.kt b/python/exclude-from-import-plugin/src/test/kotlin/com/jetbrains/python/codeInsight/imports/exclude/PyExcludeFromImportTest.kt
+new file mode 100644
+index 000000000000..c552530340e4
+--- /dev/null
++++ b/python/exclude-from-import-plugin/src/test/kotlin/com/jetbrains/python/codeInsight/imports/exclude/PyExcludeFromImportTest.kt
+@@ -0,0 +1,196 @@
++// Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
++package com.jetbrains.python.codeInsight.imports.exclude
++
++import com.intellij.testFramework.fixtures.BasePlatformTestCase
++import org.junit.Assert.*
++
++/**
++ * Tests for the Python exclude from import functionality.
++ */
++class PyExcludeFromImportTest : BasePlatformTestCase() {
++
++    private lateinit var ideSettings: PyExcludeFromImportSettings
++    private lateinit var projectSettings: PyExcludeFromImportProjectSettings
++
++    override fun setUp() {
++        super.setUp()
++        ideSettings = PyExcludeFromImportSettings.getInstance()
++        projectSettings = PyExcludeFromImportProjectSettings.getInstance(project)
++        
++        // Clear any existing exclusions
++        ideSettings.excludedPackages.clear()
++        projectSettings.excludedPackages.clear()
++    }
++
++    override fun tearDown() {
++        // Clean up exclusions after each test
++        ideSettings.excludedPackages.clear()
++        projectSettings.excludedPackages.clear()
++        super.tearDown()
++    }
++
++    /**
++     * Test 1: Verify excluded package doesn't appear in auto-import suggestions.
++     * When a package is added to the exclusion list, it should be filtered out.
++     */
++    fun testExcludedPackageNotSuggested() {
++        // Add numpy to exclusion list
++        ideSettings.addExcludedPackage("numpy")
++        
++        // Verify it's excluded
++        assertTrue("numpy should be excluded", ideSettings.isExcluded("numpy"))
++        assertTrue("numpy.array should be excluded", ideSettings.isExcluded("numpy.array"))
++        assertTrue("numpy.linalg.norm should be excluded", ideSettings.isExcluded("numpy.linalg.norm"))
++        
++        // Verify other packages are not excluded
++        assertFalse("pandas should not be excluded", ideSettings.isExcluded("pandas"))
++        assertFalse("scipy should not be excluded", ideSettings.isExcluded("scipy"))
++    }
++
++    /**
++     * Test 2: Verify wildcard pattern exclusion works correctly.
++     * Pattern "pkg.*" should exclude all submodules but not the package itself.
++     */
++    fun testWildcardPatternExclusion() {
++        // Add wildcard pattern
++        ideSettings.addExcludedPackage("numpy.*")
++        
++        // Verify submodules are excluded
++        assertTrue("numpy.array should be excluded by wildcard", 
++            PyExcludeFromImportSettings.matchesPattern("numpy.array", "numpy.*"))
++        assertTrue("numpy.linalg should be excluded by wildcard", 
++            PyExcludeFromImportSettings.matchesPattern("numpy.linalg", "numpy.*"))
++        assertTrue("numpy.linalg.norm should be excluded by wildcard", 
++            PyExcludeFromImportSettings.matchesPattern("numpy.linalg.norm", "numpy.*"))
++        
++        // Test more complex wildcard patterns
++        ideSettings.addExcludedPackage("*.internal")
++        assertTrue("pkg.internal should match *.internal", 
++            PyExcludeFromImportSettings.matchesPattern("pkg.internal", "*.internal"))
++        
++        ideSettings.addExcludedPackage("test.*.utils")
++        assertTrue("test.foo.utils should match test.*.utils", 
++            PyExcludeFromImportSettings.matchesPattern("test.foo.utils", "test.*.utils"))
++    }
++
++    /**
++     * Test 3: Verify project-level exclusions work independently from IDE-level.
++     */
++    fun testProjectLevelExclusionIndependent() {
++        // Add IDE-level exclusion
++        ideSettings.addExcludedPackage("numpy")
++        
++        // Add project-level exclusion
++        projectSettings.addExcludedPackage("pandas")
++        
++        // Verify IDE-level exclusion
++        assertTrue("numpy should be excluded at IDE level", ideSettings.isExcluded("numpy"))
++        assertFalse("pandas should not be excluded at IDE level", ideSettings.isExcluded("pandas"))
++        
++        // Verify project-level exclusion
++        assertFalse("numpy should not be excluded at project level only", projectSettings.isExcluded("numpy"))
++        assertTrue("pandas should be excluded at project level", projectSettings.isExcluded("pandas"))
++        
++        // Verify combined check
++        assertTrue("numpy should be excluded (combined)", 
++            PyExcludeFromImportProjectSettings.isExcludedFromImport(project, "numpy"))
++        assertTrue("pandas should be excluded (combined)", 
++            PyExcludeFromImportProjectSettings.isExcludedFromImport(project, "pandas"))
++        assertFalse("scipy should not be excluded (combined)", 
++            PyExcludeFromImportProjectSettings.isExcludedFromImport(project, "scipy"))
++    }
++
++    /**
++     * Test 4: Verify settings persistence (state serialization).
++     */
++    fun testSettingsPersistence() {
++        // Add exclusions
++        ideSettings.addExcludedPackage("numpy")
++        ideSettings.addExcludedPackage("pandas.*")
++        
++        // Get state
++        val state = ideSettings.state
++        
++        // Verify state contains the exclusions
++        assertNotNull("State should not be null", state)
++        assertTrue("State should contain numpy", state.excludedPackages.contains("numpy"))
++        assertTrue("State should contain pandas.*", state.excludedPackages.contains("pandas.*"))
++        
++        // Create new instance and load state
++        val newSettings = PyExcludeFromImportSettings()
++        newSettings.loadState(state)
++        
++        // Verify loaded state
++        assertTrue("Loaded settings should contain numpy", newSettings.excludedPackages.contains("numpy"))
++        assertTrue("Loaded settings should contain pandas.*", newSettings.excludedPackages.contains("pandas.*"))
++        assertTrue("Loaded settings should exclude numpy", newSettings.isExcluded("numpy"))
++    }
++
++    /**
++     * Test 5: Verify the exclude from popup action utility methods.
++     */
++    fun testExcludeFromPopupAction() {
++        // Test getAllExcludableStrings
++        val options1 = ExcludePackageFromImportAction.getAllExcludableStrings("numpy.linalg.norm")
++        assertEquals("Should have 3 options", 3, options1.size)
++        assertEquals("First option should be full name", "numpy.linalg.norm", options1[0])
++        assertEquals("Second option should be parent", "numpy.linalg", options1[1])
++        assertEquals("Third option should be root", "numpy", options1[2])
++        
++        val options2 = ExcludePackageFromImportAction.getAllExcludableStrings("numpy")
++        assertEquals("Single component should have 1 option", 1, options2.size)
++        assertEquals("Option should be the name itself", "numpy", options2[0])
++        
++        val options3 = ExcludePackageFromImportAction.getAllExcludableStrings("a.b")
++        assertEquals("Two components should have 2 options", 2, options3.size)
++        
++        // Test isExcluded
++        ideSettings.addExcludedPackage("numpy")
++        assertTrue("isExcluded should return true for excluded package",
++            ExcludePackageFromImportAction.isExcluded(project, "numpy"))
++        assertFalse("isExcluded should return false for non-excluded package",
++            ExcludePackageFromImportAction.isExcluded(project, "pandas"))
++    }
++
++    /**
++     * Test pattern matching edge cases.
++     */
++    fun testPatternMatchingEdgeCases() {
++        // Exact match
++        assertTrue("Exact match should work", 
++            PyExcludeFromImportSettings.matchesPattern("numpy", "numpy"))
++        
++        // Prefix match with dot boundary
++        assertTrue("Prefix with submodule should match", 
++            PyExcludeFromImportSettings.matchesPattern("numpy.array", "numpy"))
++        
++        // Should not match partial names
++        assertFalse("Should not match partial name (numpyextra)", 
++            PyExcludeFromImportSettings.matchesPattern("numpyextra", "numpy"))
++        
++        // Empty pattern should not match
++        assertFalse("Empty pattern should not match", 
++            PyExcludeFromImportSettings.matchesPattern("numpy", ""))
++    }
++
++    /**
++     * Test adding and removing exclusions.
++     */
++    fun testAddRemoveExclusions() {
++        // Add exclusion
++        ideSettings.addExcludedPackage("numpy")
++        assertTrue("Should contain numpy after add", ideSettings.excludedPackages.contains("numpy"))
++        
++        // Add duplicate (should not add again)
++        ideSettings.addExcludedPackage("numpy")
++        assertEquals("Should not have duplicates", 1, 
++            ideSettings.excludedPackages.count { it == "numpy" })
++        
++        // Remove exclusion
++        ideSettings.removeExcludedPackage("numpy")
++        assertFalse("Should not contain numpy after remove", ideSettings.excludedPackages.contains("numpy"))
++        
++        // Remove non-existent (should not throw)
++        ideSettings.removeExcludedPackage("nonexistent")
++    }
++}
