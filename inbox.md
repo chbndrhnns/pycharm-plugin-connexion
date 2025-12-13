@@ -52,7 +52,6 @@
 
 ## In Progress Tasks
 
-- [R] feat: Add "from None" to exception if no err is provided, modify if "err/" or so is added later
 - [ ] feat: Replace expected with actual test outcome
 
 ## Completed Tasks (newest first)
