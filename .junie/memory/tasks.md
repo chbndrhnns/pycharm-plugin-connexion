@@ -1,13 +1,3 @@
-[2025-12-09 09:58] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "add edge-case tests",
-    "BOTTLENECK": "Ensuring intention availability across different caret positions and PSI shapes.",
-    "PROJECT NOTE": "plugin.xml shows unresolved language id warnings for Python; may require proper language attribute or removal if unnecessary.",
-    "NEW INSTRUCTION": "WHEN implementing an intention for a syntax pattern THEN add tests for multiple caret positions"
-}
-
 [2025-12-09 10:04] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -886,4 +876,14 @@
     "BOTTLENECK": "Write actions executed off EDT violated TransactionGuard.",
     "PROJECT NOTE": "PytestSkipToggler uses PyUtil.addDecorator which must run under EDT transaction.",
     "NEW INSTRUCTION": "WHEN background read resolves PSI target THEN invokeAndWait on EDT, then run WriteCommandAction for PSI edits"
+}
+
+[2025-12-13 22:46] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "open file, scan project",
+    "BOTTLENECK": "Relied on truncated search output without confirming full implementation details.",
+    "PROJECT NOTE": "/src/main/kotlin/.../PythonVersionGuard.kt contains the guard; verify module selection logic there.",
+    "NEW INSTRUCTION": "WHEN search results are truncated or ambiguous THEN open the file and review fully"
 }
