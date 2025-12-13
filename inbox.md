@@ -12,6 +12,7 @@
 
 ## Pending Features
 
+- [ ] feat: pytest param: treat text as ref
 - [ ] feat: Move test inside of class
 - [ ] feat: When suggesting the expected type and it is an inner class, reference it using outer_class.inner_class
   syntax, recursively
