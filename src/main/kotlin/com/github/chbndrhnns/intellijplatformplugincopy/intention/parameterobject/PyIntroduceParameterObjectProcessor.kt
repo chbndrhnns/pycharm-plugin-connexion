@@ -2,6 +2,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobje
 
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.platform.ide.progress.runWithModalProgressBlocking
 import com.intellij.psi.PsiElement
@@ -16,6 +17,8 @@ import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.resolve.PyResolveContext
 import com.jetbrains.python.psi.types.TypeEvalContext
 import com.jetbrains.python.refactoring.PyReplaceExpressionUtil
+
+private val LOG = logger<PyIntroduceParameterObjectProcessor>()
 
 class PyIntroduceParameterObjectProcessor(
     private val function: PyFunction,
@@ -446,6 +449,7 @@ class PyIntroduceParameterObjectProcessor(
             val newArgListElement = try {
                 generator.createArgumentList(languageLevel, "($newArgsText)")
             } catch (e: Exception) {
+                LOG.debug("Failed to create argument list from '$newArgsText'", e)
                 null
             }
 

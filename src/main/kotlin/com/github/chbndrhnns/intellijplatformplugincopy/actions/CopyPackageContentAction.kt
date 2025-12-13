@@ -6,6 +6,7 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -13,6 +14,8 @@ import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileVisitor
 import java.awt.datatransfer.StringSelection
+
+private val LOG = logger<CopyPackageContentAction>()
 
 class CopyPackageContentAction : AnAction() {
 
@@ -61,6 +64,7 @@ class CopyPackageContentAction : AnAction() {
                     sb.append("\n")
                 }
             } catch (ex: Exception) {
+                LOG.warn("Failed to read file content: ${file.path}", ex)
                 sb.append("# [Error reading file: ${ex.message}]\n")
             }
             sb.append("\n")

@@ -2,6 +2,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedCtor
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedTypeInfo
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.search.GlobalSearchScope
@@ -13,6 +14,8 @@ import com.jetbrains.python.psi.stubs.PyClassNameIndex
 import com.jetbrains.python.psi.types.PyClassType
 import com.jetbrains.python.psi.types.PyTypeUtil
 import com.jetbrains.python.psi.types.TypeEvalContext
+
+private val LOG = logger<StringAnnotationResolver>()
 
 /**
  * Utility that extracts constructor candidates from union-like annotations.
@@ -96,6 +99,7 @@ private class StringAnnotationResolver(private val anchor: PyExpression) {
         } catch (e: ProcessCanceledException) {
             throw e
         } catch (e: Exception) {
+            LOG.debug("Failed to resolve qualified name '$dotted'", e)
             null
         }
     }

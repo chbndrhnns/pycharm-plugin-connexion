@@ -4,8 +4,11 @@ import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsS
 import com.intellij.codeInsight.daemon.impl.IntentionMenuContributor
 import com.intellij.codeInsight.daemon.impl.ShowIntentionsPass
 import com.intellij.codeInsight.intention.IntentionAction
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiFile
+
+private val LOG = logger<SuppressSuggestedRefactoringIntentionMenuContributor>()
 
 /**
  * Suppresses the platform-provided "Suggested Refactoring" change-signature intention
@@ -51,7 +54,8 @@ class SuppressSuggestedRefactoringIntentionMenuContributor : IntentionMenuContri
                 is java.lang.reflect.Field -> actionField.get(descriptor) as? IntentionAction
                 else -> null
             }
-        } catch (_: Throwable) {
+        } catch (e: Throwable) {
+            LOG.debug("Failed to extract IntentionAction from descriptor: ${descriptor.javaClass.name}", e)
             null
         }
     }
