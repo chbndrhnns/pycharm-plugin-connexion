@@ -86,3 +86,5 @@
 
 - UI-test run configuration:
   - `runIdeForUiTests` injects Robot server plugin and sets JVM args; keep `-Drobot-server.port=8082` in mind if you have port conflicts.
+
+- DO NOT read files from the `spec/` folder unless instructed to do so.
