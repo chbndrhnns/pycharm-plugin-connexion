@@ -62,10 +62,10 @@ def test_str(arg, expected):
 
 ## In Progress Tasks
 
-- [ ] feat: Replace expected with actual test outcome
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Replace expected with actual test outcome
 - [x] feat: Toggle skip marker from test panel
 - [-] feat: Intention: Make function abstract (add @abc.abstractmethod or @abstractmethod)
 - [x] feat: Remove "Update usages" quick fix menu
