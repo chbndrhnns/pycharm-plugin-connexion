@@ -1,33 +1,3 @@
-[2025-12-10 15:56] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "bash",
-    "ERROR": "FileComparisonFailedError in PopulateLeafImportsTest",
-    "ROOT CAUSE": "Populate did not import alias-like leaf node types, so generated code mismatched expected output.",
-    "PROJECT NOTE": "PopulateArgumentsService relies on PyValueGenerator.GenerationResult.imports; ensure alias-like leaves (e.g., NewType) return the resolved PsiNamedElement so PyImportService can add the import.",
-    "NEW INSTRUCTION": "WHEN tests fail with FileComparisonFailedError in populate leaf imports THEN return resolved alias element in GenerationResult.imports"
-}
-
-[2025-12-10 15:57] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "Gradle (:test)",
-    "ERROR": "Test failed: FileComparisonFailedError in PopulateLeafImportsTest",
-    "ROOT CAUSE": "Alias-like leaf types (e.g., NewType) were rendered as Name(...) but no import was added, so the expected import was missing.",
-    "PROJECT NOTE": "PopulateArgumentsService relies on GenerationResult.imports to add imports via PyImportService; ensure PyValueGenerator returns the alias' PsiNamedElement for leaf nodes so the service can import it.",
-    "NEW INSTRUCTION": "WHEN type is alias-like without backing PyClass THEN resolve its symbol and include it in imports"
-}
-
-[2025-12-10 16:01] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "Gradle (:test)",
-    "ERROR": "Expected import missing; file comparison mismatch",
-    "ROOT CAUSE": "Populate generated leaf values for alias-like types without adding their import elements, so the resulting file lacked the expected import.",
-    "PROJECT NOTE": "PopulateArgumentsService uses PyValueGenerator.GenerationResult.imports to feed PyImportService; ensure alias-like leaves (e.g., NewType, type aliases) contribute their PsiNamedElement so imports are added.",
-    "NEW INSTRUCTION": "WHEN generating alias-like leaf value THEN add resolved symbol to GenerationResult.imports"
-}
-
 [2025-12-10 16:13] - Updated by Junie - Error analysis
 {
     "TYPE": "invalid API",
@@ -776,4 +746,34 @@
     "ROOT CAUSE": "The code hard-codes exactly two decorator parameters and string-only values, so updating parametrized expected values fails for different arities and non-string expressions.",
     "PROJECT NOTE": "For @pytest.mark.parametrize, argnames can be a string ('a,b') or a tuple ('a','b'); the second argument is a sequence of parameter sets where each set can be a single value or a tuple matching argnames order. Map the RHS assert reference to its PyParameter name, compute its column index from argnames, pick the failing row by the test failure entry, and replace that element with a new PSI expression built from 'actual' text.",
     "NEW INSTRUCTION": "WHEN rhs assert operand resolves to a parametrize parameter THEN update corresponding decorator value regardless of type"
+}
+
+[2025-12-14 16:51] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "apply_patch",
+    "ERROR": "Python code placed outside Kotlin string literal",
+    "ROOT CAUSE": "Patch inserted raw Python lines directly into a .kt test file instead of inside a triple-quoted string.",
+    "PROJECT NOTE": "Test expectations in src/test/.../*.kt are triple-quoted Kotlin strings passed to myFixture.doIntentionTest; edit content only inside those strings and preserve trimIndent/quotes.",
+    "NEW INSTRUCTION": "WHEN editing Kotlin test expected output THEN modify inside triple-quoted string only"
+}
+
+[2025-12-14 17:00] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "UseActualTestOutcomeFromTreeAction",
+    "ERROR": "TEST_PROXIES is null in DataContext",
+    "ROOT CAUSE": "The action reads the wrong data key or is invoked outside the test tree so DataContext lacks SMRunnerDataKeys.TEST_PROXIES.",
+    "PROJECT NOTE": "Use com.intellij.execution.testframework.sm.runner.ui.SMRunnerDataKeys (TEST_PROXIES or TEST_PROXY) and register the action in plugin.xml under group-id=\"TestTreePopupMenu\" so the test tree supplies these keys.",
+    "NEW INSTRUCTION": "WHEN TEST_PROXIES is null in AnActionEvent THEN fallback to TEST_PROXY or selected SMTestProxy from viewer"
+}
+
+[2025-12-14 18:01] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid API",
+    "TOOL": "UseActualTestOutcomeFromTreeAction",
+    "ERROR": "getData(TEST_PROXIES_KEY) returned null at runtime",
+    "ROOT CAUSE": "Used an incorrect DataKey generic (e.g., List) while the platform key provides Collection<SMTestProxy>.",
+    "PROJECT NOTE": "Use the platform key 'sm.runner.selected.test.proxies' as DataKey<Collection<SMTestProxy>>; also consider single-selection key if available.",
+    "NEW INSTRUCTION": "WHEN fetching selected test proxies from DataContext THEN use DataKey<Collection<SMTestProxy>>"
 }

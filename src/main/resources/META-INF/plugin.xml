@@ -311,6 +311,13 @@
             <add-to-group group-id="TestTreePopupMenu" anchor="last"/>
         </action>
 
+        <action id="MyPlugin.UseActualTestOutcomeFromTree"
+                class="com.github.chbndrhnns.intellijplatformplugincopy.actions.UseActualTestOutcomeFromTreeAction"
+                text="Use Actual Test Outcome"
+                description="Replaces expected value with actual value for the selected failed test">
+            <add-to-group group-id="TestTreePopupMenu" anchor="last"/>
+        </action>
+
         <action id="MyPlugin.JumpToPytestNodeInTestTree"
                 class="com.github.chbndrhnns.intellijplatformplugincopy.actions.JumpToPytestNodeInTestTreeAction"
                 text="Jump to Test Tree Node"

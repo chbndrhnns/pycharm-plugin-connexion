@@ -1,13 +1,3 @@
-[2025-12-09 11:31] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "open files fully, implement feature, run tests",
-    "BOTTLENECK": "Insufficient inspection of PopulateOptions and service logic before designing the new option.",
-    "PROJECT NOTE": "Add the new chooser item by extending PopulateOptions.ALL_OPTIONS and NON_RECURSIVE_OPTIONS.",
-    "NEW INSTRUCTION": "WHEN file structure view is truncated or unclear THEN open_entire_file before proceeding"
-}
-
 [2025-12-09 11:44] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -876,4 +866,14 @@
     "BOTTLENECK": "Decorator handling is limited to two args and string-only replacements.",
     "PROJECT NOTE": "Support pytest.param with marks/kwargs and lists of tuples when updating.",
     "NEW INSTRUCTION": "WHEN RHS of 'assert a == b' resolves to parametrized parameter THEN update corresponding @pytest.mark.parametrize argument value via PSI, preserving type"
+}
+
+[2025-12-14 16:52] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "parse stacktrace",
+    "MISSING STEPS": "add context menu action, restrict to failed leaves, get location, navigate to line, invoke intention, register action",
+    "BOTTLENECK": "Did not wire a context-menu action and relied on fragile stacktrace parsing.",
+    "PROJECT NOTE": "Use raw test location URL consistent with TestFailureState when matching failures.",
+    "NEW INSTRUCTION": "WHEN test tree context menu action invoked on failed leaf node THEN get selected SMTestProxy, use getLocation to navigate and run intention"
 }
