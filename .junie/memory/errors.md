@@ -1,13 +1,3 @@
-[2025-12-10 15:54] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "Gradle :test",
-    "ERROR": "Expected output mismatch in PopulateLeafImportsTest",
-    "ROOT CAUSE": "Leaf alias types were rendered but their defining symbols were not added to imports.",
-    "PROJECT NOTE": "Populate imports flow comes from PyValueGenerator.GenerationResult.imports and is applied in PopulateArgumentsService; alias-like leaves must contribute a PsiNamedElement to imports.",
-    "NEW INSTRUCTION": "WHEN leaf alias-like type is used THEN resolve symbol and add its PsiNamedElement to imports set"
-}
-
 [2025-12-10 15:56] - Updated by Junie - Error analysis
 {
     "TYPE": "test assertion",
@@ -776,4 +766,14 @@
     "ROOT CAUSE": "The DynamicBundle base name 'messages.PyExcludeFromImportBundle' was added before the corresponding properties file existed on the classpath.",
     "PROJECT NOTE": "Resource bundles must live under src/main/resources with a path matching the base name, e.g., src/main/resources/messages/PyExcludeFromImportBundle.properties.",
     "NEW INSTRUCTION": "WHEN adding a DynamicBundle constant THEN create the matching .properties file under src/main/resources first"
+}
+
+[2025-12-14 16:14] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle :test",
+    "ERROR": "Parametrize handler assumes two string args; other cases fail",
+    "ROOT CAUSE": "The code hard-codes exactly two decorator parameters and string-only values, so updating parametrized expected values fails for different arities and non-string expressions.",
+    "PROJECT NOTE": "For @pytest.mark.parametrize, argnames can be a string ('a,b') or a tuple ('a','b'); the second argument is a sequence of parameter sets where each set can be a single value or a tuple matching argnames order. Map the RHS assert reference to its PyParameter name, compute its column index from argnames, pick the failing row by the test failure entry, and replace that element with a new PSI expression built from 'actual' text.",
+    "NEW INSTRUCTION": "WHEN rhs assert operand resolves to a parametrize parameter THEN update corresponding decorator value regardless of type"
 }

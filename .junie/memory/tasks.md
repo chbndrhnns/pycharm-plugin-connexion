@@ -1,13 +1,3 @@
-[2025-12-09 10:57] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "make directory,create faulty factory",
-    "MISSING STEPS": "scan project,consult docs,run build,add tests,run tests",
-    "BOTTLENECK": "APIs were implemented without verifying the correct StructureViewBuilder contract.",
-    "PROJECT NOTE": "Unresolved language id 'Python' suggests missing Python plugin dependency in build/test environment.",
-    "NEW INSTRUCTION": "WHEN adding or modifying plugin.xml extensions THEN run build and resolve missing dependencies"
-}
-
 [2025-12-09 11:31] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -876,4 +866,14 @@
     "BOTTLENECK": "Incorrect location URL format broke failure-to-editor mapping.",
     "PROJECT NOTE": "Real pytest URLs look like python</Users/jo/PyCharmMiscProject/tests>://test_fail.test_; prefer SMTestProxy.getLocationUrl or PythonTestLocationProvider format.",
     "NEW INSTRUCTION": "WHEN computing pytest location URL THEN mirror PythonTestLocationProvider format exactly"
+}
+
+[2025-12-14 16:18] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "replace usage in assert,match by literal value,quote-normalization heuristics",
+    "MISSING STEPS": "resolve RHS reference to parameter,map parameter to decorator arg index,locate failing param set in parametrize,update decorator value with PSI,handle arbitrary tuple arity,handle pytest.param nodes",
+    "BOTTLENECK": "Decorator handling is limited to two args and string-only replacements.",
+    "PROJECT NOTE": "Support pytest.param with marks/kwargs and lists of tuples when updating.",
+    "NEW INSTRUCTION": "WHEN RHS of 'assert a == b' resolves to parametrized parameter THEN update corresponding @pytest.mark.parametrize argument value via PSI, preserving type"
 }
