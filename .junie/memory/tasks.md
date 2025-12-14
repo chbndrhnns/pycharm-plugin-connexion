@@ -1,43 +1,3 @@
-[2025-12-09 10:04] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "reproduce bug, add tests, modify intention, run tests",
-    "BOTTLENECK": "The intention fails to handle tuple except-classes when adding a capture target.",
-    "PROJECT NOTE": "In AddExceptionCaptureIntention, handle tuple/parenthesized exceptClass: insert `as <name>` before the colon, not inside the tuple.",
-    "NEW INSTRUCTION": "WHEN intention edits except clause for raise-from name THEN write failing tests for single and tuple"
-}
-
-[2025-12-09 10:09] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "add descriptions",
-    "BOTTLENECK": "Intention description resources were not created for the new intention.",
-    "PROJECT NOTE": "Intention descriptions should be under resources/intentionDescriptions/WrapExceptionsWithParenthesesIntention with description.html and before.py.template/after.py.template.",
-    "NEW INSTRUCTION": "WHEN adding a new intention THEN create intentionDescriptions with description and before/after templates"
-}
-
-[2025-12-09 10:18] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "scan project for other usages",
-    "BOTTLENECK": "Validation relied on a single targeted test rather than ensuring all occurrences were addressed.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN deprecated API usage is identified THEN search_project for all occurrences and fix together"
-}
-
-[2025-12-09 10:33] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "scan project, run build early",
-    "BOTTLENECK": "Incorrect API usage for PyReferenceExpression resolution caused compilation failure.",
-    "PROJECT NOTE": "plugin.xml shows unresolved Python language id; verify correct language id and dependencies when registering the intention.",
-    "NEW INSTRUCTION": "WHEN new Kotlin classes or settings are added THEN run the build immediately"
-}
-
 [2025-12-09 10:57] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -886,4 +846,34 @@
     "BOTTLENECK": "Relied on truncated search output without confirming full implementation details.",
     "PROJECT NOTE": "/src/main/kotlin/.../PythonVersionGuard.kt contains the guard; verify module selection logic there.",
     "NEW INSTRUCTION": "WHEN search results are truncated or ambiguous THEN open the file and review fully"
+}
+
+[2025-12-13 23:50] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "review patch, add project service, update plugin.xml, register extension points, register resource-bundle, implement import provider, add settings UI, run build/tests",
+    "BOTTLENECK": "plugin.xml registration and integration steps were skipped, stalling functional wiring",
+    "PROJECT NOTE": "plugin.xml shows Python language id issues; verify proper Python plugin dependencies and IDs",
+    "NEW INSTRUCTION": "WHEN adding service, action, or extension classes THEN update plugin.xml to register services, actions, extensions, and resource bundle"
+}
+
+[2025-12-14 00:41] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "register plugin.xml, add tests, run tests",
+    "BOTTLENECK": "Listener and intention were not registered, so feature cannot be invoked or tested.",
+    "PROJECT NOTE": "Register SMTRunnerEventsListener and intentionAction in plugin.xml following existing inspection/intentions patterns.",
+    "NEW INSTRUCTION": "WHEN creating a new intention or listener THEN register in plugin.xml and add tests, then run full suite"
+}
+
+[2025-12-14 13:52] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "determine location url format,add tests,validate mapping end-to-end",
+    "BOTTLENECK": "Incorrect location URL format broke failure-to-editor mapping.",
+    "PROJECT NOTE": "Real pytest URLs look like python</Users/jo/PyCharmMiscProject/tests>://test_fail.test_; prefer SMTestProxy.getLocationUrl or PythonTestLocationProvider format.",
+    "NEW INSTRUCTION": "WHEN computing pytest location URL THEN mirror PythonTestLocationProvider format exactly"
 }

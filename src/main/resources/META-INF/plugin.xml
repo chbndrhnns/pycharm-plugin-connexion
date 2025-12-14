@@ -223,6 +223,11 @@
         <searchEverywhereContributor
                 implementation="com.github.chbndrhnns.intellijplatformplugincopy.searcheverywhere.PytestIdentifierContributor$Factory"/>
 
+        <intentionAction>
+            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest.ReplaceExpectedWithActualIntention</className>
+            <category>Test</category>
+        </intentionAction>
+
         <intentionMenuContributor
                 implementation="com.github.chbndrhnns.intellijplatformplugincopy.intention.suppressor.SuppressSuggestedRefactoringIntentionMenuContributor"
                 order="last"/>
@@ -240,6 +245,8 @@
     <projectListeners>
         <listener class="com.github.chbndrhnns.intellijplatformplugincopy.listeners.PythonVersionCheckerListener"
                   topic="com.intellij.openapi.roots.ModuleRootListener"/>
+        <listener class="com.github.chbndrhnns.intellijplatformplugincopy.listeners.TestFailureListener"
+                  topic="com.intellij.execution.testframework.sm.runner.SMTRunnerEventsListener"/>
     </projectListeners>
 
     <actions>

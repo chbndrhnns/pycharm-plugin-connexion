@@ -2,16 +2,6 @@
 {
     "TYPE": "test assertion",
     "TOOL": "Gradle :test",
-    "ERROR": "Expected alias leaf import not added",
-    "ROOT CAUSE": "Alias-like leaf values (e.g., NewType) were rendered as Name(...) but their Psi elements were not collected into imports, so the import line was missing.",
-    "PROJECT NOTE": "PopulateArgumentsService should propagate and import PyValueGenerator.GenerationResult.imports using PyImportService; PyValueGenerator must resolve alias names to PsiNamedElement and include them in imports.",
-    "NEW INSTRUCTION": "WHEN rendering Name(...) for non-builtin alias THEN resolve symbol and add to GenerationResult.imports"
-}
-
-[2025-12-10 15:54] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "Gradle :test",
     "ERROR": "Expected output mismatch in PopulateLeafImportsTest",
     "ROOT CAUSE": "Leaf alias types were rendered but their defining symbols were not added to imports.",
     "PROJECT NOTE": "Populate imports flow comes from PyValueGenerator.GenerationResult.imports and is applied in PopulateArgumentsService; alias-like leaves must contribute a PsiNamedElement to imports.",
@@ -776,4 +766,14 @@
     "ROOT CAUSE": "The write action was scheduled with ModalityState.any, violating TransactionGuard write-safety.",
     "PROJECT NOTE": "In TogglePytestSkipFromTestTreeAction, avoid finishOnUiThread(ModalityState.any); use default/nonModal and wrap edits in TransactionGuard.submitTransaction plus WriteCommandAction.",
     "NEW INSTRUCTION": "WHEN scheduling UI write after ReadAction.nonBlocking THEN use default modality and TransactionGuard.submitTransaction"
+}
+
+[2025-12-13 23:49] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "apply_patch",
+    "ERROR": "Invalid resource bundle reference",
+    "ROOT CAUSE": "The DynamicBundle base name 'messages.PyExcludeFromImportBundle' was added before the corresponding properties file existed on the classpath.",
+    "PROJECT NOTE": "Resource bundles must live under src/main/resources with a path matching the base name, e.g., src/main/resources/messages/PyExcludeFromImportBundle.properties.",
+    "NEW INSTRUCTION": "WHEN adding a DynamicBundle constant THEN create the matching .properties file under src/main/resources first"
 }
