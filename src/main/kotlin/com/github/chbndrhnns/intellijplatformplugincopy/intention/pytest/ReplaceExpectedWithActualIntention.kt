@@ -6,6 +6,7 @@ import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.*
@@ -106,7 +107,15 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
 
     private fun calculateLocationUrl(function: PyFunction): String? {
         val qName = function.qualifiedName ?: return null
-        // Standard python location URL often looks like: python:test_module.TestClass.test_method
+        val virtualFile = function.containingFile.virtualFile ?: return null
+        val project = function.project
+
+        val fileIndex = ProjectRootManager.getInstance(project).fileIndex
+        val root = fileIndex.getSourceRootForFile(virtualFile) ?: fileIndex.getContentRootForFile(virtualFile)
+
+        if (root != null) {
+            return "python<${root.path}>://$qName"
+        }
         return "python:$qName"
     }
 

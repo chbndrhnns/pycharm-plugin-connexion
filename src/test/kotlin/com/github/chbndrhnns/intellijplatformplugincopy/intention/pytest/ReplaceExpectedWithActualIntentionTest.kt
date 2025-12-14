@@ -2,6 +2,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest
 
 import com.github.chbndrhnns.intellijplatformplugincopy.services.DiffData
 import com.github.chbndrhnns.intellijplatformplugincopy.services.TestFailureState
+import com.intellij.openapi.roots.ProjectRootManager
 import fixtures.TestBase
 
 class ReplaceExpectedWithActualIntentionTest : TestBase() {
@@ -10,6 +11,15 @@ class ReplaceExpectedWithActualIntentionTest : TestBase() {
         super.setUp()
         // Clear state before each test
         TestFailureState.getInstance(myFixture.project).clearAll()
+    }
+
+    private fun setDiffData(qName: String, expected: String, actual: String) {
+        val file = myFixture.file
+        val root = ProjectRootManager.getInstance(project).fileIndex.getSourceRootForFile(file.virtualFile) 
+                   ?: ProjectRootManager.getInstance(project).fileIndex.getContentRootForFile(file.virtualFile)
+        val path = root?.path ?: ""
+        val key = "python<$path>://$qName"
+        TestFailureState.getInstance(project).setDiffData(key, DiffData(expected, actual))
     }
 
     fun `test intention is available when failure exists`() {
@@ -33,11 +43,7 @@ class ReplaceExpectedWithActualIntentionTest : TestBase() {
         // Or "python:TestClass.test_method" if module is default.
 
         // To make it robust, we can set the data for BOTH potential keys.
-        val project = myFixture.project
-        val state = TestFailureState.getInstance(project)
-        state.setDiffData("python:test_module.TestClass.test_method", DiffData("expected", "actual"))
-        state.setDiffData("python:TestClass.test_method", DiffData("expected", "actual"))
-        state.setDiffData("python:test_method", DiffData("expected", "actual")) // just in case
+        setDiffData("test_module.TestClass.test_method", "expected", "actual")
 
         val intention = myFixture.findSingleIntention("Use actual test outcome")
         assertNotNull(intention)
@@ -53,10 +59,9 @@ class ReplaceExpectedWithActualIntentionTest : TestBase() {
         )
 
         val project = myFixture.project
-        val state = TestFailureState.getInstance(project)
+        TestFailureState.getInstance(project)
         // Add multiple variants to be safe
-        state.setDiffData("python:test_repro.TestClass.test_foo", DiffData("foo", "bar"))
-        state.setDiffData("python:TestClass.test_foo", DiffData("foo", "bar"))
+        setDiffData("test_repro.TestClass.test_foo", "foo", "bar")
 
         val intention = myFixture.findSingleIntention("Use actual test outcome")
         myFixture.launchAction(intention)
@@ -78,10 +83,7 @@ class ReplaceExpectedWithActualIntentionTest : TestBase() {
         """.trimIndent()
         )
 
-        val project = myFixture.project
-        val state = TestFailureState.getInstance(project)
-        state.setDiffData("python:test_num.test_num", DiffData("1", "2"))
-        state.setDiffData("python:test_num", DiffData("1", "2"))
+        setDiffData("test_num.test_num", "1", "2")
 
         val intention = myFixture.findSingleIntention("Use actual test outcome")
         myFixture.launchAction(intention)
@@ -102,10 +104,7 @@ class ReplaceExpectedWithActualIntentionTest : TestBase() {
         """.trimIndent()
         )
 
-        val project = myFixture.project
-        val state = TestFailureState.getInstance(project)
-        state.setDiffData("python:test_keyword.test_keyword", DiffData("foo", "bar"))
-        state.setDiffData("python:test_keyword", DiffData("foo", "bar"))
+        setDiffData("test_keyword.test_keyword", "foo", "bar")
 
         val intention = myFixture.findSingleIntention("Use actual test outcome")
         assertNotNull(intention)
@@ -120,10 +119,7 @@ class ReplaceExpectedWithActualIntentionTest : TestBase() {
         """.trimIndent()
         )
 
-        val project = myFixture.project
-        val state = TestFailureState.getInstance(project)
-        state.setDiffData("python:test_other.test_other", DiffData("foo", "bar"))
-        state.setDiffData("python:test_other", DiffData("foo", "bar"))
+        setDiffData("test_other.test_other", "foo", "bar")
 
         val intention = myFixture.getAvailableIntention("Use actual test outcome")
         assertNull("Intention should not be available on assignment", intention)
@@ -138,10 +134,7 @@ class ReplaceExpectedWithActualIntentionTest : TestBase() {
         """.trimIndent()
         )
 
-        val project = myFixture.project
-        val state = TestFailureState.getInstance(project)
-        state.setDiffData("python:test_scope.test_scope", DiffData("foo", "bar"))
-        state.setDiffData("python:test_scope", DiffData("foo", "bar"))
+        setDiffData("test_scope.test_scope", "foo", "bar")
 
         val intention = myFixture.findSingleIntention("Use actual test outcome")
         myFixture.launchAction(intention)

@@ -6,7 +6,7 @@ import fixtures.TestBase
 
 class TestFailureListenerTest : TestBase() {
 
-    fun `test stores failure with sanitized key from complex location url`() {
+    fun `test stores failure with raw key from complex location url`() {
         val listener = TestFailureListener(project)
         // Use the format described in the issue
         val complexUrl = "python</Users/jo/PyCharmMiscProject/tests>://test_fail.test_"
@@ -20,24 +20,23 @@ class TestFailureListenerTest : TestBase() {
         
         val state = TestFailureState.getInstance(project)
         
-        // The Intention calculates key as "python:" + qualifiedName
-        // For "test_fail.test_", it would be "python:test_fail.test_"
-        val expectedKey = "python:test_fail.test_"
+        // The Intention should now use the raw key
+        val expectedKey = complexUrl
         
         val data = state.getDiffData(expectedKey)
-        assertNotNull("Should find data with simple key '$expectedKey' but found null. State keys: ${state.getAllKeys()}", data)
+        assertNotNull("Should find data with raw key '$expectedKey' but found null. State keys: ${state.getAllKeys()}", data)
         assertEquals("actual_val", data?.actual)
         assertEquals("expected_val", data?.expected)
     }
     
-    fun `test clears failure with sanitized key`() {
+    fun `test clears failure with raw key`() {
         val listener = TestFailureListener(project)
         val complexUrl = "python</Users/jo/PyCharmMiscProject/tests>://test_fail.test_"
         val testProxy = SMTestProxy("test_", false, complexUrl)
         
         // Pre-fill state
         val state = TestFailureState.getInstance(project)
-        val expectedKey = "python:test_fail.test_"
+        val expectedKey = complexUrl
         state.setDiffData(expectedKey, com.github.chbndrhnns.intellijplatformplugincopy.services.DiffData("exp", "act"))
         
         // Simulate test start

@@ -18,7 +18,7 @@ class TestFailureListener(private val project: Project) : SMTRunnerEventsListene
             val locationUrl = test.locationUrl
             if (locationUrl != null && actual != null && expected != null) {
                 TestFailureState.getInstance(project).setDiffData(
-                    sanitizeLocationUrl(locationUrl),
+                    locationUrl,
                     DiffData(expected, actual)
                 )
             }
@@ -28,14 +28,10 @@ class TestFailureListener(private val project: Project) : SMTRunnerEventsListene
     override fun onTestStarted(test: SMTestProxy) {
         val locationUrl = test.locationUrl
         if (locationUrl != null) {
-            TestFailureState.getInstance(project).clearDiffData(sanitizeLocationUrl(locationUrl))
+            TestFailureState.getInstance(project).clearDiffData(locationUrl)
         }
     }
 
-    private fun sanitizeLocationUrl(url: String): String {
-        val prefixRegex = Regex("^python<.*?>://")
-        return prefixRegex.replace(url, "python:")
-    }
 
     override fun onTestingStarted(testsRoot: SMTestProxy.SMRootTestProxy) {}
     override fun onTestingFinished(testsRoot: SMTestProxy.SMRootTestProxy) {}
