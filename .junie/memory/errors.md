@@ -1,73 +1,3 @@
-[2025-12-10 16:13] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid API",
-    "TOOL": "search_replace",
-    "ERROR": "Deprecated AnActionEvent.createFromDataContext used",
-    "ROOT CAUSE": "The test constructs AnActionEvent via a deprecated factory that is marked for removal.",
-    "PROJECT NOTE": "In tests, prefer com.intellij.testFramework.TestActionEvent or AnActionEvent.createFromAnAction(action, place, presentation, dataContext) instead of createFromDataContext.",
-    "NEW INSTRUCTION": "WHEN creating AnActionEvent in tests THEN use TestActionEvent or createFromAnAction"
-}
-
-[2025-12-10 16:16] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "search_replace",
-    "ERROR": "Deprecated AnActionEvent.createFromDataContext used",
-    "ROOT CAUSE": "The test constructs AnActionEvent via a deprecated factory method slated for removal.",
-    "PROJECT NOTE": "In IntelliJ tests, prefer AnActionEvent.createFromAnAction(action, place, presentation, dataContext) or TestActionEvent over deprecated createFromDataContext.",
-    "NEW INSTRUCTION": "WHEN creating AnActionEvent in tests THEN use createFromAnAction with action.templatePresentation"
-}
-
-[2025-12-10 20:53] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "Gradle (:test)",
-    "ERROR": "Intention not available at caret",
-    "ROOT CAUSE": "The new intention stub returns false in isAvailable, so the test cannot invoke it.",
-    "PROJECT NOTE": "Tests call fixtures.doIntentionTest with the intention text; the caret must be on an @abstractmethod PyFunction and isAvailable must return true for that PSI to proceed.",
-    "NEW INSTRUCTION": "WHEN doIntentionTest reports intention not found THEN make isAvailable true on target PSI and implement minimal invoke"
-}
-
-[2025-12-10 20:55] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "Gradle (:test)",
-    "ERROR": "AssertionError: intention not applied",
-    "ROOT CAUSE": "The new intention's isAvailable returns false, so the test couldn't invoke it.",
-    "PROJECT NOTE": "Tests use myFixture.doIntentionTest to locate the intention by getText; ensure plugin.xml registration and isAvailable return true at the caret PSI.",
-    "NEW INSTRUCTION": "WHEN adding a new intention test THEN implement minimal isAvailable logic before running tests"
-}
-
-[2025-12-10 20:56] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "Gradle (:test)",
-    "ERROR": "Test failed: intention not available due to dummy implementation",
-    "ROOT CAUSE": "The new intention returns isAvailable=false and has no invoke logic, so the test expecting the intention to run fails.",
-    "PROJECT NOTE": "doIntentionTest requires the intention text to match exactly and isAvailable to be true at the caret; registration in plugin.xml alone is insufficient.",
-    "NEW INSTRUCTION": "WHEN adding doIntentionTest for a new intention THEN implement isAvailable for the test case first"
-}
-
-[2025-12-10 20:57] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "Gradle :test",
-    "ERROR": "Intention not available; test AssertionError",
-    "ROOT CAUSE": "The new intention's isAvailable returns false (dummy), so the test cannot find or invoke it.",
-    "PROJECT NOTE": "Tests use myFixture.doIntentionTest matching the intention text; ensure plugin.xml registration and isAvailable detect caret on an @abc.abstractmethod.",
-    "NEW INSTRUCTION": "WHEN doIntentionTest fails to find the intention THEN implement isAvailable for the tested caret context"
-}
-
-[2025-12-10 20:59] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "bash",
-    "ERROR": "Test failed: intention action not available",
-    "ROOT CAUSE": "The new intention's isAvailable always returns false, so the test cannot find it.",
-    "PROJECT NOTE": "Tests use fixtures.doIntentionTest which requires the intention to be discoverable by its text; implement isAvailable to detect abc.abstractmethod on a class method.",
-    "NEW INSTRUCTION": "WHEN adding a new intention test THEN implement minimal isAvailable to make it discoverable"
-}
-
 [2025-12-10 21:03] - Updated by Junie - Error analysis
 {
     "TYPE": "test assertion",
@@ -776,4 +706,54 @@
     "ROOT CAUSE": "Used an incorrect DataKey generic (e.g., List) while the platform key provides Collection<SMTestProxy>.",
     "PROJECT NOTE": "Use the platform key 'sm.runner.selected.test.proxies' as DataKey<Collection<SMTestProxy>>; also consider single-selection key if available.",
     "NEW INSTRUCTION": "WHEN fetching selected test proxies from DataContext THEN use DataKey<Collection<SMTestProxy>>"
+}
+
+[2025-12-14 18:52] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Unresolved PyProtocolsKt and invalid iteration/types",
+    "ROOT CAUSE": "The implementation referenced a non-existent/internal Python plugin API (PyProtocolsKt) and assumed an iteration/type shape that doesn’t match the returned type.",
+    "PROJECT NOTE": "This repo builds against IntelliJ + Python plugin; prefer public, already-used APIs (e.g., com.jetbrains.python.psi.types.*, PyABCUtil) and avoid direct calls to PyProtocolsKt which may be internal or relocated.",
+    "NEW INSTRUCTION": "WHEN semantic errors show unresolved JetBrains Python API THEN grep project/deps for correct FQN or refactor to available APIs"
+}
+
+[2025-12-14 18:52] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Unresolved PyProtocolsKt and type usage errors",
+    "ROOT CAUSE": "The implementation referenced Python plugin APIs (PyProtocolsKt, inspectProtocolSubclass types) not available in the project SDK and misused return types, causing unresolved symbols and inference failures.",
+    "PROJECT NOTE": "This repo already uses com.jetbrains.python.* but not all Python plugin internals are present; verify available classes via grep before importing, or add the correct Python plugin dependency if you must use those APIs.",
+    "NEW INSTRUCTION": "WHEN new Kotlin file shows unresolved imports THEN grep project/deps for APIs and replace with available ones"
+}
+
+[2025-12-14 18:53] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Unresolved PyProtocolsKt and mismatched API usage",
+    "ROOT CAUSE": "Code references com.jetbrains.python.codeInsight.typing.PyProtocolsKt (not on classpath) and iterates inspectProtocolSubclass with a wrong expected type.",
+    "PROJECT NOTE": "Ensure required Python plugin APIs are available via gradle-intellij-plugin (intellij.plugins includes Python) or avoid using unavailable classes; align with available com.jetbrains.python.* APIs in this SDK.",
+    "NEW INSTRUCTION": "WHEN import from com.jetbrains.python.* is unresolved THEN use available alternative or add plugin dependency"
+}
+
+[2025-12-14 18:54] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Unresolved PyProtocolsKt and invalid iteration/type use",
+    "ROOT CAUSE": "Code references com.jetbrains.python.codeInsight.typing.PyProtocolsKt and expects specific return types not present in the current SDK, causing unresolved symbol and iteration/type inference errors.",
+    "PROJECT NOTE": "This project targets the bundled Python plugin APIs; verify available classes/functions in the configured SDK and prefer stable APIs already used in the repo (e.g., PyABCUtil, PyTypeChecker) over unresolvable ones.",
+    "NEW INSTRUCTION": "WHEN import of platform API is unresolved THEN replace with available API or remove dependency"
+}
+
+[2025-12-14 18:55] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Unresolved PyProtocolsKt and related type issues",
+    "ROOT CAUSE": "The code references non-existent or unavailable Python plugin APIs (PyProtocolsKt) and assumes an incorrect return type for inspectProtocolSubclass, causing Kotlin type/iteration errors.",
+    "PROJECT NOTE": "Prefer APIs already used in this repo (com.jetbrains.python.psi.* and types.*). If protocol helpers aren’t available, detect Protocol via PSI (e.g., MRO bases named 'typing.Protocol') and implement compatibility checks with PyTypeChecker and TypeEvalContext without relying on PyProtocolsKt.",
+    "NEW INSTRUCTION": "WHEN unresolved reference appears in newly added Kotlin imports THEN replace with available repo APIs or PSI-based logic"
 }

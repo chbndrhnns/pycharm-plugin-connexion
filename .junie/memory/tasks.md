@@ -1,23 +1,3 @@
-[2025-12-09 11:44] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "add recursive options,rename intention label",
-    "MISSING STEPS": "run tests,update tests,keep backward-compatibility shim",
-    "BOTTLENECK": "Tests assert old intention titles and behavior that no longer exist.",
-    "PROJECT NOTE": "Tests like PopulateArgumentsIntentionTest and RequiredArgumentsIntentionTest check exact intention strings; new single popup flow uses “Populate arguments...”.",
-    "NEW INSTRUCTION": "WHEN adding or renaming intention actions THEN search tests and update expected intention labels"
-}
-
-[2025-12-09 12:27] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "repeat project scan, restate plan",
-    "MISSING STEPS": "run build, register extension, add tests, run tests",
-    "BOTTLENECK": "Compilation errors from incorrect Python PSI resolve API usage blocked progress.",
-    "PROJECT NOTE": "Register the PsiReferenceContributor under referenceContributor with language=\"Python\" in plugin.xml.",
-    "NEW INSTRUCTION": "WHEN creating new Kotlin platform code THEN run build and fix compilation errors"
-}
-
 [2025-12-09 12:39] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -876,4 +856,24 @@
     "BOTTLENECK": "Did not wire a context-menu action and relied on fragile stacktrace parsing.",
     "PROJECT NOTE": "Use raw test location URL consistent with TestFailureState when matching failures.",
     "NEW INSTRUCTION": "WHEN test tree context menu action invoked on failed leaf node THEN get selected SMTestProxy, use getLocation to navigate and run intention"
+}
+
+[2025-12-14 18:55] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "integrate with definitionsSearch",
+    "MISSING STEPS": "scan project,resolve imports,run tests,run build",
+    "BOTTLENECK": "Used unavailable PyProtocolsKt API causing compilation failure.",
+    "PROJECT NOTE": "Project already uses com.jetbrains.python APIs like PyABCUtil; prefer available, known imports.",
+    "NEW INSTRUCTION": "WHEN new code needs unfamiliar IntelliJ Python APIs THEN grep project for com.jetbrains.python usages and adapt"
+}
+
+[2025-12-14 18:59] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "integrate with definitions search, register extension, add find usages integration, add line marker, run build, manual test",
+    "BOTTLENECK": "Protocol search is not wired into IDE actions, so results are never surfaced.",
+    "PROJECT NOTE": "Follow spec/protocol-impl.md Phase 2 and 3 to expose results via IDE.",
+    "NEW INSTRUCTION": "WHEN protocol implementation search code exists THEN modify PyDefinitionsSearch to include protocol implementations"
 }
