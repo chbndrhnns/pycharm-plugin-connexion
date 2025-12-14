@@ -12,6 +12,15 @@
 
 ## Pending Features
 
+- [ ] feat: Support skip toggle for single parameters
+- [ ] feat: Support actual value for such case where one parameter is ok
+
+```python
+@pytest.mark.parametrize("arg,expected", [("abc", "defg"), ("defg", "defg"), ])
+def test_str(arg, expected):
+    assert arg == expected
+```
+
 - [ ] feat: pytest param: treat text as ref
 - [ ] feat: Move test inside of class
 - [ ] feat: When suggesting the expected type and it is an inner class, reference it using outer_class.inner_class
