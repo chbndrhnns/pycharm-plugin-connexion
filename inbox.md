@@ -2,6 +2,7 @@
 
 ## Pending Issues
 
+- [ ] fix: Change visibility: make private (we only have two options and one is always true)
 - [ ] fix: Convert parametrize argument should only be available inside decorator
 - [ ] fix: Only offer actual outcome if diff exists, not for all failures
 - [ ] fix: Introduce parameter object should not be available for test methods and pytest fixtures
