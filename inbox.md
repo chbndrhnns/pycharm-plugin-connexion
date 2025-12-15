@@ -2,6 +2,8 @@
 
 ## Pending Issues
 
+- [ ] fix: Wrap should use set literal instead of set call, `vals: set[T] = T`
+- [ ] fix: Wrap suggests set instead of type: `vals: set[str] = {1}`
 - [ ] fix: When prefering relative import inside same package, do not add candidate if relative import exists already
 - [ ] fix: implement abstract method is put above __init__
 - [ ] feat: Consider if this should only work for dataclass/classes, for others, there is change signature
@@ -11,6 +13,7 @@
 
 ## Pending Features
 
+- [ ] feat: Suggest expected type for container types, like `vals: set[MyType] = set(<caret>)`
 - [ ] feat: Convert between pytest.param() and no param representation
 - [ ] feat: Support exception flow analysis when exception is raised in helper method
 - [ ] feat: Support skip toggle for single parameters
