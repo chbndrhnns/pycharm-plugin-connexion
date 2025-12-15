@@ -3,7 +3,6 @@
 ## Pending Issues
 
 - [ ] fix: Change visibility: make private (we only have two options and one is always true)
-- [ ] fix: Convert parametrize argument should only be available inside decorator
 - [ ] fix: Only offer actual outcome if diff exists, not for all failures
 - [ ] fix: Introduce parameter object should not be available for test methods and pytest fixtures
 - [ ] fix: Wrap should pick inner problem first, offers `Prefix` here
@@ -34,14 +33,6 @@ self._prefixes: dict[PrefixId, Prefix] = {
 - [ ] feat: After return, suggest `list[T()]` if return type is a container type (?)
 - [ ] feat: Suggest expected type for container types, like `vals: set[MyType] = set(<caret>)`
 - [ ] feat: Support skip toggle for single parameters
-- [ ] feat: Support actual value for such case where one parameter is ok
-
-```python
-@pytest.mark.parametrize("arg,expected", [("abc", "defg"), ("defg", "defg"), ])
-def test_str(arg, expected):
-    assert arg == expected
-```
-
 - [ ] feat: pytest param: treat text as ref
 - [ ] feat: Move test inside of class
 - [ ] feat: When suggesting the expected type and it is an inner class, reference it using outer_class.inner_class
@@ -83,6 +74,14 @@ def test_str(arg, expected):
 
 ## In Progress Tasks
 
+- [ ] fix: Convert parametrize argument should only be available inside decorator
+- [ ] feat: Support actual value for such case where one parameter is ok
+
+```python
+@pytest.mark.parametrize("arg,expected", [("abc", "defg"), ("defg", "defg"), ])
+def test_str(arg, expected):
+    assert arg == expected
+```
 
 
 ## Completed Tasks (newest first)
