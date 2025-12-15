@@ -2,7 +2,6 @@
 
 ## Pending Issues
 
-- [ ] fix: Introduce type fails for pytest.mark.parametrize
 - [ ] fix: When prefering relative import inside same package, do not add candidate if relative import exists already
 - [ ] fix: implement abstract method is put above __init__
 - [ ] feat: Consider if this should only work for dataclass/classes, for others, there is change signature
@@ -12,6 +11,8 @@
 
 ## Pending Features
 
+- [ ] feat: Support alternative pytest parametrize arg representation
+- [ ] feat: Convert between pytest.param() and no param representation
 - [ ] feat: Support exception flow analysis when exception is raised in helper method
 - [ ] feat: Support skip toggle for single parameters
 - [ ] feat: Support actual value for such case where one parameter is ok
@@ -62,6 +63,8 @@ def test_str(arg, expected):
 - [ ] feat: Show red bubble if introduce parameter object is not available
 
 ## In Progress Tasks
+
+- [ ] fix: Introduce type fails for pytest.mark.parametrize
 
 
 ## Completed Tasks (newest first)
