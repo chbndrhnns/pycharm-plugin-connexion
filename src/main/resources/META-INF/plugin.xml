@@ -21,6 +21,10 @@
         
         <definitionsScopedSearch implementation="com.github.chbndrhnns.intellijplatformplugincopy.search.PyProtocolDefinitionsSearchExecutor"/>
 
+        <!-- Protocol implementation search index and cache -->
+        <fileBasedIndex implementation="com.github.chbndrhnns.intellijplatformplugincopy.index.PyClassMembersFileIndex"/>
+        <psi.treeChangeListener implementation="com.github.chbndrhnns.intellijplatformplugincopy.listeners.ProtocolCacheInvalidationListener"/>
+
         <lang.psiStructureViewFactory language="Python"
                                       implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.structureView.MyPythonStructureViewFactory"
                                       order="first"/>
@@ -287,6 +291,11 @@
                 text="Copy Build Number"
                 description="Copies the current IDE build number to the clipboard">
             <add-to-group group-id="HelpMenu" anchor="last"/>
+        </action>
+        <action id="com.github.chbndrhnns.intellijplatformplugincopy.actions.RebuildClassMembersIndexAction"
+                class="com.github.chbndrhnns.intellijplatformplugincopy.actions.RebuildClassMembersIndexAction"
+                text="Rebuild Python Class Members Index"
+                description="Triggers a rebuild of the Python class members index used for Protocol implementation search">
         </action>
         <action id="MyPlugin.CopyBlockWithDependenciesAction"
                 class="com.github.chbndrhnns.intellijplatformplugincopy.actions.CopyBlockWithDependenciesAction"
