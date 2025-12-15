@@ -23,43 +23,14 @@ class ConvertToPytestParamIntention : IntentionAction, HighPriorityAction {
     override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
         if (!PluginSettingsState.instance().state.enableConvertPytestParamIntention) return false
         if (file !is PyFile) return false
-
-        val element = file.findElementAt(editor.caretModel.offset) ?: return false
-
-        // First try to find decorator directly (if caret is on decorator)
-        val decorator = PsiTreeUtil.getParentOfType(element, PyDecorator::class.java)
-        if (decorator != null && isParametrizeDecorator(decorator)) {
-            val argumentList = decorator.argumentList ?: return false
-            val listArg = findParameterValuesListArgument(argumentList) ?: return false
-            return hasPlainValues(listArg)
-        }
-
-        // Otherwise, find the function and check its decorators
-        val function = PsiTreeUtil.getParentOfType(element, PyFunction::class.java) ?: return false
-        val parametrizeDecorator = findParametrizeDecorator(function) ?: return false
-
-        val argumentList = parametrizeDecorator.argumentList ?: return false
-        val listArg = findParameterValuesListArgument(argumentList) ?: return false
-
-        // Check if any element in the list is NOT already a pytest.param() call
-        return hasPlainValues(listArg)
+        val target = findTarget(editor, file) ?: return false
+        return hasPlainValues(target.second)
     }
 
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
         if (file !is PyFile) return
 
-        val element = file.findElementAt(editor.caretModel.offset) ?: return
-
-        // First try to find decorator directly (if caret is on decorator)
-        var decorator = PsiTreeUtil.getParentOfType(element, PyDecorator::class.java)
-        if (decorator == null || !isParametrizeDecorator(decorator)) {
-            // Otherwise, find the function and get its parametrize decorator
-            val function = PsiTreeUtil.getParentOfType(element, PyFunction::class.java) ?: return
-            decorator = findParametrizeDecorator(function) ?: return
-        }
-
-        val argumentList = decorator.argumentList ?: return
-        val listArg = findParameterValuesListArgument(argumentList) ?: return
+        val (decorator, listArg) = findTarget(editor, file) ?: return
 
         ensurePytestImported(file)
 
@@ -87,7 +58,11 @@ class ConvertToPytestParamIntention : IntentionAction, HighPriorityAction {
     }
 
     override fun generatePreview(project: Project, editor: Editor, file: PsiFile): IntentionPreviewInfo =
-        IntentionPreviewInfo.DIFF
+        run {
+            if (file !is PyFile) return@run IntentionPreviewInfo.EMPTY
+            val (decorator, listArg) = findTarget(editor, file) ?: return@run IntentionPreviewInfo.EMPTY
+            PytestParamPreview.buildConvertToPytestParam(file, decorator, listArg)
+        }
 
     private fun isParametrizeDecorator(decorator: PyDecorator): Boolean {
         val callee = decorator.callee as? PyQualifiedExpression ?: return false
@@ -118,6 +93,34 @@ class ConvertToPytestParamIntention : IntentionAction, HighPriorityAction {
         val callee = callExpr.callee as? PyReferenceExpression ?: return false
         val qName = callee.asQualifiedName()?.toString() ?: return false
         return qName == "pytest.param" || qName.endsWith(".pytest.param")
+    }
+
+    private fun findTarget(editor: Editor, file: PyFile): Pair<PyDecorator, PyListLiteralExpression>? {
+        val element = file.findElementAt(editor.caretModel.offset) ?: return null
+
+        // First try to find decorator directly (if caret is on decorator)
+        val directDecorator = PsiTreeUtil.getParentOfType(element, PyDecorator::class.java)
+        if (directDecorator != null && isParametrizeDecorator(directDecorator)) {
+            val argumentList = directDecorator.argumentList ?: return null
+            val listArg = findParameterValuesListArgument(argumentList) ?: return null
+            return Pair(directDecorator, listArg)
+        }
+
+        // Otherwise, find the function and check its decorators
+        val function = PsiTreeUtil.getParentOfType(element, PyFunction::class.java) ?: return null
+        val parametrizeDecorator = findParametrizeDecorator(function) ?: return null
+
+        val argumentList = parametrizeDecorator.argumentList ?: return null
+        val listArg = findParameterValuesListArgument(argumentList) ?: return null
+        return Pair(parametrizeDecorator, listArg)
+    }
+
+    internal companion object {
+        fun isPytestParamCallStatic(callExpr: PyCallExpression): Boolean {
+            val callee = callExpr.callee as? PyReferenceExpression ?: return false
+            val qName = callee.asQualifiedName()?.toString() ?: return false
+            return qName == "pytest.param" || qName.endsWith(".pytest.param")
+        }
     }
 
     private fun findParametrizeDecorator(function: PyFunction): PyDecorator? {

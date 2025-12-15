@@ -1,13 +1,3 @@
-[2025-12-09 15:00] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "register intention, run tests, align intention name",
-    "BOTTLENECK": "Feature not registered; tests not executed to validate behavior.",
-    "PROJECT NOTE": "Ensure test’s intention text equals the intention’s getText and plugin.xml registration.",
-    "NEW INSTRUCTION": "WHEN adding a new intention class THEN register it in plugin.xml under intentions"
-}
-
 [2025-12-09 15:13] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -876,4 +866,14 @@
     "BOTTLENECK": "Precisely constraining caret location within the function PSI for availability.",
     "PROJECT NOTE": "-",
     "NEW INSTRUCTION": "WHEN changing intention availability by caret context THEN add negative tests for disallowed regions"
+}
+
+[2025-12-15 12:41] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "repeat plan update,broad search",
+    "MISSING STEPS": "implement generatePreview,use IntentionPreviewUtils,add preview tests,run tests",
+    "BOTTLENECK": "Preview implementation remained incomplete and ignored IntentionPreviewUtils guidance.",
+    "PROJECT NOTE": "WrapPreview.kt shows a working preview pattern that can be mirrored.",
+    "NEW INSTRUCTION": "WHEN intention needs preview THEN implement generatePreview using IntentionPreviewUtils.write and shared transform"
 }

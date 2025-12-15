@@ -4,6 +4,67 @@ import fixtures.TestBase
 
 class ConvertPytestParamIntentionTest : TestBase() {
 
+    fun testPreviewConvertPlainValuesToPytestParam() {
+        myFixture.configureByText(
+            "test_example.py", """
+            import pytest
+            
+            @pytest.mark.parametrize("x", [1, 2, 3])
+            def test_<caret>example(x):
+                assert x > 0
+        """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+
+        val intention = myFixture.findSingleIntention("Convert argument to pytest.param()")
+        val previewText = myFixture.getIntentionPreviewText(intention)
+        assertEquals(
+            "@pytest.mark.parametrize(\"x\", [pytest.param(1), pytest.param(2), pytest.param(3)])",
+            previewText
+        )
+    }
+
+    fun testPreviewConvertPlainValuesToPytestParamShowsImportWhenMissing() {
+        myFixture.configureByText(
+            "test_example.py", """
+            @pytest.mark.parametrize("x", [1, 2, 3])
+            def test_<caret>example(x):
+                assert x > 0
+        """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+
+        val intention = myFixture.findSingleIntention("Convert argument to pytest.param()")
+        val previewText = myFixture.getIntentionPreviewText(intention)
+        assertEquals(
+            "import pytest\n@pytest.mark.parametrize(\"x\", [pytest.param(1), pytest.param(2), pytest.param(3)])",
+            previewText
+        )
+    }
+
+    fun testPreviewConvertPytestParamToPlainValues() {
+        myFixture.configureByText(
+            "test_example.py", """
+            import pytest
+            
+            @pytest.mark.parametrize("x", [pytest.param(1), pytest.param(2)])
+            def test_<caret>example(x):
+                assert x > 0
+        """.trimIndent()
+        )
+
+        myFixture.doHighlighting()
+
+        val intention = myFixture.findSingleIntention("Convert pytest.param() to plain values")
+        val previewText = myFixture.getIntentionPreviewText(intention)
+        assertEquals(
+            "@pytest.mark.parametrize(\"x\", [1, 2])",
+            previewText
+        )
+    }
+
     fun testConvertPlainValuesToPytestParam() {
         myFixture.configureByText(
             "test_example.py", """
