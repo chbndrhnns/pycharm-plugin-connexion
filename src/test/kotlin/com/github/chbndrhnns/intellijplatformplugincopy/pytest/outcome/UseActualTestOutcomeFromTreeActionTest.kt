@@ -1,4 +1,4 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.actions
+package com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome
 
 import com.intellij.execution.testframework.sm.runner.SMTestProxy
 import fixtures.TestBase
