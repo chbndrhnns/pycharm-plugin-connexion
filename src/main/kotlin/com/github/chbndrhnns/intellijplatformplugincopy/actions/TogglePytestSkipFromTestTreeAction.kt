@@ -1,16 +1,18 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.actions
 
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest.PytestSkipToggler
+import com.github.chbndrhnns.intellijplatformplugincopy.services.ProjectLifetimeDisposable
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.execution.testframework.TestTreeView
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.ReadAction
-import com.intellij.openapi.application.TransactionGuard
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.components.service
 import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.SmartPsiElementPointer
 import com.intellij.util.concurrency.AppExecutorUtil
@@ -80,13 +82,13 @@ class TogglePytestSkipFromTestTreeAction : AnAction() {
                     Resolved(target, pointerManager.createSmartPsiElementPointer(elementForPointer))
                 }
             }
-            .expireWith(project)
+            .expireWith(project.service<ProjectLifetimeDisposable>())
             .finishOnUiThread(modalityState) { resolved ->
                 if (resolved.isEmpty()) return@finishOnUiThread
 
                 // Write actions from toolwindow actions must run in a write-safe transaction context.
                 // Wrapping into TransactionGuard avoids "Write-unsafe context" errors.
-                TransactionGuard.getInstance().submitTransaction(project, null, Runnable {
+                val writeAction = Runnable {
                     WriteCommandAction.runWriteCommandAction(project) {
                         val toggler = PytestSkipToggler(PyElementGenerator.getInstance(project))
                         val seen = HashSet<Any>()
@@ -122,7 +124,9 @@ class TogglePytestSkipFromTestTreeAction : AnAction() {
                             }
                         }
                     }
-                })
+                }
+
+                ApplicationManager.getApplication().invokeLater(writeAction, modalityState)
             }
             .submit(AppExecutorUtil.getAppExecutorService())
     }
