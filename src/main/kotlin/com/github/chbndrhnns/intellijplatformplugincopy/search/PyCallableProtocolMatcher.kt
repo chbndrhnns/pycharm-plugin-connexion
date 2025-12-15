@@ -1,12 +1,11 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.search
 
+import com.github.chbndrhnns.intellijplatformplugincopy.index.PyLambdaFileIndex
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.psi.PsiManager
-import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.stubs.StubIndex
 import com.intellij.psi.util.PsiTreeUtil
-import com.jetbrains.python.PythonFileType
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.stubs.PyFunctionNameIndex
 import com.jetbrains.python.psi.types.*
@@ -153,10 +152,10 @@ object PyCallableProtocolMatcher {
         val psiManager = PsiManager.getInstance(project)
         val protocolQName = protocol.qualifiedName
 
-        // Find all Python files in scope
-        val pythonFiles = FileTypeIndex.getFiles(PythonFileType.INSTANCE, scope)
+        // Use the lambda file index to find only files that contain lambdas
+        val filesWithLambdas = PyLambdaFileIndex.findFilesWithLambdas(project, scope)
 
-        for (virtualFile in pythonFiles) {
+        for (virtualFile in filesWithLambdas) {
             ProgressManager.checkCanceled()
             val psiFile = psiManager.findFile(virtualFile) as? PyFile ?: continue
 

@@ -23,6 +23,7 @@
 
         <!-- Protocol implementation search index and cache -->
         <fileBasedIndex implementation="com.github.chbndrhnns.intellijplatformplugincopy.index.PyClassMembersFileIndex"/>
+        <fileBasedIndex implementation="com.github.chbndrhnns.intellijplatformplugincopy.index.PyLambdaFileIndex"/>
         <psi.treeChangeListener implementation="com.github.chbndrhnns.intellijplatformplugincopy.listeners.ProtocolCacheInvalidationListener"/>
 
         <lang.psiStructureViewFactory language="Python"
