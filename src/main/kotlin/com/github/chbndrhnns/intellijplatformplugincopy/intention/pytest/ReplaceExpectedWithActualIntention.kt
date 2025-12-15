@@ -314,6 +314,7 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
         val decorator = decoratorList.findDecorator("pytest.mark.parametrize") ?: return
 
         val (namesArg, valuesArg) = getParametrizeArguments(decorator) ?: return
+        val idsArg = getParametrizeIdsArgument(decorator)
 
         val paramName = parameter.name ?: return
         val paramIndex = getParameterIndex(namesArg, paramName)
@@ -324,19 +325,53 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
         // Format: python<path>//test_module.test_func[param1-param2-...]
         val paramValues = extractParameterValuesFromKey(matchedKey)
 
-        if (valuesArg is PyListLiteralExpression) {
+        if (valuesArg !is PyListLiteralExpression) return
+
+        // 1) Prefer matching by parameters extracted from the test key (for parametrized tests).
+        if (paramValues != null) {
+            // First try to match by actual argvalues.
             for (element in valuesArg.elements) {
-                // Check if this tuple/list matches the parameter values from the key
-                if (paramValues != null && matchesParameterSet(element, paramValues, namesArg)) {
+                if (!matchesParameterSet(element, paramValues, namesArg)) continue
+                val valueExpr = getValueExpression(element, paramIndex) ?: continue
+                replaceElement(valueExpr, newValue, "", project, matchedKey)
+                return
+            }
+
+            // If nothing matched, the bracket part in the key may be an explicit `id` (e.g. `[case1]`).
+            val idFromKey = paramValues.singleOrNull()
+            val ids = extractParametrizeIds(idsArg)
+            if (idFromKey != null && ids != null) {
+                val index = ids.indexOf(idFromKey)
+                if (index in valuesArg.elements.indices) {
+                    val element = valuesArg.elements[index]
                     val valueExpr = getValueExpression(element, paramIndex)
                     if (valueExpr != null) {
-                        // Update this value expression
-                        // We need to call replaceElement recursively, but targetting the literal in the decorator
-                        // We pass expectedValue as null or empty because we found the target already
                         replaceElement(valueExpr, newValue, "", project, matchedKey)
                         return
                     }
                 }
+            }
+        }
+
+        // If there is only a single parameter set, update it directly.
+        // This is a pragmatic fallback for cases where pytest's key serialization (or `ids`) doesn't reflect
+        // the literal syntax used in the decorator (e.g. dict repr vs source literal).
+        if (valuesArg.elements.size == 1) {
+            val onlyElement = valuesArg.elements.firstOrNull()
+            val valueExpr = onlyElement?.let { getValueExpression(it, paramIndex) }
+            if (valueExpr != null) {
+                replaceElement(valueExpr, newValue, "", project, matchedKey)
+                return
+            }
+        }
+
+        // 2) Fallback: match the expected value directly inside the decorator.
+        // This helps when pytest uses `ids` or when parameter serialization in the key is ambiguous.
+        for (element in valuesArg.elements) {
+            val valueExpr = getValueExpression(element, paramIndex) ?: continue
+            if (matches(valueExpr, expectedValue)) {
+                replaceElement(valueExpr, newValue, "", project, matchedKey)
+                return
             }
         }
     }
@@ -433,6 +468,39 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
             return Pair(argNames!!, argValues!!)
         }
         return null
+    }
+
+    private fun getParametrizeIdsArgument(decorator: PyDecorator): PyExpression? {
+        val argList = decorator.argumentList ?: return null
+
+        val keywordIds = decorator.getKeywordArgument("ids")
+        if (keywordIds != null) return keywordIds
+
+        // Positional `ids` is the 4th argument: (argnames, argvalues, indirect=False, ids=None, ...)
+        val args = argList.arguments
+        var positionalIndex = 0
+        for (arg in args) {
+            if (arg is PyKeywordArgument) continue
+            if (positionalIndex == 3) return arg
+            positionalIndex++
+        }
+
+        return null
+    }
+
+    private fun extractParametrizeIds(idsArg: PyExpression?): List<String>? {
+        val expr = idsArg ?: return null
+        val elements = when (expr) {
+            is PyListLiteralExpression -> expr.elements.toList()
+            is PyTupleExpression -> expr.elements.toList()
+            else -> return null
+        }
+        return elements.mapNotNull {
+            when (it) {
+                is PyStringLiteralExpression -> it.stringValue
+                else -> null
+            }
+        }
     }
 
     private fun getParameterIndex(namesArg: PyExpression, paramName: String): Int {

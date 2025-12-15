@@ -161,4 +161,31 @@ class ParametrizeFixTest : TestBase() {
                 assert 2 == expected
         """.trimIndent())
     }
+
+    fun `test parametrize replaces dict literal in decorator`() {
+        myFixture.configureByText(
+            "test_dict.py", """
+            import pytest
+
+            @pytest.mark.parametrize("arg,exp", [({"abc": 1}, {"abc": 2})])
+            def test_(arg, exp):
+                assert arg == e<caret>xp
+        """.trimIndent()
+        )
+
+        setDiffData("test_dict.test_[{'abc': 1}-{'abc': 2}]", "{'abc': 2}", "{'abc': 1}")
+
+        val intention = myFixture.findSingleIntention("Use actual test outcome")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            import pytest
+
+            @pytest.mark.parametrize("arg,exp", [({"abc": 1}, {'abc': 1})])
+            def test_(arg, exp):
+                assert arg == exp
+            """.trimIndent()
+        )
+    }
 }
