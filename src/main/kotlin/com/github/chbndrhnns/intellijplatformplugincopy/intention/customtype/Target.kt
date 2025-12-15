@@ -14,7 +14,7 @@ sealed interface Target {
 
 data class AnnotationTarget(
     override val builtinName: String,
-    val annotationRef: PyExpression,
+    val annotationRef: PyExpression?,
     val ownerName: String?,
     val dataclassField: PyTargetExpression?,
 ) : Target

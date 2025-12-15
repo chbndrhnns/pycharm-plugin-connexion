@@ -41,7 +41,17 @@ class PlanBuilder(
             else -> target.ownerName?.let { id -> naming.deriveBaseName(id) }
         }
 
-        val owner = PsiTreeUtil.getParentOfType(target.annotationRef, PyAnnotationOwner::class.java, false)
+        // For bare parameters (no annotation), annotationRef is null
+        // In that case, find the parameter by name
+        val owner = if (target.annotationRef != null) {
+            PsiTreeUtil.getParentOfType(target.annotationRef, PyAnnotationOwner::class.java, false)
+        } else {
+            // Find parameter by name in the file
+            target.ownerName?.let { paramName ->
+                PsiTreeUtil.findChildrenOfType(file, PyNamedParameter::class.java)
+                    .firstOrNull { it.name == paramName }
+            }
+        }
 
         val assignedExpression = run {
             if (owner is PyAssignmentStatement) {

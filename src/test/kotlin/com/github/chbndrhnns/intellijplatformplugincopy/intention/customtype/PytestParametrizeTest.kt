@@ -42,4 +42,39 @@ class PytestParametrizeTest : TestBase() {
         assertFalse("Assert should NOT wrap arg", actual.contains("assert Arg(arg)"))
     }
 
+    fun testParametrizeDecorator_CaretOnParameterName_AddsAnnotation() {
+        UiInterceptors.register(RenameDialogInterceptor("Arg"))
+
+        myFixture.configureByText(
+            "test_a.py",
+            """
+            import pytest
+            
+            
+            @pytest.mark.parametrize("arg", [1, 2, 3])
+            def test_(a<caret>rg):
+                assert arg
+            """.trimIndent()
+        )
+        myFixture.doHighlighting()
+        val intention = myFixture.availableIntentions.find { it.text.startsWith("Introduce custom type from int") }
+            ?: throw AssertionError("Intention not found")
+        myFixture.launchAction(intention)
+
+        PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
+
+        val actual = myFixture.file.text
+
+        // Verify the key parts are present
+        assertTrue("Should contain Arg class", actual.contains("class Arg(int):"))
+        assertTrue("List items should be wrapped", actual.contains("Arg(1)"))
+        assertTrue("List items should be wrapped", actual.contains("Arg(2)"))
+        assertTrue("List items should be wrapped", actual.contains("Arg(3)"))
+        
+        // Verify parameter has annotation, not wrapped
+        assertTrue("Parameter should have annotation", actual.contains("def test_(arg: Arg):"))
+        assertFalse("Parameter should NOT be wrapped", actual.contains("def test_(Arg(arg))"))
+        assertFalse("Parameter should NOT be wrapped", actual.contains("def test_(CustomInt(arg))"))
+    }
+
 }

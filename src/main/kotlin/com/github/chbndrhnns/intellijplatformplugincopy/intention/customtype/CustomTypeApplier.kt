@@ -72,7 +72,7 @@ class CustomTypeApplier(
 
         // --- PHASE 2: Execution (Write Action) ---
 
-        val executionBlock = {
+        val executionBlock = executionBlock@{
             // If the builtin comes from a subscripted container annotation like
             // ``dict[str, list[int]]``, carry over the full annotation text –
             // including its generic arguments – into the base part of the
@@ -145,6 +145,27 @@ class CustomTypeApplier(
                 // Wrap call site usages (using found pointers from Phase 1)
                 if (usagesToWrap.isNotEmpty()) {
                     rewriter.wrapUsages(usagesToWrap, newTypeName, pyGenerator)
+                }
+            } else {
+                // Handle bare parameters (no annotation) - add annotation and wrap decorator values
+                val parameter = plan.targetElement as? PyNamedParameter
+                if (parameter != null) {
+                    // Add annotation to the parameter
+                    val paramName = parameter.name ?: return@executionBlock
+                    val defaultValue = parameter.defaultValueText
+                    val newParameter = pyGenerator.createParameter(
+                        paramName,
+                        defaultValue,
+                        newTypeName,
+                        LanguageLevel.forElement(parameter)
+                    )
+                    val replacedParam = parameter.replace(newParameter) as? PyNamedParameter
+
+                    // Wrap pytest.mark.parametrize decorator values using the replaced parameter
+                    // Let's see if this can/needs to be generalized for other cases
+                    if (replacedParam != null) {
+                        wrapPytestParametrizeDecoratorValues(replacedParam, newTypeName, pyGenerator)
+                    }
                 }
             }
 
