@@ -150,6 +150,16 @@
         </intentionAction>
 
         <intentionAction>
+            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest.ConvertToPytestParamIntention</className>
+            <category>Test</category>
+        </intentionAction>
+
+        <intentionAction>
+            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest.ConvertToPlainParametrizeValuesIntention</className>
+            <category>Test</category>
+        </intentionAction>
+
+        <intentionAction>
             <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.abstractmethod.MakeMemberAbstractInAbstractClassIntention</className>
             <category>Abstract methods</category>
         </intentionAction>

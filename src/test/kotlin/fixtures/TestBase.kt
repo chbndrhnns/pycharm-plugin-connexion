@@ -52,6 +52,7 @@ abstract class TestBase : MyPlatformTestCase() {
                 enableTogglePytestSkipFromTestTreeAction = true,
                 enableTogglePytestSkipIntention = true,
                 enableParametrizePytestTestIntention = true,
+                enableConvertPytestParamIntention = true,
                 enableStripSignatureTypeAnnotationsIntention = true,
                 suppressSuggestedRefactoringSignatureChangeIntention = true,
             ),
