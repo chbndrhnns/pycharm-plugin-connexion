@@ -1,15 +1,19 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.search
 
 import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.searches.DefinitionsScopedSearch
+import com.intellij.psi.stubs.StubIndex
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.Processor
 import com.intellij.util.QueryExecutor
 import com.jetbrains.python.psi.PyClass
 import com.jetbrains.python.psi.PyFunction
 import com.jetbrains.python.psi.PyTargetExpression
+import com.jetbrains.python.psi.stubs.PyFunctionNameIndex
+import com.jetbrains.python.psi.types.PyCallableType
 import com.jetbrains.python.psi.types.TypeEvalContext
 
 class PyProtocolDefinitionsSearchExecutor : QueryExecutor<PsiElement, DefinitionsScopedSearch.SearchParameters> {
@@ -25,6 +29,7 @@ class PyProtocolDefinitionsSearchExecutor : QueryExecutor<PsiElement, Definition
     /**
      * Process "Go to Implementation" for a Protocol class.
      * Returns all classes that structurally implement the Protocol.
+     * For callable-only protocols (those with only __call__), also returns matching functions.
      */
     private fun processProtocolClass(
         pyClass: PyClass,
@@ -34,14 +39,63 @@ class PyProtocolDefinitionsSearchExecutor : QueryExecutor<PsiElement, Definition
         return ReadAction.compute<Boolean, RuntimeException> {
             val context = TypeEvalContext.codeAnalysis(pyClass.project, pyClass.containingFile)
             val scope = queryParameters.scope as? GlobalSearchScope ?: GlobalSearchScope.allScope(pyClass.project)
-            
+
+            // Find class implementations
             val implementations = PyProtocolImplementationsSearch.search(pyClass, scope, context)
             
             for (impl in implementations) {
                 if (!consumer.process(impl)) return@compute false
             }
+
+            // For callable-only protocols, also find matching functions
+            if (PyProtocolImplementationsSearch.isCallableOnlyProtocol(pyClass, context)) {
+                val matchingFunctions = findFunctionsMatchingCallableProtocol(pyClass, scope, context)
+                for (func in matchingFunctions) {
+                    if (!consumer.process(func)) return@compute false
+                }
+            }
+            
             true
         }
+    }
+
+    /**
+     * Finds all top-level functions that match a callable-only protocol's __call__ signature.
+     */
+    private fun findFunctionsMatchingCallableProtocol(
+        protocol: PyClass,
+        scope: GlobalSearchScope,
+        context: TypeEvalContext
+    ): Collection<PyFunction> {
+        val matchingFunctions = mutableListOf<PyFunction>()
+        val project = protocol.project
+        val allFunctionNames = mutableListOf<String>()
+
+        StubIndex.getInstance().processAllKeys(
+            PyFunctionNameIndex.KEY, project
+        ) { functionName ->
+            allFunctionNames.add(functionName)
+            true
+        }
+
+        for (functionName in allFunctionNames) {
+            ProgressManager.checkCanceled()
+            val functions = PyFunctionNameIndex.find(functionName, project, scope)
+            for (func in functions) {
+                // Only consider top-level functions (not methods)
+                if (func.containingClass != null) continue
+                // Exclude test functions
+                if (PyProtocolImplementationsSearch.isTestFunction(func)) continue
+
+                val funcType = context.getType(func) as? PyCallableType ?: continue
+
+                if (PyProtocolImplementationsSearch.isCallableCompatibleWithCallProtocol(funcType, protocol, context)) {
+                    matchingFunctions.add(func)
+                }
+            }
+        }
+
+        return matchingFunctions
     }
     
     /**

@@ -3,6 +3,8 @@ package com.github.chbndrhnns.intellijplatformplugincopy.search
 import com.intellij.psi.search.GlobalSearchScope
 import com.jetbrains.python.psi.PyClass
 import com.jetbrains.python.psi.PyFunction
+import com.jetbrains.python.psi.PyLambdaExpression
+import com.jetbrains.python.psi.types.PyCallableType
 import com.jetbrains.python.psi.types.TypeEvalContext
 import fixtures.TestBase
 
@@ -230,5 +232,315 @@ class PyProtocolImplementationsSearchTest : TestBase() {
             implementations.any { it.name == "WrongMethodReturn" })
         assertFalse("Should NOT find WrongAttrType", 
             implementations.any { it.name == "WrongAttrType" })
+    }
+
+    fun testIsCallableOnlyProtocol() {
+        myFixture.configureByText(
+            "test.py", """
+            class Protocol: pass
+            
+            class Call<caret>able(Protocol):
+                def __call__(self, x: int) -> str: ...
+            
+            class NotCallableOnly(Protocol):
+                def __call__(self, x: int) -> str: ...
+                name: str
+        """.trimIndent()
+        )
+
+        val callableProtocol = myFixture.elementAtCaret as PyClass
+        val context = TypeEvalContext.codeAnalysis(project, myFixture.file)
+
+        assertTrue(
+            "Callable protocol with only __call__ should be detected",
+            PyProtocolImplementationsSearch.isCallableOnlyProtocol(callableProtocol, context)
+        )
+
+        // Find NotCallableOnly class
+        val notCallableOnly = myFixture.file.children
+            .filterIsInstance<PyClass>()
+            .find { it.name == "NotCallableOnly" }!!
+
+        assertFalse(
+            "Protocol with __call__ and other members should NOT be callable-only",
+            PyProtocolImplementationsSearch.isCallableOnlyProtocol(notCallableOnly, context)
+        )
+    }
+
+    fun testLambdaMatchesCallableProtocol() {
+        myFixture.configureByText(
+            "test.py", """
+            class Protocol: pass
+            
+            class Call<caret>able(Protocol):
+                def __call__(self, x: int) -> str: ...
+            
+            my_lambda = lambda x: str(x)
+        """.trimIndent()
+        )
+
+        val protocol = myFixture.elementAtCaret as PyClass
+        val context = TypeEvalContext.codeAnalysis(project, myFixture.file)
+
+        // Find the lambda expression
+        val lambdaExpr = myFixture.file.children
+            .flatMap { it.children.toList() }
+            .filterIsInstance<PyLambdaExpression>()
+            .firstOrNull()
+
+        assertNotNull("Should find lambda expression", lambdaExpr)
+
+        val lambdaType = context.getType(lambdaExpr!!) as? PyCallableType
+        assertNotNull("Lambda should have a callable type", lambdaType)
+
+        assertTrue(
+            "Lambda should be compatible with callable protocol",
+            PyProtocolImplementationsSearch.isCallableCompatibleWithCallProtocol(lambdaType!!, protocol, context)
+        )
+    }
+
+    fun testLambdaWithWrongReturnTypeDoesNotMatchProtocol() {
+        myFixture.configureByText(
+            "test.py", """
+            class Protocol: pass
+            
+            class Call<caret>able(Protocol):
+                def __call__(self, x: int) -> int: ...
+            
+            my_lambda = lambda x: "string_result"
+        """.trimIndent()
+        )
+
+        val protocol = myFixture.elementAtCaret as PyClass
+        val context = TypeEvalContext.codeAnalysis(project, myFixture.file)
+
+        // Find the lambda expression
+        val lambdaExpr = myFixture.file.children
+            .flatMap { it.children.toList() }
+            .filterIsInstance<PyLambdaExpression>()
+            .firstOrNull()
+
+        assertNotNull("Should find lambda expression", lambdaExpr)
+
+        val lambdaType = context.getType(lambdaExpr!!) as? PyCallableType
+        assertNotNull("Lambda should have a callable type", lambdaType)
+
+        assertFalse(
+            "Lambda with wrong return type should NOT match protocol",
+            PyProtocolImplementationsSearch.isCallableCompatibleWithCallProtocol(lambdaType!!, protocol, context)
+        )
+    }
+
+    fun testFunctionMatchesCallableProtocol() {
+        myFixture.configureByText(
+            "test.py", """
+            class Protocol: pass
+            
+            class Call<caret>able(Protocol):
+                def __call__(self, x: int) -> str: ...
+            
+            def my_func(x: int) -> str:
+                return str(x)
+        """.trimIndent()
+        )
+
+        val protocol = myFixture.elementAtCaret as PyClass
+        val context = TypeEvalContext.codeAnalysis(project, myFixture.file)
+
+        // Find the function
+        val func = myFixture.file.children
+            .filterIsInstance<PyFunction>()
+            .find { it.name == "my_func" }
+
+        assertNotNull("Should find function", func)
+
+        val funcType = context.getType(func!!) as? PyCallableType
+        assertNotNull("Function should have a callable type", funcType)
+
+        assertTrue(
+            "Function with matching signature should match callable protocol",
+            PyProtocolImplementationsSearch.isCallableCompatibleWithCallProtocol(funcType!!, protocol, context)
+        )
+    }
+
+    fun testGetCallMethod() {
+        myFixture.configureByText(
+            "test.py", """
+            class Protocol: pass
+            
+            class Call<caret>able(Protocol):
+                def __call__(self, x: int) -> str: ...
+        """.trimIndent()
+        )
+
+        val protocol = myFixture.elementAtCaret as PyClass
+
+        val callMethod = PyProtocolImplementationsSearch.getCallMethod(protocol)
+
+        assertNotNull("Should find __call__ method", callMethod)
+        assertEquals("__call__", callMethod!!.name)
+    }
+
+    fun testGoToImplementationForCallableProtocolFindsMatchingFunctions() {
+        myFixture.configureByText(
+            "test.py", """
+            class Protocol: pass
+            
+            class Call<caret>able(Protocol):
+                def __call__(self, x: int) -> str: ...
+            
+            def matching_func(x: int) -> str:
+                return str(x)
+            
+            def wrong_return_type(x: int) -> int:
+                return x
+        """.trimIndent()
+        )
+
+        val gotoData =
+            com.intellij.testFramework.fixtures.CodeInsightTestUtil.gotoImplementation(myFixture.editor, myFixture.file)
+
+        assertTrue("Should find implementations for callable protocol", gotoData.targets.isNotEmpty())
+        assertTrue("Should find matching_func", gotoData.targets.any {
+            it is PyFunction && it.name == "matching_func"
+        })
+        assertFalse("Should NOT find wrong_return_type due to return type mismatch", gotoData.targets.any {
+            it is PyFunction && it.name == "wrong_return_type"
+        })
+    }
+
+    fun testExcludesTestClassesFromProtocolImplementations() {
+        myFixture.configureByText(
+            "test.py", """
+            class Protocol: pass
+            
+            class Draw<caret>able(Protocol):
+                def draw(self) -> None: ...
+            
+            class Circle:
+                def draw(self) -> None:
+                    pass
+            
+            class TestCircle:
+                def draw(self) -> None:
+                    pass
+            
+            class test_square:
+                def draw(self) -> None:
+                    pass
+        """.trimIndent()
+        )
+
+        val protocol = myFixture.elementAtCaret as PyClass
+        val context = TypeEvalContext.codeAnalysis(project, myFixture.file)
+        val scope = GlobalSearchScope.fileScope(myFixture.file)
+
+        val implementations = PyProtocolImplementationsSearch.search(protocol, scope, context)
+
+        assertEquals("Should find only 1 implementation (Circle)", 1, implementations.size)
+        assertTrue("Should find Circle", implementations.any { it.name == "Circle" })
+        assertFalse("Should NOT find TestCircle (test class)", implementations.any { it.name == "TestCircle" })
+        assertFalse("Should NOT find test_square (test class)", implementations.any { it.name == "test_square" })
+    }
+
+    fun testIsTestClassDetection() {
+        myFixture.configureByText(
+            "test.py", """
+            class Regular<caret>Class:
+                pass
+            
+            class TestSomething:
+                pass
+            
+            class test_another:
+                pass
+            
+            class MyTestHelper:
+                pass
+        """.trimIndent()
+        )
+
+        val regularClass = myFixture.elementAtCaret as PyClass
+        val testSomething = myFixture.file.children.filterIsInstance<PyClass>().find { it.name == "TestSomething" }!!
+        val testAnother = myFixture.file.children.filterIsInstance<PyClass>().find { it.name == "test_another" }!!
+        val myTestHelper = myFixture.file.children.filterIsInstance<PyClass>().find { it.name == "MyTestHelper" }!!
+
+        assertFalse(
+            "RegularClass should NOT be detected as test class",
+            PyProtocolImplementationsSearch.isTestClass(regularClass)
+        )
+        assertTrue(
+            "TestSomething should be detected as test class",
+            PyProtocolImplementationsSearch.isTestClass(testSomething)
+        )
+        assertTrue(
+            "test_another should be detected as test class",
+            PyProtocolImplementationsSearch.isTestClass(testAnother)
+        )
+        assertFalse(
+            "MyTestHelper should NOT be detected as test class (Test not at start)",
+            PyProtocolImplementationsSearch.isTestClass(myTestHelper)
+        )
+    }
+
+    fun testIsTestFunctionDetection() {
+        myFixture.configureByText(
+            "test.py", """
+            def regular_function():
+                pass
+            
+            def test_something():
+                pass
+            
+            def my_test_helper():
+                pass
+        """.trimIndent()
+        )
+
+        val regularFunction =
+            myFixture.file.children.filterIsInstance<PyFunction>().find { it.name == "regular_function" }!!
+        val testSomething =
+            myFixture.file.children.filterIsInstance<PyFunction>().find { it.name == "test_something" }!!
+        val myTestHelper = myFixture.file.children.filterIsInstance<PyFunction>().find { it.name == "my_test_helper" }!!
+
+        assertFalse(
+            "regular_function should NOT be detected as test function",
+            PyProtocolImplementationsSearch.isTestFunction(regularFunction)
+        )
+        assertTrue(
+            "test_something should be detected as test function",
+            PyProtocolImplementationsSearch.isTestFunction(testSomething)
+        )
+        assertFalse(
+            "my_test_helper should NOT be detected as test function (test_ not at start)",
+            PyProtocolImplementationsSearch.isTestFunction(myTestHelper)
+        )
+    }
+
+    fun testGoToImplementationExcludesTestFunctions() {
+        myFixture.configureByText(
+            "test.py", """
+            class Protocol: pass
+            
+            class Call<caret>able(Protocol):
+                def __call__(self, x: int) -> str: ...
+            
+            def matching_func(x: int) -> str:
+                return str(x)
+            
+            def test_matching_func(x: int) -> str:
+                return str(x)
+        """.trimIndent()
+        )
+
+        val gotoData =
+            com.intellij.testFramework.fixtures.CodeInsightTestUtil.gotoImplementation(myFixture.editor, myFixture.file)
+
+        assertTrue("Should find matching_func", gotoData.targets.any {
+            it is PyFunction && it.name == "matching_func"
+        })
+        assertFalse("Should NOT find test_matching_func (test function)", gotoData.targets.any {
+            it is PyFunction && it.name == "test_matching_func"
+        })
     }
 }

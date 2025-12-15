@@ -8,6 +8,7 @@ import com.jetbrains.python.psi.PyClass
 import com.jetbrains.python.psi.PyFunction
 import com.jetbrains.python.psi.PyNamedParameter
 import com.jetbrains.python.psi.stubs.PyClassNameIndex
+import com.jetbrains.python.psi.types.PyCallableType
 import com.jetbrains.python.psi.types.PyClassType
 import com.jetbrains.python.psi.types.PyTypeChecker
 import com.jetbrains.python.psi.types.TypeEvalContext
@@ -61,6 +62,7 @@ object PyProtocolImplementationsSearch {
 
             if (candidate == protocol) continue
             if (candidate.isSubclass(protocol, context)) continue // Already an explicit inheritor
+            if (isTestClass(candidate)) continue // Exclude test classes
 
             val candidateType = context.getType(candidate) as? PyClassType ?: continue
 
@@ -255,4 +257,107 @@ object PyProtocolImplementationsSearch {
     private val IGNORED_PROTOCOL_MEMBERS = setOf(
         "__init__", "__new__", "__slots__", "__class_getitem__", "__init_subclass__"
     )
+
+    /**
+     * Checks if a class is a test class (should be excluded from protocol implementations).
+     * Test classes are identified by:
+     * - Class name starting with "Test" (e.g., TestMyClass)
+     * - Class name starting with "test_" (e.g., test_my_class - less common but possible)
+     */
+    fun isTestClass(pyClass: PyClass): Boolean {
+        val name = pyClass.name ?: return false
+        return name.startsWith("Test") || name.startsWith("test_")
+    }
+
+    /**
+     * Checks if a function is a test function (should be excluded from protocol implementations).
+     * Test functions are identified by:
+     * - Function name starting with "test_" (e.g., test_my_function)
+     */
+    fun isTestFunction(pyFunction: PyFunction): Boolean {
+        val name = pyFunction.name ?: return false
+        return name.startsWith("test_")
+    }
+
+    /**
+     * Checks if a protocol only requires a `__call__` method (i.e., it's a "callable protocol").
+     * Such protocols can be satisfied by lambda functions or regular functions.
+     */
+    fun isCallableOnlyProtocol(protocol: PyClass, context: TypeEvalContext): Boolean {
+        if (!isProtocol(protocol, context)) {
+            return false
+        }
+
+        val requiredMembers = getProtocolRequiredMembers(protocol)
+        return requiredMembers.size == 1 && requiredMembers.first() == "__call__"
+    }
+
+    /**
+     * Gets the `__call__` method from a protocol, if it exists.
+     */
+    fun getCallMethod(protocol: PyClass): PyFunction? {
+        return protocol.findMethodByName("__call__", false, null)
+    }
+
+    /**
+     * Checks if a callable type (lambda, function) is compatible with a protocol's `__call__` method.
+     * 
+     * A callable is compatible with a protocol's `__call__` if:
+     * - The protocol has a `__call__` method
+     * - The callable's return type is compatible with `__call__`'s return type (covariant)
+     * - The callable's parameter types are compatible with `__call__`'s parameter types (contravariant)
+     * 
+     * @param callableType The callable type (e.g., from a lambda or function)
+     * @param protocol The protocol class that should have a `__call__` method
+     * @param context Type evaluation context
+     * @return true if the callable is compatible with the protocol's `__call__` signature
+     */
+    fun isCallableCompatibleWithCallProtocol(
+        callableType: PyCallableType,
+        protocol: PyClass,
+        context: TypeEvalContext
+    ): Boolean {
+        // Get the __call__ method from the protocol
+        val callMethod = getCallMethod(protocol) ?: return false
+
+        // Check return type compatibility (covariant)
+        val protocolReturnType = context.getReturnType(callMethod)
+        val callableReturnType = callableType.getReturnType(context)
+
+        if (protocolReturnType != null && callableReturnType != null) {
+            if (!PyTypeChecker.match(protocolReturnType, callableReturnType, context)) {
+                return false
+            }
+        }
+
+        // Check parameter compatibility
+        // Protocol's __call__ has 'self' as first param, callable doesn't
+        val protocolParams = callMethod.parameterList.parameters.drop(1) // Skip 'self'
+        val callableParams = callableType.getParameters(context) ?: return protocolParams.isEmpty()
+
+        // Callable must have at least as many parameters as protocol's __call__
+        if (callableParams.size < protocolParams.size) {
+            return false
+        }
+
+        // Check each parameter type
+        for ((index, protocolParam) in protocolParams.withIndex()) {
+            val callableParam = callableParams.getOrNull(index) ?: return false
+
+            val protocolNamedParam = protocolParam as? PyNamedParameter
+            if (protocolNamedParam != null) {
+                val protocolParamType = context.getType(protocolNamedParam)
+                val callableParamType = callableParam.getType(context)
+
+                if (protocolParamType != null && callableParamType != null) {
+                    // For contravariance: check compatibility
+                    if (!PyTypeChecker.match(callableParamType, protocolParamType, context)) {
+                        return false
+                    }
+                }
+            }
+        }
+
+        return true
+    }
 }
