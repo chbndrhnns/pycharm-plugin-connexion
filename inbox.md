@@ -2,7 +2,6 @@
 
 ## Pending Issues
 
-- [ ] fix: Limit search for protocol implementations to project code, no stdlib, no libraries
 - [ ] fix: Introduce type fails for pytest.mark.parametrize
 - [ ] fix: When prefering relative import inside same package, do not add candidate if relative import exists already
 - [ ] fix: implement abstract method is put above __init__
@@ -67,6 +66,7 @@ def test_str(arg, expected):
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Limit search for protocol implementations to project code, no stdlib, no libraries
 - [x] feat: Replace expected with actual test outcome
 - [x] feat: Toggle skip marker from test panel
 - [-] feat: Intention: Make function abstract (add @abc.abstractmethod or @abstractmethod)
