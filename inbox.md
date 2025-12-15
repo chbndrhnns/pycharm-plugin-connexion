@@ -2,6 +2,8 @@
 
 ## Pending Issues
 
+- [ ] fix: Convert parametrize argument should only be available inside decorator
+- [ ] fix: Only offer actual outcome if diff exists, not for all failures
 - [ ] fix: Introduce parameter object should not be available for test methods and pytest fixtures
 - [ ] fix: Wrap should pick inner problem first, offers `Prefix` here
 
