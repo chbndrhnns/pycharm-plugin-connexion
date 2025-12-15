@@ -28,7 +28,6 @@ self._prefixes: dict[PrefixId, Prefix] = {
 - [ ] feat: Add field to dataclass/model in case of unexpected argument
 - [ ] feat: After return, suggest `list[T()]` if return type is a container type (?)
 - [ ] feat: Suggest expected type for container types, like `vals: set[MyType] = set(<caret>)`
-- [ ] feat: Convert between pytest.param() and no param representation
 - [ ] feat: Support exception flow analysis when exception is raised in helper method
 - [ ] feat: Support skip toggle for single parameters
 - [ ] feat: Support actual value for such case where one parameter is ok
@@ -84,6 +83,7 @@ def test_str(arg, expected):
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Convert between pytest.param() and no param representation
 - [x] fix: Strip type annotations should only be available on function declaration, not decorators or body.
 - [x] fix: Introduce type fails for pytest.mark.parametrize[x] fix: Limit search for protocol implementations to project
   code, no stdlib, no libraries
