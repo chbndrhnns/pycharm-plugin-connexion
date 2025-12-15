@@ -76,7 +76,6 @@ self._prefixes: dict[PrefixId, Prefix] = {
 
 ## In Progress Tasks
 
-- [ ] fix: Convert parametrize argument should only be available inside decorator
 - [ ] feat: Support actual value for such case where one parameter is ok
 
 ```python
@@ -88,6 +87,7 @@ def test_str(arg, expected):
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Convert parametrize argument should only be available inside decorator
 - [x] feat: Convert between pytest.param() and no param representation
 - [x] fix: Strip type annotations should only be available on function declaration, not decorators or body.
 - [x] fix: Introduce type fails for pytest.mark.parametrize[x] fix: Limit search for protocol implementations to project
