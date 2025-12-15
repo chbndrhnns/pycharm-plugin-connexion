@@ -65,6 +65,31 @@ class StripSignatureTypeAnnotationsIntentionTest : TestBase() {
         assertNull(myFixture.availableIntentions.find { it.familyName == "Strip signature type annotations" })
     }
 
+    fun testNotAvailableOnDecorator() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            @<caret>decorator
+            def foo(x: int) -> int:
+                return x
+            """.trimIndent()
+        )
+
+        assertNull(myFixture.availableIntentions.find { it.familyName == "Strip signature type annotations" })
+    }
+
+    fun testNotAvailableInFunctionBody() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            def foo(x: int) -> int:
+                return <caret>x
+            """.trimIndent()
+        )
+
+        assertNull(myFixture.availableIntentions.find { it.familyName == "Strip signature type annotations" })
+    }
+
     fun testDisabledViaSettingsToggle() {
         PluginSettingsState.instance().state.enableStripSignatureTypeAnnotationsIntention = false
         myFixture.configureByText(

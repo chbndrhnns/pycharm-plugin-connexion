@@ -1,13 +1,3 @@
-[2025-12-09 12:52] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "normalize completion, add tests",
-    "BOTTLENECK": "Variants generation used file names instead of module qualified names.",
-    "PROJECT NOTE": "Adjust PyResolveUtils.getVariants to emit modules via their qualified names, not filenames.",
-    "NEW INSTRUCTION": "WHEN completion items include '.py' segment THEN strip '.py' and compute dotted module names"
-}
-
 [2025-12-09 15:00] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -876,4 +866,14 @@
     "BOTTLENECK": "Scanning all classes to find members via PyClassNameIndex.",
     "PROJECT NOTE": "Prefer existing Python indices (e.g., method/attribute name indices) before building a custom stub index.",
     "NEW INSTRUCTION": "WHEN indexes are not ready (dumb mode) THEN fall back to current scan strategy"
+}
+
+[2025-12-15 12:29] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "-",
+    "BOTTLENECK": "Precisely constraining caret location within the function PSI for availability.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN changing intention availability by caret context THEN add negative tests for disallowed regions"
 }

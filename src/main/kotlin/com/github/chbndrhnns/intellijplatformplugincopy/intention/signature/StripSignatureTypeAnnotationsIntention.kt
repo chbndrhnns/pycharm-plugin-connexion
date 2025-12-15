@@ -26,7 +26,9 @@ class StripSignatureTypeAnnotationsIntention : IntentionAction, HighPriorityActi
         if (!PluginSettingsState.instance().state.enableStripSignatureTypeAnnotationsIntention) return false
         if (file !is PyFile) return false
 
+        val offset = editor.caretModel.offset
         val fn = findFunctionAtCaret(editor, file) ?: return false
+        if (!isCaretOnFunctionDeclaration(fn, offset)) return false
         return hasAnySignatureAnnotation(fn)
     }
 
@@ -52,6 +54,14 @@ class StripSignatureTypeAnnotationsIntention : IntentionAction, HighPriorityActi
         val offset = editor.caretModel.offset
         val leaf = file.findElementAt(offset) ?: return null
         return PsiTreeUtil.getParentOfType(leaf, PyFunction::class.java)
+    }
+
+    private fun isCaretOnFunctionDeclaration(fn: PyFunction, offset: Int): Boolean {
+        fn.decoratorList?.textRange?.let { decoratorRange ->
+            if (decoratorRange.contains(offset)) return false
+        }
+        if (fn.statementList.textRange.contains(offset)) return false
+        return true
     }
 
     private fun hasAnySignatureAnnotation(fn: PyFunction): Boolean {
