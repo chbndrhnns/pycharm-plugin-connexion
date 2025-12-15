@@ -2,7 +2,6 @@
 
 ## Pending Issues
 
-- [ ] fix: Strip type annotations should only be available on function declaration, not decorators or body.
 - [ ] fix: Wrap should pick inner problem first, offers `Prefix` here
 
 ```python
@@ -85,6 +84,7 @@ def test_str(arg, expected):
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Strip type annotations should only be available on function declaration, not decorators or body.
 - [x] fix: Introduce type fails for pytest.mark.parametrize[x] fix: Limit search for protocol implementations to project
   code, no stdlib, no libraries
 - [x] feat: Replace expected with actual test outcome
