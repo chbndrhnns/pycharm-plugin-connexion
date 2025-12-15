@@ -16,7 +16,9 @@ import com.jetbrains.python.psi.types.TypeEvalContext
 /**
  * Extracted logic for locating an intention target at the caret.
  */
-class TargetDetector {
+class TargetDetector(
+    private val pytestHandler: PytestParametrizeHandler = PytestParametrizeHandler()
+) {
 
     fun find(editor: Editor, file: PyFile, context: TypeEvalContext): Target? {
         val offset = editor.caretModel.offset
@@ -34,104 +36,17 @@ class TargetDetector {
     }
 
     /**
-     * Detects when caret is on a bare parameter name (without annotation) and
-     * infers the builtin type from pytest.mark.parametrize decorator values.
+     * Detects when caret is on a bare parameter name (without annotation).
+     * Delegates to PytestParametrizeHandler for pytest-specific detection.
      */
     private fun tryFromBareParameter(leaf: PsiElement, context: TypeEvalContext): AnnotationTarget? {
-        // Check if we're on a parameter name
         val parameter = PsiTreeUtil.getParentOfType(leaf, PyNamedParameter::class.java, false) ?: return null
-
+        
         // If parameter already has annotation, let tryFromAnnotation handle it
         if (parameter.annotation != null) return null
-
-        val paramName = parameter.name ?: return null
-
-        // Check if this parameter belongs to a function with pytest.mark.parametrize
-        val function = PsiTreeUtil.getParentOfType(parameter, PyFunction::class.java) ?: return null
-        val decoratorList = function.decoratorList ?: return null
-
-        for (decorator in decoratorList.decorators) {
-            if (decorator.name != "parametrize") continue
-
-            val args = decorator.argumentList?.arguments ?: continue
-            if (args.size < 2) continue
-
-            // Check if this parameter is in the parametrize list
-            val namesArg = args[0]
-            val paramNames = extractParameterNamesFromDecorator(namesArg) ?: continue
-            if (paramName !in paramNames) continue
-
-            // Infer type from the values
-            val valuesArg = args[1]
-            val paramIndex = paramNames.indexOf(paramName)
-            val builtinType = inferBuiltinTypeFromValues(valuesArg, paramIndex, paramNames.size, context) ?: continue
-
-            // Create a synthetic annotation target
-            return AnnotationTarget(
-                builtinName = builtinType,
-                annotationRef = null,  // No actual annotation ref since parameter is bare
-                ownerName = paramName,
-                dataclassField = null,
-            )
-        }
-
-        return null
-    }
-
-    private fun extractParameterNamesFromDecorator(namesArg: PyExpression): List<String>? {
-        return when (namesArg) {
-            is PyStringLiteralExpression -> {
-                namesArg.stringValue.split(',').map { it.trim() }
-            }
-
-            is PyListLiteralExpression -> {
-                namesArg.elements.mapNotNull { (it as? PyStringLiteralExpression)?.stringValue }
-            }
-
-            is PyTupleExpression -> {
-                namesArg.elements.mapNotNull { (it as? PyStringLiteralExpression)?.stringValue }
-            }
-
-            else -> null
-        }
-    }
-
-    private fun inferBuiltinTypeFromValues(
-        valuesArg: PyExpression,
-        paramIndex: Int,
-        paramCount: Int,
-        context: TypeEvalContext
-    ): String? {
-        val values = when (valuesArg) {
-            is PyListLiteralExpression -> valuesArg.elements
-            is PyTupleExpression -> valuesArg.elements
-            else -> return null
-        }
-
-        if (values.isEmpty()) return null
-
-        // Get the first value to infer type
-        val firstValue = if (paramCount == 1) {
-            values.firstOrNull()
-        } else {
-            // Multiple parameters - each value should be a tuple/list
-            val firstSet = values.firstOrNull() ?: return null
-            when (firstSet) {
-                is PyTupleExpression -> firstSet.elements.getOrNull(paramIndex)
-                is PyListLiteralExpression -> firstSet.elements.getOrNull(paramIndex)
-                else -> null
-            }
-        } ?: return null
-
-        // Infer builtin type from the value
-        val type = context.getType(firstValue)
-        return when {
-            type?.name == "int" -> "int"
-            type?.name == "str" -> "str"
-            type?.name == "float" -> "float"
-            type?.name == "bool" -> "bool"
-            else -> null
-        }
+        
+        // Delegate pytest.mark.parametrize detection to the handler
+        return pytestHandler.detectBareParametrizeParameter(parameter, context)
     }
 
     private fun tryFromVariableDefinition(leaf: PsiElement): AnnotationTarget? {
