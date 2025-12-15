@@ -28,7 +28,6 @@ self._prefixes: dict[PrefixId, Prefix] = {
 - [ ] feat: Add field to dataclass/model in case of unexpected argument
 - [ ] feat: After return, suggest `list[T()]` if return type is a container type (?)
 - [ ] feat: Suggest expected type for container types, like `vals: set[MyType] = set(<caret>)`
-- [ ] feat: Support exception flow analysis when exception is raised in helper method
 - [ ] feat: Support skip toggle for single parameters
 - [ ] feat: Support actual value for such case where one parameter is ok
 
