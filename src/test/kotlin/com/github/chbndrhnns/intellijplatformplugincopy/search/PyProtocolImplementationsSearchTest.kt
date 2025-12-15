@@ -543,4 +543,121 @@ class PyProtocolImplementationsSearchTest : TestBase() {
             it is PyFunction && it.name == "test_matching_func"
         })
     }
+
+    fun testUntypedLambdaMatchesCallableProtocol() {
+        // This test reproduces the user's issue: untyped lambda should match a typed protocol
+        myFixture.configureByText(
+            "test.py", """
+            class Protocol: pass
+            
+            class My<caret>Proto(Protocol):
+                def __call__(self, x: int, y: str) -> int: ...
+            
+            my_lambda = lambda x, y: 1
+        """.trimIndent()
+        )
+
+        val protocol = myFixture.elementAtCaret as PyClass
+        val context = TypeEvalContext.codeAnalysis(project, myFixture.file)
+
+        // Find the lambda expression
+        val lambdaExpr = myFixture.file.children
+            .flatMap { it.children.toList() }
+            .filterIsInstance<PyLambdaExpression>()
+            .firstOrNull()
+
+        assertNotNull("Should find lambda expression", lambdaExpr)
+
+        val lambdaType = context.getType(lambdaExpr!!) as? PyCallableType
+        assertNotNull("Lambda should have a callable type", lambdaType)
+
+        // Untyped lambda with correct parameter count should match the protocol
+        assertTrue(
+            "Untyped lambda with matching parameter count should be compatible with callable protocol",
+            PyProtocolImplementationsSearch.isCallableCompatibleWithCallProtocol(lambdaType!!, protocol, context)
+        )
+    }
+
+    fun testUntypedLambdaWithWrongParamCountDoesNotMatch() {
+        myFixture.configureByText(
+            "test.py", """
+            class Protocol: pass
+            
+            class My<caret>Proto(Protocol):
+                def __call__(self, x: int, y: str) -> int: ...
+            
+            my_lambda = lambda x: 1
+        """.trimIndent()
+        )
+
+        val protocol = myFixture.elementAtCaret as PyClass
+        val context = TypeEvalContext.codeAnalysis(project, myFixture.file)
+
+        // Find the lambda expression
+        val lambdaExpr = myFixture.file.children
+            .flatMap { it.children.toList() }
+            .filterIsInstance<PyLambdaExpression>()
+            .firstOrNull()
+
+        assertNotNull("Should find lambda expression", lambdaExpr)
+
+        val lambdaType = context.getType(lambdaExpr!!) as? PyCallableType
+        assertNotNull("Lambda should have a callable type", lambdaType)
+
+        // Lambda with wrong parameter count should NOT match
+        assertFalse(
+            "Lambda with wrong parameter count should NOT match protocol",
+            PyProtocolImplementationsSearch.isCallableCompatibleWithCallProtocol(lambdaType!!, protocol, context)
+        )
+    }
+
+    fun testGoToImplementationForCallableProtocolFindsMatchingLambdas() {
+        // Lambdas are only found when used in a context where the protocol type is expected
+        myFixture.configureByText(
+            "test.py", """
+            class Protocol: pass
+            
+            class My<caret>Proto(Protocol):
+                def __call__(self, x: int, y: str) -> int: ...
+            
+            def use_proto(p: MyProto) -> int:
+                return p(1, "a")
+            
+            # This lambda is passed where MyProto is expected - should be found
+            use_proto(lambda x, y: 1)
+            
+            # This lambda is just assigned to a variable without type annotation - should NOT be found
+            untyped_lambda = lambda x, y: 1
+        """.trimIndent()
+        )
+
+        val gotoData =
+            com.intellij.testFramework.fixtures.CodeInsightTestUtil.gotoImplementation(myFixture.editor, myFixture.file)
+
+        assertTrue("Should find lambda passed as argument where protocol is expected", gotoData.targets.any {
+            it is PyLambdaExpression
+        })
+    }
+    
+    fun testGoToImplementationDoesNotFindUntypedLambdas() {
+        // Lambdas assigned to untyped variables should NOT be found as protocol implementations
+        myFixture.configureByText(
+            "test.py", """
+            class Protocol: pass
+            
+            class My<caret>Proto(Protocol):
+                def __call__(self, x: int, y: str) -> int: ...
+            
+            # This lambda is just assigned without type annotation - should NOT be found
+            untyped_lambda = lambda x, y: 1
+        """.trimIndent()
+        )
+
+        val gotoData =
+            com.intellij.testFramework.fixtures.CodeInsightTestUtil.gotoImplementation(myFixture.editor, myFixture.file)
+
+        assertFalse("Should NOT find untyped lambda without protocol context", gotoData.targets.any {
+            it is PyLambdaExpression
+        })
+    }
 }
