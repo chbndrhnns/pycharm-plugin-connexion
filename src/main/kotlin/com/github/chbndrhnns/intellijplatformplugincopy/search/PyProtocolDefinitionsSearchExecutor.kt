@@ -40,7 +40,8 @@ class PyProtocolDefinitionsSearchExecutor : QueryExecutor<PsiElement, Definition
     ): Boolean {
         return ReadAction.compute<Boolean, RuntimeException> {
             val context = TypeEvalContext.codeAnalysis(pyClass.project, pyClass.containingFile)
-            val scope = queryParameters.scope as? GlobalSearchScope ?: GlobalSearchScope.allScope(pyClass.project)
+            // Use projectScope to exclude third-party libraries and stdlib, limiting to source/test roots
+            val scope = queryParameters.scope as? GlobalSearchScope ?: GlobalSearchScope.projectScope(pyClass.project)
 
             // Find class implementations
             val implementations = PyProtocolImplementationsSearch.search(pyClass, scope, context)
@@ -220,8 +221,9 @@ class PyProtocolDefinitionsSearchExecutor : QueryExecutor<PsiElement, Definition
             if (!PyProtocolImplementationsSearch.isProtocol(containingClass, context)) {
                 return@compute true
             }
-            
-            val scope = queryParameters.scope as? GlobalSearchScope ?: GlobalSearchScope.allScope(method.project)
+
+            // Use projectScope to exclude third-party libraries and stdlib, limiting to source/test roots
+            val scope = queryParameters.scope as? GlobalSearchScope ?: GlobalSearchScope.projectScope(method.project)
             val implementations = PyProtocolImplementationsSearch.search(containingClass, scope, context)
             
             // Find the corresponding method in each implementing class
@@ -255,8 +257,9 @@ class PyProtocolDefinitionsSearchExecutor : QueryExecutor<PsiElement, Definition
             if (!PyProtocolImplementationsSearch.isProtocol(containingClass, context)) {
                 return@compute true
             }
-            
-            val scope = queryParameters.scope as? GlobalSearchScope ?: GlobalSearchScope.allScope(attribute.project)
+
+            // Use projectScope to exclude third-party libraries and stdlib, limiting to source/test roots
+            val scope = queryParameters.scope as? GlobalSearchScope ?: GlobalSearchScope.projectScope(attribute.project)
             val implementations = PyProtocolImplementationsSearch.search(containingClass, scope, context)
             
             // Find the corresponding attribute in each implementing class
