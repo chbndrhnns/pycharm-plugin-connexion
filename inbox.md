@@ -74,17 +74,16 @@ self._prefixes: dict[PrefixId, Prefix] = {
 
 ## In Progress Tasks
 
-- [ ] feat: Support actual value for such case where one parameter is ok
+
+## Completed Tasks (newest first)
+
+- [x] feat: Support actual value for such case where one parameter is ok
 
 ```python
 @pytest.mark.parametrize("arg,expected", [("abc", "defg"), ("defg", "defg"), ])
 def test_str(arg, expected):
     assert arg == expected
 ```
-
-
-## Completed Tasks (newest first)
-
 - [x] fix: Deprecation of PsiUtilBase.findEditor
 - [x] fix: Deprecation of TransactionGuard.getInstance().submitTransaction
 - [x] fix: Convert parametrize argument should only be available inside decorator
