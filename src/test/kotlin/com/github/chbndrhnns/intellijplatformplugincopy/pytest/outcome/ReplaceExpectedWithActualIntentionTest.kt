@@ -29,7 +29,7 @@ class ReplaceExpectedWithActualIntentionTest : TestBase() {
             """.trimIndent(),
         )
 
-        setDiffData("test_module.TestClass.test_method", "expected", "actual")
+        setDiffData("test_module.TestClass.test_method", "actual", "expected")
 
         val intention = myFixture.findSingleIntention("Use actual test outcome")
         assertNotNull(intention)
@@ -45,7 +45,7 @@ class ReplaceExpectedWithActualIntentionTest : TestBase() {
             """.trimIndent(),
         )
 
-        setDiffData("test_repro.TestClass.test_foo", "foo", "bar")
+        setDiffData("test_repro.TestClass.test_foo", "bar", "foo")
 
         val intention = myFixture.findSingleIntention("Use actual test outcome")
         myFixture.launchAction(intention)
@@ -54,7 +54,7 @@ class ReplaceExpectedWithActualIntentionTest : TestBase() {
             """
             class TestClass:
                 def test_foo(self):
-                    assert "bar" == "bar"
+                    assert "foo" == "foo"
             """.trimIndent(),
         )
     }
@@ -68,7 +68,7 @@ class ReplaceExpectedWithActualIntentionTest : TestBase() {
             """.trimIndent(),
         )
 
-        setDiffData("test_num.test_num", "1", "2")
+        setDiffData("test_num.test_num", "2", "1")
 
         val intention = myFixture.findSingleIntention("Use actual test outcome")
         myFixture.launchAction(intention)
@@ -76,7 +76,7 @@ class ReplaceExpectedWithActualIntentionTest : TestBase() {
         myFixture.checkResult(
             """
             def test_num():
-                assert 2 == 2
+                assert 1 == 1
             """.trimIndent(),
         )
     }
@@ -90,7 +90,7 @@ class ReplaceExpectedWithActualIntentionTest : TestBase() {
             """.trimIndent(),
         )
 
-        setDiffData("test_keyword.test_keyword", "foo", "bar")
+        setDiffData("test_keyword.test_keyword", "bar", "foo")
 
         val intention = myFixture.findSingleIntention("Use actual test outcome")
         assertNotNull(intention)
@@ -106,7 +106,7 @@ class ReplaceExpectedWithActualIntentionTest : TestBase() {
             """.trimIndent(),
         )
 
-        setDiffData("test_other.test_other", "foo", "bar")
+        setDiffData("test_other.test_other", "bar", "foo")
 
         val intention = myFixture.getAvailableIntention("Use actual test outcome")
         assertNull("Intention should not be available on assignment", intention)
@@ -122,7 +122,7 @@ class ReplaceExpectedWithActualIntentionTest : TestBase() {
             """.trimIndent(),
         )
 
-        setDiffData("test_scope.test_scope", "foo", "bar")
+        setDiffData("test_scope.test_scope", "bar", "foo")
 
         val intention = myFixture.findSingleIntention("Use actual test outcome")
         myFixture.launchAction(intention)
@@ -131,7 +131,58 @@ class ReplaceExpectedWithActualIntentionTest : TestBase() {
             """
             def test_scope():
                 assert "foo" == "baz"
-                assert "bar" == "bar"
+                assert "foo" == "foo"
+            """.trimIndent(),
+        )
+    }
+
+    fun `test dict literal replacement`() {
+        myFixture.configureByText(
+            "test_dict.py",
+            """
+            def test_dict():
+                ass<caret>ert {
+                    "abc": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        5,
+                    ]
+                } == {
+                    "abc": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        5,
+                        6,
+                    ]
+                }
+            """.trimIndent(),
+        )
+
+        setDiffData(
+            "test_dict.test_dict",
+            "{\"abc\": [1, 2, 3, 4, 5, 6]}",
+            "{\"abc\": [1, 2, 3, 4, 5]}",
+        )
+
+        val intention = myFixture.findSingleIntention("Use actual test outcome")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            def test_dict():
+                assert {
+                    "abc": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        5,
+                    ]
+                } == {"abc": [1, 2, 3, 4, 5]}
             """.trimIndent(),
         )
     }

@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.util.IncorrectOperationException
 import com.jetbrains.python.psi.*
 
 class OutcomeReplacementEngine {
@@ -14,27 +15,30 @@ class OutcomeReplacementEngine {
 
         val expression = assertStatement.arguments.firstOrNull()
         if (expression is PyBinaryExpression && expression.isOperator("==")) {
-            val left = expression.leftExpression
             val right = expression.rightExpression
 
-            if (matches(right, expected)) {
-                if (right is PyReferenceExpression) {
-                    val resolved = right.reference.resolve()
-                    if (resolved is PyTargetExpression) {
+            // Convention: the expected value is on the right side of the assert.
+            // "Use actual outcome" should update the right side (or the value it references).
+            val expectedExpression = right ?: return
+            if (expectedExpression is PyReferenceExpression) {
+                when (val resolved = expectedExpression.reference.resolve()) {
+                    is PyTargetExpression -> {
                         val assignedValue = resolved.findAssignedValue()
                         if (assignedValue != null) {
                             replaceElement(assignedValue, actual, expected, project, matchedKey)
                             return
                         }
                     }
+
+                    is PyParameter -> {
+                        replaceElement(expectedExpression, actual, expected, project, matchedKey)
+                        return
+                    }
                 }
-                replaceElement(right ?: return, actual, expected, project, matchedKey)
-                return
             }
-            if (matches(left, expected)) {
-                replaceElement(left ?: return, actual, expected, project, matchedKey)
-                return
-            }
+
+            replaceElement(expectedExpression, actual, expected, project, matchedKey)
+            return
         }
 
         var replaced = false
@@ -135,13 +139,18 @@ class OutcomeReplacementEngine {
             false
         }
 
-        fun createExpression(text: String): PyExpression {
-            val listExpr = generator.createExpressionFromText(
-                LanguageLevel.getDefault(),
-                "[$text]"
-            ) as? PyListLiteralExpression
-            return listExpr?.elements?.firstOrNull()
-                ?: generator.createExpressionFromText(LanguageLevel.getDefault(), text)
+        fun createExpression(text: String): PyExpression? {
+            val trimmed = text.trim()
+            try {
+                val listExpr = generator.createExpressionFromText(
+                    LanguageLevel.getDefault(),
+                    "[$trimmed]"
+                ) as? PyListLiteralExpression
+                return listExpr?.elements?.firstOrNull()
+                    ?: generator.createExpressionFromText(LanguageLevel.getDefault(), trimmed)
+            } catch (_: IncorrectOperationException) {
+                return null
+            }
         }
 
         val newExpression = if (isStringTarget) {
@@ -163,7 +172,9 @@ class OutcomeReplacementEngine {
             createExpression(newValue)
         }
 
-        element.replace(newExpression)
+        if (newExpression != null) {
+            element.replace(newExpression)
+        }
     }
 
     private fun isParametrizedMatch(parameter: PyParameter, diffValue: String): Boolean {

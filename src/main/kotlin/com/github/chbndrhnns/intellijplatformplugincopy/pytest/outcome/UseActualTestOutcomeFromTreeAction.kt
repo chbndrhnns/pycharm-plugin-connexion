@@ -13,6 +13,7 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiManager
+import com.jetbrains.python.traceBackParsers.TraceBackParser
 import java.util.regex.Pattern
 
 class UseActualTestOutcomeFromTreeAction : AnAction() {
@@ -79,43 +80,33 @@ class UseActualTestOutcomeFromTreeAction : AnAction() {
 
     companion object {
         fun getFailedLineNumber(stacktrace: String, testFile: VirtualFile): Int? {
-            // Python traceback pattern: File "/path/to/file.py", line 123, in ...
-            val patternStandard = Pattern.compile("File \"([^\"]+)\", line (\\d+),")
-            var matcher = patternStandard.matcher(stacktrace)
-
             var lastMatchingLine: Int? = null
 
-            while (matcher.find()) {
-                val filePath = matcher.group(1)
-                val lineNumber = matcher.group(2).toIntOrNull()
-
-                // We typically want the last frame that matches our test file.
-                // Comparing paths can be tricky; checking if the stack path ends with the test file name
-                // or contains the test file path is a robust heuristic.
-                if (filePath != null && lineNumber != null) {
-                    // Check if this frame belongs to the test file
-                    // You might need a more robust path comparison depending on how paths are reported
+            // Prefer the IDE's Python traceback parsers (same logic used for clickable links in the console).
+            for (line in stacktrace.lineSequence()) {
+                for (parser in TraceBackParser.PARSERS) {
+                    val link = parser.findLinkInTrace(line) ?: continue
+                    val filePath = link.fileName
+                    val lineNumber = link.lineNumber
                     if (filePath.endsWith(testFile.name) || filePath.contains(testFile.path)) {
                         lastMatchingLine = lineNumber - 1 // Convert 1-based to 0-based
                     }
                 }
             }
 
-            if (lastMatchingLine == null) {
-                // Pytest failure summary pattern: test_fail.py:9: AssertionError
-                // Group 1: File path/name
-                // Group 2: Line number
-                val patternPytest = Pattern.compile("([^:\\s]+):(\\d+):")
-                matcher = patternPytest.matcher(stacktrace)
+            if (lastMatchingLine != null) return lastMatchingLine
 
-                while (matcher.find()) {
-                    val filePath = matcher.group(1)
-                    val lineNumber = matcher.group(2).toIntOrNull()
+            // Fallback: pytest failure summary pattern: test_fail.py:9: AssertionError
+            val patternPytest = Pattern.compile("([^:\\s]+):(\\d+):")
+            val matcher = patternPytest.matcher(stacktrace)
 
-                    if (filePath != null && lineNumber != null) {
-                        if (filePath.endsWith(testFile.name) || filePath.contains(testFile.path)) {
-                            lastMatchingLine = lineNumber - 1 // Convert 1-based to 0-based
-                        }
+            while (matcher.find()) {
+                val filePath = matcher.group(1)
+                val lineNumber = matcher.group(2).toIntOrNull()
+
+                if (filePath != null && lineNumber != null) {
+                    if (filePath.endsWith(testFile.name) || filePath.contains(testFile.path)) {
+                        lastMatchingLine = lineNumber - 1 // Convert 1-based to 0-based
                     }
                 }
             }
