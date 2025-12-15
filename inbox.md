@@ -3,8 +3,6 @@
 ## Pending Issues
 
 - [ ] fix: Change visibility: make private (we only have two options and one is always true)
-- [ ] fix: Only offer actual outcome if diff exists, not for all failures
-- [ ] fix: Introduce parameter object should not be available for test methods and pytest fixtures
 - [ ] fix: Wrap should pick inner problem first, offers `Prefix` here
 
 ```python
@@ -74,6 +72,8 @@ self._prefixes: dict[PrefixId, Prefix] = {
 ## In Progress Tasks
 
 - [ ] fix: Introduce parameter object needs to respect existing * arg
+- [ ] fix: Introduce parameter object should not be available for test methods and pytest fixtures
+- [ ] fix: Only offer actual outcome if diff exists, not for all failures
 
 
 ## Completed Tasks (newest first)
