@@ -30,7 +30,7 @@ class ConvertToPytestParamIntention : IntentionAction, HighPriorityAction {
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
         if (file !is PyFile) return
 
-        val (decorator, listArg) = findTarget(editor, file) ?: return
+        val (_, listArg) = findTarget(editor, file) ?: return
 
         ensurePytestImported(file)
 
@@ -98,21 +98,14 @@ class ConvertToPytestParamIntention : IntentionAction, HighPriorityAction {
     private fun findTarget(editor: Editor, file: PyFile): Pair<PyDecorator, PyListLiteralExpression>? {
         val element = file.findElementAt(editor.caretModel.offset) ?: return null
 
-        // First try to find decorator directly (if caret is on decorator)
-        val directDecorator = PsiTreeUtil.getParentOfType(element, PyDecorator::class.java)
-        if (directDecorator != null && isParametrizeDecorator(directDecorator)) {
-            val argumentList = directDecorator.argumentList ?: return null
-            val listArg = findParameterValuesListArgument(argumentList) ?: return null
-            return Pair(directDecorator, listArg)
-        }
+        // Only available when the caret is inside the @pytest.mark.parametrize decorator.
+        // (Being somewhere inside the decorated function should not make this intention available.)
+        val decorator = PsiTreeUtil.getParentOfType(element, PyDecorator::class.java) ?: return null
+        if (!isParametrizeDecorator(decorator)) return null
 
-        // Otherwise, find the function and check its decorators
-        val function = PsiTreeUtil.getParentOfType(element, PyFunction::class.java) ?: return null
-        val parametrizeDecorator = findParametrizeDecorator(function) ?: return null
-
-        val argumentList = parametrizeDecorator.argumentList ?: return null
+        val argumentList = decorator.argumentList ?: return null
         val listArg = findParameterValuesListArgument(argumentList) ?: return null
-        return Pair(parametrizeDecorator, listArg)
+        return Pair(decorator, listArg)
     }
 
     internal companion object {
@@ -121,11 +114,6 @@ class ConvertToPytestParamIntention : IntentionAction, HighPriorityAction {
             val qName = callee.asQualifiedName()?.toString() ?: return false
             return qName == "pytest.param" || qName.endsWith(".pytest.param")
         }
-    }
-
-    private fun findParametrizeDecorator(function: PyFunction): PyDecorator? {
-        val decorators = function.decoratorList?.decorators ?: return null
-        return decorators.firstOrNull { isParametrizeDecorator(it) }
     }
 
     private fun ensurePytestImported(file: PyFile) {

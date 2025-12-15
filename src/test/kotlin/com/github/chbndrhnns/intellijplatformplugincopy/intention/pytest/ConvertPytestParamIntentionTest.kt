@@ -9,8 +9,8 @@ class ConvertPytestParamIntentionTest : TestBase() {
             "test_example.py", """
             import pytest
             
-            @pytest.mark.parametrize("x", [1, 2, 3])
-            def test_<caret>example(x):
+            @pytest.mark.parametrize("x", [1, <caret>2, 3])
+            def test_example(x):
                 assert x > 0
         """.trimIndent()
         )
@@ -28,8 +28,8 @@ class ConvertPytestParamIntentionTest : TestBase() {
     fun testPreviewConvertPlainValuesToPytestParamShowsImportWhenMissing() {
         myFixture.configureByText(
             "test_example.py", """
-            @pytest.mark.parametrize("x", [1, 2, 3])
-            def test_<caret>example(x):
+            @pytest.mark.parametrize("x", [1, <caret>2, 3])
+            def test_example(x):
                 assert x > 0
         """.trimIndent()
         )
@@ -70,8 +70,8 @@ class ConvertPytestParamIntentionTest : TestBase() {
             "test_example.py", """
             import pytest
             
-            @pytest.mark.parametrize("x", [1, 2, 3])
-            def test_<caret>example(x):
+            @pytest.mark.parametrize("x", [1, <caret>2, 3])
+            def test_example(x):
                 assert x > 0
         """.trimIndent()
         )
@@ -95,8 +95,8 @@ class ConvertPytestParamIntentionTest : TestBase() {
             "test_example.py", """
             import pytest
             
-            @pytest.mark.parametrize("name", ["alice", "bob", "charlie"])
-            def test_<caret>names(name):
+            @pytest.mark.parametrize("name", ["alice", <caret>"bob", "charlie"])
+            def test_names(name):
                 assert len(name) > 0
         """.trimIndent()
         )
@@ -120,8 +120,8 @@ class ConvertPytestParamIntentionTest : TestBase() {
             "test_example.py", """
             import pytest
             
-            @pytest.mark.parametrize("x,y", [(1, 2), (3, 4), (5, 6)])
-            def test_<caret>tuples(x, y):
+            @pytest.mark.parametrize("x,y", [(1, 2), <caret>(3, 4), (5, 6)])
+            def test_tuples(x, y):
                 assert x < y
         """.trimIndent()
         )
@@ -145,8 +145,8 @@ class ConvertPytestParamIntentionTest : TestBase() {
             "test_example.py", """
             import pytest
             
-            @pytest.mark.parametrize("x", [1, pytest.param(2), 3])
-            def test_<caret>mixed(x):
+            @pytest.mark.parametrize("x", [1, <caret>pytest.param(2), 3])
+            def test_mixed(x):
                 assert x > 0
         """.trimIndent()
         )
@@ -168,8 +168,8 @@ class ConvertPytestParamIntentionTest : TestBase() {
     fun testConvertAddsImportIfMissing() {
         myFixture.configureByText(
             "test_example.py", """
-            @pytest.mark.parametrize("x", [1, 2, 3])
-            def test_<caret>example(x):
+            @pytest.mark.parametrize("x", [1, <caret>2, 3])
+            def test_example(x):
                 assert x > 0
         """.trimIndent()
         )
@@ -343,8 +343,8 @@ class ConvertPytestParamIntentionTest : TestBase() {
             "test_example.py", """
             import pytest
             
-            @pytest.mark.parametrize("x", [pytest.param(1), pytest.param(2)])
-            def test_<caret>example(x):
+            @pytest.mark.parametrize("x", [pytest.param(1), <caret>pytest.param(2)])
+            def test_example(x):
                 assert x > 0
         """.trimIndent()
         )
@@ -384,5 +384,23 @@ class ConvertPytestParamIntentionTest : TestBase() {
 
         assertTrue("ConvertToPytestParam should not be available outside decorator", toPytestParam.isEmpty())
         assertTrue("ConvertToPlain should not be available outside decorator", toPlain.isEmpty())
+    }
+
+    fun testConvertToPytestParamNotAvailableWhenCaretInFunctionBody() {
+        myFixture.configureByText(
+            "test_example.py", """
+            import pytest
+            
+            @pytest.mark.parametrize("x", [1, 2, 3])
+            def test_example(x):
+                assert <caret>x > 0
+        """.trimIndent()
+        )
+
+        val intentions = myFixture.filterAvailableIntentions("Convert argument to pytest.param()")
+        assertTrue(
+            "Should not be available when caret is inside the decorated function (only inside the parametrize decorator)",
+            intentions.isEmpty()
+        )
     }
 }

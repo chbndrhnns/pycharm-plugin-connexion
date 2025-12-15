@@ -153,7 +153,7 @@ class PyTryExceptToDictGetIntention : PsiElementBaseIntentionAction() {
             return null
         }
 
-        if (key == null || target == null || dict == null) return null
+        if (key == null || target == null) return null
 
         // Check Mapping type
         val context = TypeEvalContext.codeAnalysis(tryExcept.project, tryExcept.containingFile)
