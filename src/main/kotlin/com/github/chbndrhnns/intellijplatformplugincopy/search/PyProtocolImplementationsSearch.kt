@@ -335,8 +335,9 @@ object PyProtocolImplementationsSearch {
         val protocolParams = callMethod.parameterList.parameters.drop(1) // Skip 'self'
         val callableParams = callableType.getParameters(context) ?: return protocolParams.isEmpty()
 
-        // Callable must have at least as many parameters as protocol's __call__
-        if (callableParams.size < protocolParams.size) {
+        // Callable must have exactly the same number of parameters as protocol's __call__
+        // (A lambda with more params than the protocol expects is not compatible)
+        if (callableParams.size != protocolParams.size) {
             return false
         }
 

@@ -578,7 +578,7 @@ class PyProtocolImplementationsSearchTest : TestBase() {
         )
     }
 
-    fun testUntypedLambdaWithWrongParamCountDoesNotMatch() {
+    fun testUntypedLambdaWithFewerParamsDoesNotMatch() {
         myFixture.configureByText(
             "test.py", """
             class Protocol: pass
@@ -604,9 +604,43 @@ class PyProtocolImplementationsSearchTest : TestBase() {
         val lambdaType = context.getType(lambdaExpr!!) as? PyCallableType
         assertNotNull("Lambda should have a callable type", lambdaType)
 
-        // Lambda with wrong parameter count should NOT match
+        // Lambda with fewer parameters should NOT match
         assertFalse(
-            "Lambda with wrong parameter count should NOT match protocol",
+            "Lambda with fewer parameters should NOT match protocol",
+            PyProtocolImplementationsSearch.isCallableCompatibleWithCallProtocol(lambdaType!!, protocol, context)
+        )
+    }
+
+    fun testUntypedLambdaWithMoreParamsDoesNotMatch() {
+        // This test reproduces the user's issue: lambda x, y: 1 should NOT match __call__(self, y: str) -> int
+        myFixture.configureByText(
+            "test.py", """
+            class Protocol: pass
+            
+            class My<caret>Proto(Protocol):
+                def __call__(self, y: str) -> int: ...
+            
+            my_lambda = lambda x, y: 1
+        """.trimIndent()
+        )
+
+        val protocol = myFixture.elementAtCaret as PyClass
+        val context = TypeEvalContext.codeAnalysis(project, myFixture.file)
+
+        // Find the lambda expression
+        val lambdaExpr = myFixture.file.children
+            .flatMap { it.children.toList() }
+            .filterIsInstance<PyLambdaExpression>()
+            .firstOrNull()
+
+        assertNotNull("Should find lambda expression", lambdaExpr)
+
+        val lambdaType = context.getType(lambdaExpr!!) as? PyCallableType
+        assertNotNull("Lambda should have a callable type", lambdaType)
+
+        // Lambda with MORE parameters than protocol expects should NOT match
+        assertFalse(
+            "Lambda with more parameters than protocol expects should NOT match",
             PyProtocolImplementationsSearch.isCallableCompatibleWithCallProtocol(lambdaType!!, protocol, context)
         )
     }
@@ -657,6 +691,35 @@ class PyProtocolImplementationsSearchTest : TestBase() {
             com.intellij.testFramework.fixtures.CodeInsightTestUtil.gotoImplementation(myFixture.editor, myFixture.file)
 
         assertFalse("Should NOT find untyped lambda without protocol context", gotoData.targets.any {
+            it is PyLambdaExpression
+        })
+    }
+
+    fun testGoToImplementationFindsUntypedLambdaWithMatchingParamCount() {
+        // According to Python typing semantics, untyped lambda parameters are treated as Any,
+        // which is compatible with any type. So lambda x: 1 SHOULD match __call__(self, y: list[str]) -> int
+        // when passed in a context where the protocol is expected.
+        myFixture.configureByText(
+            "test.py", """
+            class Protocol: pass
+            
+            class My<caret>Proto(Protocol):
+                def __call__(self, y: list[str]) -> int: ...
+            
+            def main(do: MyProto):
+                return do(["abc"])
+            
+            # This lambda has 1 param matching protocol's 1 param - should be found
+            # (untyped params are treated as Any which is compatible with list[str])
+            main(lambda x: 1)
+        """.trimIndent()
+        )
+
+        val gotoData =
+            com.intellij.testFramework.fixtures.CodeInsightTestUtil.gotoImplementation(myFixture.editor, myFixture.file)
+
+        // The lambda SHOULD be found because param count matches and untyped params are Any
+        assertTrue("Should find lambda with matching param count in protocol context", gotoData.targets.any {
             it is PyLambdaExpression
         })
     }
