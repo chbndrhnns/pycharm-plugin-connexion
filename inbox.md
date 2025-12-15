@@ -2,8 +2,6 @@
 
 ## Pending Issues
 
-- [ ] fix: Deprecation of PsiUtilBase.findEditor
-- [ ] fix: Deprecation of TransactionGuard.getInstance().submitTransaction
 - [ ] fix: Change visibility: make private (we only have two options and one is always true)
 - [ ] fix: Only offer actual outcome if diff exists, not for all failures
 - [ ] fix: Introduce parameter object should not be available for test methods and pytest fixtures
@@ -87,6 +85,8 @@ def test_str(arg, expected):
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Deprecation of PsiUtilBase.findEditor
+- [x] fix: Deprecation of TransactionGuard.getInstance().submitTransaction
 - [x] fix: Convert parametrize argument should only be available inside decorator
 - [x] feat: Convert between pytest.param() and no param representation
 - [x] fix: Strip type annotations should only be available on function declaration, not decorators or body.
