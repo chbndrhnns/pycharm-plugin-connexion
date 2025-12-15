@@ -1,13 +1,3 @@
-[2025-12-09 12:39] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "gather requirements, design for extensibility, refactor",
-    "BOTTLENECK": "Single contributor class combined heterogeneous reference responsibilities.",
-    "PROJECT NOTE": "Register multiple psi.referenceContributor entries in plugin.xml when splitting providers.",
-    "NEW INSTRUCTION": "WHEN one contributor handles unrelated reference types THEN split into separate contributors and register each"
-}
-
 [2025-12-09 12:52] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -876,4 +866,14 @@
     "BOTTLENECK": "Protocol search is not wired into IDE actions, so results are never surfaced.",
     "PROJECT NOTE": "Follow spec/protocol-impl.md Phase 2 and 3 to expose results via IDE.",
     "NEW INSTRUCTION": "WHEN protocol implementation search code exists THEN modify PyDefinitionsSearch to include protocol implementations"
+}
+
+[2025-12-15 09:50] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "add psi change listener",
+    "MISSING STEPS": "handle dumb mode,add fallback,leverage existing indices",
+    "BOTTLENECK": "Scanning all classes to find members via PyClassNameIndex.",
+    "PROJECT NOTE": "Prefer existing Python indices (e.g., method/attribute name indices) before building a custom stub index.",
+    "NEW INSTRUCTION": "WHEN indexes are not ready (dumb mode) THEN fall back to current scan strategy"
 }
