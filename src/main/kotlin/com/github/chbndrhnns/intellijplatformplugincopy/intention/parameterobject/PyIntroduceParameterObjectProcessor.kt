@@ -78,6 +78,7 @@ class PyIntroduceParameterObjectProcessor(
                     function,
                     dataclassName,
                     params,
+                    parameterName,
                     functionUsages
                 )
             }
@@ -343,6 +344,7 @@ class PyIntroduceParameterObjectProcessor(
         function: PyFunction,
         dataclassName: String,
         params: List<PyNamedParameter>,
+        parameterName: String,
         functionUsages: Collection<PsiReference>
     ): List<CallSiteUpdateInfo> {
         val result = mutableListOf<CallSiteUpdateInfo>()
@@ -351,6 +353,16 @@ class PyIntroduceParameterObjectProcessor(
         if (allParams.isEmpty()) return emptyList()
 
         val firstExtractedParam = params.firstOrNull() ?: return emptyList()
+
+        fun isKeywordOnlyParameter(param: PyParameter, allParams: List<PyParameter>): Boolean {
+            val idx = allParams.indexOf(param)
+            if (idx <= 0) return false
+
+            // Everything after an explicit '*' or a '*args' is keyword-only.
+            return allParams.subList(0, idx).any {
+                it is PySingleStarParameter || (it is PyNamedParameter && it.isPositionalContainer)
+            }
+        }
 
         val resolveContext = PyResolveContext.defaultContext(
             TypeEvalContext.codeAnalysis(project, function.containingFile)
@@ -396,6 +408,10 @@ class PyIntroduceParameterObjectProcessor(
             for (p in allParams) {
                 if (p == firstExtractedParam) {
                     if (!firstFuncArg) newArgsList.append(", ")
+
+                    if (isKeywordOnlyParameter(firstExtractedParam, allParams)) {
+                        newArgsList.append("$parameterName=")
+                    }
                     newArgsList.append(dataclassArgsList)
                     firstFuncArg = false
                 }

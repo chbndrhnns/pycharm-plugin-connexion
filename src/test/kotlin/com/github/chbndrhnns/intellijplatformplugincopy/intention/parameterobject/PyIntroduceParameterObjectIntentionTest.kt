@@ -105,6 +105,39 @@ class PyIntroduceParameterObjectIntentionTest : TestBase() {
         }
     }
 
+    fun testKeywordOnlyParamsCallSiteUsesKeywordArgument() {
+        withMockIntroduceParameterObjectDialog {
+            myFixture.doIntentionTest(
+                "a.py",
+                """
+                def do(*, arg1, arg2):
+                    ...
+
+
+                do(ar<caret>g1=1, arg2=2)
+                """.trimIndent(),
+                """
+                from dataclasses import dataclass
+                from typing import Any
+
+
+                @dataclass(frozen=True, slots=True, kw_only=True)
+                class DoParams:
+                    arg1: Any
+                    arg2: Any
+
+
+                def do(*, params: DoParams):
+                    ...
+
+
+                do(params=DoParams(arg1=1, arg2=2))
+                """.trimIndent(),
+                "Introduce parameter object"
+            )
+        }
+    }
+
     fun testUnavailableInFunctionBody() {
         myFixture.configureByText(
             "a.py",
