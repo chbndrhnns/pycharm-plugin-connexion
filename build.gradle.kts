@@ -59,7 +59,7 @@ dependencies {
 intellijPlatform {
     // Only build searchable options if the 'publishPlugin' task is explicitly requested
     buildSearchableOptions = gradle.startParameter.taskNames.none {
-        it.contains("runIde") || it.contains("runIdeForUiTests")
+        it.contains("runIde") || it.contains("runIdeForUiTests") || it.contains("test")
     }
 
     pluginConfiguration {
