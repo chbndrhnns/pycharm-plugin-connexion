@@ -151,20 +151,22 @@ class TogglePytestSkipIntentionTest : TestBase() {
             "Toggle pytest skip"
         )
     }
-    
+
     fun testSkipModule() {
-        myFixture.configureByText("test_foo.py", """
+        myFixture.configureByText(
+            "test_foo.py", """
             import pytest
             
             # Module skip
             <caret>
             def test_something():
                 pass
-        """.trimIndent())
-        
+        """.trimIndent()
+        )
+
         val intention = myFixture.findSingleIntention("Toggle pytest skip")
         myFixture.launchAction(intention)
-        
+
         val text = myFixture.file.text
         assertTrue(text.contains("pytestmark = [pytest.mark.skip]"))
         assertTrue(text.contains("import pytest"))
@@ -190,44 +192,48 @@ class TogglePytestSkipIntentionTest : TestBase() {
     }
 
     fun testSkipModuleUpdate() {
-        myFixture.configureByText("test_foo.py", """
+        myFixture.configureByText(
+            "test_foo.py", """
             import pytest
             
             pytestmark = [pytest.mark.foo]
             <caret>
             def test_something():
                 pass
-        """.trimIndent())
-        
+        """.trimIndent()
+        )
+
         val intention = myFixture.findSingleIntention("Toggle pytest skip")
         myFixture.launchAction(intention)
-        
+
         val text = myFixture.file.text
         // We expect both markers
         assertTrue(text.contains("pytest.mark.foo"))
         assertTrue(text.contains("pytest.mark.skip"))
         assertTrue(text.contains("pytestmark = ["))
     }
-    
+
     fun testUnskipModule() {
-        myFixture.configureByText("test_foo.py", """
+        myFixture.configureByText(
+            "test_foo.py", """
             import pytest
             
             pytestmark = [pytest.mark.skip]
             <caret>
             def test_something():
                 pass
-        """.trimIndent())
-        
+        """.trimIndent()
+        )
+
         val intention = myFixture.findSingleIntention("Toggle pytest skip")
         myFixture.launchAction(intention)
-        
+
         val text = myFixture.file.text
         // Should be removed or empty list
         assertTrue(text.contains("pytestmark = []") || !text.contains("pytestmark"))
         assertFalse(text.contains("pytest.mark.skip"))
     }
-    
+
     fun testSkipFunctionAddsImport() {
         myFixture.assertIntentionAvailable(
             "test_foo.py",

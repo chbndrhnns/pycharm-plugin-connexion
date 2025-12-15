@@ -1,70 +1,22 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest
+package com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome
 
-import com.github.chbndrhnns.intellijplatformplugincopy.services.DiffData
-import com.github.chbndrhnns.intellijplatformplugincopy.services.TestFailureState
-import com.intellij.codeInsight.intention.HighPriorityAction
-import com.intellij.codeInsight.intention.IntentionAction
-import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
-import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.*
 
-class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
+class OutcomeReplacementEngine {
 
-    override fun getText(): String = "Use actual test outcome"
-    override fun getFamilyName(): String = "Use actual test outcome"
-    override fun startInWriteAction(): Boolean = true
+    fun apply(project: Project, assertStatement: PyAssertStatement, diff: OutcomeDiff, matchedKey: String) {
+        val expected = diff.expected
+        val actual = diff.actual
 
-    override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
-        if (file !is PyFile) return false
-
-        val element = file.findElementAt(editor.caretModel.offset) ?: return false
-
-        // Only available on assert statements
-        val assertStatement = PsiTreeUtil.getParentOfType(element, PyAssertStatement::class.java) ?: return false
-
-        val pyFunction = PsiTreeUtil.getParentOfType(assertStatement, PyFunction::class.java) ?: return false
-
-        // Check if it looks like a test
-        val name = pyFunction.name ?: return false
-        if (!name.startsWith("test_")) return false
-
-        val locationUrl = calculateLocationUrl(pyFunction) ?: return false
-        val diffData = findDiffData(project, locationUrl)
-
-        return diffData != null
-    }
-
-    override fun invoke(project: Project, editor: Editor, file: PsiFile) {
-        invokeWithTestKey(project, editor, file, testKey = null)
-    }
-
-    fun invokeWithTestKey(project: Project, editor: Editor, file: PsiFile, testKey: String?) {
-        if (file !is PyFile) return
-        val element = file.findElementAt(editor.caretModel.offset) ?: return
-
-        val assertStatement = PsiTreeUtil.getParentOfType(element, PyAssertStatement::class.java) ?: return
-        val pyFunction = PsiTreeUtil.getParentOfType(assertStatement, PyFunction::class.java) ?: return
-
-        val (diffData, matchedKey) =
-            findDiffDataWithKey(project, calculateLocationUrl(pyFunction) ?: return, testKey)
-                ?: return
-
-        val expected = diffData.expected
-        val actual = diffData.actual
-
-        // Strategy 1: Check if the assertion is a binary expression (e.g. assert A == B)
-        // and if one of the operands matches the 'expected' value.
         val expression = assertStatement.arguments.firstOrNull()
         if (expression is PyBinaryExpression && expression.isOperator("==")) {
             val left = expression.leftExpression
             val right = expression.rightExpression
 
-            // Check right operand first (typically the expected value in assertions)
             if (matches(right, expected)) {
                 if (right is PyReferenceExpression) {
                     val resolved = right.reference.resolve()
@@ -85,14 +37,13 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
             }
         }
 
-        // Strategy 2: Fallback to scanning the assertion for literals matching 'expected'
-        // This covers cases where the match is inside a function call or list.
-        val replaced = false
+        var replaced = false
         assertStatement.accept(object : PyRecursiveElementVisitor() {
             override fun visitPyStringLiteralExpression(node: PyStringLiteralExpression) {
                 if (replaced) return
                 if (matchesLiteral(node.stringValue, expected) || matchesLiteral(node.text, expected)) {
                     replaceElement(node, actual, expected, project, matchedKey)
+                    replaced = true
                 }
                 super.visitPyStringLiteralExpression(node)
             }
@@ -101,120 +52,67 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
                 if (replaced) return
                 if (matchesLiteral(node.text, expected)) {
                     replaceElement(node, actual, expected, project, matchedKey)
+                    replaced = true
                 }
                 super.visitPyNumericLiteralExpression(node)
             }
         })
     }
 
-    private fun findDiffData(project: Project, baseLocationUrl: String): DiffData? {
-        val state = TestFailureState.getInstance(project)
-        val exact = state.getDiffData(baseLocationUrl)
-        if (exact != null) return exact
-
-        // Fuzzy match for parametrized tests
-        // Keys usually look like: python<...>//...test_func[param]
-        // We check if any key starts with the base URL.
-        // Base URL: python<...>//...test_func
-        return state.getAllKeys().asSequence()
-            .filter { it.startsWith(baseLocationUrl) }.firstNotNullOfOrNull { state.getDiffData(it) }
-    }
-
-    private fun findDiffDataWithKey(
-        project: Project,
-        baseLocationUrl: String,
-        explicitKey: String?
-    ): Pair<DiffData, String>? {
-        val state = TestFailureState.getInstance(project)
-
-        if (!explicitKey.isNullOrBlank()) {
-            val exactExplicit = state.getDiffData(explicitKey)
-            if (exactExplicit != null) return Pair(exactExplicit, explicitKey)
-        }
-
-        val exact = state.getDiffData(baseLocationUrl)
-        if (exact != null) return Pair(exact, baseLocationUrl)
-
-        // Fuzzy match for parametrized tests
-        // Keys usually look like: python<...>//...test_func[param]
-        // We check if any key starts with the base URL.
-        // Base URL: python<...>//...test_func
-        val matchedKey = state.getAllKeys().asSequence()
-            .filter { it.startsWith(baseLocationUrl) }
-            .firstOrNull()
-        
-        if (matchedKey != null) {
-            val data = state.getDiffData(matchedKey)
-            if (data != null) return Pair(data, matchedKey)
-        }
-        
-        return null
-    }
-
     private fun matches(element: PyExpression?, diffValue: String): Boolean {
         if (element == null) return false
 
-        // 1. Literal match (String, Numeric)
         if (element is PyStringLiteralExpression) {
-             if (matchesLiteral(element.stringValue, diffValue)) return true
-             if (matchesLiteral(element.text, diffValue)) return true
+            if (matchesLiteral(element.stringValue, diffValue)) return true
+            if (matchesLiteral(element.text, diffValue)) return true
         }
         if (element is PyNumericLiteralExpression) {
             if (matchesLiteral(element.text, diffValue)) return true
         }
-
-        // 1.5 Boolean literal match (True, False)
         if (element is PyBoolLiteralExpression) {
             if (matchesLiteral(element.text, diffValue)) return true
         }
-
-        // 2. Collection literal match (List, Dict, Tuple, Set)
         if (element is PySequenceExpression) {
             val text = element.text
             if (normalize(text) == normalize(diffValue)) return true
         }
-        
-        // 3. Reference match
+
         if (element is PyReferenceExpression) {
-             val resolved = element.reference.resolve()
-             if (resolved is PyTargetExpression) {
-                 val assignedValue = resolved.findAssignedValue()
-                 if (assignedValue != null && matches(assignedValue, diffValue)) return true
-             }
+            val resolved = element.reference.resolve()
+            if (resolved is PyTargetExpression) {
+                val assignedValue = resolved.findAssignedValue()
+                if (assignedValue != null && matches(assignedValue, diffValue)) return true
+            }
             if (resolved is PyParameter) {
                 if (isParametrizedMatch(resolved, diffValue)) return true
-             }
+            }
         }
-        
+
         return false
     }
 
     private fun matchesLiteral(codeValue: String, diffValue: String): Boolean {
-        // Simple exact match first
         if (codeValue == diffValue) return true
-
-        // Handle potential quote differences if diffValue is raw string
-        // If code is "foo" and diff is foo
         if (codeValue == "\"$diffValue\"" || codeValue == "'$diffValue'") return true
-        
-        // Handle case where code has quotes and diff has different quotes
-        // e.g. code="foo", diff='foo'. Use normalization.
+
         if (codeValue.length >= 2 && diffValue.length >= 2) {
-             if (normalize(codeValue) == normalize(diffValue)) return true
+            if (normalize(codeValue) == normalize(diffValue)) return true
         }
 
         return false
     }
 
-    private fun normalize(s: String): String {
-        // Replace double quotes with single quotes to standardize representation
-        return s.replace("\"", "'")
-    }
+    private fun normalize(s: String): String = s.replace("\"", "'")
 
-    private fun replaceElement(element: PyElement, newValue: String, expectedValue: String, project: Project, matchedKey: String) {
+    private fun replaceElement(
+        element: PyElement,
+        newValue: String,
+        expectedValue: String,
+        project: Project,
+        matchedKey: String
+    ) {
         val generator = PyElementGenerator.getInstance(project)
 
-        // Handle parameter update
         if (element is PyReferenceExpression) {
             val resolved = element.reference.resolve()
             if (resolved is PyParameter) {
@@ -223,7 +121,6 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
             }
         }
 
-        // Determine if we should treat newValue as a string literal content
         val isStringTarget = if (element is PyStringLiteralExpression) {
             true
         } else if (element is PyReferenceExpression) {
@@ -238,7 +135,6 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
             false
         }
 
-        // Helper to create expression safely avoiding DocString interpretation for strings
         fun createExpression(text: String): PyExpression {
             val listExpr = generator.createExpressionFromText(
                 LanguageLevel.getDefault(),
@@ -249,22 +145,14 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
         }
 
         val newExpression = if (isStringTarget) {
-            // If newValue is not quoted, quote it.
-            // Be careful if newValue already has quotes.
             if (newValue.startsWith("\"") || newValue.startsWith("'")) {
                 createExpression(newValue)
             } else {
-                // It's a raw string value, quote it.
-                // Detect preferred quote style from file content
                 val quote = getPreferredQuote(element.containingFile)
                 val useDouble = quote == "\""
 
                 var escaped = StringUtil.escapeStringCharacters(newValue)
                 if (!useDouble) {
-                    // escapeStringCharacters assumes double quotes (escapes " as \")
-                    // If we want single quotes:
-                    // 1. Unescape double quotes: \" -> "
-                    // 2. Escape single quotes: ' -> \'
                     escaped = escaped.replace("\\\"", "\"").replace("'", "\\'")
                 }
 
@@ -272,7 +160,6 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
                 createExpression(text)
             }
         } else {
-            // For non-string literals (Dict, List, Ref), assume newValue is valid code.
             createExpression(newValue)
         }
 
@@ -288,7 +175,6 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
 
         val paramName = parameter.name ?: return false
         val paramIndex = getParameterIndex(namesArg, paramName)
-
         if (paramIndex == -1) return false
 
         if (valuesArg is PyListLiteralExpression) {
@@ -318,18 +204,12 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
 
         val paramName = parameter.name ?: return
         val paramIndex = getParameterIndex(namesArg, paramName)
-
         if (paramIndex == -1) return
 
-        // Extract parameter values from the matchedKey
-        // Format: python<path>//test_module.test_func[param1-param2-...]
         val paramValues = extractParameterValuesFromKey(matchedKey)
-
         if (valuesArg !is PyListLiteralExpression) return
 
-        // 1) Prefer matching by parameters extracted from the test key (for parametrized tests).
         if (paramValues != null) {
-            // First try to match by actual argvalues.
             for (element in valuesArg.elements) {
                 if (!matchesParameterSet(element, paramValues, namesArg)) continue
                 val valueExpr = getValueExpression(element, paramIndex) ?: continue
@@ -337,7 +217,6 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
                 return
             }
 
-            // If nothing matched, the bracket part in the key may be an explicit `id` (e.g. `[case1]`).
             val idFromKey = paramValues.singleOrNull()
             val ids = extractParametrizeIds(idsArg)
             if (idFromKey != null && ids != null) {
@@ -353,9 +232,6 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
             }
         }
 
-        // If there is only a single parameter set, update it directly.
-        // This is a pragmatic fallback for cases where pytest's key serialization (or `ids`) doesn't reflect
-        // the literal syntax used in the decorator (e.g. dict repr vs source literal).
         if (valuesArg.elements.size == 1) {
             val onlyElement = valuesArg.elements.firstOrNull()
             val valueExpr = onlyElement?.let { getValueExpression(it, paramIndex) }
@@ -365,8 +241,6 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
             }
         }
 
-        // 2) Fallback: match the expected value directly inside the decorator.
-        // This helps when pytest uses `ids` or when parameter serialization in the key is ambiguous.
         for (element in valuesArg.elements) {
             val valueExpr = getValueExpression(element, paramIndex) ?: continue
             if (matches(valueExpr, expectedValue)) {
@@ -377,14 +251,12 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
     }
 
     private fun extractParameterValuesFromKey(key: String): List<String>? {
-        // Extract the part in brackets: test_func[param1-param2] -> param1-param2
         val bracketStart = key.lastIndexOf('[')
         val bracketEnd = key.lastIndexOf(']')
         if (bracketStart == -1 || bracketEnd == -1 || bracketStart >= bracketEnd) {
             return null
         }
         val paramPart = key.substring(bracketStart + 1, bracketEnd)
-        // Split by '-' (pytest's default separator for parameter values)
         return paramPart.split('-')
     }
 
@@ -401,10 +273,8 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
             else -> listOf(current)
         }
 
-        // Check if the number of elements matches
         if (elements.size != paramValues.size) return false
 
-        // Compare each element with the corresponding parameter value
         for (i in elements.indices) {
             val elementValue = getElementValueAsString(elements[i])
             val expectedValue = paramValues[i]
@@ -438,7 +308,6 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
         if (current is PyListLiteralExpression) {
             return current.elements.getOrNull(index)
         }
-        // Single value (1 param case)
         if (index == 0) return current
         return null
     }
@@ -452,20 +321,18 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
         val args = argList.arguments
 
         if (argNames == null) {
-            // First positional
             if (args.isNotEmpty() && args[0] !is PyKeywordArgument) {
                 argNames = args[0]
             }
         }
         if (argValues == null) {
-            // Second positional
             if (args.size >= 2 && args[1] !is PyKeywordArgument) {
                 argValues = args[1]
             }
         }
 
         if (argNames != null && argValues != null) {
-            return Pair(argNames!!, argValues!!)
+            return Pair(argNames, argValues)
         }
         return null
     }
@@ -476,7 +343,6 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
         val keywordIds = decorator.getKeywordArgument("ids")
         if (keywordIds != null) return keywordIds
 
-        // Positional `ids` is the 4th argument: (argnames, argvalues, indirect=False, ids=None, ...)
         val args = argList.arguments
         var positionalIndex = 0
         for (arg in args) {
@@ -526,12 +392,10 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
         file.accept(object : PyRecursiveElementVisitor() {
             override fun visitPyStringLiteralExpression(node: PyStringLiteralExpression) {
                 if (count >= limit) return
-                
+
                 val text = node.text
-                // Skip triple quoted strings (likely docstrings or blocks)
                 if (text.contains("\"\"\"") || text.contains("'''")) return
-                
-                // Determine quote char
+
                 val quoteChar = text.find { it == '"' || it == '\'' }
                 if (quoteChar != null) {
                     if (quoteChar == '"') doubleCount++ else singleCount++
@@ -544,21 +408,4 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
         if (singleCount > doubleCount) return "'"
         return "\""
     }
-
-    private fun calculateLocationUrl(function: PyFunction): String? {
-        val qName = function.qualifiedName ?: return null
-        val virtualFile = function.containingFile.virtualFile ?: return null
-        val project = function.project
-
-        val fileIndex = ProjectRootManager.getInstance(project).fileIndex
-        val root = fileIndex.getSourceRootForFile(virtualFile) ?: fileIndex.getContentRootForFile(virtualFile)
-
-        if (root != null) {
-            return "python<${root.path}>://$qName"
-        }
-        return "python:$qName"
-    }
-
-    override fun generatePreview(project: Project, editor: Editor, file: PsiFile): IntentionPreviewInfo =
-        IntentionPreviewInfo.DIFF
 }

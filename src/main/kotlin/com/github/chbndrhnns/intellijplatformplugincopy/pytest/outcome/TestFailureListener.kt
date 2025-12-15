@@ -1,8 +1,5 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.listeners
+package com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome
 
-import com.github.chbndrhnns.intellijplatformplugincopy.pytest.PytestTestKey
-import com.github.chbndrhnns.intellijplatformplugincopy.services.DiffData
-import com.github.chbndrhnns.intellijplatformplugincopy.services.TestFailureState
 import com.intellij.execution.testframework.sm.runner.SMTRunnerEventsListener
 import com.intellij.execution.testframework.sm.runner.SMTestProxy
 import com.intellij.execution.testframework.stacktrace.DiffHyperlink
@@ -18,11 +15,8 @@ class TestFailureListener(private val project: Project) : SMTRunnerEventsListene
 
             val locationUrl = test.locationUrl
             if (locationUrl != null) {
-                val key = PytestTestKey.build(locationUrl, test.metainfo)
-                TestFailureState.getInstance(project).setDiffData(
-                    key,
-                    DiffData(expected, actual)
-                )
+                val key = PytestTestKeyFactory.fromTestProxy(locationUrl, test.metainfo)
+                TestOutcomeDiffService.getInstance(project).put(key, OutcomeDiff(expected, actual))
             }
         }
     }
@@ -30,8 +24,8 @@ class TestFailureListener(private val project: Project) : SMTRunnerEventsListene
     override fun onTestStarted(test: SMTestProxy) {
         val locationUrl = test.locationUrl
         if (locationUrl != null) {
-            val key = PytestTestKey.build(locationUrl, test.metainfo)
-            TestFailureState.getInstance(project).clearDiffData(key)
+            val key = PytestTestKeyFactory.fromTestProxy(locationUrl, test.metainfo)
+            TestOutcomeDiffService.getInstance(project).remove(key)
         }
     }
 

@@ -1,7 +1,5 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest
+package com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome
 
-import com.github.chbndrhnns.intellijplatformplugincopy.services.DiffData
-import com.github.chbndrhnns.intellijplatformplugincopy.services.TestFailureState
 import com.intellij.openapi.roots.ProjectRootManager
 import fixtures.TestBase
 
@@ -9,46 +7,46 @@ class ParametrizeFixTest : TestBase() {
 
     override fun setUp() {
         super.setUp()
-        TestFailureState.getInstance(myFixture.project).clearAll()
+        TestOutcomeDiffService.getInstance(myFixture.project).clearAll()
     }
 
     private fun setDiffData(qName: String, expected: String, actual: String) {
         val file = myFixture.file
-        val root = ProjectRootManager.getInstance(project).fileIndex.getSourceRootForFile(file.virtualFile) 
-                   ?: ProjectRootManager.getInstance(project).fileIndex.getContentRootForFile(file.virtualFile)
-        
+        val root = ProjectRootManager.getInstance(project).fileIndex.getSourceRootForFile(file.virtualFile)
+            ?: ProjectRootManager.getInstance(project).fileIndex.getContentRootForFile(file.virtualFile)
+
         val prefixes = listOfNotNull(
             root?.path?.let { "python<$it>://" },
             "python:"
         )
-        
+
         // qName input is like "test_list_args.test_foo[param]"
         // We need to support cases where the function qname is detected as "test_foo" or "test_list_args.test_foo"
         // If the key is "python:...//test_list_args.test_foo[param]"
         // And the calculated base is "python:...//test_foo"
         // It won't match.
         // So we should add keys that match the shorter qname too.
-        
+
         val variants = mutableListOf<String>()
         variants.add(qName)
-        
+
         // specific hack for this test structure: remove module prefix if present
         if (qName.contains(".")) {
-             // e.g. test_list_args.test_foo[param] -> test_foo[param]
-             // But be careful about split.
-             // We want to remove the file name part.
-             val parts = qName.split(".")
-             if (parts.size >= 2) {
-                 // heuristic: take last part (func name + params)
-                 variants.add(parts.last()) 
-             }
+            // e.g. test_list_args.test_foo[param] -> test_foo[param]
+            // But be careful about split.
+            // We want to remove the file name part.
+            val parts = qName.split(".")
+            if (parts.size >= 2) {
+                // heuristic: take last part (func name + params)
+                variants.add(parts.last())
+            }
         }
-        
-        val state = TestFailureState.getInstance(project)
+
+        val state = TestOutcomeDiffService.getInstance(project)
         for (prefix in prefixes) {
             for (variant in variants) {
                 val key = "$prefix$variant"
-                state.setDiffData(key, DiffData(expected, actual))
+                state.put(key, OutcomeDiff(expected, actual))
             }
         }
     }
@@ -72,7 +70,8 @@ class ParametrizeFixTest : TestBase() {
         val intention = myFixture.findSingleIntention("Use actual test outcome")
         myFixture.launchAction(intention)
 
-        myFixture.checkResult("""
+        myFixture.checkResult(
+            """
             import pytest
             
             @pytest.mark.parametrize(["arg", "expected"], [
@@ -80,9 +79,10 @@ class ParametrizeFixTest : TestBase() {
             ])
             def test_foo(arg, expected):
                 assert arg == expected
-        """.trimIndent())
+        """.trimIndent()
+        )
     }
-    
+
     fun `test parametrize with keyword arguments`() {
         myFixture.configureByText(
             "test_kwargs.py", """
@@ -101,7 +101,8 @@ class ParametrizeFixTest : TestBase() {
         val intention = myFixture.findSingleIntention("Use actual test outcome")
         myFixture.launchAction(intention)
 
-        myFixture.checkResult("""
+        myFixture.checkResult(
+            """
             import pytest
             
             @pytest.mark.parametrize(argnames="arg, expected", argvalues=[
@@ -109,11 +110,12 @@ class ParametrizeFixTest : TestBase() {
             ])
             def test_kwargs(arg, expected):
                 assert arg == expected
-        """.trimIndent())
+        """.trimIndent()
+        )
     }
 
     fun `test parametrize with extra arguments and keyword mix`() {
-         myFixture.configureByText(
+        myFixture.configureByText(
             "test_extra.py", """
             import pytest
             
@@ -128,17 +130,19 @@ class ParametrizeFixTest : TestBase() {
         val intention = myFixture.findSingleIntention("Use actual test outcome")
         myFixture.launchAction(intention)
 
-        myFixture.checkResult("""
+        myFixture.checkResult(
+            """
             import pytest
             
             @pytest.mark.parametrize("expected", ["actual"], ids=["case1"])
             def test_extra(expected):
                 assert "actual" == expected
-        """.trimIndent())
+        """.trimIndent()
+        )
     }
-    
+
     fun `test parametrize with integer values`() {
-         myFixture.configureByText(
+        myFixture.configureByText(
             "test_int.py", """
             import pytest
             
@@ -153,13 +157,15 @@ class ParametrizeFixTest : TestBase() {
         val intention = myFixture.findSingleIntention("Use actual test outcome")
         myFixture.launchAction(intention)
 
-        myFixture.checkResult("""
+        myFixture.checkResult(
+            """
             import pytest
             
             @pytest.mark.parametrize("expected", [2])
             def test_int(expected):
                 assert 2 == expected
-        """.trimIndent())
+        """.trimIndent()
+        )
     }
 
     fun `test parametrize replaces dict literal in decorator`() {

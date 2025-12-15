@@ -9,10 +9,11 @@ import com.jetbrains.python.psi.types.TypeEvalContext
 import fixtures.TestBase
 
 class PyProtocolImplementationsSearchTest : TestBase() {
-    
+
     fun testSimpleProtocolImplementation() {
         // Define Protocol locally to avoid import resolution issues in test environment
-        myFixture.configureByText("test.py", """
+        myFixture.configureByText(
+            "test.py", """
             class Protocol: pass
             
             class Draw<caret>able(Protocol):
@@ -29,14 +30,15 @@ class PyProtocolImplementationsSearchTest : TestBase() {
             class NotDrawable:
                 def paint(self) -> None:
                     pass
-        """.trimIndent())
-        
+        """.trimIndent()
+        )
+
         val protocol = myFixture.elementAtCaret as PyClass
         val context = TypeEvalContext.codeAnalysis(project, myFixture.file)
         val scope = GlobalSearchScope.fileScope(myFixture.file)
-        
+
         val implementations = PyProtocolImplementationsSearch.search(protocol, scope, context)
-        
+
         assertEquals(2, implementations.size)
         assertTrue(implementations.any { it.name == "Circle" })
         assertTrue(implementations.any { it.name == "Square" })
@@ -44,7 +46,8 @@ class PyProtocolImplementationsSearchTest : TestBase() {
     }
 
     fun testGoToImplementationForProtocol() {
-        myFixture.configureByText("test.py", """
+        myFixture.configureByText(
+            "test.py", """
             class Protocol: pass
             
             class Draw<caret>able(Protocol):
@@ -53,18 +56,21 @@ class PyProtocolImplementationsSearchTest : TestBase() {
             class Circle:
                 def draw(self) -> None:
                     pass
-        """.trimIndent())
-        
-        val gotoData = com.intellij.testFramework.fixtures.CodeInsightTestUtil.gotoImplementation(myFixture.editor, myFixture.file)
-        
+        """.trimIndent()
+        )
+
+        val gotoData =
+            com.intellij.testFramework.fixtures.CodeInsightTestUtil.gotoImplementation(myFixture.editor, myFixture.file)
+
         assertTrue(gotoData.targets.isNotEmpty())
-        assertTrue(gotoData.targets.any { 
-            it is PyClass && it.name == "Circle" 
+        assertTrue(gotoData.targets.any {
+            it is PyClass && it.name == "Circle"
         })
     }
-    
+
     fun testGoToImplementationForProtocolMethod() {
-        myFixture.configureByText("test.py", """
+        myFixture.configureByText(
+            "test.py", """
             class Protocol: pass
             
             class Drawable(Protocol):
@@ -77,21 +83,24 @@ class PyProtocolImplementationsSearchTest : TestBase() {
             class Square:
                 def draw(self) -> None:
                     pass
-        """.trimIndent())
-        
-        val gotoData = com.intellij.testFramework.fixtures.CodeInsightTestUtil.gotoImplementation(myFixture.editor, myFixture.file)
-        
+        """.trimIndent()
+        )
+
+        val gotoData =
+            com.intellij.testFramework.fixtures.CodeInsightTestUtil.gotoImplementation(myFixture.editor, myFixture.file)
+
         assertTrue("Should find implementations for Protocol method", gotoData.targets.isNotEmpty())
-        assertTrue("Should find Circle.draw", gotoData.targets.any { 
-            it is PyFunction && it.name == "draw" && it.containingClass?.name == "Circle" 
+        assertTrue("Should find Circle.draw", gotoData.targets.any {
+            it is PyFunction && it.name == "draw" && it.containingClass?.name == "Circle"
         })
-        assertTrue("Should find Square.draw", gotoData.targets.any { 
-            it is PyFunction && it.name == "draw" && it.containingClass?.name == "Square" 
+        assertTrue("Should find Square.draw", gotoData.targets.any {
+            it is PyFunction && it.name == "draw" && it.containingClass?.name == "Square"
         })
     }
-    
+
     fun testGoToImplementationForProtocolProperty() {
-        myFixture.configureByText("test.py", """
+        myFixture.configureByText(
+            "test.py", """
             class Protocol: pass
             
             class HasName(Protocol):
@@ -102,17 +111,20 @@ class PyProtocolImplementationsSearchTest : TestBase() {
                 
             class Company:
                 name: str
-        """.trimIndent())
-        
-        val gotoData = com.intellij.testFramework.fixtures.CodeInsightTestUtil.gotoImplementation(myFixture.editor, myFixture.file)
-        
+        """.trimIndent()
+        )
+
+        val gotoData =
+            com.intellij.testFramework.fixtures.CodeInsightTestUtil.gotoImplementation(myFixture.editor, myFixture.file)
+
         assertTrue("Should find implementations for Protocol property", gotoData.targets.isNotEmpty())
         assertEquals("Should find 2 implementations", 2, gotoData.targets.size)
     }
 
     fun testProtocolMethodReturnTypeMismatch() {
         // Class with wrong return type should NOT be considered an implementation
-        myFixture.configureByText("test.py", """
+        myFixture.configureByText(
+            "test.py", """
             class Protocol: pass
             
             class Get<caret>ter(Protocol):
@@ -125,22 +137,25 @@ class PyProtocolImplementationsSearchTest : TestBase() {
             class WrongReturnType:
                 def get_value(self) -> str:
                     return "wrong"
-        """.trimIndent())
-        
+        """.trimIndent()
+        )
+
         val protocol = myFixture.elementAtCaret as PyClass
         val context = TypeEvalContext.codeAnalysis(project, myFixture.file)
         val scope = GlobalSearchScope.fileScope(myFixture.file)
-        
+
         val implementations = PyProtocolImplementationsSearch.search(protocol, scope, context)
-        
+
         assertTrue("Should find CorrectImpl", implementations.any { it.name == "CorrectImpl" })
-        assertFalse("Should NOT find WrongReturnType due to return type mismatch", 
+        assertFalse(
+            "Should NOT find WrongReturnType due to return type mismatch",
             implementations.any { it.name == "WrongReturnType" })
     }
 
     fun testProtocolMethodParameterTypeMismatch() {
         // Class with wrong parameter type should NOT be considered an implementation
-        myFixture.configureByText("test.py", """
+        myFixture.configureByText(
+            "test.py", """
             class Protocol: pass
             
             class Pro<caret>cessor(Protocol):
@@ -153,22 +168,25 @@ class PyProtocolImplementationsSearchTest : TestBase() {
             class WrongParamType:
                 def process(self, value: str) -> None:
                     pass
-        """.trimIndent())
-        
+        """.trimIndent()
+        )
+
         val protocol = myFixture.elementAtCaret as PyClass
         val context = TypeEvalContext.codeAnalysis(project, myFixture.file)
         val scope = GlobalSearchScope.fileScope(myFixture.file)
-        
+
         val implementations = PyProtocolImplementationsSearch.search(protocol, scope, context)
-        
+
         assertTrue("Should find CorrectImpl", implementations.any { it.name == "CorrectImpl" })
-        assertFalse("Should NOT find WrongParamType due to parameter type mismatch", 
+        assertFalse(
+            "Should NOT find WrongParamType due to parameter type mismatch",
             implementations.any { it.name == "WrongParamType" })
     }
 
     fun testProtocolAttributeTypeMismatch() {
         // Class with wrong attribute type should NOT be considered an implementation
-        myFixture.configureByText("test.py", """
+        myFixture.configureByText(
+            "test.py", """
             class Protocol: pass
             
             class Has<caret>Value(Protocol):
@@ -179,22 +197,25 @@ class PyProtocolImplementationsSearchTest : TestBase() {
             
             class WrongAttrType:
                 value: str
-        """.trimIndent())
-        
+        """.trimIndent()
+        )
+
         val protocol = myFixture.elementAtCaret as PyClass
         val context = TypeEvalContext.codeAnalysis(project, myFixture.file)
         val scope = GlobalSearchScope.fileScope(myFixture.file)
-        
+
         val implementations = PyProtocolImplementationsSearch.search(protocol, scope, context)
-        
+
         assertTrue("Should find CorrectImpl", implementations.any { it.name == "CorrectImpl" })
-        assertFalse("Should NOT find WrongAttrType due to attribute type mismatch", 
+        assertFalse(
+            "Should NOT find WrongAttrType due to attribute type mismatch",
             implementations.any { it.name == "WrongAttrType" })
     }
 
     fun testProtocolWithMultipleTypedMembers() {
         // Test protocol with multiple typed members - all must match
-        myFixture.configureByText("test.py", """
+        myFixture.configureByText(
+            "test.py", """
             class Protocol: pass
             
             class Data<caret>Container(Protocol):
@@ -219,18 +240,21 @@ class PyProtocolImplementationsSearchTest : TestBase() {
                 count: int
                 def get_data(self) -> str:
                     return ""
-        """.trimIndent())
-        
+        """.trimIndent()
+        )
+
         val protocol = myFixture.elementAtCaret as PyClass
         val context = TypeEvalContext.codeAnalysis(project, myFixture.file)
         val scope = GlobalSearchScope.fileScope(myFixture.file)
-        
+
         val implementations = PyProtocolImplementationsSearch.search(protocol, scope, context)
-        
+
         assertTrue("Should find FullyCorrect", implementations.any { it.name == "FullyCorrect" })
-        assertFalse("Should NOT find WrongMethodReturn", 
+        assertFalse(
+            "Should NOT find WrongMethodReturn",
             implementations.any { it.name == "WrongMethodReturn" })
-        assertFalse("Should NOT find WrongAttrType", 
+        assertFalse(
+            "Should NOT find WrongAttrType",
             implementations.any { it.name == "WrongAttrType" })
     }
 
@@ -672,7 +696,7 @@ class PyProtocolImplementationsSearchTest : TestBase() {
             it is PyLambdaExpression
         })
     }
-    
+
     fun testGoToImplementationDoesNotFindUntypedLambdas() {
         // Lambdas assigned to untyped variables should NOT be found as protocol implementations
         myFixture.configureByText(

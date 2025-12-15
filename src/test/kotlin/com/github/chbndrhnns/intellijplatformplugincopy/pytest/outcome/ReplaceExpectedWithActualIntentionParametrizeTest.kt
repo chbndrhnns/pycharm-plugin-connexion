@@ -1,7 +1,5 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest
+package com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome
 
-import com.github.chbndrhnns.intellijplatformplugincopy.services.DiffData
-import com.github.chbndrhnns.intellijplatformplugincopy.services.TestFailureState
 import com.intellij.openapi.roots.ProjectRootManager
 import fixtures.TestBase
 
@@ -9,22 +7,22 @@ class ReplaceExpectedWithActualIntentionParametrizeTest : TestBase() {
 
     override fun setUp() {
         super.setUp()
-        TestFailureState.getInstance(myFixture.project).clearAll()
+        TestOutcomeDiffService.getInstance(myFixture.project).clearAll()
     }
 
     private fun setDiffData(qName: String, expected: String, actual: String) {
         val file = myFixture.file
-        val root = ProjectRootManager.getInstance(project).fileIndex.getSourceRootForFile(file.virtualFile) 
-                   ?: ProjectRootManager.getInstance(project).fileIndex.getContentRootForFile(file.virtualFile)
+        val root = ProjectRootManager.getInstance(project).fileIndex.getSourceRootForFile(file.virtualFile)
+            ?: ProjectRootManager.getInstance(project).fileIndex.getContentRootForFile(file.virtualFile)
         val path = root?.path ?: ""
         val key = "python<$path>://$qName"
-        TestFailureState.getInstance(project).setDiffData(key, DiffData(expected, actual))
+        TestOutcomeDiffService.getInstance(project).put(key, OutcomeDiff(expected, actual))
     }
 
     private fun buildKey(qName: String): String {
         val file = myFixture.file
         val root = ProjectRootManager.getInstance(project).fileIndex.getSourceRootForFile(file.virtualFile)
-                   ?: ProjectRootManager.getInstance(project).fileIndex.getContentRootForFile(file.virtualFile)
+            ?: ProjectRootManager.getInstance(project).fileIndex.getContentRootForFile(file.virtualFile)
         val path = root?.path ?: ""
         return "python<$path>://$qName"
     }
@@ -49,16 +47,18 @@ class ReplaceExpectedWithActualIntentionParametrizeTest : TestBase() {
         // Currently this should fail because the intention looks for exact match on "test_param.test_str"
         val intention = myFixture.getAvailableIntention("Use actual test outcome")
         assertNotNull("Intention should be available for parametrized test failure", intention)
-        
+
         myFixture.launchAction(intention!!)
-        
-        myFixture.checkResult("""
+
+        myFixture.checkResult(
+            """
             import pytest
             
             @pytest.mark.parametrize("arg, expected", [("abc", "abc")])
             def test_str(arg, expected):
                 assert arg == expected
-        """.trimIndent())
+        """.trimIndent()
+        )
     }
 
     fun `test intention supports parametrized test with multiple parameter sets`() {
@@ -77,16 +77,18 @@ class ReplaceExpectedWithActualIntentionParametrizeTest : TestBase() {
 
         val intention = myFixture.getAvailableIntention("Use actual test outcome")
         assertNotNull("Intention should be available for parametrized test failure", intention)
-        
+
         myFixture.launchAction(intention!!)
-        
-        myFixture.checkResult("""
+
+        myFixture.checkResult(
+            """
             import pytest
             
             @pytest.mark.parametrize("arg,expected", [("abc", "abc"), ("defg", "defg"), ])
             def test_str(arg, expected):
                 assert arg == expected
-        """.trimIndent())
+        """.trimIndent()
+        )
     }
 
     fun `test intention prefers explicit test key when multiple parametrized diffs exist`() {

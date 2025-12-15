@@ -44,7 +44,6 @@ self._prefixes: dict[PrefixId, Prefix] = {
 - [ ] feat: Wrap with pytest.raises()
 - [ ] feat: Move symbol to top level (or one scope up?)
 - [ ] feat: Add pytest nodes to separate view in search everywhere (currently, `pytest` seems not respected)
-- [ ] feat: Make introduce parameter object available on call site
 - [ ] feat: When implementing abstract method, present dialog to choose or show edits
 - [ ] feat: Move instance method
 - [ ] feat: Move to inner class
@@ -74,9 +73,12 @@ self._prefixes: dict[PrefixId, Prefix] = {
 
 ## In Progress Tasks
 
+- [ ] fix: Introduce parameter object needs to respect existing * arg
+
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Make introduce parameter object available on call site
 - [x] feat: Support actual value for such case where one parameter is ok
 
 ```python

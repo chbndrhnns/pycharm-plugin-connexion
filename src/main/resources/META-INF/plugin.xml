@@ -242,7 +242,7 @@
                 implementation="com.github.chbndrhnns.intellijplatformplugincopy.searcheverywhere.PytestIdentifierContributor$Factory"/>
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest.ReplaceExpectedWithActualIntention</className>
+            <className>com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome.ReplaceExpectedWithActualIntention</className>
             <category>Test</category>
         </intentionAction>
 
@@ -263,7 +263,7 @@
     <projectListeners>
         <listener class="com.github.chbndrhnns.intellijplatformplugincopy.listeners.PythonVersionCheckerListener"
                   topic="com.intellij.openapi.roots.ModuleRootListener"/>
-        <listener class="com.github.chbndrhnns.intellijplatformplugincopy.listeners.TestFailureListener"
+        <listener class="com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome.TestFailureListener"
                   topic="com.intellij.execution.testframework.sm.runner.SMTRunnerEventsListener"/>
     </projectListeners>
 
@@ -335,7 +335,7 @@
         </action>
 
         <action id="MyPlugin.UseActualTestOutcomeFromTree"
-                class="com.github.chbndrhnns.intellijplatformplugincopy.actions.UseActualTestOutcomeFromTreeAction"
+                class="com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome.UseActualTestOutcomeFromTreeAction"
                 text="Use Actual Test Outcome"
                 description="Replaces expected value with actual value for the selected failed test">
             <add-to-group group-id="TestTreePopupMenu" anchor="last"/>

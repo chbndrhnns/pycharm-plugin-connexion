@@ -70,7 +70,7 @@ class PytestParametrizeTest : TestBase() {
         assertTrue("List items should be wrapped", actual.contains("Arg(1)"))
         assertTrue("List items should be wrapped", actual.contains("Arg(2)"))
         assertTrue("List items should be wrapped", actual.contains("Arg(3)"))
-        
+
         // Verify parameter has annotation, not wrapped
         assertTrue("Parameter should have annotation", actual.contains("def test_(arg: Arg):"))
         assertFalse("Parameter should NOT be wrapped", actual.contains("def test_(Arg(arg))"))

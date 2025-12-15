@@ -1,7 +1,5 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.actions
+package com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome
 
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest.ReplaceExpectedWithActualIntention
-import com.github.chbndrhnns.intellijplatformplugincopy.pytest.PytestTestKey
 import com.intellij.execution.testframework.AbstractTestProxy
 import com.intellij.execution.testframework.TestTreeView
 import com.intellij.execution.testframework.sm.runner.SMTestProxy
@@ -40,7 +38,7 @@ class UseActualTestOutcomeFromTreeAction : AnAction() {
         val proxy = proxies.firstOrNull() as? SMTestProxy ?: return
 
         val locationUrl = proxy.locationUrl ?: return
-        val testKey = PytestTestKey.build(locationUrl, proxy.metainfo)
+        val testKey = PytestTestKeyFactory.fromTestProxy(locationUrl, proxy.metainfo)
 
         // 3. Get Test Definition Line
         val location = proxy.getLocation(project, scope) ?: return
@@ -72,9 +70,9 @@ class UseActualTestOutcomeFromTreeAction : AnAction() {
             val descriptor = OpenFileDescriptor(project, virtualFile, targetOffset)
             val editor = FileEditorManager.getInstance(project).openTextEditor(descriptor, true) ?: return
 
-            val intention = ReplaceExpectedWithActualIntention()
+            val useCase = UseActualOutcomeUseCase(TestOutcomeDiffService.getInstance(project))
             WriteCommandAction.runWriteCommandAction(project) {
-                intention.invokeWithTestKey(project, editor, psiFile, testKey)
+                useCase.invoke(project, editor, psiFile, testKey)
             }
         }
     }
