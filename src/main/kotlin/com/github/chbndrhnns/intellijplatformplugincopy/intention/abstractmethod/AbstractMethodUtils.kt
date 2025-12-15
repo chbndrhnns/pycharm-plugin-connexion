@@ -4,7 +4,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.psi.util.PsiUtilBase
+import com.intellij.psi.util.PsiEditorUtil
 import com.jetbrains.python.codeInsight.override.PyMethodMember
 import com.jetbrains.python.codeInsight.override.PyOverrideImplementUtil
 import com.jetbrains.python.psi.PyClass
@@ -41,7 +41,7 @@ object AbstractMethodUtils {
             var targetEditor = if (originFile != null && targetFile == originFile) {
                 originEditor
             } else {
-                PsiUtilBase.findEditor(targetClass)
+                PsiEditorUtil.findEditor(targetClass)
             }
 
             if (targetEditor == null) {
