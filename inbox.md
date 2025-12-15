@@ -11,7 +11,6 @@
 
 ## Pending Features
 
-- [ ] feat: Support alternative pytest parametrize arg representation
 - [ ] feat: Convert between pytest.param() and no param representation
 - [ ] feat: Support exception flow analysis when exception is raised in helper method
 - [ ] feat: Support skip toggle for single parameters
@@ -64,12 +63,12 @@ def test_str(arg, expected):
 
 ## In Progress Tasks
 
-- [ ] fix: Introduce type fails for pytest.mark.parametrize
 
 
 ## Completed Tasks (newest first)
 
-- [x] fix: Limit search for protocol implementations to project code, no stdlib, no libraries
+- [x] fix: Introduce type fails for pytest.mark.parametrize[x] fix: Limit search for protocol implementations to project
+  code, no stdlib, no libraries
 - [x] feat: Replace expected with actual test outcome
 - [x] feat: Toggle skip marker from test panel
 - [-] feat: Intention: Make function abstract (add @abc.abstractmethod or @abstractmethod)
