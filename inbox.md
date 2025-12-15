@@ -2,7 +2,6 @@
 
 ## Pending Issues
 
-- [ ] fix: Change visibility: make private (we only have two options and one is always true)
 - [ ] fix: Wrap should pick inner problem first, offers `Prefix` here
 
 ```python
@@ -26,6 +25,7 @@ self._prefixes: dict[PrefixId, Prefix] = {
 
 ## Pending Features
 
+- [ ] feat: Change visibility: make private (we only have two options and one is always true)
 - [ ] feat: Convert parametrized test to multiple unparametrized tests
 - [ ] feat: Add field to dataclass/model in case of unexpected argument
 - [ ] feat: After return, suggest `list[T()]` if return type is a container type (?)
