@@ -2,6 +2,8 @@
 
 ## Pending Issues
 
+- [ ] fix: Deprecation of PsiUtilBase.findEditor
+- [ ] fix: Deprecation of TransactionGuard.getInstance().submitTransaction
 - [ ] fix: Change visibility: make private (we only have two options and one is always true)
 - [ ] fix: Only offer actual outcome if diff exists, not for all failures
 - [ ] fix: Introduce parameter object should not be available for test methods and pytest fixtures
