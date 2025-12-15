@@ -2,6 +2,19 @@
 
 ## Pending Issues
 
+- [ ] fix: Strip type annotations should only be available on function declaration, not decorators or body.
+- [ ] fix: Wrap should pick inner problem first, offers `Prefix` here
+
+```python
+self._prefixes: dict[PrefixId, Prefix] = {
+  PrefixId(1): Prefix(
+    id=PrefixId(1),
+    prefix=IPv4Interface("10.10.10.0/24"),
+    vrf=Vrf(id=1, name=VrfName("5girs_flat_int_prod")),
+  )
+}
+```
+
 - [ ] fix: Wrap should use set literal instead of set call, `vals: set[T] = T`
 - [ ] fix: Wrap suggests set instead of type: `vals: set[str] = {1}`
 - [ ] fix: When prefering relative import inside same package, do not add candidate if relative import exists already
@@ -13,6 +26,8 @@
 
 ## Pending Features
 
+- [ ] feat: Add field to dataclass/model in case of unexpected argument
+- [ ] feat: After return, suggest `list[T()]` if return type is a container type (?)
 - [ ] feat: Suggest expected type for container types, like `vals: set[MyType] = set(<caret>)`
 - [ ] feat: Convert between pytest.param() and no param representation
 - [ ] feat: Support exception flow analysis when exception is raised in helper method
