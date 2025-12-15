@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.listeners
 
+import com.github.chbndrhnns.intellijplatformplugincopy.pytest.PytestTestKey
 import com.github.chbndrhnns.intellijplatformplugincopy.services.DiffData
 import com.github.chbndrhnns.intellijplatformplugincopy.services.TestFailureState
 import com.intellij.execution.testframework.sm.runner.SMTRunnerEventsListener
@@ -17,7 +18,7 @@ class TestFailureListener(private val project: Project) : SMTRunnerEventsListene
 
             val locationUrl = test.locationUrl
             if (locationUrl != null) {
-                val key = buildTestKey(locationUrl, test.metainfo)
+                val key = PytestTestKey.build(locationUrl, test.metainfo)
                 TestFailureState.getInstance(project).setDiffData(
                     key,
                     DiffData(expected, actual)
@@ -29,29 +30,9 @@ class TestFailureListener(private val project: Project) : SMTRunnerEventsListene
     override fun onTestStarted(test: SMTestProxy) {
         val locationUrl = test.locationUrl
         if (locationUrl != null) {
-            val key = buildTestKey(locationUrl, test.metainfo)
+            val key = PytestTestKey.build(locationUrl, test.metainfo)
             TestFailureState.getInstance(project).clearDiffData(key)
         }
-    }
-
-    /**
-     * Builds a test key by combining locationUrl with metainfo for parametrized tests.
-     * For parametrized tests, metainfo contains the parameter values (e.g., "test_str[abc-defg]").
-     * We extract the bracketed part and append it to the locationUrl.
-     */
-    private fun buildTestKey(locationUrl: String, metainfo: String?): String {
-        if (metainfo.isNullOrEmpty()) {
-            return locationUrl
-        }
-        
-        // Extract parameter values from metainfo (e.g., "test_str[abc-defg]" -> "[abc-defg]")
-        val bracketStart = metainfo.indexOf('[')
-        if (bracketStart != -1) {
-            val paramPart = metainfo.substring(bracketStart)
-            return locationUrl + paramPart
-        }
-        
-        return locationUrl
     }
 
     override fun onTestingStarted(testsRoot: SMTestProxy.SMRootTestProxy) {}

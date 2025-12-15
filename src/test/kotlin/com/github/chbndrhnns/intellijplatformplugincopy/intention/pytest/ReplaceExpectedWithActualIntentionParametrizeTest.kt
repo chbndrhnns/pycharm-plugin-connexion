@@ -21,6 +21,14 @@ class ReplaceExpectedWithActualIntentionParametrizeTest : TestBase() {
         TestFailureState.getInstance(project).setDiffData(key, DiffData(expected, actual))
     }
 
+    private fun buildKey(qName: String): String {
+        val file = myFixture.file
+        val root = ProjectRootManager.getInstance(project).fileIndex.getSourceRootForFile(file.virtualFile)
+                   ?: ProjectRootManager.getInstance(project).fileIndex.getContentRootForFile(file.virtualFile)
+        val path = root?.path ?: ""
+        return "python<$path>://$qName"
+    }
+
     fun `test intention supports parametrized test failure`() {
         myFixture.configureByText(
             "test_param.py", """
@@ -79,5 +87,36 @@ class ReplaceExpectedWithActualIntentionParametrizeTest : TestBase() {
             def test_str(arg, expected):
                 assert arg == expected
         """.trimIndent())
+    }
+
+    fun `test intention prefers explicit test key when multiple parametrized diffs exist`() {
+        myFixture.configureByText(
+            "test_param.py", """
+            import pytest
+
+            @pytest.mark.parametrize("arg,expected", [("abc", "defg"), ("xxx", "yyy"), ])
+            def test_str(arg, expected):
+                assert arg <caret>== expected
+        """.trimIndent()
+        )
+
+        setDiffData("test_param.test_str[abc-defg]", "defg", "abc")
+        setDiffData("test_param.test_str[xxx-yyy]", "yyy", "xxx")
+
+        val intention = ReplaceExpectedWithActualIntention()
+        val explicitKey = buildKey("test_param.test_str[xxx-yyy]")
+        com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project) {
+            intention.invokeWithTestKey(project, myFixture.editor, myFixture.file, explicitKey)
+        }
+
+        myFixture.checkResult(
+            """
+            import pytest
+
+            @pytest.mark.parametrize("arg,expected", [("abc", "defg"), ("xxx", "xxx"), ])
+            def test_str(arg, expected):
+                assert arg == expected
+            """.trimIndent()
+        )
     }
 }

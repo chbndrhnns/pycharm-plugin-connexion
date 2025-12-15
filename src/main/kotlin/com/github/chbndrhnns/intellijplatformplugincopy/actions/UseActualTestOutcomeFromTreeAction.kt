@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.actions
 
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest.ReplaceExpectedWithActualIntention
+import com.github.chbndrhnns.intellijplatformplugincopy.pytest.PytestTestKey
 import com.intellij.execution.testframework.AbstractTestProxy
 import com.intellij.execution.testframework.TestTreeView
 import com.intellij.execution.testframework.sm.runner.SMTestProxy
@@ -38,6 +39,9 @@ class UseActualTestOutcomeFromTreeAction : AnAction() {
         val proxies = e.getData(AbstractTestProxy.DATA_KEYS) ?: return
         val proxy = proxies.firstOrNull() as? SMTestProxy ?: return
 
+        val locationUrl = proxy.locationUrl ?: return
+        val testKey = PytestTestKey.build(locationUrl, proxy.metainfo)
+
         // 3. Get Test Definition Line
         val location = proxy.getLocation(project, scope) ?: return
         // openFileDescriptor gives the 0-based line number of the test definition (e.g., 'def test_foo():')
@@ -69,10 +73,8 @@ class UseActualTestOutcomeFromTreeAction : AnAction() {
             val editor = FileEditorManager.getInstance(project).openTextEditor(descriptor, true) ?: return
 
             val intention = ReplaceExpectedWithActualIntention()
-            if (intention.isAvailable(project, editor, psiFile)) {
-                WriteCommandAction.runWriteCommandAction(project) {
-                    intention.invoke(project, editor, psiFile)
-                }
+            WriteCommandAction.runWriteCommandAction(project) {
+                intention.invokeWithTestKey(project, editor, psiFile, testKey)
             }
         }
     }

@@ -40,14 +40,19 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
     }
 
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
+        invokeWithTestKey(project, editor, file, testKey = null)
+    }
+
+    fun invokeWithTestKey(project: Project, editor: Editor, file: PsiFile, testKey: String?) {
         if (file !is PyFile) return
         val element = file.findElementAt(editor.caretModel.offset) ?: return
 
         val assertStatement = PsiTreeUtil.getParentOfType(element, PyAssertStatement::class.java) ?: return
         val pyFunction = PsiTreeUtil.getParentOfType(assertStatement, PyFunction::class.java) ?: return
 
-        val locationUrl = calculateLocationUrl(pyFunction) ?: return
-        val (diffData, matchedKey) = findDiffDataWithKey(project, locationUrl) ?: return
+        val (diffData, matchedKey) =
+            findDiffDataWithKey(project, calculateLocationUrl(pyFunction) ?: return, testKey)
+                ?: return
 
         val expected = diffData.expected
         val actual = diffData.actual
@@ -115,8 +120,18 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
             .filter { it.startsWith(baseLocationUrl) }.firstNotNullOfOrNull { state.getDiffData(it) }
     }
 
-    private fun findDiffDataWithKey(project: Project, baseLocationUrl: String): Pair<DiffData, String>? {
+    private fun findDiffDataWithKey(
+        project: Project,
+        baseLocationUrl: String,
+        explicitKey: String?
+    ): Pair<DiffData, String>? {
         val state = TestFailureState.getInstance(project)
+
+        if (!explicitKey.isNullOrBlank()) {
+            val exactExplicit = state.getDiffData(explicitKey)
+            if (exactExplicit != null) return Pair(exactExplicit, explicitKey)
+        }
+
         val exact = state.getDiffData(baseLocationUrl)
         if (exact != null) return Pair(exact, baseLocationUrl)
 
