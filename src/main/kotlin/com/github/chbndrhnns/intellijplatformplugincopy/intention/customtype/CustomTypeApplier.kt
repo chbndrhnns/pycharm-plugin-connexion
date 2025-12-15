@@ -20,6 +20,7 @@ import com.jetbrains.python.psi.impl.PyBuiltinCache
 import com.jetbrains.python.psi.types.PyType
 import com.jetbrains.python.psi.types.PyTypeChecker
 import com.jetbrains.python.psi.types.TypeEvalContext
+import com.jetbrains.python.refactoring.PyReplaceExpressionUtil
 
 /**
  * Applies a [CustomTypePlan] by performing all PSI mutations needed to
@@ -135,6 +136,12 @@ class CustomTypeApplier(
                     rewriter.rewriteAnnotation(annRef, newRefBase, builtinName)
                 }
 
+                // Check if this is a pytest.mark.parametrize parameter and wrap decorator list items
+                val parameter = PsiTreeUtil.getParentOfType(annRef, PyNamedParameter::class.java)
+                if (parameter != null) {
+                    wrapPytestParametrizeDecoratorValues(parameter, newTypeName, pyGenerator)
+                }
+
                 // Wrap call site usages (using found pointers from Phase 1)
                 if (usagesToWrap.isNotEmpty()) {
                     rewriter.wrapUsages(usagesToWrap, newTypeName, pyGenerator)
@@ -151,7 +158,20 @@ class CustomTypeApplier(
                 // we rewrite the argument expression so that the PSI
                 // hierarchy for the original expression is still intact.
                 rewriter.updateParameterAnnotationFromCallSite(originalExpr, builtinName, newTypeName, pyGenerator)
-                rewriter.wrapExpression(originalExpr, newTypeName, pyGenerator)
+
+                // Check if this expression is a parameter reference in a pytest.mark.parametrize test
+                val paramRef = originalExpr as? PyReferenceExpression
+                val parameter = paramRef?.reference?.resolve() as? PyNamedParameter
+                val wrappedDecorator = if (parameter != null) {
+                    wrapPytestParametrizeDecoratorValues(parameter, newTypeName, pyGenerator)
+                } else {
+                    false
+                }
+
+                // Only wrap the expression itself if we didn't wrap decorator values
+                if (!wrappedDecorator) {
+                    rewriter.wrapExpression(originalExpr, newTypeName, pyGenerator)
+                }
             }
 
             val field = plan.field
@@ -200,13 +220,145 @@ class CustomTypeApplier(
     }
 
     /**
-     * Decide whether an assigned expression should be wrapped when updating an
-     * annotated assignment.
+     * Wraps values in pytest.mark.parametrize decorator lists when introducing
+     * a custom type for a test parameter.
      *
-     * The goal is to only wrap values whose *inferred type* clearly matches the
-     * builtin type we are replacing, and to avoid wrapping sentinel/literal
-     * values that belong to other union branches (most importantly ``None``).
+     * For example, when introducing a custom type for parameter "arg" in:
+     *   @pytest.mark.parametrize("arg", [1, 2, 3])
+     *   def test_(arg): ...
+     *
+     * This will wrap the list items to produce:
+     *   @pytest.mark.parametrize("arg", [Arg(1), Arg(2), Arg(3)])
+     * 
+     * @return true if decorator values were wrapped, false otherwise
      */
+    private fun wrapPytestParametrizeDecoratorValues(
+        parameter: PyNamedParameter,
+        wrapperTypeName: String,
+        generator: PyElementGenerator
+    ): Boolean {
+        val paramName = parameter.name ?: return false
+        val function = PsiTreeUtil.getParentOfType(parameter, PyFunction::class.java) ?: return false
+        val decoratorList = function.decoratorList ?: return false
+
+        for (decorator in decoratorList.decorators) {
+            // Check if this is a pytest.mark.parametrize decorator
+            val decoratorName = decorator.name
+            if (decoratorName != "parametrize") {
+                continue
+            }
+
+            val args = decorator.argumentList?.arguments ?: continue
+            if (args.isEmpty()) continue
+
+            // First argument should be the parameter name(s)
+            val namesArg = args[0]
+            val paramNames = extractParameterNames(namesArg) ?: continue
+
+            // Check if our parameter is in the list
+            if (paramName !in paramNames) continue
+
+            // Second argument should be the values list
+            if (args.size < 2) continue
+            val valuesArg = args[1]
+
+            // Find the index of our parameter in the names list
+            val paramIndex = paramNames.indexOf(paramName)
+
+            // Wrap the values
+            when (valuesArg) {
+                is PyListLiteralExpression -> {
+                    wrapListItems(valuesArg, paramIndex, paramNames.size, wrapperTypeName, generator)
+                    return true
+                }
+
+                is PyTupleExpression -> {
+                    wrapTupleItems(valuesArg, paramIndex, paramNames.size, wrapperTypeName, generator)
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    private fun extractParameterNames(namesArg: PyExpression): List<String>? {
+        return when (namesArg) {
+            is PyStringLiteralExpression -> {
+                // Single string like "arg" or comma-separated like "arg1,arg2"
+                namesArg.stringValue.split(',').map { it.trim() }
+            }
+
+            is PyListLiteralExpression -> {
+                // List of strings like ["arg1", "arg2"]
+                namesArg.elements.mapNotNull { (it as? PyStringLiteralExpression)?.stringValue }
+            }
+
+            is PyTupleExpression -> {
+                // Tuple of strings like ("arg1", "arg2")
+                namesArg.elements.mapNotNull { (it as? PyStringLiteralExpression)?.stringValue }
+            }
+
+            else -> null
+        }
+    }
+
+    private fun wrapListItems(
+        listExpr: PyListLiteralExpression,
+        paramIndex: Int,
+        paramCount: Int,
+        wrapperTypeName: String,
+        generator: PyElementGenerator
+    ) {
+        for (element in listExpr.elements) {
+            val valueToWrap = extractValueAtIndex(element, paramIndex, paramCount) ?: continue
+            wrapSingleValue(valueToWrap, wrapperTypeName, generator)
+        }
+    }
+
+    private fun wrapTupleItems(
+        tupleExpr: PyTupleExpression,
+        paramIndex: Int,
+        paramCount: Int,
+        wrapperTypeName: String,
+        generator: PyElementGenerator
+    ) {
+        for (element in tupleExpr.elements) {
+            val valueToWrap = extractValueAtIndex(element, paramIndex, paramCount) ?: continue
+            wrapSingleValue(valueToWrap, wrapperTypeName, generator)
+        }
+    }
+
+    private fun extractValueAtIndex(element: PyExpression, index: Int, totalParams: Int): PyExpression? {
+        // If there's only one parameter, the element itself is the value
+        if (totalParams == 1) {
+            return element
+        }
+
+        // If there are multiple parameters, each element should be a tuple/list
+        return when (element) {
+            is PyTupleExpression -> element.elements.getOrNull(index)
+            is PyListLiteralExpression -> element.elements.getOrNull(index)
+            else -> null
+        }
+    }
+
+    private fun wrapSingleValue(
+        expr: PyExpression,
+        wrapperTypeName: String,
+        generator: PyElementGenerator
+    ) {
+        // Don't wrap if already wrapped
+        if (expr is PyCallExpression && expr.callee?.text == wrapperTypeName) {
+            return
+        }
+
+        val wrapped = generator.createExpressionFromText(
+            LanguageLevel.getLatest(),
+            "$wrapperTypeName(${expr.text})"
+        )
+        PyReplaceExpressionUtil.replaceExpression(expr, wrapped)
+    }
+
     private fun shouldWrapAssignedExpression(expr: PyExpression, builtinName: String): Boolean {
         if (expr is PyNoneLiteralExpression) return false
 
