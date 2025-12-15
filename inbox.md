@@ -71,7 +71,8 @@ self._prefixes: dict[PrefixId, Prefix] = {
 
 ## In Progress Tasks
 
-- [ ] fix: Introduce parameter object should not be available for test methods and pytest fixtures
+- [ ] fix: Introduce parameter object should not be available for test methods and pytest fixtures (
+  spec/parameter-object/blocklist.md)
 - [ ] fix: Only offer actual outcome if diff exists, not for all failures
 
 
