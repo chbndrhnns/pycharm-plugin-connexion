@@ -2,6 +2,7 @@
 
 ## Pending Issues
 
+- [ ] fix: Introduce parameter object should not be available for test methods and pytest fixtures
 - [ ] fix: Wrap should pick inner problem first, offers `Prefix` here
 
 ```python
@@ -25,6 +26,7 @@ self._prefixes: dict[PrefixId, Prefix] = {
 
 ## Pending Features
 
+- [ ] feat: Convert parametrized test to multiple unparametrized tests
 - [ ] feat: Add field to dataclass/model in case of unexpected argument
 - [ ] feat: After return, suggest `list[T()]` if return type is a container type (?)
 - [ ] feat: Suggest expected type for container types, like `vals: set[MyType] = set(<caret>)`

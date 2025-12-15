@@ -44,4 +44,49 @@ class TestFailureListenerTest : TestBase() {
         
         assertNull("Should have cleared data for key '$expectedKey'", state.getDiffData(expectedKey))
     }
+    
+    fun `test stores failure with metainfo for parametrized test`() {
+        val listener = TestFailureListener(project)
+        // Simulate a parametrized test as described in the issue
+        // locationUrl="python</Users/cleancoder/PyCharmMiscProject>://tests.test_param.test_str."
+        // metainfo="test_str[abc-defg]"
+        val locationUrl = "python</Users/cleancoder/PyCharmMiscProject>://tests.test_param.test_str"
+        val metainfo = "test_str[abc-defg]"
+        val testProxy = SMTestProxy("test_str", false, locationUrl)
+        testProxy.metainfo = metainfo
+        
+        // Simulate diff data
+        testProxy.setTestComparisonFailed("msg", "stack", "abc", "defg")
+        
+        listener.onTestFailed(testProxy)
+        
+        val state = TestFailureState.getInstance(project)
+        
+        // The key should be locationUrl + "[" + parameter values from metainfo + "]"
+        // Expected: "python</Users/cleancoder/PyCharmMiscProject>://tests.test_param.test_str[abc-defg]"
+        val expectedKey = "$locationUrl[abc-defg]"
+        
+        val data = state.getDiffData(expectedKey)
+        assertNotNull("Should find data with parametrized key '$expectedKey' but found null. State keys: ${state.getAllKeys()}", data)
+        assertEquals("abc", data?.actual)
+        assertEquals("defg", data?.expected)
+    }
+    
+    fun `test clears failure with metainfo for parametrized test`() {
+        val listener = TestFailureListener(project)
+        val locationUrl = "python</Users/cleancoder/PyCharmMiscProject>://tests.test_param.test_str"
+        val metainfo = "test_str[abc-defg]"
+        val testProxy = SMTestProxy("test_str", false, locationUrl)
+        testProxy.metainfo = metainfo
+        
+        // Pre-fill state
+        val state = TestFailureState.getInstance(project)
+        val expectedKey = "$locationUrl[abc-defg]"
+        state.setDiffData(expectedKey, com.github.chbndrhnns.intellijplatformplugincopy.services.DiffData("exp", "act"))
+        
+        // Simulate test start
+        listener.onTestStarted(testProxy)
+        
+        assertNull("Should have cleared data for parametrized key '$expectedKey'", state.getDiffData(expectedKey))
+    }
 }

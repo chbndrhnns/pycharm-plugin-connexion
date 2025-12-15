@@ -16,9 +16,10 @@ class TestFailureListener(private val project: Project) : SMTRunnerEventsListene
             val expected = diffHyperlink.left
 
             val locationUrl = test.locationUrl
-            if (locationUrl != null && actual != null && expected != null) {
+            if (locationUrl != null) {
+                val key = buildTestKey(locationUrl, test.metainfo)
                 TestFailureState.getInstance(project).setDiffData(
-                    locationUrl,
+                    key,
                     DiffData(expected, actual)
                 )
             }
@@ -28,10 +29,30 @@ class TestFailureListener(private val project: Project) : SMTRunnerEventsListene
     override fun onTestStarted(test: SMTestProxy) {
         val locationUrl = test.locationUrl
         if (locationUrl != null) {
-            TestFailureState.getInstance(project).clearDiffData(locationUrl)
+            val key = buildTestKey(locationUrl, test.metainfo)
+            TestFailureState.getInstance(project).clearDiffData(key)
         }
     }
 
+    /**
+     * Builds a test key by combining locationUrl with metainfo for parametrized tests.
+     * For parametrized tests, metainfo contains the parameter values (e.g., "test_str[abc-defg]").
+     * We extract the bracketed part and append it to the locationUrl.
+     */
+    private fun buildTestKey(locationUrl: String, metainfo: String?): String {
+        if (metainfo.isNullOrEmpty()) {
+            return locationUrl
+        }
+        
+        // Extract parameter values from metainfo (e.g., "test_str[abc-defg]" -> "[abc-defg]")
+        val bracketStart = metainfo.indexOf('[')
+        if (bracketStart != -1) {
+            val paramPart = metainfo.substring(bracketStart)
+            return locationUrl + paramPart
+        }
+        
+        return locationUrl
+    }
 
     override fun onTestingStarted(testsRoot: SMTestProxy.SMRootTestProxy) {}
     override fun onTestingFinished(testsRoot: SMTestProxy.SMRootTestProxy) {}

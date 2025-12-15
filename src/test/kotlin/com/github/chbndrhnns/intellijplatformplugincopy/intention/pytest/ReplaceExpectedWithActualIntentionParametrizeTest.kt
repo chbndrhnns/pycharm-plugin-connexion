@@ -52,4 +52,32 @@ class ReplaceExpectedWithActualIntentionParametrizeTest : TestBase() {
                 assert arg == expected
         """.trimIndent())
     }
+
+    fun `test intention supports parametrized test with multiple parameter sets`() {
+        myFixture.configureByText(
+            "test_param.py", """
+            import pytest
+            
+            @pytest.mark.parametrize("arg,expected", [("abc", "defg"), ("defg", "defg"), ])
+            def test_str(arg, expected):
+                assert arg <caret>== expected
+        """.trimIndent()
+        )
+
+        // Simulate failure for the first parameter set
+        setDiffData("test_param.test_str[abc-defg]", "defg", "abc")
+
+        val intention = myFixture.getAvailableIntention("Use actual test outcome")
+        assertNotNull("Intention should be available for parametrized test failure", intention)
+        
+        myFixture.launchAction(intention!!)
+        
+        myFixture.checkResult("""
+            import pytest
+            
+            @pytest.mark.parametrize("arg,expected", [("abc", "abc"), ("defg", "defg"), ])
+            def test_str(arg, expected):
+                assert arg == expected
+        """.trimIndent())
+    }
 }

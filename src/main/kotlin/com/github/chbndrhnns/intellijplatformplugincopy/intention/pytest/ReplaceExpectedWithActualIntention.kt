@@ -47,7 +47,7 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
         val pyFunction = PsiTreeUtil.getParentOfType(assertStatement, PyFunction::class.java) ?: return
 
         val locationUrl = calculateLocationUrl(pyFunction) ?: return
-        val diffData = findDiffData(project, locationUrl) ?: return
+        val (diffData, matchedKey) = findDiffDataWithKey(project, locationUrl) ?: return
 
         val expected = diffData.expected
         val actual = diffData.actual
@@ -59,22 +59,23 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
             val left = expression.leftExpression
             val right = expression.rightExpression
 
-            if (matches(left, expected)) {
-                replaceElement(left ?: return, actual, expected, project)
-                return
-            }
+            // Check right operand first (typically the expected value in assertions)
             if (matches(right, expected)) {
                 if (right is PyReferenceExpression) {
                     val resolved = right.reference.resolve()
                     if (resolved is PyTargetExpression) {
                         val assignedValue = resolved.findAssignedValue()
                         if (assignedValue != null) {
-                            replaceElement(assignedValue, actual, expected, project)
+                            replaceElement(assignedValue, actual, expected, project, matchedKey)
                             return
                         }
                     }
                 }
-                replaceElement(right ?: return, actual, expected, project)
+                replaceElement(right ?: return, actual, expected, project, matchedKey)
+                return
+            }
+            if (matches(left, expected)) {
+                replaceElement(left ?: return, actual, expected, project, matchedKey)
                 return
             }
         }
@@ -86,7 +87,7 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
             override fun visitPyStringLiteralExpression(node: PyStringLiteralExpression) {
                 if (replaced) return
                 if (matchesLiteral(node.stringValue, expected) || matchesLiteral(node.text, expected)) {
-                    replaceElement(node, actual, expected, project)
+                    replaceElement(node, actual, expected, project, matchedKey)
                 }
                 super.visitPyStringLiteralExpression(node)
             }
@@ -94,7 +95,7 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
             override fun visitPyNumericLiteralExpression(node: PyNumericLiteralExpression) {
                 if (replaced) return
                 if (matchesLiteral(node.text, expected)) {
-                    replaceElement(node, actual, expected, project)
+                    replaceElement(node, actual, expected, project, matchedKey)
                 }
                 super.visitPyNumericLiteralExpression(node)
             }
@@ -112,6 +113,27 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
         // Base URL: python<...>//...test_func
         return state.getAllKeys().asSequence()
             .filter { it.startsWith(baseLocationUrl) }.firstNotNullOfOrNull { state.getDiffData(it) }
+    }
+
+    private fun findDiffDataWithKey(project: Project, baseLocationUrl: String): Pair<DiffData, String>? {
+        val state = TestFailureState.getInstance(project)
+        val exact = state.getDiffData(baseLocationUrl)
+        if (exact != null) return Pair(exact, baseLocationUrl)
+
+        // Fuzzy match for parametrized tests
+        // Keys usually look like: python<...>//...test_func[param]
+        // We check if any key starts with the base URL.
+        // Base URL: python<...>//...test_func
+        val matchedKey = state.getAllKeys().asSequence()
+            .filter { it.startsWith(baseLocationUrl) }
+            .firstOrNull()
+        
+        if (matchedKey != null) {
+            val data = state.getDiffData(matchedKey)
+            if (data != null) return Pair(data, matchedKey)
+        }
+        
+        return null
     }
 
     private fun matches(element: PyExpression?, diffValue: String): Boolean {
@@ -174,14 +196,14 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
         return s.replace("\"", "'")
     }
 
-    private fun replaceElement(element: PyElement, newValue: String, expectedValue: String, project: Project) {
+    private fun replaceElement(element: PyElement, newValue: String, expectedValue: String, project: Project, matchedKey: String) {
         val generator = PyElementGenerator.getInstance(project)
 
         // Handle parameter update
         if (element is PyReferenceExpression) {
             val resolved = element.reference.resolve()
             if (resolved is PyParameter) {
-                updateParametrizedValue(resolved, newValue, expectedValue, project)
+                updateParametrizedValue(resolved, newValue, expectedValue, project, matchedKey)
                 return
             }
         }
@@ -269,7 +291,8 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
         parameter: PyParameter,
         newValue: String,
         expectedValue: String,
-        project: Project
+        project: Project,
+        matchedKey: String
     ) {
         val pyFunction = PsiTreeUtil.getParentOfType(parameter, PyFunction::class.java) ?: return
         val decoratorList = pyFunction.decoratorList ?: return
@@ -282,17 +305,73 @@ class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
 
         if (paramIndex == -1) return
 
+        // Extract parameter values from the matchedKey
+        // Format: python<path>//test_module.test_func[param1-param2-...]
+        val paramValues = extractParameterValuesFromKey(matchedKey)
+
         if (valuesArg is PyListLiteralExpression) {
             for (element in valuesArg.elements) {
-                val valueExpr = getValueExpression(element, paramIndex)
-                if (valueExpr != null && matches(valueExpr, expectedValue)) {
-                    // Update this value expression
-                    // We need to call replaceElement recursively, but targetting the literal in the decorator
-                    // We pass expectedValue as null or empty because we found the target already
-                    replaceElement(valueExpr, newValue, "", project)
-                    return
+                // Check if this tuple/list matches the parameter values from the key
+                if (paramValues != null && matchesParameterSet(element, paramValues, namesArg)) {
+                    val valueExpr = getValueExpression(element, paramIndex)
+                    if (valueExpr != null) {
+                        // Update this value expression
+                        // We need to call replaceElement recursively, but targetting the literal in the decorator
+                        // We pass expectedValue as null or empty because we found the target already
+                        replaceElement(valueExpr, newValue, "", project, matchedKey)
+                        return
+                    }
                 }
             }
+        }
+    }
+
+    private fun extractParameterValuesFromKey(key: String): List<String>? {
+        // Extract the part in brackets: test_func[param1-param2] -> param1-param2
+        val bracketStart = key.lastIndexOf('[')
+        val bracketEnd = key.lastIndexOf(']')
+        if (bracketStart == -1 || bracketEnd == -1 || bracketStart >= bracketEnd) {
+            return null
+        }
+        val paramPart = key.substring(bracketStart + 1, bracketEnd)
+        // Split by '-' (pytest's default separator for parameter values)
+        return paramPart.split('-')
+    }
+
+    private fun matchesParameterSet(element: PyExpression, paramValues: List<String>, namesArg: PyExpression): Boolean {
+        var current = element
+        while (current is PyParenthesizedExpression) {
+            val contained = current.containedExpression ?: return false
+            current = contained
+        }
+
+        val elements = when (current) {
+            is PyTupleExpression -> current.elements.toList()
+            is PyListLiteralExpression -> current.elements.toList()
+            else -> listOf(current)
+        }
+
+        // Check if the number of elements matches
+        if (elements.size != paramValues.size) return false
+
+        // Compare each element with the corresponding parameter value
+        for (i in elements.indices) {
+            val elementValue = getElementValueAsString(elements[i])
+            val expectedValue = paramValues[i]
+            if (elementValue != expectedValue) {
+                return false
+            }
+        }
+
+        return true
+    }
+
+    private fun getElementValueAsString(element: PyExpression): String? {
+        return when (element) {
+            is PyStringLiteralExpression -> element.stringValue
+            is PyNumericLiteralExpression -> element.text
+            is PyBoolLiteralExpression -> element.text
+            else -> element.text
         }
     }
 
