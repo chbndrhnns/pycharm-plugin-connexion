@@ -71,13 +71,13 @@ self._prefixes: dict[PrefixId, Prefix] = {
 
 ## In Progress Tasks
 
-- [ ] fix: Introduce parameter object needs to respect existing * arg
 - [ ] fix: Introduce parameter object should not be available for test methods and pytest fixtures
 - [ ] fix: Only offer actual outcome if diff exists, not for all failures
 
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Introduce parameter object needs to respect existing * arg
 - [x] feat: Make introduce parameter object available on call site
 - [x] feat: Support actual value for such case where one parameter is ok
 
