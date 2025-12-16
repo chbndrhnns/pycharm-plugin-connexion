@@ -72,11 +72,11 @@ self._prefixes: dict[PrefixId, Prefix] = {
 
 ## In Progress Tasks
 
-- [ ] feat: Introduce custom type from str should add declaration annotataion
-- [ ] fix: Wrap with __add__ should not be available
+- [-] feat: Introduce custom type from str should add declaration annotataion
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Wrap with __add__ should not be available
 - [x] fix: Introduce parameter object should create valid class identifiers
 - [x] fix: Introduce parameter object should not be available for test methods and pytest fixtures (
   spec/parameter-object/blocklist.md)
