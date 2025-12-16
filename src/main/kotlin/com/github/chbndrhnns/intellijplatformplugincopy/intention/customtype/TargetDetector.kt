@@ -24,6 +24,13 @@ class TargetDetector(
         val offset = editor.caretModel.offset
         val leaf = file.findElementAt(offset) ?: return null
 
+        // Per requirements: should not be offered on any keyword.
+        // Relying on token type debug name ending in "_KEYWORD" covers standard Python keywords
+        // (e.g. Py:AND_KEYWORD, Py:IF_KEYWORD) without needing to access PyTokenTypes.KEYWORDS (which caused unresolved reference).
+        if (leaf.node.elementType.toString().endsWith("_KEYWORD")) {
+            return null
+        }
+
         if (PsiTreeUtil.getParentOfType(leaf, PyImportStatementBase::class.java) != null) {
             return null
         }
