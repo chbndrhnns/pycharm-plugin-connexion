@@ -1,13 +1,3 @@
-[2025-12-09 22:31] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "add debug test,force failure,run test repeatedly",
-    "MISSING STEPS": "refactor implementation,update tests,run full tests,remove debug artifacts",
-    "BOTTLENECK": "Implementation tightly coupled to LocalFileSystem/ProjectFileIndex instead of PSI/VirtualFile.",
-    "PROJECT NOTE": "Use proxy.getLocation(PsiLocation) and VirtualFile from PSI to compute node IDs without module/content roots.",
-    "NEW INSTRUCTION": "WHEN implementation requires real files for resolution THEN refactor to derive from PSI and VirtualFile"
-}
-
 [2025-12-09 22:40] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -876,4 +866,14 @@
     "BOTTLENECK": "Answer was produced without fully reviewing truncated files for project-specific nuances.",
     "PROJECT NOTE": "When adding tests for this intention, use myFixture.checkResult to assert generated code.",
     "NEW INSTRUCTION": "WHEN file content preview indicates truncation THEN open_entire_file before deciding steps"
+}
+
+[2025-12-16 22:02] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "scan project",
+    "MISSING STEPS": "-",
+    "BOTTLENECK": "Unnecessary repo search before providing conceptual approach.",
+    "PROJECT NOTE": "No in-repo occurrences of the quick-fix; treat as greenfield guidance.",
+    "NEW INSTRUCTION": "WHEN user requests conceptual approach THEN skip project scan and outline steps directly"
 }

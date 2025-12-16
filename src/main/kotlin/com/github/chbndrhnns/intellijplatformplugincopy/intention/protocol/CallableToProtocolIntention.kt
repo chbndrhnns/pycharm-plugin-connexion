@@ -4,13 +4,18 @@ import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsS
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
+import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiComment
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.codeInsight.imports.AddImportHelper
 import com.jetbrains.python.psi.*
+import com.jetbrains.python.psi.resolve.PyResolveContext
 
 class CallableToProtocolIntention : IntentionAction, HighPriorityAction {
 
@@ -20,27 +25,75 @@ class CallableToProtocolIntention : IntentionAction, HighPriorityAction {
 
     override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
         if (!PluginSettingsState.instance().state.enableCallableToProtocolIntention) return false
-        if (file !is PyFile) return false
+        
+        val subscription = findSubscription(project, file, editor) ?: return false
+        val operand = subscription.operand
 
-        val element = file.findElementAt(editor.caretModel.offset) ?: return false
-        val subscription = PsiTreeUtil.getParentOfType(element, PySubscriptionExpression::class.java) ?: return false
+        // 1. Textual Check (Fast path)
+        val text = operand.text
+        if (text == "Callable" || text == "typing.Callable" || text.endsWith(".Callable")) return true
 
-        // Check if it is a Callable
-        val operand = subscription.operand as? PyReferenceExpression ?: return false
-        val name = operand.name
-        return name == "Callable" // Simplified check, ideally verify import
+        // 2. Resolution Check (Handles aliases, e.g. 'from typing import Callable as C')
+        if (operand is PyReferenceExpression) {
+            val context = PyResolveContext.defaultContext()
+            // Try to resolve to the definition
+            val resolveResults = operand.getReference(context).multiResolve(false)
+            for (result in resolveResults) {
+                val element = result.element
+                if (isCallableType(element)) return true
+            }
+            // Fallback to simple resolve
+            val simpleResolved = operand.reference.resolve()
+            if (isCallableType(simpleResolved)) return true
+        }
+
+        return false
+    }
+
+    private fun isCallableType(element: PsiElement?): Boolean {
+        if (element is PyQualifiedNameOwner) {
+            val qName = element.qualifiedName
+            if (qName == "typing.Callable" || qName == "collections.abc.Callable") return true
+        }
+        // If it's an import element, check if it imports Callable
+        if (element is PyImportElement) {
+             val importedQName = element.importedQName
+             if (importedQName != null) {
+                 val qNameString = importedQName.toString()
+                 if (qNameString == "typing.Callable" || qNameString == "collections.abc.Callable") return true
+             }
+        }
+        return false
+    }
+
+    private fun findSubscription(project: Project, file: PsiFile, editor: Editor): PySubscriptionExpression? {
+        val offset = editor.caretModel.offset
+        
+        // 1. Try direct lookup (works if file is injected or normal file)
+        var element = file.findElementAt(offset)
+        
+        // 2. If we are in host file but inside a string/injection, switch to injected element
+        if (element != null && !InjectedLanguageManager.getInstance(project).isInjectedFragment(file)) {
+            val injected = InjectedLanguageManager.getInstance(project).findInjectedElementAt(file, offset)
+            if (injected != null) {
+                element = injected
+            }
+        }
+        
+        if (element == null) return null
+        return PsiTreeUtil.getParentOfType(element, PySubscriptionExpression::class.java)
     }
 
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
-        val element = file.findElementAt(editor.caretModel.offset) ?: return
-        val subscription = PsiTreeUtil.getParentOfType(element, PySubscriptionExpression::class.java) ?: return
+        val subscription = findSubscription(project, file, editor) ?: return
+        
+        // Determine Host File for insertions (Protocol definition, Imports)
+        val hostFile = InjectedLanguageManager.getInstance(project).getTopLevelFile(file)
+        if (hostFile !is PyFile) return 
 
-        // Structure of Callable[[Args], ReturnType]
-        // subscription.indexExpression is the content inside [...]
-        // It is usually a PyTupleExpression: (Args, ReturnType)
-        // Args is usually a PyListLiteralExpression or PyTupleExpression (args list)
-
+        // Parse structure: Callable[[Args], Return] or Callable[..., Return]
         val indexExpr = subscription.indexExpression
+        
         var argsElement: PyExpression? = null
         var returnElement: PyExpression? = null
 
@@ -52,63 +105,94 @@ class CallableToProtocolIntention : IntentionAction, HighPriorityAction {
             }
         }
 
-        if (argsElement == null || returnElement == null) return // Can't parse Callable structure
+        if (argsElement == null || returnElement == null) return
 
-        val argsList = when (argsElement) {
-            is PyListLiteralExpression -> argsElement.elements
-            else -> emptyArray() // Handle ... or other cases later
+        // Generate Protocol Name (Check collisions in HOST file)
+        val baseName = "MyProtocol"
+        var protocolName = baseName
+        var counter = 1
+        
+        val existingNames = PsiTreeUtil.findChildrenOfType(hostFile, PyClass::class.java).mapNotNull { it.name }.toSet()
+        
+        while (existingNames.contains(protocolName)) {
+            protocolName = "$baseName$counter"
+            counter++
         }
 
-        // Generate Protocol Name
-        val protocolName = "MyProtocol" // TODO: Unique name generation
-
-        // Generate Protocol Code
+        // Prepare Protocol Body
         val sb = StringBuilder()
         sb.append("class $protocolName(Protocol):\n")
         sb.append("    def __call__(self")
+        
+        var needsAny = false
+        val argsText = argsElement.text
 
-        argsList.forEachIndexed { index, argType ->
-            sb.append(", arg$index: ${argType.text}")
+        if ((argsText == "...") || (argsElement is PyReferenceExpression && argsText == "Ellipsis")) {
+             // Callable[..., Ret] -> def __call__(self, *args: Any, **kwargs: Any) -> Ret: ...
+             sb.append(", *args: Any, **kwargs: Any")
+             needsAny = true
+        } else if (argsElement is PyListLiteralExpression) {
+            // Callable[[A, B], Ret] -> def __call__(self, arg0: A, arg1: B) -> Ret: ...
+            val args = argsElement.elements
+            if (args.isNotEmpty()) {
+                args.forEachIndexed { index, argType ->
+                    sb.append(", arg$index: ${argType.text}")
+                }
+            }
+        } else {
+             return
         }
 
         sb.append(") -> ${returnElement.text}: ...\n\n")
 
         val generator = PyElementGenerator.getInstance(project)
-        val parentFunction = PsiTreeUtil.getParentOfType(subscription, PyFunction::class.java)
-        val parentClass = PsiTreeUtil.getParentOfType(subscription, PyClass::class.java)
-
-        // Insertion point: 
-        // If in function, insert before function.
-        // If in class, insert before class.
-        // Fallback: top of file (after imports).
-
-        val anchor = parentFunction ?: parentClass
-
-        val languageLevel = LanguageLevel.forElement(file)
+        val languageLevel = LanguageLevel.forElement(hostFile)
         val protocolClass = generator.createFromText(languageLevel, PyClass::class.java, sb.toString())
 
-        if (anchor != null && anchor.parent is PyFile) {
-            file.addBefore(protocolClass, anchor)
-        } else {
-            // Just add to end of file for now if no context found, or try to be smarter
-            file.add(protocolClass)
+        // Insertion: Top level in HOST file, after imports
+        var anchor: PsiElement? = null
+        for (child in hostFile.children) {
+            if (child is PyImportStatement || child is PyFromImportStatement) {
+                anchor = child
+            } else if (child !is PsiWhiteSpace && child !is PsiComment) {
+                // Stopped seeing imports
+                break
+            }
         }
 
-        // Replace Callable with Protocol Name
+        if (anchor != null) {
+            hostFile.addAfter(protocolClass, anchor)
+        } else {
+            // No imports, add to top
+            hostFile.addBefore(protocolClass, hostFile.firstChild)
+        }
+
+        // Replace Callable with Protocol Name in the ORIGINAL file (could be injected)
         val newRef = generator.createExpressionFromText(LanguageLevel.forElement(file), protocolName)
         subscription.replace(newRef)
 
-        // Import Protocol if needed
+        // Add imports to HOST file
         AddImportHelper.addOrUpdateFromImportStatement(
-            file,
+            hostFile,
             "typing",
             "Protocol",
             null,
             AddImportHelper.ImportPriority.BUILTIN,
-            anchor
+            null
         )
+        
+        if (needsAny) {
+             AddImportHelper.addOrUpdateFromImportStatement(
+                hostFile,
+                "typing",
+                "Any",
+                null,
+                AddImportHelper.ImportPriority.BUILTIN,
+                null
+            )
+        }
 
-        CodeStyleManager.getInstance(project).reformat(file)
+        CodeStyleManager.getInstance(project).reformat(hostFile)
     }
 
     override fun startInWriteAction(): Boolean = true
