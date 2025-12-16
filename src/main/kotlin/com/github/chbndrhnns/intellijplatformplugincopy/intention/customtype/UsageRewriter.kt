@@ -77,7 +77,11 @@ class UsageRewriter {
 
         val mappingList = call.multiMapArguments(resolveContext)
         val mapping = mappingList.firstOrNull() ?: return
-        val mappedParamWrapper = mapping.mappedParameters[expr] ?: return
+
+        // In keyword-argument calls like ``f(x="a")``, the argument map is keyed by
+        // the full keyword argument PSI node (not the value expression).
+        val mappingKey = (expr.parent as? PyKeywordArgument) ?: expr
+        val mappedParamWrapper = mapping.mappedParameters[mappingKey] ?: return
 
         // We need the physical parameter to update its annotation.
         val mappedParam = mappedParamWrapper.parameter as? PyNamedParameter ?: return

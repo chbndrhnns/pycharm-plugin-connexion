@@ -242,6 +242,32 @@ class BasicTest : TestBase() {
         )
     }
 
+    fun testCallSiteKeywordArgument_AddsParameterAnnotation() {
+        myFixture.doIntentionTest(
+            "a.py",
+            """
+            def do(*, arg1, arg2):
+                return arg1 + arg2
+
+
+            do(arg1="a<caret>", arg2="b")
+            """,
+            """
+            class Customstr(str):
+                __slots__ = ()
+
+
+            def do(*, arg1: Customstr, arg2):
+                return arg1 + arg2
+
+
+            do(arg1=Customstr("a"), arg2="b")
+            """,
+            "Introduce custom type from str",
+            renameTo = "Customstr"
+        )
+    }
+
     fun testAssignmentVariableRewrite_WhenCaretOnVariable() {
         myFixture.doIntentionTest(
             "a.py",
