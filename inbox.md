@@ -10,8 +10,12 @@
 
 ## Pending Features
 
-- [ ] feat: When creating and renaming, check against stdlib modules/packages and warn if name clashes
-- [ ] feat: Suppress rename to self and add "Add self" (spec/add-self.md)
+- [S] feat: Turn dict into dataclass/pydantic model (spec/upgrade-dict.md)
+- [S] feat: When creating and renaming, check against stdlib modules/packages and warn if name clashes (
+  spec/shadow-stdlib.md)
+- [S] feat: Suppress rename to self and add "Add self" (spec/add-self.md)
+- [S] feat: Annotate constant with `Final[T]` (spec/final-wrapper.md)
+- [ ] feat: introduce custom type as newtype, as well, or other custom constructs
 - [ ] feat: Change visibility: make private (we only have two options and one is always true)
 - [ ] feat: Convert parametrized test to multiple unparametrized tests
 - [ ] feat: Add field to dataclass/model in case of unexpected argument
@@ -23,7 +27,6 @@
   syntax, recursively
 - [ ] feat: "Choose implementation" should search in class names, as well.
 - [ ] feat: Ignore third-party packages in import suggestions
-- [ ] feat: Annotate constant with `Final[T]`
 - [ ] feat: Treat unresolved references as errors
 - [ ] feat: Wrap with pytest.raises()
 - [ ] feat: Move symbol to top level (or one scope up?)
@@ -33,9 +36,7 @@
 - [ ] feat: Move to inner class
 - [ ] feat: Move symbol to any of the currently imported packages/modules, change references
 - [ ] feat: Inspect duplicates in __all__
-- [ ] feat: introduce custom type as newtype, as well, or other custom constructs
 - [ ] feat: Introduce type alias for union type
-- [ ] feat: Turn dict into dataclass/pydantic model
 - [ ] feat: search everywhere: search for partial matches in test names
 - [ ] feat: copy element with dependencies should generate a preview about the direct copy (not including dependencies)
 - [ ] When populating arguments, highlight the target function (area) when the popup appears
