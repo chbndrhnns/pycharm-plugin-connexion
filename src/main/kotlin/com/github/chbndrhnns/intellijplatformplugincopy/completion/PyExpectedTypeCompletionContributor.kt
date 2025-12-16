@@ -82,7 +82,7 @@ class PyExpectedTypeCompletionContributor : CompletionContributor() {
                             if (lookupString != null) {
                                 val element = LookupElementBuilder.create(lookupString)
                                     .withTypeText("Expected type")
-                                val prioritized = PrioritizedLookupElement.withPriority(element, 100.0)
+                                val prioritized = PrioritizedLookupElement.withPriority(element, 10000.0)
                                 result.addElement(prioritized)
                             }
                         }

@@ -59,7 +59,7 @@ class PyExpectedTypeCompletionTest : TestBase() {
         val variants = myFixture.getCompletionVariants("test_priority.py")
         assertNotNull(variants)
         assertTrue("List should be non-empty", variants!!.isNotEmpty())
-        assertEquals("MyType should be the first suggestion", "MyType", variants[0])
+        assertEquals("MyType() should be the first suggestion", "MyType()", variants[0])
     }
 
     fun testAssignmentCompletion() {
@@ -74,7 +74,7 @@ class PyExpectedTypeCompletionTest : TestBase() {
         assertNotNull(variants)
         assertTrue("Should contain 'MyType', found: $variants", variants!!.contains("MyType"))
         // Check priority - it should be high up
-        assertEquals("MyType should be first", "MyType", variants[0])
+        assertEquals("MyType() should be first", "MyType()", variants[0])
     }
 
     fun testArgumentCompletion() {
@@ -90,7 +90,7 @@ class PyExpectedTypeCompletionTest : TestBase() {
         val variants = myFixture.getCompletionVariants("test_arg.py")
         assertNotNull(variants)
         assertTrue("Should contain 'MyArg', found: $variants", variants!!.contains("MyArg"))
-        assertEquals("MyArg should be first", "MyArg", variants[0])
+        assertEquals("MyArg() should be first", "MyArg()", variants[0])
     }
 
     fun testPositionalArgumentCompletion() {
@@ -107,7 +107,7 @@ class PyExpectedTypeCompletionTest : TestBase() {
         assertNotNull(variants)
         assertTrue("Should contain 'MyArg', found: $variants", variants!!.contains("MyArg"))
         // For positional, it might be first or high up. Let's assert it's first for now as we set high priority.
-        assertEquals("MyArg should be first", "MyArg", variants[0])
+        assertEquals("MyArg() should be first", "MyArg()", variants[0])
     }
 
     fun testAsyncReturnCompletion() {
@@ -124,7 +124,7 @@ class PyExpectedTypeCompletionTest : TestBase() {
         assertNotNull(variants)
         // Should contain MyResult.
         assertTrue("Should contain 'MyResult', found: ${variants?.take(5)}", variants!!.contains("MyResult"))
-        assertEquals("MyResult should be the first suggestion", "MyResult", variants[0])
+        assertEquals("MyResult() should be the first suggestion", "MyResult()", variants[0])
     }
 
     fun testNoExpectedTypeAfterDotInReturn() {
