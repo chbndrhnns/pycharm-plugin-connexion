@@ -89,12 +89,18 @@ class GenericCtorStrategy : WrapStrategy {
         val names = PyTypeIntentions.computeDisplayTypeNames(context.element, context.typeEval)
         val ctorElem = names.expectedElement
 
-        // Verify mismatch
+        if (ctor.startsWith("{") && ctor.endsWith("}")) {
+            return StrategyResult.Skip("Inferred from usage, no type")
+        }
+
+        if (ctor.startsWith("__") && ctor.endsWith("__")) {
+            return StrategyResult.Skip("Dunder method")
+        }
+
         if (PyTypeIntentions.elementDisplaysAsCtor(context.element, ctor, context.typeEval) == CtorMatch.MATCHES) {
             return StrategyResult.Skip("Already matches")
         }
 
-        // Additional check for unknown/same types to mimic legacy logic
         if (names.actual == names.expected && names.actual != "Unknown") {
             return StrategyResult.Skip("Types match")
         }
