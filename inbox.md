@@ -11,11 +11,11 @@
 
 ## Pending Features
 
+- [ ] feat: When creating and renaming, check against stdlib modules/packages and warn if name clashes
 - [ ] feat: Suppress rename to self and add "Add self"
 - [ ] feat: Change visibility: make private (we only have two options and one is always true)
 - [ ] feat: Convert parametrized test to multiple unparametrized tests
 - [ ] feat: Add field to dataclass/model in case of unexpected argument
-- [ ] feat: After return, suggest `list[T()]` if return type is a container type (?)
 - [ ] feat: Suggest expected type for container types, like `vals: set[MyType] = set(<caret>)`
 - [ ] feat: Support skip toggle for single parameters
 - [ ] feat: pytest param: treat text as ref
@@ -85,6 +85,7 @@ val2: list[Outer] = [
 
 ## Completed Tasks (newest first)
 
+- [x] feat: After return, suggest `list[T()]` if return type is a container type (?)
 - [x] fix: Should not offer custom type on keywords
 - [x] fix: Wrap suggests set instead of type: `vals: set[str] = {1}`
 - [x] fix: Wrap should use set literal instead of set call, `vals: set[T] = T`
