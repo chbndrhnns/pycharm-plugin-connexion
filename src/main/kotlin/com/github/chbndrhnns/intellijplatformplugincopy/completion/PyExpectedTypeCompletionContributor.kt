@@ -1,5 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.completion
 
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.populate.PyDataclassFieldExtractor
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.populate.PyValueGenerator
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedTypeInfo
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.completion.*
@@ -8,6 +10,9 @@ import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.ProcessingContext
 import com.jetbrains.python.PythonLanguage
+import com.jetbrains.python.codeInsight.dataflow.scope.ScopeUtil
+import com.jetbrains.python.psi.LanguageLevel
+import com.jetbrains.python.psi.PyElementGenerator
 import com.jetbrains.python.psi.PyExpression
 import com.jetbrains.python.psi.PyReferenceExpression
 import com.jetbrains.python.psi.types.PyType
@@ -15,6 +20,9 @@ import com.jetbrains.python.psi.types.PyUnionType
 import com.jetbrains.python.psi.types.TypeEvalContext
 
 class PyExpectedTypeCompletionContributor : CompletionContributor() {
+
+    private val valueGenerator = PyValueGenerator(PyDataclassFieldExtractor())
+
     init {
         extend(
             CompletionType.BASIC,
@@ -52,13 +60,31 @@ class PyExpectedTypeCompletionContributor : CompletionContributor() {
                         .asSequence()
                         .filterNotNull()
                         .filterNot { shouldSkipExpectedTypeSuggestion(it) }
-                        .mapNotNull { it.name }
-                        .distinct()
-                        .forEach { typeName ->
-                            val element = LookupElementBuilder.create(typeName)
-                                .withTypeText("Expected type")
-                            val prioritized = PrioritizedLookupElement.withPriority(element, 100.0)
-                            result.addElement(prioritized)
+                        .forEach { type ->
+                            val generator = PyElementGenerator.getInstance(position.project)
+                            val languageLevel = LanguageLevel.forElement(position)
+                            val scopeOwner = ScopeUtil.getScopeOwner(position)
+
+                            val generatedText = if (scopeOwner != null) {
+                                valueGenerator.generateValue(
+                                    type,
+                                    typeEvalContext,
+                                    0,
+                                    generator,
+                                    languageLevel,
+                                    scopeOwner
+                                ).text
+                            } else "..."
+
+                            val lookupString =
+                                if (generatedText == "..." || generatedText == "None") type.name else generatedText
+
+                            if (lookupString != null) {
+                                val element = LookupElementBuilder.create(lookupString)
+                                    .withTypeText("Expected type")
+                                val prioritized = PrioritizedLookupElement.withPriority(element, 100.0)
+                                result.addElement(prioritized)
+                            }
                         }
                 }
             }

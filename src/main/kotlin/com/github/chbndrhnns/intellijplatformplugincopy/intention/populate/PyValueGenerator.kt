@@ -32,11 +32,37 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
 
         return when (type) {
             is PyUnionType -> generateUnionValue(type, context, depth, generator, languageLevel, scopeOwner)
+            is PyTupleType -> generateTupleValue(type, context, depth, generator, languageLevel, scopeOwner)
             is PyCollectionType -> generateCollectionValue(type, context, depth, generator, languageLevel, scopeOwner)
             is PyClassType -> generateClassTypeValue(type, context, depth, generator, languageLevel, scopeOwner)
             is PyClassLikeType -> generateAliasLikeValue(type, context, scopeOwner)
             else -> defaultResult()
         }
+    }
+
+    private fun generateTupleValue(
+        type: PyTupleType,
+        context: TypeEvalContext,
+        depth: Int,
+        generator: PyElementGenerator,
+        languageLevel: LanguageLevel,
+        scopeOwner: ScopeOwner
+    ): GenerationResult {
+        val elements = type.elementTypes
+        if (elements.isEmpty()) return GenerationResult("()", emptySet())
+
+        val results = elements.map {
+            generateValue(it, context, depth + 1, generator, languageLevel, scopeOwner)
+        }
+        
+        val imports = results.flatMap { it.imports }.toSet()
+        
+        if (elements.size == 1) {
+            return GenerationResult("(${results[0].text},)", imports)
+        }
+        
+        val text = results.joinToString(prefix = "(", postfix = ")", separator = ", ") { it.text }
+        return GenerationResult(text, imports)
     }
 
     private fun generateClassTypeValue(
@@ -48,12 +74,24 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
         scopeOwner: ScopeOwner
     ): GenerationResult {
         val pyClass = type.pyClass
-        return if (isDataclassClass(pyClass)) {
-            generateDataclassValue(pyClass, context, depth, generator, languageLevel, scopeOwner)
-        } else {
-            // Some providers represent typing.NewType/aliases as PyClassType but without a backing PyClass.
-            generateAliasFromClassType(type, context, scopeOwner) ?: defaultResult()
+        if (isDataclassClass(pyClass)) {
+            return generateDataclassValue(pyClass, context, depth, generator, languageLevel, scopeOwner)
         }
+
+        // Try alias logic first (e.g. NewType)
+        val aliasResult = generateAliasFromClassType(type, context, scopeOwner)
+        if (aliasResult != null) return aliasResult
+
+        // Fallback for regular classes: generate constructor call "ClassName()"
+        // This satisfies the requirement "pre-populate it with a single expected item type with an empty constructor call"
+        if (pyClass != null) {
+            val name = pyClass.name
+            if (name != null) {
+                return GenerationResult("$name()", setOf(pyClass))
+            }
+        }
+
+        return defaultResult()
     }
 
     private fun generateCollectionValue(
@@ -65,13 +103,28 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
         scopeOwner: ScopeOwner
     ): GenerationResult {
         val normalized = type.name?.let(::normalizeName) ?: return defaultResult()
-        val elemType = type.elementTypes.firstOrNull() ?: return defaultResult()
+        
+        // Handle Dict
+        if (normalized == PyNames.DICT) {
+             val keyType = type.elementTypes.getOrNull(0)
+             val valType = type.elementTypes.getOrNull(1)
+             // If generic dict without args, fallback
+             if (keyType == null && valType == null) return defaultResult()
+             
+             val keyResult = generateValue(keyType, context, depth + 1, generator, languageLevel, scopeOwner)
+             val valResult = generateValue(valType, context, depth + 1, generator, languageLevel, scopeOwner)
+             
+             return GenerationResult("{${keyResult.text}: ${valResult.text}}", keyResult.imports + valResult.imports)
+        }
 
+        val elemType = type.elementTypes.firstOrNull() ?: return defaultResult()
         val elemResult = generateValue(elemType, context, depth + 1, generator, languageLevel, scopeOwner)
+        
         val text = when (normalized) {
             "list" -> "[${elemResult.text}]"
             PyNames.SET -> "{${elemResult.text}}"
-            else -> return defaultResult() // extend for tuple/dict if needed
+            PyNames.TUPLE -> "(${elemResult.text})"
+            else -> return defaultResult()
         }
         return GenerationResult(text, elemResult.imports)
     }
@@ -181,6 +234,8 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
         return when (name) {
             "List", "list" -> "list"
             "Set", "set" -> PyNames.SET
+            "Tuple", "tuple" -> PyNames.TUPLE
+            "Dict", "dict" -> PyNames.DICT
             else -> name
         }
     }
