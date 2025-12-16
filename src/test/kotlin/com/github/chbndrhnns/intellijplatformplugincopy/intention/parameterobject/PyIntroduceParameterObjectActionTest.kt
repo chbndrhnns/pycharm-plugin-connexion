@@ -34,7 +34,7 @@ class PyIntroduceParameterObjectActionTest : TestBase() {
         assertTrue(event.presentation.isEnabledAndVisible)
     }
 
-    fun testActionUnavailableForSingleParam() {
+    fun testActionAvailableForSingleParam() {
         myFixture.configureByText(
             "a.py", """
             def fo<caret>o(a):
@@ -52,6 +52,6 @@ class PyIntroduceParameterObjectActionTest : TestBase() {
         val event = TestActionEvent.createTestEvent(action, dataContext)
         action.update(event)
 
-        assertFalse(event.presentation.isEnabledAndVisible)
+        assertTrue(event.presentation.isEnabledAndVisible)
     }
 }

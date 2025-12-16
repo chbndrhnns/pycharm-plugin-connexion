@@ -102,30 +102,6 @@ class IntroduceParameterObjectRefactoringActionTest : TestBase() {
         )
     }
 
-    fun testActionIsNotAvailableForFunctionWithOneParameter() {
-        myFixture.configureByText(
-            "test.py", """
-            def foo(a<caret>: int):
-                pass
-        """.trimIndent()
-        )
-
-        val action = IntroduceParameterObjectRefactoringAction()
-        val dataContext = SimpleDataContext.builder()
-            .add(CommonDataKeys.PROJECT, project)
-            .add(CommonDataKeys.EDITOR, myFixture.editor)
-            .add(CommonDataKeys.PSI_FILE, myFixture.file)
-            .build()
-
-        val event = createTestActionEvent(action, dataContext)
-        action.update(event)
-
-        assertFalse(
-            "Action should not be enabled for function with only one parameter",
-            event.presentation.isEnabledAndVisible
-        )
-    }
-
     fun testActionIsNotAvailableOutsideFunction() {
         myFixture.configureByText(
             "test.py", """

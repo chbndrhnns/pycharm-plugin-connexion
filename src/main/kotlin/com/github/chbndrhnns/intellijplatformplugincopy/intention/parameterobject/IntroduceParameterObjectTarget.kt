@@ -40,6 +40,6 @@ internal object IntroduceParameterObjectTarget {
             .filterIsInstance<PyNamedParameter>()
             .filter { !it.isSelf && !it.isPositionalContainer && !it.isKeywordContainer }
 
-        return parameters.size >= 2
+        return parameters.isNotEmpty()
     }
 }

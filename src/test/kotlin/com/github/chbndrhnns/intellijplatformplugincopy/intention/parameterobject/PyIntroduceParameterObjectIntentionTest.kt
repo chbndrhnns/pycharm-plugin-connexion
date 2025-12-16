@@ -204,4 +204,30 @@ class PyIntroduceParameterObjectIntentionTest : TestBase() {
 
         assertEmpty(myFixture.filterAvailableIntentions("Introduce parameter object"))
     }
+
+    fun testSingleParameter() {
+        withMockIntroduceParameterObjectDialog {
+            myFixture.doIntentionTest(
+                "a.py",
+                """
+                def process_<caret>data(data):
+                    print(data)
+                """.trimIndent(),
+                """
+                from dataclasses import dataclass
+                from typing import Any
+                
+                
+                @dataclass(frozen=True, slots=True, kw_only=True)
+                class ProcessDataParams:
+                    data: Any
+                
+                
+                def process_data(params: ProcessDataParams):
+                    print(params.data)
+                """.trimIndent(),
+                "Introduce parameter object"
+            )
+        }
+    }
 }
