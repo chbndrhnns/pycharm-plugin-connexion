@@ -877,3 +877,14 @@
     "PROJECT NOTE": "Begin with OuterContainerStrategy ordering fix and set literal handling in WrapApplier; ensure skipping outer wrap inside set literals.",
     "NEW INSTRUCTION": "WHEN task requests implementing phase 1 THEN implement critical fixes and run project tests"
 }
+
+[2025-12-16 13:19] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "add tests",
+    "BOTTLENECK": "Regex did not account for status-prefixed pytest lines.",
+    "PROJECT NOTE": "Consider supporting additional prefixes (e.g., xfailed, xpassed) if they appear with node ids.",
+    "NEW INSTRUCTION": "WHEN console line starts with pytest status word THEN hyperlink node id after prefix only"
+}
+

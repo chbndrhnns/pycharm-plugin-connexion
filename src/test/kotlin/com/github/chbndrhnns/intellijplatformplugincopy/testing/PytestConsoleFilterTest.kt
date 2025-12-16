@@ -109,4 +109,19 @@ class PytestConsoleFilterTest : TestBase() {
         // The node id legitimately ends with "]]" here (nested parametrization).
         assertEquals(line.length, item.highlightEndOffset)
     }
+
+    fun testParseWithFailedPrefixAndDashSuffix() {
+        val filter = PytestConsoleFilter(project)
+        val line =
+            "FAILED tests/unit/test_something.py::TestCreate::test_404_if_not_found - AttributeError: 'TestCreate' object has no attribute 'post'"
+
+        val result = filter.applyFilter(line, line.length)
+        assertNotNull(result)
+        val item = result!!.resultItems.first()
+
+        val expectedStart = line.indexOf("tests/")
+        assertEquals(expectedStart, item.highlightStartOffset)
+        val expectedEnd = line.indexOf(" - ")
+        assertEquals(expectedEnd, item.highlightEndOffset)
+    }
 }
