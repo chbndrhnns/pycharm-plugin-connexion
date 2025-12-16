@@ -25,6 +25,7 @@ self._prefixes: dict[PrefixId, Prefix] = {
 
 ## Pending Features
 
+- [ ] feat: Suppress rename to self and add "Add self"
 - [ ] feat: Enable parameter object action also if only one parameter
 - [ ] feat: Change visibility: make private (we only have two options and one is always true)
 - [ ] feat: Convert parametrized test to multiple unparametrized tests
