@@ -6,7 +6,6 @@
 - [ ] fix: implement abstract method is put above __init__
 - [ ] feat: Consider if this should only work for dataclass/classes, for others, there is change signature
 - [ ] fix: cancel introduce type rename dialog still keeps it
-- [ ] refactor: How to find if the caret is inside parentheses? `[PopulateArgumentsService.findCallExpression`
 - [ ] fix: Import `import bla as xyz` triggers warning about not exported in all -> repro?
 
 ## Pending Features
@@ -85,6 +84,7 @@ val2: list[Outer] = [
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Convert between Protocol and Callable annotation
 - [x] feat: After return, suggest `list[T()]` if return type is a container type (?)
 - [x] fix: Should not offer custom type on keywords
 - [x] fix: Wrap suggests set instead of type: `vals: set[str] = {1}`
