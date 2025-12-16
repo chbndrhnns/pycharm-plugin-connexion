@@ -58,7 +58,7 @@ class ParametrizeFixTest : TestBase() {
             
             @pytest.mark.parametrize(["arg", "expected"], [
                 ("input", "exp")
-            ])
+            ], ids=["input-exp"])
             def test_foo(arg, expected):
                 assert arg == expec<caret>ted
         """.trimIndent()
@@ -76,7 +76,7 @@ class ParametrizeFixTest : TestBase() {
             
             @pytest.mark.parametrize(["arg", "expected"], [
                 ("input", "input")
-            ])
+            ], ids=["input-exp"])
             def test_foo(arg, expected):
                 assert arg == expected
         """.trimIndent()
@@ -90,7 +90,7 @@ class ParametrizeFixTest : TestBase() {
             
             @pytest.mark.parametrize(argnames="arg, expected", argvalues=[
                 ("input", "exp")
-            ])
+            ], ids=["input-exp"])
             def test_kwargs(arg, expected):
                 assert arg == expec<caret>ted
         """.trimIndent()
@@ -107,7 +107,7 @@ class ParametrizeFixTest : TestBase() {
             
             @pytest.mark.parametrize(argnames="arg, expected", argvalues=[
                 ("input", "input")
-            ])
+            ], ids=["input-exp"])
             def test_kwargs(arg, expected):
                 assert arg == expected
         """.trimIndent()
@@ -146,13 +146,13 @@ class ParametrizeFixTest : TestBase() {
             "test_int.py", """
             import pytest
             
-            @pytest.mark.parametrize("expected", [1])
+            @pytest.mark.parametrize("expected", [1], ids=["case-1"])
             def test_int(expected):
                 assert 2 == expec<caret>ted
         """.trimIndent()
         )
 
-        setDiffData("test_int.test_int[1]", "1", "2")
+        setDiffData("test_int.test_int[case-1]", "1", "2")
 
         val intention = myFixture.findSingleIntention("Use actual test outcome")
         myFixture.launchAction(intention)
@@ -161,7 +161,7 @@ class ParametrizeFixTest : TestBase() {
             """
             import pytest
             
-            @pytest.mark.parametrize("expected", [2])
+            @pytest.mark.parametrize("expected", [2], ids=["case-1"])
             def test_int(expected):
                 assert 2 == expected
         """.trimIndent()
@@ -173,13 +173,13 @@ class ParametrizeFixTest : TestBase() {
             "test_dict.py", """
             import pytest
 
-            @pytest.mark.parametrize("arg,exp", [({"abc": 1}, {"abc": 2})])
+            @pytest.mark.parametrize("arg,exp", [({"abc": 1}, {"abc": 2})], ids=["case-1"])
             def test_(arg, exp):
                 assert arg == e<caret>xp
         """.trimIndent()
         )
 
-        setDiffData("test_dict.test_[{'abc': 1}-{'abc': 2}]", "{'abc': 2}", "{'abc': 1}")
+        setDiffData("test_dict.test_[case-1]", "{'abc': 2}", "{'abc': 1}")
 
         val intention = myFixture.findSingleIntention("Use actual test outcome")
         myFixture.launchAction(intention)
@@ -188,7 +188,7 @@ class ParametrizeFixTest : TestBase() {
             """
             import pytest
 
-            @pytest.mark.parametrize("arg,exp", [({"abc": 1}, {'abc': 1})])
+            @pytest.mark.parametrize("arg,exp", [({"abc": 1}, {'abc': 1})], ids=["case-1"])
             def test_(arg, exp):
                 assert arg == exp
             """.trimIndent()

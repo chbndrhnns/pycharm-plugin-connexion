@@ -622,3 +622,11 @@
     "NEW INSTRUCTION": "WHEN user says 'no quickfix, just intention' THEN implement IntentionAction and avoid inspection hooks"
 }
 
+[2025-12-16 10:07] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "wrap quickfix suggestion",
+    "EXPECTATION": "Do not suggest 'wrap with Outer' when constructing the exact expected inner type for a parameter that already belongs to an Outer() call.",
+    "NEW INSTRUCTION": "WHEN callee param type equals argument constructor type THEN suppress wrap-with quickfix"
+}
+

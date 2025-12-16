@@ -120,14 +120,14 @@ class LiteralsTest : TestBase() {
             """
             class MyArg(int):
                 pass
-
-
-            def do(my_arg) -> None:
+            
+            
+            def do(my_arg: MyArg) -> None:
                 ...
-
+            
             def test_():
                 do(my_arg=MyArg(1234))
-            """,
+            """.trimIndent(),
             "Introduce custom type from int"
         )
     }

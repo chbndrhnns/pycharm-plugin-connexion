@@ -1,13 +1,3 @@
-[2025-12-09 15:20] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "map spec to tests",
-    "BOTTLENECK": "Grouped spec items weren’t expanded into discrete, assertable test cases.",
-    "PROJECT NOTE": "Uncovered cases from the spec: multiple imports per line, relative imports, nested functions, diamond dependencies.",
-    "NEW INSTRUCTION": "WHEN spec item is a group THEN enumerate subcases and write one focused test for each"
-}
-
 [2025-12-09 15:30] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -876,4 +866,14 @@
     "BOTTLENECK": "No targeted verification via function body or reproduction test.",
     "PROJECT NOTE": "GenericCtorStrategy is implemented in TypeStrategies.kt, not its own file.",
     "NEW INSTRUCTION": "WHEN file open fails THEN search symbol and open its declaring file"
+}
+
+[2025-12-16 10:10] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "open missing file,broad code search",
+    "MISSING STEPS": "instrument logging,add tests,ask user",
+    "BOTTLENECK": "No verification of which PSI element the caret selection returned.",
+    "PROJECT NOTE": "Focus on CaretSelection.findExpressionAtCaret for PyKeywordArgument; it should return the value expression when caret is on the keyword name.",
+    "NEW INSTRUCTION": "WHEN caret inside PyKeywordArgument name THEN select its value expression for analysis"
 }
