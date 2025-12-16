@@ -11,7 +11,7 @@
 ## Pending Features
 
 - [ ] feat: When creating and renaming, check against stdlib modules/packages and warn if name clashes
-- [ ] feat: Suppress rename to self and add "Add self"
+- [ ] feat: Suppress rename to self and add "Add self" (spec/add-self.md)
 - [ ] feat: Change visibility: make private (we only have two options and one is always true)
 - [ ] feat: Convert parametrized test to multiple unparametrized tests
 - [ ] feat: Add field to dataclass/model in case of unexpected argument
