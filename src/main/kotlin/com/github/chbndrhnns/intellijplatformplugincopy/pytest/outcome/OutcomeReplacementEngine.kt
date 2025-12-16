@@ -1,5 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome
 
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiFile
@@ -10,7 +12,6 @@ import com.jetbrains.python.psi.*
 class OutcomeReplacementEngine {
 
     fun apply(project: Project, assertStatement: PyAssertStatement, diff: OutcomeDiff, matchedKey: String) {
-        val expected = diff.expected
         val actual = diff.actual
 
         val expression = assertStatement.arguments.firstOrNull()
@@ -25,93 +26,26 @@ class OutcomeReplacementEngine {
                     is PyTargetExpression -> {
                         val assignedValue = resolved.findAssignedValue()
                         if (assignedValue != null) {
-                            replaceElement(assignedValue, actual, expected, project, matchedKey)
+                            replaceElement(assignedValue, actual, project, matchedKey)
                             return
                         }
                     }
 
                     is PyParameter -> {
-                        replaceElement(expectedExpression, actual, expected, project, matchedKey)
+                        replaceElement(expectedExpression, actual, project, matchedKey)
                         return
                     }
                 }
             }
 
-            replaceElement(expectedExpression, actual, expected, project, matchedKey)
+            replaceElement(expectedExpression, actual, project, matchedKey)
             return
         }
-
-        var replaced = false
-        assertStatement.accept(object : PyRecursiveElementVisitor() {
-            override fun visitPyStringLiteralExpression(node: PyStringLiteralExpression) {
-                if (replaced) return
-                if (matchesLiteral(node.stringValue, expected) || matchesLiteral(node.text, expected)) {
-                    replaceElement(node, actual, expected, project, matchedKey)
-                    replaced = true
-                }
-                super.visitPyStringLiteralExpression(node)
-            }
-
-            override fun visitPyNumericLiteralExpression(node: PyNumericLiteralExpression) {
-                if (replaced) return
-                if (matchesLiteral(node.text, expected)) {
-                    replaceElement(node, actual, expected, project, matchedKey)
-                    replaced = true
-                }
-                super.visitPyNumericLiteralExpression(node)
-            }
-        })
     }
-
-    private fun matches(element: PyExpression?, diffValue: String): Boolean {
-        if (element == null) return false
-
-        if (element is PyStringLiteralExpression) {
-            if (matchesLiteral(element.stringValue, diffValue)) return true
-            if (matchesLiteral(element.text, diffValue)) return true
-        }
-        if (element is PyNumericLiteralExpression) {
-            if (matchesLiteral(element.text, diffValue)) return true
-        }
-        if (element is PyBoolLiteralExpression) {
-            if (matchesLiteral(element.text, diffValue)) return true
-        }
-        if (element is PySequenceExpression) {
-            val text = element.text
-            if (normalize(text) == normalize(diffValue)) return true
-        }
-
-        if (element is PyReferenceExpression) {
-            val resolved = element.reference.resolve()
-            if (resolved is PyTargetExpression) {
-                val assignedValue = resolved.findAssignedValue()
-                if (assignedValue != null && matches(assignedValue, diffValue)) return true
-            }
-            if (resolved is PyParameter) {
-                if (isParametrizedMatch(resolved, diffValue)) return true
-            }
-        }
-
-        return false
-    }
-
-    private fun matchesLiteral(codeValue: String, diffValue: String): Boolean {
-        if (codeValue == diffValue) return true
-        if (codeValue == "\"$diffValue\"" || codeValue == "'$diffValue'") return true
-
-        if (codeValue.length >= 2 && diffValue.length >= 2) {
-            if (normalize(codeValue) == normalize(diffValue)) return true
-        }
-
-        return false
-    }
-
-    private fun normalize(s: String): String = s.replace("\"", "'")
 
     private fun replaceElement(
         element: PyElement,
         newValue: String,
-        expectedValue: String,
         project: Project,
         matchedKey: String
     ) {
@@ -120,7 +54,7 @@ class OutcomeReplacementEngine {
         if (element is PyReferenceExpression) {
             val resolved = element.reference.resolve()
             if (resolved is PyParameter) {
-                updateParametrizedValue(resolved, newValue, expectedValue, project, matchedKey)
+                updateParametrizedValue(resolved, newValue, project, matchedKey)
                 return
             }
         }
@@ -177,32 +111,9 @@ class OutcomeReplacementEngine {
         }
     }
 
-    private fun isParametrizedMatch(parameter: PyParameter, diffValue: String): Boolean {
-        val pyFunction = PsiTreeUtil.getParentOfType(parameter, PyFunction::class.java) ?: return false
-        val decoratorList = pyFunction.decoratorList ?: return false
-        val decorator = decoratorList.findDecorator("pytest.mark.parametrize") ?: return false
-
-        val (namesArg, valuesArg) = getParametrizeArguments(decorator) ?: return false
-
-        val paramName = parameter.name ?: return false
-        val paramIndex = getParameterIndex(namesArg, paramName)
-        if (paramIndex == -1) return false
-
-        if (valuesArg is PyListLiteralExpression) {
-            for (element in valuesArg.elements) {
-                val valueExpr = getValueExpression(element, paramIndex)
-                if (valueExpr != null && matches(valueExpr, diffValue)) {
-                    return true
-                }
-            }
-        }
-        return false
-    }
-
     private fun updateParametrizedValue(
         parameter: PyParameter,
         newValue: String,
-        expectedValue: String,
         project: Project,
         matchedKey: String
     ) {
@@ -217,93 +128,36 @@ class OutcomeReplacementEngine {
         val paramIndex = getParameterIndex(namesArg, paramName)
         if (paramIndex == -1) return
 
-        val paramValues = extractParameterValuesFromKey(matchedKey)
         if (valuesArg !is PyListLiteralExpression) return
 
-        if (paramValues != null) {
-            for (element in valuesArg.elements) {
-                if (!matchesParameterSet(element, paramValues, namesArg)) continue
-                val valueExpr = getValueExpression(element, paramIndex) ?: continue
-                replaceElement(valueExpr, newValue, "", project, matchedKey)
-                return
-            }
+        // Parametrized updates are only supported when we can uniquely identify the failing case
+        // via a bracket id in the matched key AND an explicit `ids=[...]` argument.
+        val paramIdFromKey = extractParamIdFromKey(matchedKey) ?: return
 
-            val idFromKey = paramValues.singleOrNull()
-            val ids = extractParametrizeIds(idsArg)
-            if (idFromKey != null && ids != null) {
-                val index = ids.indexOf(idFromKey)
-                if (index in valuesArg.elements.indices) {
-                    val element = valuesArg.elements[index]
-                    val valueExpr = getValueExpression(element, paramIndex)
-                    if (valueExpr != null) {
-                        replaceElement(valueExpr, newValue, "", project, matchedKey)
-                        return
-                    }
-                }
-            }
+        if (idsArg == null) {
+            notifyParametrizeIdsMustBeLiteral(project)
+            return
         }
 
-        if (valuesArg.elements.size == 1) {
-            val onlyElement = valuesArg.elements.firstOrNull()
-            val valueExpr = onlyElement?.let { getValueExpression(it, paramIndex) }
-            if (valueExpr != null) {
-                replaceElement(valueExpr, newValue, "", project, matchedKey)
-                return
-            }
+        val ids = extractParametrizeIds(idsArg)
+        if (ids == null) {
+            notifyParametrizeIdsMustBeLiteral(project)
+            return
         }
 
-        for (element in valuesArg.elements) {
-            val valueExpr = getValueExpression(element, paramIndex) ?: continue
-            if (matches(valueExpr, expectedValue)) {
-                replaceElement(valueExpr, newValue, "", project, matchedKey)
-                return
-            }
-        }
+        val index = ids.indexOf(paramIdFromKey)
+        if (index !in valuesArg.elements.indices) return
+
+        val element = valuesArg.elements[index]
+        val valueExpr = getValueExpression(element, paramIndex) ?: return
+        replaceElement(valueExpr, newValue, project, matchedKey)
     }
 
-    private fun extractParameterValuesFromKey(key: String): List<String>? {
+    private fun extractParamIdFromKey(key: String): String? {
         val bracketStart = key.lastIndexOf('[')
         val bracketEnd = key.lastIndexOf(']')
-        if (bracketStart == -1 || bracketEnd == -1 || bracketStart >= bracketEnd) {
-            return null
-        }
-        val paramPart = key.substring(bracketStart + 1, bracketEnd)
-        return paramPart.split('-')
-    }
-
-    private fun matchesParameterSet(element: PyExpression, paramValues: List<String>, namesArg: PyExpression): Boolean {
-        var current = element
-        while (current is PyParenthesizedExpression) {
-            val contained = current.containedExpression ?: return false
-            current = contained
-        }
-
-        val elements = when (current) {
-            is PyTupleExpression -> current.elements.toList()
-            is PyListLiteralExpression -> current.elements.toList()
-            else -> listOf(current)
-        }
-
-        if (elements.size != paramValues.size) return false
-
-        for (i in elements.indices) {
-            val elementValue = getElementValueAsString(elements[i])
-            val expectedValue = paramValues[i]
-            if (elementValue != expectedValue) {
-                return false
-            }
-        }
-
-        return true
-    }
-
-    private fun getElementValueAsString(element: PyExpression): String? {
-        return when (element) {
-            is PyStringLiteralExpression -> element.stringValue
-            is PyNumericLiteralExpression -> element.text
-            is PyBoolLiteralExpression -> element.text
-            else -> element.text
-        }
+        if (bracketStart == -1 || bracketEnd == -1 || bracketStart >= bracketEnd) return null
+        return key.substring(bracketStart + 1, bracketEnd)
     }
 
     private fun getValueExpression(element: PyExpression, index: Int): PyExpression? {
@@ -372,12 +226,29 @@ class OutcomeReplacementEngine {
             is PyTupleExpression -> expr.elements.toList()
             else -> return null
         }
-        return elements.mapNotNull {
-            when (it) {
-                is PyStringLiteralExpression -> it.stringValue
-                else -> null
+
+        val ids = ArrayList<String>(elements.size)
+        for (element in elements) {
+            val id = when (element) {
+                is PyStringLiteralExpression -> element.stringValue
+                is PyNumericLiteralExpression -> element.text
+                else -> return null
             }
+            ids.add(id)
         }
+
+        return ids
+    }
+
+    private fun notifyParametrizeIdsMustBeLiteral(project: Project) {
+        NotificationGroupManager.getInstance()
+            .getNotificationGroup("Python DDD Toolkit")
+            .createNotification(
+                "Use actual test outcome for parametrized tests only works with literal ids",
+                "Provide literal values, e.g. ids=[\"case-1\", \"case-2\"]. Function-based ids are not supported.",
+                NotificationType.INFORMATION
+            )
+            .notify(project)
     }
 
     private fun getParameterIndex(namesArg: PyExpression, paramName: String): Int {

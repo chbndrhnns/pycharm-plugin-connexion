@@ -32,17 +32,14 @@ class ReplaceExpectedWithActualIntentionParametrizeTest : TestBase() {
             "test_param.py", """
             import pytest
             
-            @pytest.mark.parametrize("arg, expected", [("abc", "defg")])
+            @pytest.mark.parametrize("arg, expected", [("abc", "defg")], ids=["case-1"])
             def test_str(arg, expected):
                 assert arg <caret>== expected
         """.trimIndent()
         )
 
-        // Simulate failure for specific parameter set
-        // qName usually includes [param]
-        // Base qName: test_param.test_str
-        // Parametrized: test_param.test_str[abc-defg] (pytest naming convention varies but this is typical)
-        setDiffData("test_param.test_str[abc-defg]", "defg", "abc")
+        // Simulate failure for specific parameter set (identified by `ids=[...]`).
+        setDiffData("test_param.test_str[case-1]", "defg", "abc")
 
         // Currently this should fail because the intention looks for exact match on "test_param.test_str"
         val intention = myFixture.getAvailableIntention("Use actual test outcome")
@@ -54,7 +51,7 @@ class ReplaceExpectedWithActualIntentionParametrizeTest : TestBase() {
             """
             import pytest
             
-            @pytest.mark.parametrize("arg, expected", [("abc", "abc")])
+            @pytest.mark.parametrize("arg, expected", [("abc", "abc")], ids=["case-1"])
             def test_str(arg, expected):
                 assert arg == expected
         """.trimIndent()
@@ -66,14 +63,18 @@ class ReplaceExpectedWithActualIntentionParametrizeTest : TestBase() {
             "test_param.py", """
             import pytest
             
-            @pytest.mark.parametrize("arg,expected", [("abc", "defg"), ("defg", "defg"), ])
+            @pytest.mark.parametrize(
+                "arg,expected",
+                [("abc", "defg"), ("defg", "defg"), ],
+                ids=["case-1", "case-2"],
+            )
             def test_str(arg, expected):
                 assert arg <caret>== expected
         """.trimIndent()
         )
 
         // Simulate failure for the first parameter set
-        setDiffData("test_param.test_str[abc-defg]", "defg", "abc")
+        setDiffData("test_param.test_str[case-1]", "defg", "abc")
 
         val intention = myFixture.getAvailableIntention("Use actual test outcome")
         assertNotNull("Intention should be available for parametrized test failure", intention)
@@ -84,7 +85,11 @@ class ReplaceExpectedWithActualIntentionParametrizeTest : TestBase() {
             """
             import pytest
             
-            @pytest.mark.parametrize("arg,expected", [("abc", "abc"), ("defg", "defg"), ])
+            @pytest.mark.parametrize(
+                "arg,expected",
+                [("abc", "abc"), ("defg", "defg"), ],
+                ids=["case-1", "case-2"],
+            )
             def test_str(arg, expected):
                 assert arg == expected
         """.trimIndent()
@@ -96,17 +101,21 @@ class ReplaceExpectedWithActualIntentionParametrizeTest : TestBase() {
             "test_param.py", """
             import pytest
 
-            @pytest.mark.parametrize("arg,expected", [("abc", "defg"), ("xxx", "yyy"), ])
+            @pytest.mark.parametrize(
+                "arg,expected",
+                [("abc", "defg"), ("xxx", "yyy"), ],
+                ids=["case-1", "case-2"],
+            )
             def test_str(arg, expected):
                 assert arg <caret>== expected
         """.trimIndent()
         )
 
-        setDiffData("test_param.test_str[abc-defg]", "defg", "abc")
-        setDiffData("test_param.test_str[xxx-yyy]", "yyy", "xxx")
+        setDiffData("test_param.test_str[case-1]", "defg", "abc")
+        setDiffData("test_param.test_str[case-2]", "yyy", "xxx")
 
         val intention = ReplaceExpectedWithActualIntention()
-        val explicitKey = buildKey("test_param.test_str[xxx-yyy]")
+        val explicitKey = buildKey("test_param.test_str[case-2]")
         com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project) {
             intention.invokeWithTestKey(project, myFixture.editor, myFixture.file, explicitKey)
         }
@@ -115,7 +124,128 @@ class ReplaceExpectedWithActualIntentionParametrizeTest : TestBase() {
             """
             import pytest
 
-            @pytest.mark.parametrize("arg,expected", [("abc", "defg"), ("xxx", "xxx"), ])
+            @pytest.mark.parametrize(
+                "arg,expected",
+                [("abc", "defg"), ("xxx", "xxx"), ],
+                ids=["case-1", "case-2"],
+            )
+            def test_str(arg, expected):
+                assert arg == expected
+            """.trimIndent()
+        )
+    }
+
+    fun `test intention matches parametrized case by ids`() {
+        myFixture.configureByText(
+            "test_param.py", """
+            import pytest
+
+            @pytest.mark.parametrize(
+                "arg,expected",
+                [("abc", "defg"), ("xxx", "yyy"),],
+                ids=["case-1", "case-2"],
+            )
+            def test_str(arg, expected):
+                assert arg <caret>== expected
+            """.trimIndent()
+        )
+
+        setDiffData("test_param.test_str[case-2]", "yyy", "xxx")
+
+        val intention = myFixture.getAvailableIntention("Use actual test outcome")
+        assertNotNull("Intention should be available for parametrized test failure", intention)
+
+        myFixture.launchAction(intention!!)
+
+        myFixture.checkResult(
+            """
+            import pytest
+
+            @pytest.mark.parametrize(
+                "arg,expected",
+                [("abc", "defg"), ("xxx", "xxx"), ],
+                ids=["case-1", "case-2"],
+            )
+            def test_str(arg, expected):
+                assert arg == expected
+            """.trimIndent()
+        )
+    }
+
+    fun `test parametrized replacement is skipped when ids are missing`() {
+        myFixture.configureByText(
+            "test_param.py", """
+            import pytest
+
+            @pytest.mark.parametrize(
+                "arg,expected",
+                [("abc", "defg"), ("xxx", "yyy"),],
+            )
+            def test_str(arg, expected):
+                assert arg <caret>== expected
+            """.trimIndent()
+        )
+
+        // Even though the matched key contains a bracket id, we can't map it to a parameter set
+        // without an explicit literal `ids=[...]`.
+        setDiffData("test_param.test_str[case-2]", "yyy", "xxx")
+
+        val intention = myFixture.getAvailableIntention("Use actual test outcome")
+        assertNotNull("Intention should be available for parametrized test failure", intention)
+
+        myFixture.launchAction(intention!!)
+
+        myFixture.checkResult(
+            """
+            import pytest
+
+            @pytest.mark.parametrize(
+                "arg,expected",
+                [("abc", "defg"), ("xxx", "yyy"),],
+            )
+            def test_str(arg, expected):
+                assert arg == expected
+            """.trimIndent()
+        )
+    }
+
+    fun `test parametrized replacement is skipped when ids are not literal`() {
+        myFixture.configureByText(
+            "test_param.py", """
+            import pytest
+
+            def my_ids(value):
+                return str(value)
+
+            @pytest.mark.parametrize(
+                "arg,expected",
+                [("abc", "defg"), ("xxx", "yyy"),],
+                ids=my_ids,
+            )
+            def test_str(arg, expected):
+                assert arg <caret>== expected
+            """.trimIndent()
+        )
+
+        setDiffData("test_param.test_str[case-2]", "yyy", "xxx")
+
+        val intention = myFixture.getAvailableIntention("Use actual test outcome")
+        assertNotNull("Intention should be available for parametrized test failure", intention)
+
+        myFixture.launchAction(intention!!)
+
+        myFixture.checkResult(
+            """
+            import pytest
+
+            def my_ids(value):
+                return str(value)
+
+            @pytest.mark.parametrize(
+                "arg,expected",
+                [("abc", "defg"), ("xxx", "yyy"),],
+                ids=my_ids,
+            )
             def test_str(arg, expected):
                 assert arg == expected
             """.trimIndent()

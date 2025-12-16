@@ -1,9 +1,42 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome
 
+import com.intellij.execution.testframework.AbstractTestProxy
 import com.intellij.execution.testframework.sm.runner.SMTestProxy
+import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.actionSystem.impl.SimpleDataContext
+import com.intellij.testFramework.TestActionEvent
 import fixtures.TestBase
 
 class UseActualTestOutcomeFromTreeActionTest : TestBase() {
+
+    fun `test action update is only enabled for leaf failing test`() {
+        val action = UseActualTestOutcomeFromTreeAction()
+
+        val leaf = SMTestProxy("test_foo", false, "python://test")
+        leaf.setTestFailed("msg", "stack", false)
+
+        val dataContext = SimpleDataContext.builder()
+            .add(CommonDataKeys.PROJECT, project)
+            .add(AbstractTestProxy.DATA_KEYS, arrayOf<AbstractTestProxy>(leaf))
+            .build()
+        val event = TestActionEvent.createTestEvent(action, dataContext)
+
+        action.update(event)
+        assertTrue(event.presentation.isEnabledAndVisible)
+
+        val suite = SMTestProxy("test_foo", true, "python://test")
+        suite.addChild(leaf)
+        suite.setTestFailed("msg", "stack", false)
+
+        val suiteDataContext = SimpleDataContext.builder()
+            .add(CommonDataKeys.PROJECT, project)
+            .add(AbstractTestProxy.DATA_KEYS, arrayOf<AbstractTestProxy>(suite))
+            .build()
+        val suiteEvent = TestActionEvent.createTestEvent(action, suiteDataContext)
+
+        action.update(suiteEvent)
+        assertFalse(suiteEvent.presentation.isEnabledAndVisible)
+    }
 
     fun `test extract line number from standard python stacktrace`() {
         val stacktrace = """

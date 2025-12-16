@@ -22,7 +22,10 @@ class UseActualTestOutcomeFromTreeAction : AnAction() {
 
     override fun update(e: AnActionEvent) {
         val proxies = e.getData(AbstractTestProxy.DATA_KEYS)
-        val visible = proxies != null && proxies.size == 1 && (proxies[0].isDefect)
+        val visible = proxies != null &&
+            proxies.size == 1 &&
+            proxies[0].isDefect &&
+            isLeafProxy(proxies[0])
         e.presentation.isEnabledAndVisible = visible
     }
 
@@ -79,6 +82,12 @@ class UseActualTestOutcomeFromTreeAction : AnAction() {
     }
 
     companion object {
+        private fun isLeafProxy(proxy: AbstractTestProxy): Boolean {
+            // For parametrized tests PyCharm creates a non-leaf container node with children.
+            // Only leaf tests should offer "Use actual test outcome".
+            return proxy.children.isNullOrEmpty()
+        }
+
         fun getFailedLineNumber(stacktrace: String, testFile: VirtualFile): Int? {
             var lastMatchingLine: Int? = null
 
