@@ -74,6 +74,28 @@ self._prefixes: dict[PrefixId, Prefix] = {
 
 - [ ] fix: Wrap inconsistencies
   - [ ] _testNestedConstructor_InsideDict_WrapsInnerArgument
+  - [ ] Wrap case which failed initially
+
+```python
+import dataclasses
+
+
+@dataclasses.dataclass
+class Inner:
+    id: int
+
+
+@dataclasses.dataclass
+class Outer:
+    inner: Inner
+
+
+val2: list[Outer] = [
+    Outer(
+        inner=Inner(id=1),
+    )
+]
+```
 
 ## Completed Tasks (newest first)
 
