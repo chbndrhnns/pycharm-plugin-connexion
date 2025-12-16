@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.search
 
 import com.jetbrains.python.psi.PyClass
+import com.jetbrains.python.psi.PyDecorator
 import com.jetbrains.python.psi.PyFunction
 
 /**
@@ -28,5 +29,15 @@ object PyTestDetection {
     fun isTestFunction(pyFunction: PyFunction): Boolean {
         val name = pyFunction.name ?: return false
         return name.startsWith("test_")
+    }
+
+    fun isPytestFixture(pyFunction: PyFunction): Boolean {
+        val decorators = pyFunction.decoratorList?.decorators ?: return false
+        return decorators.any { it.isPytestFixtureDecorator() }
+    }
+
+    private fun PyDecorator.isPytestFixtureDecorator(): Boolean {
+        val qualifiedName = qualifiedName?.toString() ?: return false
+        return qualifiedName == "pytest.fixture" || qualifiedName.endsWith(".fixture") || qualifiedName == "fixture"
     }
 }

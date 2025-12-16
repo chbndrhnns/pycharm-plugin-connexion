@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject
 
+import com.github.chbndrhnns.intellijplatformplugincopy.search.PyTestDetection
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.*
@@ -31,6 +32,9 @@ internal object IntroduceParameterObjectTarget {
         val function = find(element) ?: return false
 
         if (function.containingFile.name.endsWith(".pyi")) return false
+
+        if (PyTestDetection.isTestFunction(function)) return false
+        if (PyTestDetection.isPytestFixture(function)) return false
 
         val parameters = function.parameterList.parameters
             .filterIsInstance<PyNamedParameter>()

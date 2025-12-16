@@ -149,4 +149,32 @@ class PyIntroduceParameterObjectIntentionTest : TestBase() {
 
         assertEmpty(myFixture.filterAvailableIntentions("Introduce parameter object"))
     }
+
+    fun testUnavailableForPytestTestFunction() {
+        myFixture.configureByText(
+            "test_a.py",
+            """
+            def test_create_<caret>user(first_name, last_name):
+                print(first_name, last_name)
+            """.trimIndent()
+        )
+
+        assertEmpty(myFixture.filterAvailableIntentions("Introduce parameter object"))
+    }
+
+    fun testUnavailableForPytestFixture() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            import pytest
+
+
+            @pytest.fixture
+            def create_<caret>user(first_name, last_name):
+                print(first_name, last_name)
+            """.trimIndent()
+        )
+
+        assertEmpty(myFixture.filterAvailableIntentions("Introduce parameter object"))
+    }
 }
