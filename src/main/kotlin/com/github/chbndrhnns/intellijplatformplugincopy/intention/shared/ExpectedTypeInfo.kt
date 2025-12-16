@@ -252,6 +252,18 @@ internal object ExpectedTypeInfo {
             }
         }
 
+        if (parent is PySetLiteralExpression || parent is PyListLiteralExpression) {
+            val collectionInfo = doGetExpectedTypeInfo(parent, ctx)
+            val collectionType = collectionInfo?.type
+            if (collectionType is PyCollectionType) {
+                val elementType = collectionType.iteratedItemType
+                if (elementType != null) {
+                    val resolved = (elementType as? PyClassType)?.pyClass
+                    return TypeInfo(elementType, null, resolved)
+                }
+            }
+        }
+
         return resolveParamTypeInfo(expr, ctx)
     }
 
@@ -276,6 +288,31 @@ internal object ExpectedTypeInfo {
         val args = argList.arguments
         val argIndex = argIndexOf(expr, argList)
         if (argIndex < 0) return null
+
+        // Try using PyCallableType to get substituted types
+        val callRef = call.callee as? PyReferenceExpression
+        if (callRef != null) {
+            val callType = ctx.getType(callRef)
+            if (callType is PyCallableType) {
+                val params = callType.getParameters(ctx)
+                if (params != null) {
+                    val kw = keywordNameAt(args, argIndex, expr)
+                    val param = if (kw != null) {
+                        params.firstOrNull { it.name == kw }
+                    } else {
+                        params.getOrNull(argIndex)
+                    }
+
+                    if (param != null) {
+                        val type = param.getType(ctx)
+                        if (type != null) {
+                            val element = param.parameter
+                            return TypeInfo(type, element as? PyTypedElement, element as? PsiNamedElement)
+                        }
+                    }
+                }
+            }
+        }
 
         val callee = resolvedCallee(call, ctx) ?: return null
 

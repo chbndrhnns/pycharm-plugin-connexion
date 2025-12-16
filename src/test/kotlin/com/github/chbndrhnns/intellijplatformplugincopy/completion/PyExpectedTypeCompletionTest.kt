@@ -110,6 +110,34 @@ class PyExpectedTypeCompletionTest : TestBase() {
         assertEquals("MyArg() should be first", "MyArg()", variants[0])
     }
 
+    fun testSetElementCompletion() {
+        myFixture.configureByText(
+            "test_set_elem.py", """
+            class MyType2: pass
+            
+            vals: set[MyType2] = {<caret>}
+        """.trimIndent()
+        )
+        val variants = myFixture.getCompletionVariants("test_set_elem.py")
+        assertNotNull(variants)
+        assertTrue("Should contain 'MyType2', found: $variants", variants!!.contains("MyType2"))
+        assertEquals("MyType2() should be first", "MyType2()", variants[0])
+    }
+
+    fun testListElementCompletion() {
+        myFixture.configureByText(
+            "test_list_elem.py", """
+            class MyType3: pass
+            
+            vals: list[MyType3] = [<caret>]
+        """.trimIndent()
+        )
+        val variants = myFixture.getCompletionVariants("test_list_elem.py")
+        assertNotNull(variants)
+        assertTrue("Should contain 'MyType3', found: $variants", variants!!.contains("MyType3"))
+        assertEquals("MyType3() should be first", "MyType3()", variants[0])
+    }
+
     fun testAsyncReturnCompletion() {
         myFixture.configureByText(
             "test_async.py", """
