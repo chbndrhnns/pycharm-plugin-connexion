@@ -2,8 +2,6 @@
 
 ## Pending Issues
 
-- [ ] fix: Wrap should use set literal instead of set call, `vals: set[T] = T`
-- [ ] fix: Wrap suggests set instead of type: `vals: set[str] = {1}`
 - [ ] fix: When prefering relative import inside same package, do not add candidate if relative import exists already
 - [ ] fix: implement abstract method is put above __init__
 - [ ] feat: Consider if this should only work for dataclass/classes, for others, there is change signature
@@ -14,7 +12,6 @@
 ## Pending Features
 
 - [ ] feat: Suppress rename to self and add "Add self"
-- [ ] feat: Enable parameter object action also if only one parameter
 - [ ] feat: Change visibility: make private (we only have two options and one is always true)
 - [ ] feat: Convert parametrized test to multiple unparametrized tests
 - [ ] feat: Add field to dataclass/model in case of unexpected argument
@@ -61,6 +58,7 @@
 
 ## In Progress Tasks
 
+- [-] fix: Should not offer custom type on keywords
 - [x] fix: Wrap inconsistencies
   - [ ] _testNestedConstructor_InsideDict_WrapsInnerArgument
   - [x] Wrap case which failed initially
@@ -88,6 +86,9 @@ val2: list[Outer] = [
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Wrap suggests set instead of type: `vals: set[str] = {1}`
+- [x] fix: Wrap should use set literal instead of set call, `vals: set[T] = T`
+- [x] feat: Enable parameter object action also if only one parameter
 - [x] fix: Wrap should pick inner problem first, offers `Prefix` here
 
 ```python
