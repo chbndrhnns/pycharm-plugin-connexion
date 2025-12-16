@@ -2,18 +2,6 @@
 
 ## Pending Issues
 
-- [ ] fix: Wrap should pick inner problem first, offers `Prefix` here
-
-```python
-self._prefixes: dict[PrefixId, Prefix] = {
-  PrefixId(1): Prefix(
-    id=PrefixId(1),
-    prefix=IPv4Interface("10.10.10.0/24"),
-    vrf=Vrf(id=1, name=VrfName("5girs_flat_int_prod")),
-  )
-}
-```
-
 - [ ] fix: Wrap should use set literal instead of set call, `vals: set[T] = T`
 - [ ] fix: Wrap suggests set instead of type: `vals: set[str] = {1}`
 - [ ] fix: When prefering relative import inside same package, do not add candidate if relative import exists already
@@ -73,9 +61,9 @@ self._prefixes: dict[PrefixId, Prefix] = {
 
 ## In Progress Tasks
 
-- [ ] fix: Wrap inconsistencies
+- [x] fix: Wrap inconsistencies
   - [ ] _testNestedConstructor_InsideDict_WrapsInnerArgument
-  - [ ] Wrap case which failed initially
+  - [x] Wrap case which failed initially
 
 ```python
 import dataclasses
@@ -100,3 +88,14 @@ val2: list[Outer] = [
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Wrap should pick inner problem first, offers `Prefix` here
+
+```python
+self._prefixes: dict[PrefixId, Prefix] = {
+    PrefixId(1): Prefix(
+        id=PrefixId(1),
+        prefix=IPv4Interface("10.10.10.0/24"),
+        vrf=Vrf(id=1, name=VrfName("5girs_flat_int_prod")),
+    )
+}
+```
