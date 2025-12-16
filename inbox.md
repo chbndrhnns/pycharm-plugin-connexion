@@ -25,6 +25,7 @@ self._prefixes: dict[PrefixId, Prefix] = {
 
 ## Pending Features
 
+- [ ] feat: Enable parameter object action also if only one parameter
 - [ ] feat: Change visibility: make private (we only have two options and one is always true)
 - [ ] feat: Convert parametrized test to multiple unparametrized tests
 - [ ] feat: Add field to dataclass/model in case of unexpected argument
@@ -71,10 +72,12 @@ self._prefixes: dict[PrefixId, Prefix] = {
 
 ## In Progress Tasks
 
-
+- [ ] feat: Introduce custom type from str should add declaration annotataion
+- [ ] fix: Wrap with __add__ should not be available
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Introduce parameter object should create valid class identifiers
 - [x] fix: Introduce parameter object should not be available for test methods and pytest fixtures (
   spec/parameter-object/blocklist.md)
 - [x] fix: Only offer actual outcome if diff exists, not for all failures
