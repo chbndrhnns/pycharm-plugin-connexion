@@ -58,7 +58,6 @@
 
 ## In Progress Tasks
 
-- [-] fix: Should not offer custom type on keywords
 - [x] fix: Wrap inconsistencies
   - [ ] _testNestedConstructor_InsideDict_WrapsInnerArgument
   - [x] Wrap case which failed initially
@@ -86,6 +85,7 @@ val2: list[Outer] = [
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Should not offer custom type on keywords
 - [x] fix: Wrap suggests set instead of type: `vals: set[str] = {1}`
 - [x] fix: Wrap should use set literal instead of set call, `vals: set[T] = T`
 - [x] feat: Enable parameter object action also if only one parameter
