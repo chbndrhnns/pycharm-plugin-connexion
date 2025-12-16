@@ -73,11 +73,11 @@ self._prefixes: dict[PrefixId, Prefix] = {
 
 - [ ] fix: Introduce parameter object should not be available for test methods and pytest fixtures (
   spec/parameter-object/blocklist.md)
-- [ ] fix: Only offer actual outcome if diff exists, not for all failures
 
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Only offer actual outcome if diff exists, not for all failures
 - [x] fix: Introduce parameter object needs to respect existing * arg
 - [x] feat: Make introduce parameter object available on call site
 - [x] feat: Support actual value for such case where one parameter is ok
