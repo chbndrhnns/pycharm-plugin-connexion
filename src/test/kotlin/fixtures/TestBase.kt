@@ -55,6 +55,8 @@ abstract class TestBase : MyPlatformTestCase() {
                 enableConvertPytestParamIntention = true,
                 enableStripSignatureTypeAnnotationsIntention = true,
                 suppressSuggestedRefactoringSignatureChangeIntention = true,
+                preferOwnTypesInUnionWrapping = true,
+                includeStdlibInUnionWrapping = true,
             ),
         )
         PythonTestSetup.createAndRegisterSdk(

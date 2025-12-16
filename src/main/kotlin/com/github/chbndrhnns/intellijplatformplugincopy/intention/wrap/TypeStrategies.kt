@@ -5,14 +5,22 @@ import com.github.chbndrhnns.intellijplatformplugincopy.intention.UnionChoice
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.CtorMatch
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedCtor
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.jetbrains.python.psi.types.PyClassType
 
 /**
  * Strategy for handling union types - offers wrapping with the best matching union member.
+ * 
+ * Bucket priority: OWN > THIRDPARTY > STDLIB > BUILTIN
+ * 
+ * Behavior can be configured via settings:
+ * - `includeStdlibInUnionWrapping`: When false, STDLIB types are filtered out from candidates.
+ * - `preferOwnTypesInUnionWrapping`: When true (default), OWN types are always preferred.
  */
 class UnionStrategy : WrapStrategy {
     override fun run(context: AnalysisContext): StrategyResult {
         val element = context.element
+        val settings = PluginSettingsState.instance().state
 
         val names = PyTypeIntentions.computeDisplayTypeNames(element, context.typeEval)
         val annElement = names.expectedAnnotationElement
@@ -23,12 +31,17 @@ class UnionStrategy : WrapStrategy {
             return StrategyResult.Continue
         }
 
-
         // Bucketize candidates to prefer OWN > THIRDPARTY > STDLIB > BUILTIN.
         data class BucketedCtor(val bucket: TypeBucket, val ctor: ExpectedCtor)
 
         val bucketed = unionCtors.mapNotNull { ctor ->
             val bucket = TypeBucketClassifier.bucketFor(ctor.symbol, element) ?: return@mapNotNull null
+
+            // Filter out STDLIB types if configured
+            if (!settings.includeStdlibInUnionWrapping && bucket == TypeBucket.STDLIB) {
+                return@mapNotNull null
+            }
+
             BucketedCtor(bucket, ctor)
         }
         if (bucketed.isEmpty()) {

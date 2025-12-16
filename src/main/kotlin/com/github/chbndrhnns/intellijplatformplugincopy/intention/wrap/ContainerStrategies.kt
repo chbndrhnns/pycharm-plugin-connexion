@@ -7,7 +7,9 @@ import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.CtorMat
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedCtor
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedTypeInfo
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions
-import com.jetbrains.python.psi.*
+import com.jetbrains.python.psi.PyExpression
+import com.jetbrains.python.psi.PyReferenceExpression
+import com.jetbrains.python.psi.PySubscriptionExpression
 import com.jetbrains.python.psi.types.TypeEvalContext
 
 /**
@@ -28,20 +30,14 @@ class OuterContainerStrategy : WrapStrategy {
         }
 
         val element = context.element
-        val isSameContainerLiteral = when (outerCtor.name.lowercase()) {
-            "list" -> element is PyListLiteralExpression || element is PyListCompExpression
-            "set" -> element is PySetLiteralExpression || element is PySetCompExpression
-            "dict" -> element is PyDictLiteralExpression || element is PyDictCompExpression
-            "tuple" -> element is PyTupleExpression
-            else -> false
-        }
 
-        if (isSameContainerLiteral) {
+        // Check if the element is already the same type of container as expected
+        if (ContainerDetector.isSameContainerLiteral(element, outerCtor.name)) {
             return StrategyResult.Continue
         }
 
-        val isContainerLiteral = PyWrapHeuristics.isContainerLiteral(element) ||
-                element is PyListCompExpression || element is PySetCompExpression || element is PyDictCompExpression
+        val isContainerLiteral = ContainerDetector.isContainerLiteral(element) ||
+                ContainerDetector.isComprehension(element)
 
         if (!isContainerLiteral) {
             // Check if the variable itself matches the outer container type
@@ -89,15 +85,7 @@ class OuterContainerStrategy : WrapStrategy {
             else -> (sub.operand as? PyReferenceExpression)?.name?.lowercase()
         } ?: return null
 
-        fun mapToConcrete(name: String): String? = when (name) {
-            "list", "sequence", "collection", "iterable", "mutablesequence", "generator", "iterator" -> "list"
-            "set" -> "set"
-            "tuple" -> "tuple"
-            "dict", "mapping", "mutablemapping" -> "dict"
-            else -> null
-        }
-
-        val concrete = mapToConcrete(baseName) ?: return null
+        val concrete = ContainerDetector.mapToConcrete(baseName) ?: return null
         return ExpectedCtor(concrete, null)
     }
 }

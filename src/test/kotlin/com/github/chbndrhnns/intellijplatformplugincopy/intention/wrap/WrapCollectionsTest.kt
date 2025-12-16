@@ -212,7 +212,7 @@ class WrapCollectionsTest : TestBase() {
         )
     }
 
-    fun _testDoNotOfferListWrappingForList() {
+    fun testDoNotOfferListWrappingForList() {
         myFixture.assertIntentionNotAvailable(
             "a.py",
             """

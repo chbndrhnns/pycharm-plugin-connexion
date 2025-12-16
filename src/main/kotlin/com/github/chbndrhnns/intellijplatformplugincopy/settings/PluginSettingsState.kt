@@ -19,6 +19,12 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enableUnwrapItemsToExpectedTypeIntention: Boolean = true,
         var enableIntroduceCustomTypeFromStdlibIntention: Boolean = true,
 
+        // ---- Type Bucket Priority Settings ----
+        /** When true, always prefer OWN (project) types over STDLIB types in union wrapping. */
+        var preferOwnTypesInUnionWrapping: Boolean = true,
+        /** When true, include STDLIB types as candidates in union wrapping (otherwise filter them out). */
+        var includeStdlibInUnionWrapping: Boolean = true,
+
         // ---- Parameter & Argument Intentions ----
         var enablePopulateArgumentsIntention: Boolean = true,
         var enableMakeParameterOptionalIntention: Boolean = true,

@@ -30,6 +30,35 @@ enum class TypeBucket(val priority: Int) {
  */
 object TypeBucketClassifier {
 
+    /**
+     * Path patterns that indicate a third-party package location.
+     * Supports:
+     * - Standard virtualenv: /venv/, /.venv/
+     * - pip: /site-packages/, /dist-packages/
+     * - Conda: /envs/, /conda/, /miniconda/, /anaconda/
+     * - Poetry: /.poetry/, /pypoetry/
+     * - Pipenv: /.local/share/virtualenvs/
+     * - pyenv: /.pyenv/versions/
+     */
+    private val THIRDPARTY_PATH_PATTERNS = listOf(
+        "/site-packages/",
+        "/dist-packages/",
+        "/.venv/",
+        "/venv/",
+        // Conda environments
+        "/envs/",
+        "/conda/",
+        "/miniconda/",
+        "/anaconda/",
+        // Poetry environments
+        "/.poetry/",
+        "/pypoetry/",
+        // Pipenv
+        "/.local/share/virtualenvs/",
+        // pyenv
+        "/.pyenv/versions/"
+    )
+
     fun bucketFor(symbol: PsiNamedElement?, anchor: PsiElement): TypeBucket? {
         if (symbol == null) return null
 
@@ -44,11 +73,7 @@ object TypeBucketClassifier {
 
         if (index.isInLibraryClasses(vFile) || index.isInLibrarySource(vFile)) {
             val path = vFile.path.replace('\\', '/')
-            return if (path.contains("/site-packages/") ||
-                path.contains("/dist-packages/") ||
-                path.contains("/.venv/") ||
-                path.contains("/venv/")
-            ) {
+            return if (isThirdPartyPath(path)) {
                 TypeBucket.THIRDPARTY
             } else {
                 TypeBucket.STDLIB
@@ -58,5 +83,12 @@ object TypeBucketClassifier {
         // Fallback when the file is outside any known root: treat as OWN so
         // that project/local code is still preferred over stdlib/builtins.
         return TypeBucket.OWN
+    }
+
+    /**
+     * Checks if the given path matches any known third-party package location pattern.
+     */
+    private fun isThirdPartyPath(path: String): Boolean {
+        return THIRDPARTY_PATH_PATTERNS.any { pattern -> path.contains(pattern) }
     }
 }

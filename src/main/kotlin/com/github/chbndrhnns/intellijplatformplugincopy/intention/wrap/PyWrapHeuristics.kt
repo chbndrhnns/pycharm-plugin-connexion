@@ -4,7 +4,6 @@ import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.CtorMat
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedCtor
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.WrapperInfo
-import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.*
@@ -13,71 +12,28 @@ import com.jetbrains.python.psi.types.TypeEvalContext
 
 /**
  * Small collection of heuristics used by the wrap intention.
+ * 
+ * Container detection methods delegate to [ContainerDetector] for consistency.
  */
 object PyWrapHeuristics {
 
-    val CONTAINERS get() = PyTypeIntentions.CONTAINERS
+    val CONTAINERS get() = ContainerDetector.CONTAINER_NAMES
 
-    fun isContainerLiteral(expr: PsiElement): Boolean = when (expr) {
-        is PyListLiteralExpression,
-        is PyTupleExpression,
-        is PySetLiteralExpression,
-        is PyDictLiteralExpression -> true
+    fun isInsideContainerLiteralOrComprehension(expr: PyExpression): Boolean =
+        ContainerDetector.isInsideContainerLiteralOrComprehension(expr)
 
-        else -> false
-    }
+    fun shouldSuppressContainerCtor(element: PyExpression, ctorName: String): Boolean =
+        ContainerDetector.shouldSuppressContainerCtor(element, ctorName)
 
-    fun isInsideContainerLiteralOrComprehension(expr: PyExpression): Boolean {
-        val p = expr.parent
-        return isContainerLiteral(p) || when (p) {
-            is PyListCompExpression,
-            is PySetCompExpression,
-            is PyDictCompExpression -> true
-
-            else -> false
-        }
-    }
-
-    fun shouldSuppressContainerCtor(element: PyExpression, ctorName: String): Boolean {
-        if (ctorName.lowercase() !in CONTAINERS) return false
-        return isInsideContainerLiteralOrComprehension(element)
-    }
-
-    fun parentMatchesExpectedContainer(element: PyExpression, expectedCtor: String): Boolean {
-        val p = element.parent
-        return when (expectedCtor.lowercase()) {
-            "list" -> p is PyListLiteralExpression || p is PyListCompExpression
-            "set" -> p is PySetLiteralExpression || p is PySetCompExpression
-            "tuple" -> p is PyTupleExpression
-            "dict" -> p is PyDictLiteralExpression || p is PyDictCompExpression
-            else -> false
-        }
-    }
+    fun parentMatchesExpectedContainer(element: PyExpression, expectedCtor: String): Boolean =
+        ContainerDetector.parentMatchesExpectedContainer(element, expectedCtor)
 
     /**
      * Determines whether the given expression is a container literal or a
      * comprehension/generator, in which case wrapping with list(expr) is preferred
      * over [expr] to preserve iteration semantics rather than nesting.
      */
-    fun isContainerExpression(expr: PyExpression): Boolean = when (expr) {
-        is PyListLiteralExpression,
-        is PyTupleExpression,
-        is PySetLiteralExpression,
-        is PyDictLiteralExpression,
-        is PyListCompExpression,
-        is PySetCompExpression,
-        is PyDictCompExpression,
-        is PyGeneratorExpression -> true
-
-        is PyCallExpression -> {
-            val calleeName = (expr.callee as? PyReferenceExpression)?.name
-            // Treat common iterable/container factories as containers to avoid nesting
-            // e.g., prefer list(set()) over [set()] and list(range(...)) over [range(...)]
-            calleeName in setOf("set", "tuple", "dict", "range")
-        }
-
-        else -> false
-    }
+    fun isContainerExpression(expr: PyExpression): Boolean = ContainerDetector.isContainerExpression(expr)
 
     /**
      * Returns true if the given expression is already wrapped by a call to the same constructor
