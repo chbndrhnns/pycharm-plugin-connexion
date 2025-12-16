@@ -1,23 +1,3 @@
-[2025-12-09 21:38] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "resolve via PyTestsLocator,improve fallback",
-    "BOTTLENECK": "PSI resolution failed and fallback produced wrong separators for file path.",
-    "PROJECT NOTE": "Use PyTestsLocator.getLocation and metainfo; fix fallback to join file segments with '/' and use '::' only for class/function.",
-    "NEW INSTRUCTION": "WHEN using fallback from proxy hierarchy THEN join file path with '/' and suffix with '::'"
-}
-
-[2025-12-09 22:28] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "scan implementation file,open TestBase",
-    "MISSING STEPS": "run tests,verify node id format",
-    "BOTTLENECK": "Null locationUrl in FakeSMTestProxy caused parseProxy to return null and NPE.",
-    "PROJECT NOTE": "SMTestProxy locationUrl should use format python<file path>://fully.qualified.name.",
-    "NEW INSTRUCTION": "WHEN tests were modified THEN run the modified test file immediately"
-}
-
 [2025-12-09 22:31] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -876,4 +856,24 @@
     "BOTTLENECK": "Regex did not account for status-prefixed pytest lines.",
     "PROJECT NOTE": "Consider supporting additional prefixes (e.g., xfailed, xpassed) if they appear with node ids.",
     "NEW INSTRUCTION": "WHEN console line starts with pytest status word THEN hyperlink node id after prefix only"
+}
+
+[2025-12-16 21:35] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "-",
+    "BOTTLENECK": "Confirming plugin.xml registration required extra navigation without adding new info.",
+    "PROJECT NOTE": "Intention description resources live under src/main/resources/intentionDescriptions/<IntentionClassName>/ with description.html and before/after templates.",
+    "NEW INSTRUCTION": "WHEN intention registered in plugin.xml THEN ensure intentionDescriptions folder matches class name exactly"
+}
+
+[2025-12-16 21:48] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "review tests",
+    "BOTTLENECK": "Answer was produced without fully reviewing truncated files for project-specific nuances.",
+    "PROJECT NOTE": "When adding tests for this intention, use myFixture.checkResult to assert generated code.",
+    "NEW INSTRUCTION": "WHEN file content preview indicates truncation THEN open_entire_file before deciding steps"
 }

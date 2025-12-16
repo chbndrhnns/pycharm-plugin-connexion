@@ -35,6 +35,7 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         // ---- Code Structure Intentions ----
         var enableDictAccessIntention: Boolean = true,
         var enableChangeVisibilityIntention: Boolean = true,
+        var enableCallableToProtocolIntention: Boolean = true,
         var enableAddExceptionCaptureIntention: Boolean = true,
         var enableWrapExceptionsWithParenthesesIntention: Boolean = true,
         var enableStripSignatureTypeAnnotationsIntention: Boolean = true,

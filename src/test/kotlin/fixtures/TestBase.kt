@@ -23,6 +23,7 @@ abstract class TestBase : MyPlatformTestCase() {
                 enableRelativeImportPreference = true,
                 enableDictAccessIntention = true,
                 enableChangeVisibilityIntention = true,
+                enableCallableToProtocolIntention = true,
                 enableIntroduceParameterObjectIntention = true,
                 enableDataclassMissingInspection = true,
                 enablePrivateModuleImportInspection = true,

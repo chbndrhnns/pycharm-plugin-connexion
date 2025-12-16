@@ -1,0 +1,9 @@
+from typing import Protocol
+
+
+class MyProtocol(Protocol):
+    def __call__(self, arg0: int, arg1: str) -> bool: ...
+
+
+def accepts_callback(cb: MyProtocol):
+    pass
