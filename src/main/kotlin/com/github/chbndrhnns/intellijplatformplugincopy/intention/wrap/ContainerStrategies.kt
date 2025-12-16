@@ -8,6 +8,7 @@ import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.Expecte
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedTypeInfo
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions
 import com.jetbrains.python.psi.PyExpression
+import com.jetbrains.python.psi.PyKeyValueExpression
 import com.jetbrains.python.psi.PyReferenceExpression
 import com.jetbrains.python.psi.PySubscriptionExpression
 import com.jetbrains.python.psi.types.TypeEvalContext
@@ -96,16 +97,34 @@ class OuterContainerStrategy : WrapStrategy {
 class ContainerItemStrategy : WrapStrategy {
     override fun run(context: AnalysisContext): StrategyResult {
         val element = context.element
-        val containerItemTarget = PyTypeIntentions.findContainerItemAtCaret(context.editor, element) ?: element
+        val containerItemTarget = PyTypeIntentions.findContainerItemAtCaret(context.editor, element)
+        
+        if (containerItemTarget == null) {
+            // If we are falling back to the element itself, verify it is a direct item of a container.
+            // Deeply nested elements (e.g. arguments in a call inside a list) should not be treated as list items.
+            if (!isDirectContainerItem(element)) {
+                // Fix for cases where nested elements happen to match the container type (e.g. list[int] -> CustomInt(1)).
+                // In those cases, we want to SKIP to suppress subsequent strategies, preserving legacy behavior.
+                // But if they differ (e.g. list[Outer] -> Inner(id=1)), we want to CONTINUE to avoid forcing 'Outer' on '1'.
+                val ctor = PyTypeIntentions.tryContainerItemCtor(element, context.typeEval)
+                if (ctor != null && 
+                    PyTypeIntentions.elementDisplaysAsCtor(element, ctor.name, context.typeEval) == CtorMatch.MATCHES) {
+                    return StrategyResult.Skip("Nested element matches container item type")
+                }
+                return StrategyResult.Continue
+            }
+        }
+        
+        val target = containerItemTarget ?: element
 
-        val ctor = PyTypeIntentions.tryContainerItemCtor(containerItemTarget, context.typeEval)
+        val ctor = PyTypeIntentions.tryContainerItemCtor(target, context.typeEval)
             ?: return StrategyResult.Continue
 
         val suppressedContainers = setOf("list", "set", "tuple", "dict")
         if (suppressedContainers.contains(ctor.name.lowercase())) return StrategyResult.Continue
 
         if (PyTypeIntentions.elementDisplaysAsCtor(
-                containerItemTarget,
+                target,
                 ctor.name,
                 context.typeEval
             ) == CtorMatch.MATCHES
@@ -113,14 +132,26 @@ class ContainerItemStrategy : WrapStrategy {
             return StrategyResult.Skip("Element already matches")
         }
 
-        if (PyWrapHeuristics.isAlreadyWrappedWith(containerItemTarget, ctor.name, ctor.symbol)) {
+        if (PyWrapHeuristics.isAlreadyWrappedWith(target, ctor.name, ctor.symbol)) {
             return StrategyResult.Skip("Already wrapped")
         }
 
-        if (UnwrapStrategy.unwrapYieldsExpectedCtor(containerItemTarget, ctor.name, context.typeEval)) {
+        if (UnwrapStrategy.unwrapYieldsExpectedCtor(target, ctor.name, context.typeEval)) {
             return StrategyResult.Skip("Unwrap yields expected ctor")
         }
 
-        return StrategyResult.Found(Single(containerItemTarget, ctor.name, ctor.symbol))
+        return StrategyResult.Found(Single(target, ctor.name, ctor.symbol))
+    }
+
+    private fun isDirectContainerItem(element: PyExpression): Boolean {
+        val parent = element.parent
+        if (ContainerDetector.isContainerLiteral(parent) || ContainerDetector.isComprehension(parent)) return true
+
+        // Handle dict {k: v} where parent is KeyValue
+        if (parent is PyKeyValueExpression) {
+            val grand = parent.parent
+            if (ContainerDetector.isContainerLiteral(grand) || ContainerDetector.isComprehension(grand)) return true
+        }
+        return false
     }
 }
