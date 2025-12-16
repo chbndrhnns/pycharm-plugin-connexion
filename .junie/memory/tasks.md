@@ -1,13 +1,3 @@
-[2025-12-09 15:13] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "compare spec to tests, map scenarios to test names, report uncovered cases",
-    "BOTTLENECK": "No explicit mapping from spec scenarios to implemented tests.",
-    "PROJECT NOTE": "Create a simple traceability list linking docs/copy-with-dependencies.md scenarios to tests in src/test/kotlin/...CopyBlockWithDependenciesIntentionTest.kt.",
-    "NEW INSTRUCTION": "WHEN asked about uncovered spec cases THEN map spec scenarios to test cases and list gaps"
-}
-
 [2025-12-09 15:20] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -876,4 +866,14 @@
     "BOTTLENECK": "Preview implementation remained incomplete and ignored IntentionPreviewUtils guidance.",
     "PROJECT NOTE": "WrapPreview.kt shows a working preview pattern that can be mirrored.",
     "NEW INSTRUCTION": "WHEN intention needs preview THEN implement generatePreview using IntentionPreviewUtils.write and shared transform"
+}
+
+[2025-12-16 09:45] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "broad code search, open non-existent file",
+    "MISSING STEPS": "create repro, inspect function body, add tests, run tests",
+    "BOTTLENECK": "No targeted verification via function body or reproduction test.",
+    "PROJECT NOTE": "GenericCtorStrategy is implemented in TypeStrategies.kt, not its own file.",
+    "NEW INSTRUCTION": "WHEN file open fails THEN search symbol and open its declaring file"
 }

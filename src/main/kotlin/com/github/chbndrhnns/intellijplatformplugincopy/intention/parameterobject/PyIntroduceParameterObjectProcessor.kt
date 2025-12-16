@@ -119,8 +119,11 @@ class PyIntroduceParameterObjectProcessor(
     private fun generateDataclassName(function: PyFunction): String {
         val name = function.name ?: "Params"
         // simple snake_case to CamelCase conversion for MVP
-        val baseName = name.split('_')
-            .joinToString("") { it.replaceFirstChar { char -> char.uppercase() } } + "Params"
+        val rawBaseName = name.split('_')
+            .filter { it.isNotBlank() }
+            .joinToString("") { it.replaceFirstChar { char -> char.uppercase() } }
+
+        val baseName = ensureValidPythonIdentifier((rawBaseName.ifBlank { "Params" }) + "Params")
 
         val file = function.containingFile as? PyFile ?: return baseName
 
@@ -131,6 +134,24 @@ class PyIntroduceParameterObjectProcessor(
             index++
         }
         return candidate
+    }
+
+    private fun ensureValidPythonIdentifier(name: String): String {
+        if (name.isBlank()) return "Params"
+
+        val sanitized = buildString {
+            for (ch in name) {
+                append(
+                    when {
+                        ch == '_' || ch.isLetterOrDigit() -> ch
+                        else -> '_'
+                    }
+                )
+            }
+        }
+
+        val first = sanitized.firstOrNull() ?: return "Params"
+        return if (first == '_' || first.isLetter()) sanitized else "_$sanitized"
     }
 
     private fun isNameTaken(file: PyFile, name: String): Boolean {

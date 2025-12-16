@@ -138,6 +138,33 @@ class PyIntroduceParameterObjectIntentionTest : TestBase() {
         }
     }
 
+    fun testIntroduceParameterObjectCreatesValidClassNameForDigitLeadingFunction() {
+        withMockIntroduceParameterObjectDialog {
+            myFixture.doIntentionTest(
+                "a.py",
+                """
+                def _1(<caret>abc, defg):
+                    print(abc, defg)
+                """.trimIndent(),
+                """
+                from dataclasses import dataclass
+                from typing import Any
+
+
+                @dataclass(frozen=True, slots=True, kw_only=True)
+                class _1Params:
+                    abc: Any
+                    defg: Any
+
+
+                def _1(params: _1Params):
+                    print(params.abc, params.defg)
+                """.trimIndent(),
+                "Introduce parameter object"
+            )
+        }
+    }
+
     fun testUnavailableInFunctionBody() {
         myFixture.configureByText(
             "a.py",
