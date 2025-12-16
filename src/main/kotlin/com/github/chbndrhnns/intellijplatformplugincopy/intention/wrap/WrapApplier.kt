@@ -32,6 +32,8 @@ class WrapApplier(
                 ctorName == "str" && unwrapped is PyNumericLiteralExpression && element.parent !is PyAssignmentStatement -> "\"${unwrapped.text}\""
                 ctorName == "list" && PyWrapHeuristics.isContainerExpression(unwrapped) -> "list(${element.text})"
                 ctorName == "list" -> "[${unwrapped.text}]"
+                ctorName == "set" && PyWrapHeuristics.isContainerExpression(unwrapped) -> "set(${element.text})"
+                ctorName == "set" -> "{${unwrapped.text}}"
                 else -> "$ctorName(${unwrapped.text})"
             }
 

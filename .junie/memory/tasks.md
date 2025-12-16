@@ -1,23 +1,3 @@
-[2025-12-09 15:30] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "create secondary action",
-    "MISSING STEPS": "register actions, add tests, run tests, run build",
-    "BOTTLENECK": "No registration and tests prevented verifying the feature works end-to-end.",
-    "PROJECT NOTE": "Register the action in plugin.xml under actions and bind it to the test tree view popup; add IntelliJ platform tests in src/test/kotlin.",
-    "NEW INSTRUCTION": "WHEN tests are added or modified THEN plan a step to run the full test suite"
-}
-
-[2025-12-09 15:39] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "check run configuration type",
-    "MISSING STEPS": "update action enablement, manual verify in IDE, add tests",
-    "BOTTLENECK": "Action visibility/enabling tied to run configuration instead of selection.",
-    "PROJECT NOTE": "Ensure actions/group are registered under TestTreePopupMenu in plugin.xml.",
-    "NEW INSTRUCTION": "WHEN context menu opens in TestTreeView THEN enable actions if any selected node maps to SMTestProxy"
-}
-
 [2025-12-09 21:34] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -876,4 +856,24 @@
     "BOTTLENECK": "No verification of which PSI element the caret selection returned.",
     "PROJECT NOTE": "Focus on CaretSelection.findExpressionAtCaret for PyKeywordArgument; it should return the value expression when caret is on the keyword name.",
     "NEW INSTRUCTION": "WHEN caret inside PyKeywordArgument name THEN select its value expression for analysis"
+}
+
+[2025-12-16 11:09] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "broad search, list directory, open small files twice",
+    "MISSING STEPS": "extract requirements, draft spec, cross-check tests vs code, identify inconsistencies, list edge cases, propose flexibility",
+    "BOTTLENECK": "No synthesis phase to produce the requested spec and analysis.",
+    "PROJECT NOTE": "Use test README categories to structure the spec and analysis.",
+    "NEW INSTRUCTION": "WHEN core wrap files and tests are reviewed THEN draft spec and enumerate inconsistencies"
+}
+
+[2025-12-16 11:25] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "modify code, run tests, add tests, refactor strategy order, submit",
+    "BOTTLENECK": "Execution of phase 1 fixes did not start.",
+    "PROJECT NOTE": "Begin with OuterContainerStrategy ordering fix and set literal handling in WrapApplier; ensure skipping outer wrap inside set literals.",
+    "NEW INSTRUCTION": "WHEN task requests implementing phase 1 THEN implement critical fixes and run project tests"
 }

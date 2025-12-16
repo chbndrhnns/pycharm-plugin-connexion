@@ -18,7 +18,8 @@ class OuterContainerStrategy : WrapStrategy {
         val outerCtor = resolveExpectedOuterContainerCtor(context.element, context.typeEval)
             ?: return StrategyResult.Continue
 
-        if (outerCtor.name == "dict") return StrategyResult.Skip("Dict not supported")
+        // Dict outer container wrapping is not supported, but allow other strategies to handle inner elements
+        if (outerCtor.name == "dict") return StrategyResult.Continue
 
         // Check if we are already inside a container that matches the expectation
         if (PyWrapHeuristics.parentMatchesExpectedContainer(context.element, outerCtor.name)) {

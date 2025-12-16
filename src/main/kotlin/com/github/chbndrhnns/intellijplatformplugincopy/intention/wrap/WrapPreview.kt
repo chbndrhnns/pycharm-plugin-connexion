@@ -27,6 +27,8 @@ class WrapPreview(
             "str" if unwrapped is PyNumericLiteralExpression -> "\"$originalText\""
             "list" if PyWrapHeuristics.isContainerExpression(unwrapped) -> "list($originalText)"
             "list" -> "[$originalText]"
+            "set" if PyWrapHeuristics.isContainerExpression(unwrapped) -> "set($originalText)"
+            "set" -> "{$originalText}"
             else -> "$ctorName($originalText)"
         }
         return buildDiffWithOptionalImport(file, element, modifiedText, ctorElement)
@@ -83,8 +85,8 @@ class WrapPreview(
         // Simple approach: iterate and build string.
         // Assumes standard formatting [a, b] -> [C(a), C(b)]
 
-        val sb = StringBuilder()
-        val containerText = container.text
+        StringBuilder()
+        container.text
         // If we just replace elements in the text...
         // It's hard to do robustly on string level without parsing.
         // But maybe for preview it's enough to show "Wrap items..." result on a simplified view?
@@ -143,7 +145,7 @@ class WrapPreview(
         ctorElement ?: return null
 
         // Skip builtins and already-imported names
-        if (PyBuiltinCache.Companion.getInstance(anchor).isBuiltin(ctorElement)) return null
+        if (PyBuiltinCache.getInstance(anchor).isBuiltin(ctorElement)) return null
         if (imports.isImported(file, ctorElement.name ?: return null)) return null
 
         // If name already resolvable in scope, skip import
