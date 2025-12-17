@@ -12,6 +12,7 @@
 
 ## Pending Features
 
+- [ ] feat: Render quick doc for pydantic/dataclass, showing inherited members, as well
 - [ ] feat: In case of unexpected type, offer cast to the expected type
 - [S] feat: Turn dict into dataclass/pydantic model (spec/upgrade-dict.md)
 - [S] feat: When creating and renaming, check against stdlib modules/packages and warn if name clashes (
@@ -61,6 +62,7 @@
 
 ## In Progress Tasks
 
+- [x] feat: Connexion: connect endpoints in code and spec
 - [x] fix: Wrap inconsistencies
   - [ ] _testNestedConstructor_InsideDict_WrapsInnerArgument
   - [x] Wrap case which failed initially
