@@ -2,6 +2,8 @@
 
 ## Pending Issues
 
+- [ ] fix: Making one symbol public via import place quickfix makes all other symbols unimported
+- [ ] fix: Do not wrap with callable annotation
 - [ ] fix: When prefering relative import inside same package, do not add candidate if relative import exists already
 - [ ] fix: implement abstract method is put above __init__
 - [ ] feat: Consider if this should only work for dataclass/classes, for others, there is change signature
@@ -10,6 +12,7 @@
 
 ## Pending Features
 
+- [ ] feat: In case of unexpected type, offer cast to the expected type
 - [S] feat: Turn dict into dataclass/pydantic model (spec/upgrade-dict.md)
 - [S] feat: When creating and renaming, check against stdlib modules/packages and warn if name clashes (
   spec/shadow-stdlib.md)
