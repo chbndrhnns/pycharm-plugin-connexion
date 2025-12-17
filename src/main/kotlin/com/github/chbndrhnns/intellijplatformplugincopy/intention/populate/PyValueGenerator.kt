@@ -82,13 +82,19 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
         val aliasResult = generateAliasFromClassType(type, context, scopeOwner)
         if (aliasResult != null) return aliasResult
 
-        // Fallback for regular classes: generate constructor call "ClassName()"
-        // This satisfies the requirement "pre-populate it with a single expected item type with an empty constructor call"
+        // For builtin types (int, str, float, bool, etc.), return ellipsis placeholder
         if (pyClass != null) {
             val name = pyClass.name
-            if (name != null) {
-                return GenerationResult("$name()", setOf(pyClass))
+            if (name != null && PyBuiltinNames.isBuiltin(name)) {
+                return defaultResult()
             }
+        }
+
+        // Fallback for regular (non-builtin) classes: generate constructor call "ClassName()"
+        // This satisfies the requirement "pre-populate it with a single expected item type with an empty constructor call"
+        val name = pyClass.name
+        if (name != null) {
+            return GenerationResult("$name()", setOf(pyClass))
         }
 
         return defaultResult()

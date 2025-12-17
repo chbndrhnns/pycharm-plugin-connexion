@@ -251,3 +251,24 @@
 [2025-12-11 10:36] - Updated by Junie - Error analysis
 {
     "TYP
+
+[2025-12-16 23:24] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle :test",
+    "ERROR": "Test suite failed with 18 failing tests",
+    "ROOT CAUSE": "The full test suite was executed after a revert, and unrelated failing tests caused the task to fail.",
+    "PROJECT NOTE": "Run targeted tests via: ./gradlew test --tests 'com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.*' to isolate wrap-related regressions; consult build/reports/tests/test/index.html for details.",
+    "NEW INSTRUCTION": "WHEN isolating impact of a specific commit THEN run only affected test classes or packages"
+}
+
+[2025-12-17 07:33] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle :test",
+    "ERROR": "FileComparisonFailedError: actual text differs from expected",
+    "ROOT CAUSE": "Wrap logic outputs constructor calls where tests expect ellipsis placeholders in container contexts.",
+    "PROJECT NOTE": "In ExpectedTypeInfo and wrap intentions, preserve Ellipsis (...) for container item suggestions (e.g., list/set/dict literals) while still using constructors for direct argument conversions.",
+    "NEW INSTRUCTION": "WHEN suggesting placeholder for container element THEN insert Ellipsis (...) instead of constructor call"
+}
+

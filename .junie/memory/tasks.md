@@ -1,53 +1,3 @@
-[2025-12-09 22:40] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "open file",
-    "MISSING STEPS": "scan project,open implementation,verify against tests",
-    "BOTTLENECK": "Answer was not grounded in the repository’s actual strategy implementation.",
-    "PROJECT NOTE": "Review PytestNodeIdGenerator and PytestNodeIdGeneratorTest to confirm when Strategy 2 triggers.",
-    "NEW INSTRUCTION": "WHEN question concerns specific repo algorithm or strategy THEN scan project and open implementation and tests before drafting answer"
-}
-
-[2025-12-09 22:46] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "inspect build files",
-    "MISSING STEPS": "ask user for target IDE range",
-    "BOTTLENECK": "Assumed UI DSL availability without confirming supported IDE versions with the user.",
-    "PROJECT NOTE": "If options grow further, consider collapsible groups or tabs to keep scanning fast.",
-    "NEW INSTRUCTION": "WHEN planning settings UI refactor without stated IDE targets THEN ask_user for minimum supported IDE version"
-}
-
-[2025-12-09 22:56] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "open build.gradle.kts, open gradle.properties",
-    "MISSING STEPS": "run build, verify UI at runtime",
-    "BOTTLENECK": "No build/validation after refactoring to UI DSL.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN settings UI code is changed THEN run build and fix compilation errors"
-}
-
-[2025-12-09 23:03] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "propose patch in prose",
-    "MISSING STEPS": "open files, apply patch, run tests, submit",
-    "BOTTLENECK": "Provided suggestions instead of implementing and verifying changes.",
-    "PROJECT NOTE": "Sort the aggregated results in CopyFQNAction and CopyPytestNodeIdAction before copying.",
-    "NEW INSTRUCTION": "WHEN change affects code behavior THEN apply_patch to files and run tests before submit"
-}
-
-[2025-12-09 23:04] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "add sort in CopyPytestNodeIdAction",
-    "BOTTLENECK": "Change was applied to only one of two analogous actions.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN change applies to multiple analogous actions THEN search and update all analogous actions consistently"
-}
-
 [2025-12-09 23:23] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -876,4 +826,44 @@
     "BOTTLENECK": "Unnecessary repo search before providing conceptual approach.",
     "PROJECT NOTE": "No in-repo occurrences of the quick-fix; treat as greenfield guidance.",
     "NEW INSTRUCTION": "WHEN user requests conceptual approach THEN skip project scan and outline steps directly"
+}
+
+[2025-12-16 23:02] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "finalize conventions,lock naming rules,fix insertion location rule,standardize Any vs object choice,select cast vs annotate policy",
+    "BOTTLENECK": "Unresolved defaults create ambiguity that blocks deterministic codegen and tests.",
+    "PROJECT NOTE": "Ensure intention action name/id matches test launcher expectations for your fixtures.",
+    "NEW INSTRUCTION": "WHEN proposal leaves open defaults THEN pick concrete defaults and encode them in tests"
+}
+
+[2025-12-16 23:04] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "semantic search",
+    "MISSING STEPS": "check repo-specific write/preview conventions",
+    "BOTTLENECK": "The proposal missed repo-specific guidance for intention preview write operations.",
+    "PROJECT NOTE": "When generating intention preview, perform PSI edits via IntentionPreviewUtils.write and avoid WriteCommandAction.",
+    "NEW INSTRUCTION": "WHEN proposing PSI write steps for quick-fix THEN mention IntentionPreviewUtils.write over WriteCommandAction"
+}
+
+[2025-12-16 23:33] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "inspect html report,search test by name",
+    "MISSING STEPS": "run focused tests,compare control flow with previous version",
+    "BOTTLENECK": "Early return bypassed established resolution logic in a central function.",
+    "PROJECT NOTE": "ExpectedTypeInfo changes impact both wrap intentions and populate/dataclass/pydantic tests.",
+    "NEW INSTRUCTION": "WHEN adding early-return in central resolution code THEN keep prior fallbacks and integrate after them"
+}
+
+[2025-12-17 07:33] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "run full test suite repeatedly,reset changes after targeted revert",
+    "MISSING STEPS": "run focused tests,design minimal repro,adjust wrap resolution policy,verify edge cases",
+    "BOTTLENECK": "Broad test runs delayed isolating the literal-vs-constructor policy regression.",
+    "PROJECT NOTE": "ExpectedTypeInfo drives wrap suggestions; avoid PyCallableType substitution when it forces constructor calls.",
+    "NEW INSTRUCTION": "WHEN restoring literal-vs-constructor behavior is required THEN prefer literal/ellipsis over constructors in wrap logic and run focused tests"
 }
