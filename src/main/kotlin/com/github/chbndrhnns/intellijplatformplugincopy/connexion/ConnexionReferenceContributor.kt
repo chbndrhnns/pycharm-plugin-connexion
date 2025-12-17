@@ -20,6 +20,20 @@ class ConnexionJsonReferenceContributor : PsiReferenceContributor() {
                 .withParent(PlatformPatterns.psiElement(JsonProperty::class.java).withName("operationId")),
             ConnexionJsonReferenceProvider()
         )
+        
+        // JSON: "x-openapi-router-controller": "<value>"
+        registrar.registerReferenceProvider(
+            PlatformPatterns.psiElement(JsonStringLiteral::class.java)
+                .withParent(PlatformPatterns.psiElement(JsonProperty::class.java).withName("x-openapi-router-controller")),
+            ConnexionJsonControllerReferenceProvider()
+        )
+
+        // JSON: "x-swagger-router-controller": "<value>"
+        registrar.registerReferenceProvider(
+            PlatformPatterns.psiElement(JsonStringLiteral::class.java)
+                .withParent(PlatformPatterns.psiElement(JsonProperty::class.java).withName("x-swagger-router-controller")),
+            ConnexionJsonControllerReferenceProvider()
+        )
     }
 }
 
@@ -28,6 +42,38 @@ private class ConnexionJsonReferenceProvider : PsiReferenceProvider() {
         val file = element.containingFile
         if (!OpenApiSpecUtil.isOpenApiFile(file)) return PsiReference.EMPTY_ARRAY
         return arrayOf(ConnexionJsonReference(element))
+    }
+}
+
+private class ConnexionJsonControllerReferenceProvider : PsiReferenceProvider() {
+    override fun getReferencesByElement(element: PsiElement, context: ProcessingContext): Array<PsiReference> {
+        val file = element.containingFile
+        if (!OpenApiSpecUtil.isOpenApiFile(file)) return PsiReference.EMPTY_ARRAY
+
+        val text = element.text
+        if (text.length < 2) return PsiReference.EMPTY_ARRAY
+
+        val valueStartOffset = 1
+        val value = text.substring(1, text.length - 1)
+
+        val references = mutableListOf<PsiReference>()
+        var start = 0
+        var currentPrefix = ""
+        while (true) {
+            val dotIndex = value.indexOf('.', start)
+            val end = if (dotIndex == -1) value.length else dotIndex
+            val range = com.intellij.openapi.util.TextRange(valueStartOffset + start, valueStartOffset + end)
+
+            references.add(ConnexionControllerReference(element, range, currentPrefix))
+
+            val part = value.substring(start, end)
+            if (currentPrefix.isEmpty()) currentPrefix = part else currentPrefix += ".$part"
+
+            if (dotIndex == -1) break
+            start = dotIndex + 1
+        }
+
+        return references.toTypedArray()
     }
 }
 
