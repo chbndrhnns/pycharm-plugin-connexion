@@ -6,6 +6,9 @@
 
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.python</depends>
+    <depends>com.intellij.modules.json</depends>
+
+    <depends optional="true" config-file="yaml-support.xml">org.jetbrains.plugins.yaml</depends>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
@@ -18,7 +21,15 @@
                                   implementation="com.github.chbndrhnns.intellijplatformplugincopy.psi.PyMockPatchReferenceContributor"/>
         <psi.referenceContributor language="Python"
                                   implementation="com.github.chbndrhnns.intellijplatformplugincopy.psi.PyFilterWarningsReferenceContributor"/>
-        
+
+        <psi.referenceContributor language="JSON"
+                                  implementation="com.github.chbndrhnns.intellijplatformplugincopy.connexion.ConnexionJsonReferenceContributor"/>
+
+        <codeInsight.lineMarkerProvider language="Python"
+                                        implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.connexion.ConnexionPythonLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="JSON"
+                                        implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.connexion.ConnexionJsonLineMarkerProvider"/>
+
         <definitionsScopedSearch implementation="com.github.chbndrhnns.intellijplatformplugincopy.search.PyProtocolDefinitionsSearchExecutor"/>
 
         <!-- Protocol implementation search index and cache -->
@@ -350,6 +361,13 @@
                 class="com.github.chbndrhnns.intellijplatformplugincopy.actions.JumpToPytestNodeInTestTreeAction"
                 text="Jump to Test Tree Node"
                 description="Selects the corresponding pytest node in the active test tree">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
+
+        <action id="Connexion.GoToOpenApiOperation"
+                class="com.github.chbndrhnns.intellijplatformplugincopy.connexion.GoToOpenApiOperationAction"
+                text="Go to OpenAPI Operation"
+                description="Navigate to OpenAPI declaration">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
     </actions>
