@@ -2,6 +2,7 @@
 
 ## Pending Issues
 
+- [ ] fix: Shadow warning is green and only shown AFTER creating the file
 - [ ] fix: Making one symbol public via import place quickfix makes all other symbols unimported
 - [ ] fix: Do not wrap with callable annotation
 - [ ] fix: When prefering relative import inside same package, do not add candidate if relative import exists already
