@@ -203,9 +203,6 @@
             <category>Abstract methods</category>
         </intentionAction>
 
-        <intentionActionFilter
-                implementation="com.github.chbndrhnns.intellijplatformplugincopy.intention.suppressor.RenameToSelfFilter"/>
-
         <applicationConfigurable
                 displayName="DDD Toolkit"
                 id="com.github.chbndrhnns.intellijplatformplugincopy.settings"
