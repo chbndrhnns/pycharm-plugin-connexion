@@ -3,9 +3,9 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.visibility
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
+import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
 import com.intellij.codeInsight.intention.preview.IntentionPreviewUtils
 import com.intellij.icons.AllIcons
-import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
@@ -14,7 +14,6 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.util.PsiTreeUtil
-import com.jetbrains.python.PythonUiService
 import com.jetbrains.python.psi.PyClass
 import com.jetbrains.python.psi.PyFunction
 import com.jetbrains.python.psi.PyTargetExpression
@@ -36,6 +35,19 @@ abstract class PyToggleVisibilityIntention : IntentionAction, HighPriorityAction
         if (!PluginSettingsState.instance().state.enableChangeVisibilityIntention) return false
         val symbol = findTargetSymbol(editor, file) ?: return false
         val name = symbol.name ?: return false
+        
+        // Ignore conftest.py
+        if (file.name == "conftest.py") return false
+
+        // Ignore test modules
+        if (file.name.startsWith("test_")) return false
+
+        // Ignore test functions
+        if (symbol is PyFunction && name.startsWith("test_")) return false
+
+        // Ignore test classes
+        if (symbol is PyClass && name.startsWith("Test_")) return false
+
         if (isDunder(name)) return false
         return isAvailableForName(name)
     }
@@ -45,6 +57,15 @@ abstract class PyToggleVisibilityIntention : IntentionAction, HighPriorityAction
         val name = symbol.name ?: return
         val newName = calcNewName(name) ?: return
         performRename(project, symbol, newName)
+    }
+
+    override fun generatePreview(project: Project, editor: Editor, file: PsiFile): IntentionPreviewInfo {
+        val symbol = findTargetSymbol(editor, file) ?: return IntentionPreviewInfo.EMPTY
+        val name = symbol.name ?: return IntentionPreviewInfo.EMPTY
+        val newName = calcNewName(name) ?: return IntentionPreviewInfo.EMPTY
+
+        IntentionPreviewUtils.write<RuntimeException> { symbol.setName(newName) }
+        return IntentionPreviewInfo.DIFF
     }
 
     protected open fun findTargetSymbol(editor: Editor, file: PsiFile): PsiNamedElement? {
@@ -76,19 +97,9 @@ abstract class PyToggleVisibilityIntention : IntentionAction, HighPriorityAction
 
     /** Perform rename using Python refactoring UI service. Split out for testing/mocking if needed. */
     protected open fun performRename(project: Project, element: PsiNamedElement, newName: String) {
-        // Intention Preview runs on a background thread and works on a non-physical copy.
-        // Running refactoring processors there violates threading rules and may touch UI.
-        // In preview mode, update the preview PSI directly instead of invoking the rename processor.
-        if (IntentionPreviewUtils.isIntentionPreviewActive() || IntentionPreviewUtils.isPreviewElement(element)) {
-            // Rename the preview PSI under a write command to satisfy PSI change requirements
-            WriteCommandAction.runWriteCommandAction(project) {
-                element.setName(newName)
-            }
-            return
-        }
-
-        // In regular execution, use Python UI service to run a proper RenameProcessor that updates imports/usages
-        PythonUiService.getInstance()
-            .runRenameProcessor(project, element, newName, false, false)
+        // Use RefactoringFactory to avoid popup (Change visibility request)
+        val factory = com.intellij.refactoring.RefactoringFactory.getInstance(project)
+        val rename = factory.createRename(element, newName, false, false)
+        rename.run()
     }
 }

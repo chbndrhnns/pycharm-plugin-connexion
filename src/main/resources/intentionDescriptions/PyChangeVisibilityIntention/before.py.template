@@ -1,2 +1,3 @@
-class _MyClass:
-    pass
+class MyClass:
+    def _my_method(self):
+        pass

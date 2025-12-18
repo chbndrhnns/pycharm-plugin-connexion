@@ -1,26 +1,12 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.visibility
 
-import fixtures.FakePopupHost
 import fixtures.TestBase
 import fixtures.assertIntentionNotAvailable
 import fixtures.doIntentionTest
 
 class ChangeVisibilityIntentionTest : TestBase() {
 
-    private val fakePopupHost = FakePopupHost()
-
-    override fun setUp() {
-        super.setUp()
-        ChangeVisibilityIntentionHooks.popupHost = fakePopupHost
-    }
-
-    override fun tearDown() {
-        ChangeVisibilityIntentionHooks.popupHost = null
-        super.tearDown()
-    }
-
     fun testChangeVisibility_PrivateToPublic() {
-        fakePopupHost.selectedIndex = 0 // Public
         myFixture.doIntentionTest(
             "a.py",
             """
@@ -31,12 +17,11 @@ class ChangeVisibilityIntentionTest : TestBase() {
             class Internal:
                 pass
             """,
-            "Change visibility"
+            "Change visibility: make public"
         )
     }
 
     fun testChangeVisibility_PublicToPrivate() {
-        fakePopupHost.selectedIndex = 1 // Private
         myFixture.doIntentionTest(
             "a.py",
             """
@@ -47,7 +32,7 @@ class ChangeVisibilityIntentionTest : TestBase() {
             class _Public:
                 pass
             """,
-            "Change visibility"
+            "Change visibility: make private"
         )
     }
 
@@ -58,7 +43,7 @@ class ChangeVisibilityIntentionTest : TestBase() {
             def so<caret>me_fixture():
                 pass
             """,
-            "Change visibility"
+            "Change visibility: make private"
         )
     }
 
@@ -69,7 +54,7 @@ class ChangeVisibilityIntentionTest : TestBase() {
             def hel<caret>per():
                 pass
             """,
-            "Change visibility"
+            "Change visibility: make private"
         )
     }
 
@@ -80,7 +65,7 @@ class ChangeVisibilityIntentionTest : TestBase() {
             def test_so<caret>mething():
                 pass
             """,
-            "Change visibility"
+            "Change visibility: make private"
         )
     }
 
@@ -91,7 +76,7 @@ class ChangeVisibilityIntentionTest : TestBase() {
             class Test<caret>_Class:
                 pass
             """,
-            "Change visibility"
+            "Change visibility: make private"
         )
     }
 }
