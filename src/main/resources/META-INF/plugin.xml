@@ -4,6 +4,17 @@
     <name>Python DDD Toolkit</name>
     <vendor>chbndrhnns</vendor>
 
+    <description><![CDATA[
+        A toolbox of productivity features for Python codebases (especially DDD-style projects).
+
+        <ul>
+            <li><b>Intentions / quick-fixes</b> for common refactorings (populate arguments, introduce parameter object, adjust optionality, and more).</li>
+            <li><b>Type-hint helpers</b> to wrap/unwrap values to the expected type when the inferred type mismatches.</li>
+            <li><b>Connexion / OpenAPI assistance</b>: inspections and navigation for Connexion references in Python and JSON.</li>
+            <li><b>Smarter navigation</b> for protocol-related code (custom protocol definition search/caching) and improved Python structure view.</li>
+        </ul>
+    ]]></description>
+
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.python</depends>
     <depends>com.intellij.modules.json</depends>
