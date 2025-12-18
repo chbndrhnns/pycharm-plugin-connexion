@@ -56,11 +56,10 @@
 - [ ] feat: Configure default base classes
 - [ ] commit: if it fails for hooks, add option keep selection of files (docs/keep-commit-selection/spec.md, stash)
 - [ ] feat: Show red bubble if introduce parameter object is not available
+- [ ] feat: Collect symbols to check against for stdlib clashes dynamically
 
 ## In Progress Tasks
 
-- [S] feat: When creating and renaming, check against stdlib modules/packages and warn if name clashes (
-  spec/shadow-stdlib.md)
 - [ ] refactor: `IntentionPreviewUtils.write<RuntimeException> { symbol.setName(newName) }`
 - [ ] fix: Does not filter rename to self quickfix
 - [x] fix: Wrap inconsistencies
@@ -90,6 +89,8 @@ val2: list[Outer] = [
 
 ## Completed Tasks (newest first)
 
+- [x] feat: When creating and renaming, check against stdlib modules/packages and warn if name clashes (
+  spec/shadow-stdlib.md)
 - [x] feat: Annotate constant with `Final[T]` (spec/final-wrapper.md)
 - [x] fix: Never offer wrap for None
 - [x] feat: Do not allow to make private if used
