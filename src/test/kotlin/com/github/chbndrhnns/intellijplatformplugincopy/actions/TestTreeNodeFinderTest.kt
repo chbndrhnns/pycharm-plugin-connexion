@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.actions
 
+import com.github.chbndrhnns.intellijplatformplugincopy.pytest.testtree.TestTreeNodeFinder
 import com.intellij.execution.testframework.sm.runner.SMTestProxy
 import fixtures.TestBase
 import javax.swing.tree.DefaultMutableTreeNode

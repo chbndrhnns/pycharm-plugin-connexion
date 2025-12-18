@@ -1,4 +1,4 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.actions
+package com.github.chbndrhnns.intellijplatformplugincopy.pytest.testtree
 
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.execution.testframework.TestTreeView

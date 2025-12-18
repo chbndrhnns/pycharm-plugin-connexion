@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.actions
 
+import com.github.chbndrhnns.intellijplatformplugincopy.pytest.testtree.TestProxyExtractor
 import com.intellij.execution.testframework.sm.runner.SMTestProxy
 import com.intellij.ide.util.treeView.NodeDescriptor
 import fixtures.TestBase

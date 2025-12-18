@@ -1,6 +1,5 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.refactoring
+package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject
 
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectTarget
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.editor.Editor

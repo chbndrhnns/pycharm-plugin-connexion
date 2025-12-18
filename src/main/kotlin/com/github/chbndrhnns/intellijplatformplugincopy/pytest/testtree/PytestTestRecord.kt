@@ -1,4 +1,4 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.actions
+package com.github.chbndrhnns.intellijplatformplugincopy.pytest.testtree
 
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement

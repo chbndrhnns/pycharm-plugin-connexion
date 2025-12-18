@@ -1,13 +1,3 @@
-[2025-12-09 23:53] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "run tests,run tests again,create reproduction test before reading code",
-    "MISSING STEPS": "scan project,read PytestNodeIdGenerator,read CopyPytestNodeIdAction,apply user rules for node ids,ask user to fix broken build",
-    "BOTTLENECK": "Gradle immutable workspace corruption blocked running tests and feedback loop.",
-    "PROJECT NOTE": "Implement user rules directly in PytestNodeIdGenerator and CopyPytestNodeIdAction to use PSI file path, '::' separators, include parameters, and collect leaf nodes from root.",
-    "NEW INSTRUCTION": "WHEN build fails with immutable workspace corruption THEN ask_user to clean Gradle cache and continue static analysis"
-}
-
 [2025-12-10 00:06] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -866,4 +856,14 @@
     "BOTTLENECK": "Incorrect SDK retrieval API caused semantic errors in the new service.",
     "PROJECT NOTE": "Reuse the legacy SDK access pattern shown in PythonVersionGuard (legacy PythonSdkUtil).",
     "NEW INSTRUCTION": "WHEN needing Python SDK in project-wide service THEN use legacy PythonSdkUtil with element/module"
+}
+
+[2025-12-18 21:53] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "create plan, list edge cases, design popup, implement NewType generator, modify intention, add tests, run tests",
+    "BOTTLENECK": "Exploration continued without first producing the requested plan and tests.",
+    "PROJECT NOTE": "Reuse the WrapWithExpectedTypeIntention popup host/testing pattern to implement the candidates chooser.",
+    "NEW INSTRUCTION": "WHEN a task requests a plan and tests THEN write plan, edge cases, and test list first"
 }

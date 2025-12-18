@@ -1,4 +1,4 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.actions
+package com.github.chbndrhnns.intellijplatformplugincopy.pytest.testtree
 
 import com.intellij.execution.testframework.sm.runner.SMTestProxy
 import com.intellij.openapi.project.Project

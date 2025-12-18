@@ -1,5 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.actions
 
+import com.github.chbndrhnns.intellijplatformplugincopy.pytest.testtree.CopyFQNAction
+import com.github.chbndrhnns.intellijplatformplugincopy.pytest.testtree.CopyPytestNodeIdAction
 import com.intellij.execution.Location
 import com.intellij.execution.PsiLocation
 import com.intellij.execution.testframework.sm.runner.SMTestProxy

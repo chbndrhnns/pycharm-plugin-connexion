@@ -363,8 +363,8 @@
             <add-to-group group-id="RefactoringMenu" anchor="last"/>
         </action>
 
-        <action id="com.github.chbndrhnns.intellijplatformplugincopy.refactoring.IntroduceParameterObjectRefactoringAction"
-                class="com.github.chbndrhnns.intellijplatformplugincopy.refactoring.IntroduceParameterObjectRefactoringAction"
+        <action id="com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectRefactoringAction"
+                class="com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectRefactoringAction"
                 text="Introduce Parameter Object..."
                 description="Introduces a parameter object for the current function">
             <add-to-group group-id="RefactoringMenu" anchor="last"/>
@@ -389,18 +389,18 @@
         <group id="MyPlugin.CopySpecialGroup" text="Copy Special" popup="true">
             <add-to-group group-id="TestTreePopupMenu" anchor="last"/>
             <action id="MyPlugin.CopyPytestNodeIds"
-                    class="com.github.chbndrhnns.intellijplatformplugincopy.actions.CopyPytestNodeIdAction"
+                    class="com.github.chbndrhnns.intellijplatformplugincopy.pytest.testtree.CopyPytestNodeIdAction"
                     text="Copy Pytest Node IDs"/>
             <action id="MyPlugin.CopyFQNs"
-                    class="com.github.chbndrhnns.intellijplatformplugincopy.actions.CopyFQNAction"
+                    class="com.github.chbndrhnns.intellijplatformplugincopy.pytest.testtree.CopyFQNAction"
                     text="Copy FQNs"/>
             <action id="MyPlugin.CopyStacktrace"
-                    class="com.github.chbndrhnns.intellijplatformplugincopy.actions.CopyStacktraceAction"
+                    class="com.github.chbndrhnns.intellijplatformplugincopy.pytest.testtree.CopyStacktraceAction"
                     text="Copy Stacktrace"/>
         </group>
 
         <action id="MyPlugin.TogglePytestSkipFromTestTree"
-                class="com.github.chbndrhnns.intellijplatformplugincopy.actions.TogglePytestSkipFromTestTreeAction"
+                class="com.github.chbndrhnns.intellijplatformplugincopy.pytest.testtree.TogglePytestSkipFromTestTreeAction"
                 text="Toggle Pytest Skip"
                 description="Toggles pytest skip marker for the selected test node (function/class/module)">
             <add-to-group group-id="TestTreePopupMenu" anchor="last"/>
@@ -414,7 +414,7 @@
         </action>
 
         <action id="MyPlugin.JumpToPytestNodeInTestTree"
-                class="com.github.chbndrhnns.intellijplatformplugincopy.actions.JumpToPytestNodeInTestTreeAction"
+                class="com.github.chbndrhnns.intellijplatformplugincopy.pytest.testtree.JumpToPytestNodeInTestTreeAction"
                 text="Jump to Test Tree Node"
                 description="Selects the corresponding pytest node in the active test tree">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>

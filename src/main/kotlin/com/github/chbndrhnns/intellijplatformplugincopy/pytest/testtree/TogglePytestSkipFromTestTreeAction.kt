@@ -1,4 +1,4 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.actions
+package com.github.chbndrhnns.intellijplatformplugincopy.pytest.testtree
 
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest.PytestSkipToggler
 import com.github.chbndrhnns.intellijplatformplugincopy.services.ProjectLifetimeDisposable

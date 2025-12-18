@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.refactoring
 
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectRefactoringAction
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.withMockIntroduceParameterObjectDialog
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
@@ -20,7 +21,7 @@ class IntroduceParameterObjectRefactoringActionTest : TestBase() {
     fun testActionIsRegistered() {
         val actionManager = ActionManager.getInstance()
         val action =
-            actionManager.getAction("com.github.chbndrhnns.intellijplatformplugincopy.refactoring.IntroduceParameterObjectRefactoringAction")
+            actionManager.getAction("com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectRefactoringAction")
         assertNotNull("Action should be registered in plugin.xml", action)
         assertTrue(
             "Registered action should be IntroduceParameterObjectRefactoringAction",
