@@ -249,7 +249,7 @@ class GenericTest : TestBase() {
                 pass
             
             
-            f("a<caret>bc")
+            f(<caret>123)
             """,
             """
             class CustomWrapper(str): ...
@@ -259,7 +259,7 @@ class GenericTest : TestBase() {
                 pass
             
             
-            f(CustomWrapper("abc"))
+            f(CustomWrapper(123))
             """,
             "Wrap with CustomWrapper()"
         )

@@ -31,6 +31,11 @@ class UnionStrategy : WrapStrategy {
             return StrategyResult.Continue
         }
 
+        val anyMatches = unionCtors.any {
+            PyWrapHeuristics.elementMatchesCtor(element, it, context.typeEval)
+        }
+        if (anyMatches) return StrategyResult.Skip("Matches one union member")
+
         // Bucketize candidates to prefer OWN > THIRDPARTY > STDLIB > BUILTIN.
         data class BucketedCtor(val bucket: TypeBucket, val ctor: ExpectedCtor)
 
@@ -45,10 +50,6 @@ class UnionStrategy : WrapStrategy {
             BucketedCtor(bucket, ctor)
         }
         if (bucketed.isEmpty()) {
-            val anyMatches = unionCtors.any {
-                PyWrapHeuristics.elementMatchesCtor(element, it, context.typeEval)
-            }
-            if (anyMatches) return StrategyResult.Skip("Matches unresolved union member")
             return StrategyResult.Continue
         }
 
