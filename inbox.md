@@ -16,9 +16,6 @@
 - [ ] feat: Render quick doc for pydantic/dataclass, showing inherited members, as well
 - [ ] feat: In case of unexpected type, offer cast to the expected type
 - [S] feat: Turn dict into dataclass/pydantic model (spec/upgrade-dict.md)
-- [S] feat: When creating and renaming, check against stdlib modules/packages and warn if name clashes (
-  spec/shadow-stdlib.md)
-- [S] feat: Annotate constant with `Final[T]` (spec/final-wrapper.md)
 - [ ] feat: introduce custom type as newtype, as well, or other custom constructs
 - [ ] feat: Change visibility: make private (we only have two options and one is always true)
 - [ ] feat: Convert parametrized test to multiple unparametrized tests
@@ -62,6 +59,8 @@
 
 ## In Progress Tasks
 
+- [S] feat: When creating and renaming, check against stdlib modules/packages and warn if name clashes (
+  spec/shadow-stdlib.md)
 - [ ] refactor: `IntentionPreviewUtils.write<RuntimeException> { symbol.setName(newName) }`
 - [ ] fix: Does not filter rename to self quickfix
 - [x] fix: Wrap inconsistencies
@@ -91,6 +90,7 @@ val2: list[Outer] = [
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Annotate constant with `Final[T]` (spec/final-wrapper.md)
 - [x] fix: Never offer wrap for None
 - [x] feat: Do not allow to make private if used
 - [x] fix: Does not preview make private
