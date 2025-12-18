@@ -19,6 +19,42 @@ class PytestSkipToggler(private val generator: PyElementGenerator) {
         toggleModuleLevelSkip(file)
     }
 
+    fun toggleOnParam(callExpression: PyCallExpression, file: PyFile) {
+        val marksArg = callExpression.getKeywordArgument("marks")
+        val skipMarker = "pytest.mark.skip"
+        AddImportHelper.addImportStatement(file, "pytest", null, AddImportHelper.ImportPriority.THIRD_PARTY, null)
+
+        if (marksArg != null) {
+            val items = if (marksArg is PyListLiteralExpression) {
+                marksArg.elements.map { it.text }.toMutableList()
+            } else {
+                mutableListOf(marksArg.text)
+            }
+
+            val hasSkip = items.any { it.contains(skipMarker) }
+            if (hasSkip) {
+                items.removeIf { it.contains(skipMarker) }
+            } else {
+                items.add(skipMarker)
+            }
+
+            val newListText = "[" + items.joinToString(", ") + "]"
+            val newExpression = generator.createExpressionFromText(LanguageLevel.getLatest(), newListText)
+            marksArg.replace(newExpression)
+        } else {
+            val argList = callExpression.argumentList
+            if (argList != null) {
+                val newArgText = "marks=[pytest.mark.skip]"
+                val argsText = argList.arguments.joinToString(", ") { it.text }
+                val separator = if (argsText.isBlank()) "" else ", "
+                val newArgListText = "($argsText$separator$newArgText)"
+
+                val newArgList = generator.createArgumentList(LanguageLevel.getLatest(), newArgListText)
+                argList.replace(newArgList)
+            }
+        }
+    }
+
     private fun toggleDecorator(element: PyDecoratable, file: PyFile) {
         val skipMarker = "pytest.mark.skip"
 

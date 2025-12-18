@@ -1,13 +1,3 @@
-[2025-12-09 23:23] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "repeat failing edit,excess status updates",
-    "MISSING STEPS": "inspect warned lines,search replacement API,run build",
-    "BOTTLENECK": "Uncertainty about correct replacement for deprecated IntelliJ APIs.",
-    "PROJECT NOTE": "IntelliJ Platform API availability depends on platformVersion in gradle.properties; validate replacements against it.",
-    "NEW INSTRUCTION": "WHEN deprecation fix requires unknown replacement API THEN inspect warned lines, then search project for replacement symbol before editing"
-}
-
 [2025-12-09 23:32] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -866,4 +856,14 @@
     "BOTTLENECK": "Broad test runs delayed isolating the literal-vs-constructor policy regression.",
     "PROJECT NOTE": "ExpectedTypeInfo drives wrap suggestions; avoid PyCallableType substitution when it forces constructor calls.",
     "NEW INSTRUCTION": "WHEN restoring literal-vs-constructor behavior is required THEN prefer literal/ellipsis over constructors in wrap logic and run focused tests"
+}
+
+[2025-12-18 11:16] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "run tests,update README",
+    "MISSING STEPS": "scan project,verify description source in build.gradle.kts",
+    "BOTTLENECK": "Description text was drafted without verifying actual registered features.",
+    "PROJECT NOTE": "Verify if Gradle generates plugin.xml description from README to keep a single source of truth.",
+    "NEW INSTRUCTION": "WHEN build.gradle.kts reads plugin description from README THEN update README description block only"
 }

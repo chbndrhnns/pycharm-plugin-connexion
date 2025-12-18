@@ -9,10 +9,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Iconable
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
-import com.jetbrains.python.psi.PyClass
-import com.jetbrains.python.psi.PyElementGenerator
-import com.jetbrains.python.psi.PyFile
-import com.jetbrains.python.psi.PyFunction
+import com.jetbrains.python.psi.*
 import javax.swing.Icon
 
 class TogglePytestSkipIntention : IntentionAction, HighPriorityAction, Iconable {
@@ -21,6 +18,7 @@ class TogglePytestSkipIntention : IntentionAction, HighPriorityAction, Iconable 
         FUNCTION("function"),
         CLASS("class"),
         MODULE("module"),
+        PARAM("param"),
     }
 
     @Volatile
@@ -42,11 +40,17 @@ class TogglePytestSkipIntention : IntentionAction, HighPriorityAction, Iconable 
 
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
         val element = file.findElementAt(editor.caretModel.offset) ?: return
+        val pyCallExpression = PsiTreeUtil.getParentOfType(element, PyCallExpression::class.java)
         val pyFunction = PsiTreeUtil.getParentOfType(element, PyFunction::class.java)
         val pyClass = PsiTreeUtil.getParentOfType(element, PyClass::class.java)
         val pyFile = file as PyFile
 
         val toggler = PytestSkipToggler(PyElementGenerator.getInstance(project))
+
+        if (pyCallExpression != null && (pyCallExpression.callee?.text == "pytest.param" || pyCallExpression.callee?.text == "param")) {
+            toggler.toggleOnParam(pyCallExpression, pyFile)
+            return
+        }
 
         if (pyFunction != null && pyFunction.name?.startsWith("test_") == true) {
             toggler.toggleOnFunction(pyFunction, pyFile)
@@ -70,6 +74,14 @@ class TogglePytestSkipIntention : IntentionAction, HighPriorityAction, Iconable 
     private fun determineScope(editor: Editor, file: PyFile): Scope? {
         val offset = editor.caretModel.offset
         val element = file.findElementAt(offset) ?: return null
+
+        val pyCallExpression = PsiTreeUtil.getParentOfType(element, PyCallExpression::class.java)
+        if (pyCallExpression != null) {
+            val callee = pyCallExpression.callee
+            if (callee != null && (callee.text == "pytest.param" || callee.text == "param")) {
+                return Scope.PARAM
+            }
+        }
 
         val pyFunction = PsiTreeUtil.getParentOfType(element, PyFunction::class.java)
         if (pyFunction != null) {
