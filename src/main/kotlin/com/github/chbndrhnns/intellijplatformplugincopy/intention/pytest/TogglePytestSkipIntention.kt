@@ -7,6 +7,10 @@ import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Iconable
+import com.intellij.openapi.util.TextRange
+import com.intellij.psi.PsiComment
+import com.intellij.psi.PsiDocumentManager
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.*
@@ -19,6 +23,7 @@ class TogglePytestSkipIntention : IntentionAction, HighPriorityAction, Iconable 
         CLASS("class"),
         MODULE("module"),
         PARAM("param"),
+        PARAM_SIMPLE("param value"),
     }
 
     @Volatile
@@ -49,6 +54,11 @@ class TogglePytestSkipIntention : IntentionAction, HighPriorityAction, Iconable 
 
         if (pyCallExpression != null && (pyCallExpression.callee?.text == "pytest.param" || pyCallExpression.callee?.text == "param")) {
             toggler.toggleOnParam(pyCallExpression, pyFile)
+            return
+        }
+
+        if (isSimpleParam(element)) {
+            toggler.toggleOnSimpleParam(element, file)
             return
         }
 
@@ -83,6 +93,10 @@ class TogglePytestSkipIntention : IntentionAction, HighPriorityAction, Iconable 
             }
         }
 
+        if (isSimpleParam(element)) {
+            return Scope.PARAM_SIMPLE
+        }
+
         val pyFunction = PsiTreeUtil.getParentOfType(element, PyFunction::class.java)
         if (pyFunction != null) {
             return if (pyFunction.name?.startsWith("test_") == true) Scope.FUNCTION else null
@@ -96,6 +110,65 @@ class TogglePytestSkipIntention : IntentionAction, HighPriorityAction, Iconable 
         }
 
         return if (file.name.startsWith("test_") || file.name.endsWith("_test.py")) Scope.MODULE else null
+    }
+
+    private fun isSimpleParam(element: PsiElement): Boolean {
+        // Handle comment case
+        if (element is PsiComment) {
+            var candidate: PsiElement = element
+            while (candidate.parent != null && candidate.parent !is PyFile) {
+                val parent = candidate.parent
+                if (parent is PySequenceExpression && isPytestParametrizeOrFixtureParams(parent)) {
+                    return isElementOnSeparateLine(candidate)
+                }
+                candidate = parent
+            }
+            return false
+        }
+
+        // Handle expression case
+        var candidate = element
+        while (candidate.parent != null && candidate.parent !is PyFile) {
+            val parent = candidate.parent
+            if (parent is PySequenceExpression && isPytestParametrizeOrFixtureParams(parent)) {
+                // Check if candidate is NOT a pytest.param call
+                if (candidate is PyCallExpression && (candidate.callee?.text == "pytest.param" || candidate.callee?.text == "param")) {
+                    return false
+                }
+
+                if (candidate !is PyExpression) return false
+
+                return isElementOnSeparateLine(candidate)
+            }
+            candidate = parent
+        }
+
+        return false
+    }
+
+    private fun isElementOnSeparateLine(element: PsiElement): Boolean {
+        val document =
+            PsiDocumentManager.getInstance(element.project).getDocument(element.containingFile) ?: return false
+        val textRange = element.textRange
+        val startLine = document.getLineNumber(textRange.startOffset)
+        val endLine = document.getLineNumber(textRange.endOffset)
+
+        val lineStartOffset = document.getLineStartOffset(startLine)
+        val lineEndOffset = document.getLineEndOffset(endLine)
+
+        val textBefore = document.getText(TextRange(lineStartOffset, textRange.startOffset))
+        if (textBefore.isNotBlank()) return false
+
+        val textAfter = document.getText(TextRange(textRange.endOffset, lineEndOffset))
+        val textAfterTrimmed = textAfter.trim()
+
+        if (textAfterTrimmed.isEmpty()) return true
+        if (textAfterTrimmed == ",") return true
+        if (textAfterTrimmed.startsWith("#")) return true
+        if (textAfterTrimmed.startsWith(",") && textAfterTrimmed.substring(1).trim().startsWith("#")) return true
+        if (textAfterTrimmed.startsWith(",") && textAfterTrimmed.substring(1).trim().isEmpty()) return true
+
+        return false
     }
 
 }

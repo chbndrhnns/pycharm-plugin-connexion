@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest
 
-import com.intellij.psi.PsiParserFacade
+import com.intellij.openapi.util.TextRange
+import com.intellij.psi.*
 import com.intellij.util.ArrayUtilRt
 import com.jetbrains.python.codeInsight.imports.AddImportHelper
 import com.jetbrains.python.psi.*
@@ -17,6 +18,142 @@ class PytestSkipToggler(private val generator: PyElementGenerator) {
 
     fun toggleOnModule(file: PyFile) {
         toggleModuleLevelSkip(file)
+    }
+
+    fun toggleOnSimpleParam(element: PsiElement, file: PyFile) {
+        var target = element
+        // Walk up to find the list item (expression inside PySequenceExpression)
+        if (target !is PsiComment) {
+            while (target.parent != null && target.parent !is PyFile) {
+                val parent = target.parent
+                if (parent is PySequenceExpression && isPytestParametrizeOrFixtureParams(parent)) {
+                    break
+                }
+                target = parent
+            }
+            if (target.parent !is PySequenceExpression) {
+                return
+            }
+        }
+
+        val document = PsiDocumentManager.getInstance(file.project).getDocument(file) ?: return
+
+        if (target is PsiComment) {
+            val (startComment, endComment) = getRangeToUncomment(target)
+            val commentsToUncomment = mutableListOf<PsiComment>()
+            var cur: PsiElement? = startComment
+            while (cur != null) {
+                if (cur is PsiComment) {
+                    commentsToUncomment.add(cur)
+                }
+                if (cur == endComment) break
+                cur = cur.nextSibling
+            }
+
+            for (comment in commentsToUncomment.asReversed()) {
+                val text = comment.text
+                if (text.startsWith("#")) {
+                    val content = if (text.startsWith("# ")) {
+                        text.substring(2)
+                    } else {
+                        text.substring(1)
+                    }
+                    document.replaceString(comment.textRange.startOffset, comment.textRange.endOffset, content)
+                }
+            }
+        } else {
+            var endOffset = target.textRange.endOffset
+            var next = target.nextSibling
+            while (next is PsiWhiteSpace) {
+                next = next.nextSibling
+            }
+            if (next != null && next.text == ",") {
+                endOffset = next.textRange.endOffset
+            }
+
+            val textToComment = document.getText(TextRange(target.textRange.startOffset, endOffset))
+
+            val startLine = document.getLineNumber(target.textRange.startOffset)
+            val lineStartOffset = document.getLineStartOffset(startLine)
+            val indentStr = document.getText(TextRange(lineStartOffset, target.textRange.startOffset))
+
+            val lines = textToComment.lines()
+            val commentedText = lines.mapIndexed { index, line ->
+                if (line.isBlank()) {
+                    line
+                } else if (index == 0) {
+                    "# $line"
+                } else {
+                    if (line.startsWith(indentStr)) {
+                        indentStr + "# " + line.substring(indentStr.length)
+                    } else {
+                        "# " + line
+                    }
+                }
+            }.joinToString("\n")
+            document.replaceString(target.textRange.startOffset, endOffset, commentedText)
+        }
+        PsiDocumentManager.getInstance(file.project).commitDocument(document)
+    }
+
+    private fun getRangeToUncomment(comment: PsiComment): Pair<PsiComment, PsiComment> {
+        var first = comment
+        while (first.prevSibling is PsiComment || (first.prevSibling is PsiWhiteSpace && first.prevSibling.prevSibling is PsiComment)) {
+            first =
+                if (first.prevSibling is PsiComment) first.prevSibling as PsiComment else first.prevSibling.prevSibling as PsiComment
+        }
+
+        var last = comment
+        while (last.nextSibling is PsiComment || (last.nextSibling is PsiWhiteSpace && last.nextSibling.nextSibling is PsiComment)) {
+            last =
+                if (last.nextSibling is PsiComment) last.nextSibling as PsiComment else last.nextSibling.nextSibling as PsiComment
+        }
+
+        val comments = mutableListOf<PsiComment>()
+        var cur: PsiElement? = first
+        while (cur != null && (cur == last || cur.textRange.endOffset <= last.textRange.endOffset)) {
+            if (cur is PsiComment) {
+                comments.add(cur)
+            }
+            if (cur == last) break
+            cur = cur.nextSibling
+        }
+
+        if (comments.size <= 1) return Pair(comment, comment)
+
+        var balance = 0
+        var segmentStartIdx = 0
+
+        for (i in comments.indices) {
+            val c = comments[i]
+            val content = c.text.trimStart('#').trim()
+            balance += countBalance(content)
+
+            if (balance == 0) {
+                val segmentComments = comments.subList(segmentStartIdx, i + 1)
+                if (segmentComments.contains(comment)) {
+                    return Pair(segmentComments.first(), segmentComments.last())
+                }
+                segmentStartIdx = i + 1
+            }
+        }
+
+        if (segmentStartIdx < comments.size) {
+            return Pair(comments[segmentStartIdx], comments.last())
+        }
+
+        return Pair(comment, comment)
+    }
+
+    private fun countBalance(text: String): Int {
+        var balance = 0
+        for (char in text) {
+            when (char) {
+                '(', '[', '{' -> balance++
+                ')', ']', '}' -> balance--
+            }
+        }
+        return balance
     }
 
     fun toggleOnParam(callExpression: PyCallExpression, file: PyFile) {
