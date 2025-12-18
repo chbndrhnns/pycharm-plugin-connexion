@@ -62,8 +62,8 @@
 
 ## In Progress Tasks
 
-- [ ] fix: populate arguments should re-use import aliases
-- [ ] fix: Do not offer export for import aliases
+- [ ] feat: Connexion settings group and toggle
+- [ ] feat: Offer toggle skip also inside `pytest.param`
 - [ ] fix: Do not offer wrap if takes collection or single and either is satisfied
 - [x] fix: Wrap inconsistencies
   - [ ] _testNestedConstructor_InsideDict_WrapsInnerArgument
@@ -92,6 +92,8 @@ val2: list[Outer] = [
 
 ## Completed Tasks (newest first)
 
+- [x] fix: populate arguments should re-use import aliases
+- [x] fix: Do not offer export for import aliases
 - [x] feat: Connexion: connect endpoints in code and spec
 - [x] feat: Convert between Protocol and Callable annotation
 - [x] feat: After return, suggest `list[T()]` if return type is a container type (?)
