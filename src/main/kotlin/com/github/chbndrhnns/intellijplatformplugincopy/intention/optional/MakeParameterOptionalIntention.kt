@@ -84,11 +84,20 @@ class MakeParameterOptionalIntention : IntentionAction, PriorityAction {
 
         val target = PsiTreeUtil.getParentOfType(element, PyTargetExpression::class.java)
         if (target != null) {
-            // Check if it's a field in a class
-            if (PsiTreeUtil.getParentOfType(target, PyClass::class.java) != null) {
-                return target
+            return target
+        }
+
+        val annotation = PsiTreeUtil.getParentOfType(element, PyAnnotation::class.java)
+        if (annotation != null) {
+            val parent = annotation.parent
+            if (parent is PyAssignmentStatement) {
+                return parent.targets.firstOrNull() as? PyTargetExpression
+            }
+            if (parent is PyTypeDeclarationStatement) {
+                return parent.target
             }
         }
+
         return null
     }
 

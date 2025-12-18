@@ -138,4 +138,47 @@ class MakeParameterOptionalIntentionTest : TestBase() {
             "Make optional"
         )
     }
+
+    fun testMakeOptional_LocalVariable() {
+        myFixture.doIntentionTest(
+            "a.py",
+            """
+            def func():
+                local<caret>_var: str = "value"
+            """,
+            """
+            def func():
+                local_var: str | None = "value"
+            """,
+            "Make optional"
+        )
+    }
+
+    fun testMakeOptional_TopLevelVariable() {
+        myFixture.doIntentionTest(
+            "a.py",
+            """
+            glob<caret>al_var: int = 42
+            """,
+            """
+            global_var: int | None = 42
+            """,
+            "Make optional"
+        )
+    }
+
+    fun testMakeOptional_OnAnnotation_LocalVariable() {
+        myFixture.doIntentionTest(
+            "a.py",
+            """
+            def func():
+                local_var: st<caret>r = "value"
+            """,
+            """
+            def func():
+                local_var: str | None = "value"
+            """,
+            "Make optional"
+        )
+    }
 }
