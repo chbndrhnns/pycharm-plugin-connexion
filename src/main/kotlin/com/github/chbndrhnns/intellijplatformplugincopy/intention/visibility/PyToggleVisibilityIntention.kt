@@ -14,6 +14,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.refactoring.RefactoringFactory
 import com.jetbrains.python.psi.PyClass
 import com.jetbrains.python.psi.PyFunction
 import com.jetbrains.python.psi.PyTargetExpression
@@ -92,14 +93,17 @@ abstract class PyToggleVisibilityIntention : IntentionAction, HighPriorityAction
     /** Return true when intention should be shown for [name]. */
     protected abstract fun isAvailableForName(name: String): Boolean
 
-    /** Calculate new name for refactoring, or null to skip. */
     protected abstract fun calcNewName(name: String): String?
 
-    /** Perform rename using Python refactoring UI service. Split out for testing/mocking if needed. */
     protected open fun performRename(project: Project, element: PsiNamedElement, newName: String) {
-        // Use RefactoringFactory to avoid popup (Change visibility request)
-        val factory = com.intellij.refactoring.RefactoringFactory.getInstance(project)
+        val factory = RefactoringFactory.getInstance(project)
         val rename = factory.createRename(element, newName, false, false)
+
+        val currentName = element.name
+        if (currentName != null && !currentName.startsWith("_") && newName.startsWith("_")) {
+            rename.isPreviewUsages = true
+        }
+
         rename.run()
     }
 }
