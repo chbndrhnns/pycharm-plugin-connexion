@@ -6,6 +6,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.jetbrains.python.psi.PyExpression
+import com.jetbrains.python.psi.PyNoneLiteralExpression
 import com.jetbrains.python.psi.PyTargetExpression
 import com.jetbrains.python.psi.types.TypeEvalContext
 
@@ -46,6 +47,9 @@ class ExpectedTypeAnalyzer(private val project: Project) {
 
         // Do not offer wrapping on the variable name being defined/assigned to
         if (elementAtCaret is PyTargetExpression) return null
+
+        // Never offer wrap for None
+        if (elementAtCaret is PyNoneLiteralExpression) return null
 
         val strategyContext = detectStrategyContext(elementAtCaret)
         val analysisContext = AnalysisContext(editor, file, elementAtCaret, context, strategyContext)

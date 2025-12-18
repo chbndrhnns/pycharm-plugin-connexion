@@ -144,8 +144,10 @@ class WrapItemsWithExpectedTypeIntention : IntentionAction, HighPriorityAction, 
         val elementAtCaret = PyTypeIntentions.findExpressionAtCaret(editor, file) ?: return null
 
         if (elementAtCaret is PyTargetExpression) return null
+        if (elementAtCaret is PyNoneLiteralExpression) return null
 
         val containerItemTarget = PyTypeIntentions.findContainerItemAtCaret(editor, elementAtCaret) ?: elementAtCaret
+        if (containerItemTarget is PyNoneLiteralExpression) return null
 
         val parent = containerItemTarget.parent
         val isLiteral = parent is PyListLiteralExpression ||
