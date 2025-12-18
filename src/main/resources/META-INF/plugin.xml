@@ -278,6 +278,16 @@
                 level="WARNING"
                 implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyAbstractMethodNotImplementedInChildInspection"/>
 
+        <localInspection
+                language="Python"
+                shortName="PyConstantShouldBeFinalInspection"
+                displayName="Constant should be declared as Final"
+                groupPath="Python"
+                groupName="Python"
+                enabledByDefault="true"
+                level="WEAK WARNING"
+                implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyConstantShouldBeFinalInspection"/>
+
         <usageFilteringRuleProvider
                 implementation="com.github.chbndrhnns.intellijplatformplugincopy.usages.PyTypeAnnotationFilteringRuleProvider"/>
 

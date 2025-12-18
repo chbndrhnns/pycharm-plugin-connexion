@@ -54,6 +54,7 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enableDataclassMissingInspection: Boolean = true,
         var enablePrivateModuleImportInspection: Boolean = true,
         var enableAbstractMethodNotImplementedInspection: Boolean = true,
+        var enableConstantFinalInspection: Boolean = true,
 
         // ---- Copy/Clipboard Actions ----
         var enableCopyPackageContentAction: Boolean = true,

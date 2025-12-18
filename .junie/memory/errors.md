@@ -272,3 +272,13 @@
     "NEW INSTRUCTION": "WHEN suggesting placeholder for container element THEN insert Ellipsis (...) instead of constructor call"
 }
 
+[2025-12-18 20:05] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Kotlin file has unresolved references and invalid overrides",
+    "ROOT CAUSE": "The implementation used PyCharm PSI/APIs not present in the project SDK, causing unresolved symbols and a wrong visitor override.",
+    "PROJECT NOTE": "Match APIs to this repo’s SDK: avoid PyTypingTypeProvider and PyAnnotatedAssignmentStatement; operate on PyAssignmentStatement and PyAnnotationOwner-like APIs used in existing inspections here.",
+    "NEW INSTRUCTION": "WHEN validator lists unresolved reference semantic errors THEN replace APIs with SDK-available equivalents before proceeding"
+}
+

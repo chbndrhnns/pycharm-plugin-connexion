@@ -1,13 +1,3 @@
-[2025-12-09 23:32] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "run full test suite",
-    "MISSING STEPS": "-",
-    "BOTTLENECK": "Gradle/IDE test environment instability when executing the entire suite.",
-    "PROJECT NOTE": "Using fake SMTestProxy trees is sufficient; no need to involve TestTreeView.",
-    "NEW INSTRUCTION": "WHEN verifying added tests THEN run only the specific test class or method"
-}
-
 [2025-12-09 23:46] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -866,4 +856,14 @@
     "BOTTLENECK": "Description text was drafted without verifying actual registered features.",
     "PROJECT NOTE": "Verify if Gradle generates plugin.xml description from README to keep a single source of truth.",
     "NEW INSTRUCTION": "WHEN build.gradle.kts reads plugin description from README THEN update README description block only"
+}
+
+[2025-12-18 20:34] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "scan project, research APIs, register inspection, add description, add tests, run build",
+    "BOTTLENECK": "Used incorrect/nonexistent PSI and typing API classes causing compile errors.",
+    "PROJECT NOTE": "Mirror patterns from existing Python inspections in repo to get correct visitor methods and imports.",
+    "NEW INSTRUCTION": "WHEN creating a new inspection THEN search_project for similar inspections and mirror their PSI usage"
 }
