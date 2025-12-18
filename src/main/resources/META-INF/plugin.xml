@@ -108,6 +108,11 @@
             <category>Refactorings</category>
         </intentionAction>
 
+        <intentionAction>
+            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.AddSelfParameterIntention</className>
+            <category>Refactorings</category>
+        </intentionAction>
+
         <!-- Deprecated populate intentions removed -->
 
         <intentionAction>
@@ -197,6 +202,9 @@
             <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.abstractmethod.MakeMemberAbstractInAbstractClassIntention</className>
             <category>Abstract methods</category>
         </intentionAction>
+
+        <intentionActionFilter
+                implementation="com.github.chbndrhnns.intellijplatformplugincopy.intention.suppressor.RenameToSelfFilter"/>
 
         <applicationConfigurable
                 displayName="DDD Toolkit"
@@ -289,6 +297,9 @@
         <intentionMenuContributor
                 implementation="com.github.chbndrhnns.intellijplatformplugincopy.intention.suppressor.SuppressSuggestedRefactoringIntentionMenuContributor"
                 order="last"/>
+
+        <intentionActionFilter
+                implementation="com.github.chbndrhnns.intellijplatformplugincopy.intention.suppressor.RenameToSelfFilter"/>
     </extensions>
 
     <extensions defaultExtensionNs="Pythonid">
