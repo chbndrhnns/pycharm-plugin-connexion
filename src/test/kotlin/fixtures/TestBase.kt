@@ -58,6 +58,8 @@ abstract class TestBase : MyPlatformTestCase() {
                 suppressSuggestedRefactoringSignatureChangeIntention = true,
                 preferOwnTypesInUnionWrapping = true,
                 includeStdlibInUnionWrapping = true,
+                enableConnexionInspections = true,
+                enableConnexionCompletion = true,
             ),
         )
         PythonTestSetup.createAndRegisterSdk(

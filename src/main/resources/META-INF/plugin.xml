@@ -212,6 +212,12 @@
 
         <applicationConfigurable
                 parentId="com.github.chbndrhnns.intellijplatformplugincopy.settings"
+                displayName="Connexion"
+                id="com.github.chbndrhnns.intellijplatformplugincopy.settings.connexion"
+                instance="com.github.chbndrhnns.intellijplatformplugincopy.settings.ConnexionConfigurable"/>
+
+        <applicationConfigurable
+                parentId="com.github.chbndrhnns.intellijplatformplugincopy.settings"
                 displayName="Imports &amp; Project View"
                 id="com.github.chbndrhnns.intellijplatformplugincopy.settings.importsprojectview"
                 instance="com.github.chbndrhnns.intellijplatformplugincopy.settings.ImportsProjectViewConfigurable"/>

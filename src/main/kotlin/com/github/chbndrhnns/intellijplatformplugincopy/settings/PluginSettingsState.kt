@@ -86,6 +86,10 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enableTypeAnnotationUsageFilteringRule: Boolean = true,
         var enablePyMessageConsoleFilter: Boolean = true,
         var suppressSuggestedRefactoringSignatureChangeIntention: Boolean = true,
+
+        // ---- Connexion ----
+        var enableConnexionInspections: Boolean = true,
+        var enableConnexionCompletion: Boolean = true,
     )
 
     private var myState = State()

@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.connexion
 
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.json.psi.JsonObject
 import com.intellij.json.psi.JsonProperty
 import com.intellij.json.psi.JsonStringLiteral
@@ -39,6 +40,7 @@ class ConnexionJsonReferenceContributor : PsiReferenceContributor() {
 
 private class ConnexionJsonReferenceProvider : PsiReferenceProvider() {
     override fun getReferencesByElement(element: PsiElement, context: ProcessingContext): Array<PsiReference> {
+        if (!PluginSettingsState.instance().state.enableConnexionCompletion) return PsiReference.EMPTY_ARRAY
         val parent = element.parent
         if (parent is JsonProperty && parent.value != element) return PsiReference.EMPTY_ARRAY
 
@@ -50,6 +52,7 @@ private class ConnexionJsonReferenceProvider : PsiReferenceProvider() {
 
 private class ConnexionJsonControllerReferenceProvider : PsiReferenceProvider() {
     override fun getReferencesByElement(element: PsiElement, context: ProcessingContext): Array<PsiReference> {
+        if (!PluginSettingsState.instance().state.enableConnexionCompletion) return PsiReference.EMPTY_ARRAY
         val parent = element.parent
         if (parent is JsonProperty && parent.value != element) return PsiReference.EMPTY_ARRAY
 

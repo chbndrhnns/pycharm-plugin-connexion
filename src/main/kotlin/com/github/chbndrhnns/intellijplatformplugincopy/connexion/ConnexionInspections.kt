@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.connexion
 
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
@@ -12,6 +13,9 @@ import org.jetbrains.yaml.psi.YamlPsiElementVisitor
 
 class ConnexionJsonInspection : LocalInspectionTool() {
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
+        if (!PluginSettingsState.instance().state.enableConnexionInspections) {
+            return PsiElementVisitor.EMPTY_VISITOR
+        }
         return object : JsonElementVisitor() {
             override fun visitStringLiteral(literal: JsonStringLiteral) {
                 checkReferences(literal, holder)
@@ -22,6 +26,9 @@ class ConnexionJsonInspection : LocalInspectionTool() {
 
 class ConnexionYamlInspection : LocalInspectionTool() {
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
+        if (!PluginSettingsState.instance().state.enableConnexionInspections) {
+            return PsiElementVisitor.EMPTY_VISITOR
+        }
         return object : YamlPsiElementVisitor() {
             override fun visitScalar(scalar: YAMLScalar) {
                 checkReferences(scalar, holder)
