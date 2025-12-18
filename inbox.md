@@ -2,6 +2,7 @@
 
 ## Pending Issues
 
+- [ ] fix: Never offer wrap for None
 - [ ] fix: Making one symbol public via import place quickfix makes all other symbols unimported
 - [ ] fix: Do not wrap with callable annotation
 - [ ] fix: When prefering relative import inside same package, do not add candidate if relative import exists already
@@ -17,7 +18,6 @@
 - [S] feat: Turn dict into dataclass/pydantic model (spec/upgrade-dict.md)
 - [S] feat: When creating and renaming, check against stdlib modules/packages and warn if name clashes (
   spec/shadow-stdlib.md)
-- [S] feat: Suppress rename to self and add "Add self" (spec/add-self.md)
 - [S] feat: Annotate constant with `Final[T]` (spec/final-wrapper.md)
 - [ ] feat: introduce custom type as newtype, as well, or other custom constructs
 - [ ] feat: Change visibility: make private (we only have two options and one is always true)
@@ -89,6 +89,7 @@ val2: list[Outer] = [
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Suppress rename to self and add "Add self" (spec/add-self.md)
 - [x] fix: Do not offer wrap if takes collection or single and either is satisfied
 - [x] feat: Offer toggle skip also inside `pytest.param`
 - [x] feat: Connexion settings group and toggle
