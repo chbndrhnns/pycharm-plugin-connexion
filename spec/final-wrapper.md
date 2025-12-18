@@ -2,8 +2,8 @@
 Add a Python inspection that reports assignments to *constants* (names matching `ALL_CAPS_IDENTIFIERS`, i.e. “looks like a constant”) whose declared type is **not** wrapped in `Final[...]`. Provide a quick-fix that:
 
 1) If an explicit annotation exists (`FOO: T = ...`), rewrites it to `FOO: Final[T] = ...`.
-2) If no annotation exists (`FOO = ...`), infers a type `T` and rewrites to `FOO: Final[T] = ...`.
-3) Adds the required import for `Final` (prefer `from typing import Final`).
+2) Adds the required import for `Final` (prefer `from typing import Final`).
+3) If type is unknown / ambiguous, fall back to `Any`.
 
 ### Suggested UX / scope
 - **Where it triggers:** top-level module assignments and class attribute assignments.
@@ -54,40 +54,26 @@ For a candidate name `FOO`:
 Create `WrapConstantInFinalQuickFix` (likely `LocalQuickFix`) that:
 
 1) Locates the specific assignment/target element (store a `SmartPsiElementPointer` to the `PyTargetExpression` or statement).
-2) Computes the `T` to wrap:
-   - If annotated assignment: extract annotation text `T`.
-   - Else infer type from the initializer expression.
-3) Performs PSI rewrite:
-   - If annotated: `FOO: T = expr` → `FOO: Final[T] = expr`
-   - If unannotated: `FOO = expr` → `FOO: Final[T] = expr`
-4) Ensures import:
+2) Computes the `T` to wrap: extract annotation text `T`.
+3) Performs PSI rewrite: `FOO: T = expr` → `FOO: Final[T] = expr`
+   Ensures import:
    - Add `from typing import Final` if not present.
    - If `Final` already imported from `typing_extensions`, reuse it (don’t add a second import).
    - If `typing` is imported as module (`import typing`), you can either:
      - still add `from typing import Final` (simplest), or
      - use `typing.Final[...]` (more “style-preserving” but more logic).
    - Project recommendation: start simple—add `from typing import Final`.
-5) Reformat changed nodes (`CodeStyleManager.reformat`) and shorten references / optimize imports as needed.
+4) Reformat changed nodes (`CodeStyleManager.reformat`) and shorten references / optimize imports as needed.
 
 **Type inference approach**
 Use PyCharm’s type evaluation infrastructure:
 - Evaluate type from the assigned value expression using a `TypeEvalContext`.
 - Convert resulting `PyType` to a presentable annotation string.
 
-Heuristics for reliable inference:
-- Literals:
-  - `1` → `int`, `"x"` → `str`, `b"x"` → `bytes`, `True` → `bool`, `None` → `None` (but see below)
-- Collection literals:
-  - `[]` / `{}` / `set()` often becomes `list[Any]` / `dict[Any, Any]` / `set[Any]` unless context exists.
-- Constructor calls:
-  - `Foo()` → `Foo` (when resolvable)
-- If type is unknown / ambiguous, fall back to `Any`.
 
 **Special case: `None` initializer**
-If `FOO = None` (no annotation), a naive inference is `None`, which is not very useful. Two options:
-- Prefer `Final[None]` (strictly correct for that initializer).
-- Or if there is later evidence (not trivial), prefer `Final[T | None]`.
-Recommendation: keep it simple: use `Final[None]`.
+If `FOO = None` (no annotation), a naive inference is `None`, which is not very useful. 
+Use `Final[None]`.
 
 #### 3) Settings / registration
 - Add a toggle in `PluginSettingsState` similar to existing ones (e.g. `enableConstantFinalInspection: Boolean = true`).
@@ -96,27 +82,23 @@ Recommendation: keep it simple: use `Final[None]`.
 
 ### Edge cases to explicitly decide
 1) **Leading underscore constants**: `_FOO = 1`
-   - Many codebases treat these as “private constants.” Decide whether to include.
-   - Recommendation: include them only if you explicitly want “module-level constants,” otherwise exclude to avoid noise.
+   - Many codebases treat these as “private constants.” Include.
 
 2) **Multiple targets**: `FOO = BAR = 1`
-   - Apply fix per target or all at once.
-   - Recommendation: per target problem, but fix can safely transform the whole statement only if you rewrite it into multiple annotated assignments (messy). Best: *only* offer fix when the statement has a single target.
+   - Ignore.
 
 3) **Tuple unpacking**: `FOO, BAR = (1, 2)`
-   - Generally skip: hard to rewrite cleanly to multiple annotated assignments without changing formatting/semantics.
+   - Ignore.
 
 4) **Existing `Final` but missing type arg**: `FOO: Final = 1`
    - Not compliant with “wrap inferred type” requirement.
-   - Decide whether quick-fix should upgrade to `Final[int]`.
-   - Recommendation: yes—treat unsubscripted `Final` as needing an arg when initializer is present.
+   - should upgrade to `Final[int]`.
 
 5) **Already `Final[...]` but wrong `T`**
    - Do nothing; inspection should not become a type-correctness checker.
 
 6) **Type comments**: `FOO = 1  # type: int`
-   - Supporting this is valuable because it’s common in older code.
-   - If supported: treat it like an annotation and wrap the comment type.
+   - Use inferred type
 
 7) **Stub files (`.pyi`)**
    - In stubs, constants are often declared without assignment:
@@ -124,9 +106,7 @@ Recommendation: keep it simple: use `Final[None]`.
    - You can support rewriting to `FOO: Final[int]`.
 
 8) **Reassignment later**
-   - If `FOO` is reassigned, marking it `Final` may be wrong.
-   - Minimal approach: ignore control-flow and still suggest.
-   - Better approach (recommended): before reporting, search for additional assignments to the same target in the same scope and skip if found.
+   - It's constant. Ignore
 
 9) **Generated / library files**
    - Follow the same “user source only” checks as other inspections (via `ProjectRootManager` file index).
@@ -159,20 +139,6 @@ Add a new test class under `src/test/kotlin/.../inspections/`, extending `fixtur
    - Input: `FOO = None`
    - After: `FOO: Final[None] = None` + `Final` import.
 
-7) **Class attribute constant**
-   - Input:
-     ```python
-     class C:
-         FOO = 1
-     ```
-   - After:
-     ```python
-     from typing import Final
-
-     class C:
-         FOO: Final[int] = 1
-     ```
-
 #### Negative / skip tests
 8) **Not ALL_CAPS**
    - `Foo = 1` / `foo = 1` should not be reported.
@@ -198,9 +164,3 @@ Add a new test class under `src/test/kotlin/.../inspections/`, extending `fixtur
 - PSI changes in quick-fix must be done in `WriteCommandAction.runWriteCommandAction(project)`, and reformat via `CodeStyleManager`.
 - Test base already configures Python helpers and a mock SDK; keep tests minimal and focused.
 
-### Open questions (pick defaults if you want the quickest path)
-1) Should `_FOO` be considered a constant? (Default suggestion: **no**, to reduce noise.)
-2) Should `FOO = BAR = 1` be supported? (Default: **skip**.)
-3) Do you want to support `# type:` comments? (Default: **yes**, if it’s not too much work; otherwise defer.)
-
-If you confirm these 3, the inspection behavior and tests can be nailed down to a deterministic spec.
