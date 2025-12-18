@@ -62,6 +62,9 @@
 
 ## In Progress Tasks
 
+- [ ] feat: Do not allow to make private if used
+- [ ] fix: Does not filter rename to self quickfix
+- [ ] fix: Does not preview make private
 - [x] fix: Wrap inconsistencies
   - [ ] _testNestedConstructor_InsideDict_WrapsInnerArgument
   - [x] Wrap case which failed initially
