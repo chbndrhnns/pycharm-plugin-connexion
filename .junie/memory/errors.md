@@ -282,3 +282,23 @@
     "NEW INSTRUCTION": "WHEN validator lists unresolved reference semantic errors THEN replace APIs with SDK-available equivalents before proceeding"
 }
 
+[2025-12-18 20:56] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "search_replace",
+    "ERROR": "Unresolved reference 'isPythonSdk'",
+    "ROOT CAUSE": "Code used PythonSdkType.isPythonSdk which is not available in this SDK.",
+    "PROJECT NOTE": "Use com.jetbrains.python.sdk.legacy.PythonSdkUtil APIs as in PythonVersionGuard; obtain an SDK from a Module or PsiElement, not Project, and avoid unavailable methods.",
+    "NEW INSTRUCTION": "WHEN SDK argument is null and no Module/PsiElement context THEN return emptySet without SDK autodetection"
+}
+
+[2025-12-18 21:27] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic error",
+    "TOOL": "-",
+    "ERROR": "Rename cancellation raised IncorrectOperationException",
+    "ROOT CAUSE": "The rename processor throws an exception when user cancels, which propagates as a runtime error instead of gracefully aborting the refactoring.",
+    "PROJECT NOTE": "In PyShadowingStdlibRenameProcessor.kt, move the warning/confirmation into substituteElementToRename and return null on cancel (or otherwise abort without throwing), rather than throwing IncorrectOperationException in prepareRenaming.",
+    "NEW INSTRUCTION": "WHEN user cancels stdlib-shadow warning during rename THEN return null from substituteElementToRename"
+}
+

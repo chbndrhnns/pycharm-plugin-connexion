@@ -1,13 +1,3 @@
-[2025-12-09 23:46] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "refactor",
-    "BOTTLENECK": "Traversal ignores SMTestProxy children when tree nodes have no children.",
-    "PROJECT NOTE": "In CopyPytestNodeIdAction, traverse SMTestProxy hierarchy when available, not only DefaultMutableTreeNode.",
-    "NEW INSTRUCTION": "WHEN selected test node has SMTestProxy children THEN traverse SMTestProxy children to collect ids"
-}
-
 [2025-12-09 23:53] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -866,4 +856,14 @@
     "BOTTLENECK": "Used incorrect/nonexistent PSI and typing API classes causing compile errors.",
     "PROJECT NOTE": "Mirror patterns from existing Python inspections in repo to get correct visitor methods and imports.",
     "NEW INSTRUCTION": "WHEN creating a new inspection THEN search_project for similar inspections and mirror their PSI usage"
+}
+
+[2025-12-18 21:00] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "add inspection, add rename hook, register in plugin.xml, add tests, run tests",
+    "BOTTLENECK": "Incorrect SDK retrieval API caused semantic errors in the new service.",
+    "PROJECT NOTE": "Reuse the legacy SDK access pattern shown in PythonVersionGuard (legacy PythonSdkUtil).",
+    "NEW INSTRUCTION": "WHEN needing Python SDK in project-wide service THEN use legacy PythonSdkUtil with element/module"
 }

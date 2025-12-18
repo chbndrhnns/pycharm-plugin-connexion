@@ -55,6 +55,7 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enablePrivateModuleImportInspection: Boolean = true,
         var enableAbstractMethodNotImplementedInspection: Boolean = true,
         var enableConstantFinalInspection: Boolean = true,
+        var enableShadowingStdlibModuleInspection: Boolean = true,
 
         // ---- Copy/Clipboard Actions ----
         var enableCopyPackageContentAction: Boolean = true,

@@ -37,6 +37,7 @@ abstract class TestBase : MyPlatformTestCase() {
                 enableImplementAbstractMethodInChildClassesIntention = true,
                 enableAbstractMethodNotImplementedInspection = true,
                 enableConstantFinalInspection = true,
+                enableShadowingStdlibModuleInspection = true,
                 enableMakeMemberAbstractInAbstractClassIntention = true,
                 enablePyReturnCompletionContributor = true,
                 enablePyMockPatchReferenceContributor = true,

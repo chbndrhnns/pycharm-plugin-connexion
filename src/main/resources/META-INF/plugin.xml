@@ -288,6 +288,20 @@
                 level="WEAK WARNING"
                 implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyConstantShouldBeFinalInspection"/>
 
+        <localInspection
+                language="Python"
+                shortName="PyShadowingStdlibModuleInspection"
+                displayName="File name shadows a Python standard library module"
+                groupPath="Python"
+                groupName="Python"
+                enabledByDefault="true"
+                level="WEAK WARNING"
+                implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyShadowingStdlibModuleInspection"/>
+
+        <renamePsiElementProcessor
+                implementation="com.github.chbndrhnns.intellijplatformplugincopy.refactoring.PyShadowingStdlibRenameProcessor"
+                order="first"/>
+
         <usageFilteringRuleProvider
                 implementation="com.github.chbndrhnns.intellijplatformplugincopy.usages.PyTypeAnnotationFilteringRuleProvider"/>
 
