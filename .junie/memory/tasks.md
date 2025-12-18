@@ -1,13 +1,3 @@
-[2025-12-10 00:06] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "modify code, ensure sorting, run tests",
-    "BOTTLENECK": "FQNs are collected from UI tree nodes instead of SMTestProxy hierarchy.",
-    "PROJECT NOTE": "Mirror traversal from CopyPytestNodeIdAction or centralize in TestProxyExtractor.",
-    "NEW INSTRUCTION": "WHEN collecting FQNs from test tree THEN traverse SMTestProxy hierarchy and sort results"
-}
-
 [2025-12-10 07:59] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -866,4 +856,14 @@
     "BOTTLENECK": "Exploration continued without first producing the requested plan and tests.",
     "PROJECT NOTE": "Reuse the WrapWithExpectedTypeIntention popup host/testing pattern to implement the candidates chooser.",
     "NEW INSTRUCTION": "WHEN a task requests a plan and tests THEN write plan, edge cases, and test list first"
+}
+
+[2025-12-18 22:58] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "register extension, expose settings UI, run tests",
+    "BOTTLENECK": "The reference contributor was not registered in plugin.xml, so behavior cannot activate.",
+    "PROJECT NOTE": "Use PyMockPatchReferenceContributor as a template and add a checkbox in Intentions/Inspections configurables for the new toggle.",
+    "NEW INSTRUCTION": "WHEN adding a PsiReferenceContributor THEN register it in plugin.xml for Python language"
 }

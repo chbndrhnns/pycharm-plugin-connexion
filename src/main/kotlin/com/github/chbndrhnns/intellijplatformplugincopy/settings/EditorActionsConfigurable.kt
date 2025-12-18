@@ -65,6 +65,10 @@ class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
                     .bindSelected(settings::enablePyFilterWarningsReferenceContributor)
             }
             row {
+                checkBox("Update ‘NewType’ and ‘TypeVar’ names on change")
+                    .bindSelected(settings::enableNewTypeTypeVarRename)
+            }
+            row {
                 checkBox("‘Type annotation’ usage filtering rule")
                     .bindSelected(settings::enableTypeAnnotationUsageFilteringRule)
             }

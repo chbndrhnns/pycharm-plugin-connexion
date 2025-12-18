@@ -90,6 +90,7 @@ val2: list[Outer] = [
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Update names for TypeVar and NewType on rename
 - [x] feat: When creating and renaming, check against stdlib modules/packages and warn if name clashes (
   spec/shadow-stdlib.md)
 - [x] feat: Annotate constant with `Final[T]` (spec/final-wrapper.md)

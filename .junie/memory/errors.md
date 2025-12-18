@@ -302,3 +302,33 @@
     "NEW INSTRUCTION": "WHEN user cancels stdlib-shadow warning during rename THEN return null from substituteElementToRename"
 }
 
+[2025-12-18 22:30] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic error",
+    "TOOL": "-",
+    "ERROR": "Rename cancellation throws IncorrectOperationException",
+    "ROOT CAUSE": "The cancel path throws from prepareRenaming instead of gracefully aborting the refactoring.",
+    "PROJECT NOTE": "In the stdlib shadowing rename processor, move confirmation to substituteElementToRename and return null on cancel so the refactoring stops without exceptions.",
+    "NEW INSTRUCTION": "WHEN rename confirmation canceled THEN return null from substituteElementToRename and abort"
+}
+
+[2025-12-18 22:56] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Rename tests failed; expected PSI edits not applied",
+    "ROOT CAUSE": "The project lacks a rename handler to update the first argument string of NewType/TypeVar, so the rename at caret does not propagate and checkResult fails.",
+    "PROJECT NOTE": "Add a RenamePsiElementProcessor for PyTargetExpression bound to typing.NewType/TypeVar that, on variable rename, updates the call’s first-arg string literal; register it in plugin.xml and guard via PluginSettingsState.",
+    "NEW INSTRUCTION": "WHEN adding rename tests for NewType or TypeVar THEN implement and register a RenamePsiElementProcessor updating first-arg string"
+}
+
+[2025-12-18 22:58] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Rename did not update string argument",
+    "ROOT CAUSE": "There is no rename handler linking NewType/TypeVar first-arg string to the assigned variable, so renames don't propagate.",
+    "PROJECT NOTE": "Implement and register a RenamePsiElementProcessor for PyTargetExpression assigned from typing.NewType/TypeVar that updates the call’s first-argument string; guard with PluginSettingsState.state.enableNewTypeTypeVarRename and register in plugin.xml.",
+    "NEW INSTRUCTION": "WHEN renaming PyTargetExpression bound to NewType or TypeVar THEN update first-argument string literal accordingly"
+}
+

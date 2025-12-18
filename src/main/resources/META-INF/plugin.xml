@@ -31,6 +31,8 @@
         <psi.referenceContributor language="Python"
                                   implementation="com.github.chbndrhnns.intellijplatformplugincopy.psi.PyMockPatchReferenceContributor"/>
         <psi.referenceContributor language="Python"
+                                  implementation="com.github.chbndrhnns.intellijplatformplugincopy.psi.PyNewTypeTypeVarReferenceContributor"/>
+        <psi.referenceContributor language="Python"
                                   implementation="com.github.chbndrhnns.intellijplatformplugincopy.psi.PyFilterWarningsReferenceContributor"/>
 
         <psi.referenceContributor language="JSON"

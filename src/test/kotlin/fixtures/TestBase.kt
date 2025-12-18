@@ -62,6 +62,7 @@ abstract class TestBase : MyPlatformTestCase() {
                 includeStdlibInUnionWrapping = true,
                 enableConnexionInspections = true,
                 enableConnexionCompletion = true,
+                enableNewTypeTypeVarRename = true,
             ),
         )
         PythonTestSetup.createAndRegisterSdk(
