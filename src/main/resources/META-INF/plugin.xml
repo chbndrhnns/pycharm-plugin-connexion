@@ -25,6 +25,13 @@
         <psi.referenceContributor language="JSON"
                                   implementation="com.github.chbndrhnns.intellijplatformplugincopy.connexion.ConnexionJsonReferenceContributor"/>
 
+        <localInspection language="JSON"
+                         implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.connexion.ConnexionJsonInspection"
+                         displayName="Unresolved Connexion reference"
+                         groupName="Connexion"
+                         enabledByDefault="true"
+                         level="ERROR"/>
+
         <codeInsight.lineMarkerProvider language="Python"
                                         implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.connexion.ConnexionPythonLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="JSON"

@@ -17,21 +17,21 @@ class ConnexionYamlReferenceContributor : PsiReferenceContributor() {
         // YAML: operationId: <value>
         registrar.registerReferenceProvider(
             PlatformPatterns.psiElement(YAMLScalar::class.java)
-                .withParent(PlatformPatterns.psiElement(YAMLKeyValue::class.java).withName("operationId")),
+                .withParent(PlatformPatterns.psiElement(YAMLKeyValue::class.java).withName(ConnexionConstants.OPERATION_ID)),
             ConnexionYamlReferenceProvider()
         )
 
         // YAML: x-openapi-router-controller: <value>
         registrar.registerReferenceProvider(
             PlatformPatterns.psiElement(YAMLScalar::class.java)
-                .withParent(PlatformPatterns.psiElement(YAMLKeyValue::class.java).withName("x-openapi-router-controller")),
+                .withParent(PlatformPatterns.psiElement(YAMLKeyValue::class.java).withName(ConnexionConstants.X_OPENAPI_ROUTER_CONTROLLER)),
             ConnexionYamlControllerReferenceProvider()
         )
 
         // YAML: x-swagger-router-controller: <value>
         registrar.registerReferenceProvider(
             PlatformPatterns.psiElement(YAMLScalar::class.java)
-                .withParent(PlatformPatterns.psiElement(YAMLKeyValue::class.java).withName("x-swagger-router-controller")),
+                .withParent(PlatformPatterns.psiElement(YAMLKeyValue::class.java).withName(ConnexionConstants.X_SWAGGER_ROUTER_CONTROLLER)),
             ConnexionYamlControllerReferenceProvider()
         )
     }
@@ -39,14 +39,20 @@ class ConnexionYamlReferenceContributor : PsiReferenceContributor() {
 
 private class ConnexionYamlReferenceProvider : PsiReferenceProvider() {
     override fun getReferencesByElement(element: PsiElement, context: ProcessingContext): Array<PsiReference> {
+        val parent = element.parent
+        if (parent is YAMLKeyValue && parent.value != element) return PsiReference.EMPTY_ARRAY
+
         val file = element.containingFile
         if (!OpenApiSpecUtil.isOpenApiFile(file)) return PsiReference.EMPTY_ARRAY
-        return arrayOf<PsiReference>(ConnexionYamlReference(element))
+        return arrayOf(ConnexionYamlReference(element))
     }
 }
 
 private class ConnexionYamlControllerReferenceProvider : PsiReferenceProvider() {
     override fun getReferencesByElement(element: PsiElement, context: ProcessingContext): Array<PsiReference> {
+        val parent = element.parent
+        if (parent is YAMLKeyValue && parent.value != element) return PsiReference.EMPTY_ARRAY
+
         val file = element.containingFile
         if (!OpenApiSpecUtil.isOpenApiFile(file)) return PsiReference.EMPTY_ARRAY
 
@@ -98,10 +104,10 @@ private class ConnexionYamlReference(element: PsiElement) : ConnexionReferenceBa
     }
 
     private fun getControllerFromYaml(mapping: YAMLMapping): String? {
-        val c3 = mapping.getKeyValueByKey("x-openapi-router-controller")?.value as? YAMLScalar
+        val c3 = mapping.getKeyValueByKey(ConnexionConstants.X_OPENAPI_ROUTER_CONTROLLER)?.value as? YAMLScalar
         if (c3 != null) return c3.textValue
 
-        val c2 = mapping.getKeyValueByKey("x-swagger-router-controller")?.value as? YAMLScalar
+        val c2 = mapping.getKeyValueByKey(ConnexionConstants.X_SWAGGER_ROUTER_CONTROLLER)?.value as? YAMLScalar
         return c2?.textValue
     }
 }

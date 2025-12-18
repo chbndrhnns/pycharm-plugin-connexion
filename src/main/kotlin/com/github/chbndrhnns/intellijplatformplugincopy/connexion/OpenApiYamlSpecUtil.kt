@@ -12,28 +12,28 @@ import org.jetbrains.yaml.psi.YAMLScalar
  */
 internal object OpenApiYamlSpecUtil {
 
-    private const val CONTROLLER_V3 = "x-openapi-router-controller"
-    private const val CONTROLLER_V2 = "x-swagger-router-controller"
-
     fun isOpenApiYamlFile(file: PsiFile): Boolean {
         val yamlFile = file as? YAMLFile ?: return false
 
         // Cheap heuristic
         val text = yamlFile.text
-        if ((!text.contains("openapi") && !text.contains("swagger")) || !text.contains("paths")) {
+        if ((!text.contains(ConnexionConstants.OPENAPI) && !text.contains(ConnexionConstants.SWAGGER)) || !text.contains(
+                ConnexionConstants.PATHS
+            )
+        ) {
             return false
         }
 
         val root = yamlFile.documents.firstOrNull()?.topLevelValue as? YAMLMapping ?: return false
-        return (root.getKeyValueByKey("openapi") != null || root.getKeyValueByKey("swagger") != null) &&
-                root.getKeyValueByKey("paths") != null
+        return (root.getKeyValueByKey(ConnexionConstants.OPENAPI) != null || root.getKeyValueByKey(ConnexionConstants.SWAGGER) != null) &&
+                root.getKeyValueByKey(ConnexionConstants.PATHS) != null
     }
 
     fun extractYamlOperations(file: PsiFile): List<OpenApiSpecUtil.OpenApiOperation> {
         val yamlFile = file as? YAMLFile ?: return emptyList()
 
         val root = yamlFile.documents.firstOrNull()?.topLevelValue as? YAMLMapping ?: return emptyList()
-        val paths = root.getKeyValueByKey("paths")?.value as? YAMLMapping ?: return emptyList()
+        val paths = root.getKeyValueByKey(ConnexionConstants.PATHS)?.value as? YAMLMapping ?: return emptyList()
 
         val rootController = getControllerFromYaml(root)
         val result = mutableListOf<OpenApiSpecUtil.OpenApiOperation>()
@@ -45,12 +45,12 @@ internal object OpenApiYamlSpecUtil {
 
             for (methodKey in pathItem.keyValues) {
                 val methodStr = methodKey.keyText.lowercase()
-                if (methodStr == "parameters" || methodStr.startsWith("x-")) continue
+                if (methodStr == ConnexionConstants.PARAMETERS || methodStr.startsWith("x-")) continue
 
                 val operationObj = methodKey.value as? YAMLMapping ?: continue
                 val opController = getControllerFromYaml(operationObj) ?: pathController
 
-                val opIdKv = operationObj.getKeyValueByKey("operationId") ?: continue
+                val opIdKv = operationObj.getKeyValueByKey(ConnexionConstants.OPERATION_ID) ?: continue
                 val opIdVal = opIdKv.value as? YAMLScalar ?: continue
 
                 result.add(
@@ -70,7 +70,7 @@ internal object OpenApiYamlSpecUtil {
     }
 
     private fun getControllerFromYaml(mapping: YAMLMapping): String? {
-        return (mapping.getKeyValueByKey(CONTROLLER_V3)?.value as? YAMLScalar)?.textValue
-            ?: (mapping.getKeyValueByKey(CONTROLLER_V2)?.value as? YAMLScalar)?.textValue
+        return (mapping.getKeyValueByKey(ConnexionConstants.X_OPENAPI_ROUTER_CONTROLLER)?.value as? YAMLScalar)?.textValue
+            ?: (mapping.getKeyValueByKey(ConnexionConstants.X_SWAGGER_ROUTER_CONTROLLER)?.value as? YAMLScalar)?.textValue
     }
 }

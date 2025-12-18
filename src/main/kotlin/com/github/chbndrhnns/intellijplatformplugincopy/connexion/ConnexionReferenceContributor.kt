@@ -17,21 +17,21 @@ class ConnexionJsonReferenceContributor : PsiReferenceContributor() {
         // JSON: "operationId": "<value>"
         registrar.registerReferenceProvider(
             PlatformPatterns.psiElement(JsonStringLiteral::class.java)
-                .withParent(PlatformPatterns.psiElement(JsonProperty::class.java).withName("operationId")),
+                .withParent(PlatformPatterns.psiElement(JsonProperty::class.java).withName(ConnexionConstants.OPERATION_ID)),
             ConnexionJsonReferenceProvider()
         )
         
         // JSON: "x-openapi-router-controller": "<value>"
         registrar.registerReferenceProvider(
             PlatformPatterns.psiElement(JsonStringLiteral::class.java)
-                .withParent(PlatformPatterns.psiElement(JsonProperty::class.java).withName("x-openapi-router-controller")),
+                .withParent(PlatformPatterns.psiElement(JsonProperty::class.java).withName(ConnexionConstants.X_OPENAPI_ROUTER_CONTROLLER)),
             ConnexionJsonControllerReferenceProvider()
         )
 
         // JSON: "x-swagger-router-controller": "<value>"
         registrar.registerReferenceProvider(
             PlatformPatterns.psiElement(JsonStringLiteral::class.java)
-                .withParent(PlatformPatterns.psiElement(JsonProperty::class.java).withName("x-swagger-router-controller")),
+                .withParent(PlatformPatterns.psiElement(JsonProperty::class.java).withName(ConnexionConstants.X_SWAGGER_ROUTER_CONTROLLER)),
             ConnexionJsonControllerReferenceProvider()
         )
     }
@@ -39,6 +39,9 @@ class ConnexionJsonReferenceContributor : PsiReferenceContributor() {
 
 private class ConnexionJsonReferenceProvider : PsiReferenceProvider() {
     override fun getReferencesByElement(element: PsiElement, context: ProcessingContext): Array<PsiReference> {
+        val parent = element.parent
+        if (parent is JsonProperty && parent.value != element) return PsiReference.EMPTY_ARRAY
+
         val file = element.containingFile
         if (!OpenApiSpecUtil.isOpenApiFile(file)) return PsiReference.EMPTY_ARRAY
         return arrayOf(ConnexionJsonReference(element))
@@ -47,6 +50,9 @@ private class ConnexionJsonReferenceProvider : PsiReferenceProvider() {
 
 private class ConnexionJsonControllerReferenceProvider : PsiReferenceProvider() {
     override fun getReferencesByElement(element: PsiElement, context: ProcessingContext): Array<PsiReference> {
+        val parent = element.parent
+        if (parent is JsonProperty && parent.value != element) return PsiReference.EMPTY_ARRAY
+
         val file = element.containingFile
         if (!OpenApiSpecUtil.isOpenApiFile(file)) return PsiReference.EMPTY_ARRAY
 
@@ -99,10 +105,10 @@ private class ConnexionJsonReference(element: PsiElement) : ConnexionReferenceBa
     }
 
     private fun getControllerFromJson(obj: JsonObject): String? {
-        val c3 = obj.findProperty("x-openapi-router-controller")?.value as? JsonStringLiteral
+        val c3 = obj.findProperty(ConnexionConstants.X_OPENAPI_ROUTER_CONTROLLER)?.value as? JsonStringLiteral
         if (c3 != null) return c3.value
 
-        val c2 = obj.findProperty("x-swagger-router-controller")?.value as? JsonStringLiteral
+        val c2 = obj.findProperty(ConnexionConstants.X_SWAGGER_ROUTER_CONTROLLER)?.value as? JsonStringLiteral
         return c2?.value
     }
 }

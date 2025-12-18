@@ -108,4 +108,33 @@ class ConnexionNavigationTest : TestBase() {
         assertTrue(element is PyFunction)
         assertEquals("list_pets", (element as PyFunction).name)
     }
+
+    fun testQualifiedOperationIdWithController() {
+        myFixture.tempDirFixture.createFile(
+            "my_pkg/api.py", """
+            def list_pets():
+                pass
+        """.trimIndent()
+        )
+
+        myFixture.configureByText(
+            "openapi.json", """
+            {
+              "openapi": "3.0.0",
+              "paths": {
+                "/pets": {
+                  "get": {
+                    "x-openapi-router-controller": "my_pkg",
+                    "operationId": "<caret>api.list_pets"
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        )
+
+        val element = myFixture.getElementAtCaret()
+        assertTrue(element is PyFunction)
+        assertEquals("list_pets", (element as PyFunction).name)
+    }
 }

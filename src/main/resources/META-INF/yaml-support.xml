@@ -2,6 +2,12 @@
     <extensions defaultExtensionNs="com.intellij">
         <psi.referenceContributor language="yaml"
                                   implementation="com.github.chbndrhnns.intellijplatformplugincopy.connexion.ConnexionYamlReferenceContributor"/>
+        <localInspection language="yaml"
+                         implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.connexion.ConnexionYamlInspection"
+                         displayName="Unresolved Connexion reference"
+                         groupName="Connexion"
+                         enabledByDefault="true"
+                         level="ERROR"/>
         <codeInsight.lineMarkerProvider language="yaml"
                                         implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.connexion.ConnexionYamlLineMarkerProvider"/>
     </extensions>
