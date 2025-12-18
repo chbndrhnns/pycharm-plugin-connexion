@@ -84,6 +84,8 @@ private class ConnexionJsonControllerReferenceProvider : PsiReferenceProvider() 
 }
 
 private class ConnexionJsonReference(element: PsiElement) : ConnexionReferenceBase(element) {
+    override fun operationIdText(): String = (element as? JsonStringLiteral)?.value ?: super.operationIdText()
+
     override fun findController(): String? {
         val operationObj = element.parent?.parent as? JsonObject ?: return null
 

@@ -83,6 +83,8 @@ private class ConnexionYamlControllerReferenceProvider : PsiReferenceProvider() 
 }
 
 private class ConnexionYamlReference(element: PsiElement) : ConnexionReferenceBase(element) {
+    override fun operationIdText(): String = (element as? YAMLScalar)?.textValue ?: super.operationIdText()
+
     override fun findController(): String? {
         val operationMapping = element.parent?.parent as? YAMLMapping ?: return null
 
