@@ -11,7 +11,7 @@ import com.jetbrains.python.psi.PyFunction
 class GoToOpenApiOperationAction : AnAction() {
 
     override fun getActionUpdateThread(): ActionUpdateThread {
-        return ActionUpdateThread.EDT
+        return ActionUpdateThread.BGT
     }
 
     override fun update(e: AnActionEvent) {
