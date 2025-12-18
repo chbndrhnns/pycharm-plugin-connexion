@@ -62,6 +62,9 @@
 
 ## In Progress Tasks
 
+- [ ] fix: populate arguments should re-use import aliases
+- [ ] fix: Do not offer export for import aliases
+- [ ] fix: Do not offer wrap if takes collection or single and either is satisfied
 - [x] fix: Wrap inconsistencies
   - [ ] _testNestedConstructor_InsideDict_WrapsInnerArgument
   - [x] Wrap case which failed initially
