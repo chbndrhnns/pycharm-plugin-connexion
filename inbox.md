@@ -62,9 +62,9 @@
 
 ## In Progress Tasks
 
+- [ ] refactor: `IntentionPreviewUtils.write<RuntimeException> { symbol.setName(newName) }`
 - [ ] feat: Do not allow to make private if used
 - [ ] fix: Does not filter rename to self quickfix
-- [ ] fix: Does not preview make private
 - [x] fix: Wrap inconsistencies
   - [ ] _testNestedConstructor_InsideDict_WrapsInnerArgument
   - [x] Wrap case which failed initially
@@ -92,6 +92,7 @@ val2: list[Outer] = [
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Does not preview make private
 - [x] feat: Suppress rename to self and add "Add self" (spec/add-self.md)
 - [x] fix: Do not offer wrap if takes collection or single and either is satisfied
 - [x] feat: Offer toggle skip also inside `pytest.param`
