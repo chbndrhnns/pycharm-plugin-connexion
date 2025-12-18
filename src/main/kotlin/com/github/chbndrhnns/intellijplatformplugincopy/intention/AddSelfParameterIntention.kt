@@ -2,7 +2,6 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention
 
 import com.intellij.codeInsight.intention.PriorityAction
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
-import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
@@ -16,7 +15,7 @@ class AddSelfParameterIntention : PsiElementBaseIntentionAction(), PriorityActio
 
     override fun getPriority(): PriorityAction.Priority = PriorityAction.Priority.TOP
 
-    override fun startInWriteAction(): Boolean = false
+    override fun startInWriteAction(): Boolean = true
 
     override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean {
         val function = element.parentOfType<PyFunction>() ?: return false
@@ -35,20 +34,18 @@ class AddSelfParameterIntention : PsiElementBaseIntentionAction(), PriorityActio
     override fun invoke(project: Project, editor: Editor?, element: PsiElement) {
         val function = element.parentOfType<PyFunction>() ?: return
 
-        WriteCommandAction.runWriteCommandAction(project) {
-            val params = function.parameterList
+        val params = function.parameterList
 
-            val generator = PyElementGenerator.getInstance(project)
-            val selfParam = generator.createParameter("self")
+        val generator = PyElementGenerator.getInstance(project)
+        val selfParam = generator.createParameter("self")
 
-            val firstParam = params.parameters.firstOrNull()
-            if (firstParam != null) {
-                params.addBefore(selfParam, firstParam)
-                val comma = generator.createComma().psi
-                params.addBefore(comma, firstParam)
-            } else {
-                params.addParameter(selfParam)
-            }
+        val firstParam = params.parameters.firstOrNull()
+        if (firstParam != null) {
+            params.addBefore(selfParam, firstParam)
+            val comma = generator.createComma().psi
+            params.addBefore(comma, firstParam)
+        } else {
+            params.addParameter(selfParam)
         }
     }
 }

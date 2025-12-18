@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention
 
+import com.intellij.openapi.command.WriteCommandAction
 import fixtures.TestBase
 
 class AddSelfParameterIntentionTest : TestBase() {
@@ -13,8 +14,10 @@ class AddSelfParameterIntentionTest : TestBase() {
         )
 
         val intention = myFixture.findSingleIntention("Add 'self' parameter")
-        val info = intention.generatePreview(myFixture.project, myFixture.editor, myFixture.file)
-        assertTextEquals("Contains preview", "", info.toString())
+        WriteCommandAction.runWriteCommandAction(myFixture.project) {
+            val info = intention.generatePreview(myFixture.project, myFixture.editor, myFixture.file)
+            assertFalse("Preview info should not be empty", info.toString().isEmpty())
+        }
     }
 
     fun testNotAvailableForTopLevelFunction() {
