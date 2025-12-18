@@ -6,10 +6,7 @@ import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.util.QualifiedName
 import com.jetbrains.python.PyNames
 import com.jetbrains.python.codeInsight.controlflow.ScopeOwner
-import com.jetbrains.python.psi.LanguageLevel
-import com.jetbrains.python.psi.PyCallExpression
-import com.jetbrains.python.psi.PyClass
-import com.jetbrains.python.psi.PyElementGenerator
+import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.resolve.PyResolveUtil
 import com.jetbrains.python.psi.types.*
 
@@ -83,16 +80,48 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
         if (aliasResult != null) return aliasResult
 
         // For builtin types (int, str, float, bool, etc.), return ellipsis placeholder
-        if (pyClass != null) {
-            val name = pyClass.name
-            if (name != null && PyBuiltinNames.isBuiltin(name)) {
-                return defaultResult()
+        val name = pyClass.name
+        if (name != null && PyBuiltinNames.isBuiltin(name)) {
+            return defaultResult()
+        }
+
+        // Check if imported as alias
+        val file = scopeOwner.containingFile as? PyFile
+        if (file != null) {
+            for (stmt in file.importBlock) {
+                if (stmt is PyFromImportStatement) {
+                    for (elt in stmt.importElements) {
+                        if (elt.asName != null) {
+                            val resolved = elt.resolve()
+                            if (resolved != null && resolved.isEquivalentTo(pyClass)) {
+                                val alias = elt.visibleName
+                                if (alias != null) {
+                                    return GenerationResult("$alias()", setOf(pyClass))
+                                }
+                            }
+                        }
+                    }
+                } else if (stmt is PyImportStatement) {
+                    for (elt in stmt.importElements) {
+                        if (elt.asName != null) {
+                            val modQName = elt.importedQName
+                            val classQName = pyClass.qualifiedName
+                            if (modQName != null && classQName != null && name != null) {
+                                if (classQName == modQName.append(name).toString()) {
+                                    val alias = elt.visibleName
+                                    if (alias != null) {
+                                        return GenerationResult("$alias.$name()", setOf(pyClass))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
         // Fallback for regular (non-builtin) classes: generate constructor call "ClassName()"
         // This satisfies the requirement "pre-populate it with a single expected item type with an empty constructor call"
-        val name = pyClass.name
         if (name != null) {
             return GenerationResult("$name()", setOf(pyClass))
         }

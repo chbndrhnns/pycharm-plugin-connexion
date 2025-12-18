@@ -92,6 +92,79 @@ class PopulateArgumentsLocalTest : TestBase() {
         assertFalse("Locals mode must not insert ellipsis", text.contains("..."))
     }
 
+    fun testPopulateUsesImportAliasForClass() {
+        val popupHost = object : PopupHost {
+            override fun <T> showChooser(
+                editor: Editor,
+                title: String,
+                items: List<T>,
+                render: (T) -> String,
+                onChosen: (T) -> Unit
+            ) {
+                // Find "All arguments"
+                val item = items.find { render(it) == "All arguments" }
+                if (item != null) {
+                    onChosen(item)
+                } else {
+                    fail("Option 'All arguments' not found.")
+                }
+            }
+        }
+        PopulateArgumentsIntentionHooks.popupHost = popupHost
+
+        myFixture.configureByText(
+            "a.py",
+            """
+            from datetime import date as MyDate
+            
+            def foo(d: MyDate):
+                pass
+
+            def bar():
+                foo(<caret>)
+            """
+        )
+
+        myFixture.launchAction(PopulateArgumentsIntention())
+
+        val text = myFixture.file.text
+        assertTrue("Should use alias MyDate, but got: " + text, text.contains("d=MyDate()"))
+    }
+
+    fun testPopulateUsesModuleAlias() {
+        val popupHost = object : PopupHost {
+            override fun <T> showChooser(
+                editor: Editor,
+                title: String,
+                items: List<T>,
+                render: (T) -> String,
+                onChosen: (T) -> Unit
+            ) {
+                val item = items.find { render(it) == "All arguments" }!!
+                onChosen(item)
+            }
+        }
+        PopulateArgumentsIntentionHooks.popupHost = popupHost
+
+        myFixture.configureByText(
+            "a.py",
+            """
+            import datetime as dt
+            
+            def foo(d: dt.date):
+                pass
+
+            def bar():
+                foo(<caret>)
+            """
+        )
+
+        myFixture.launchAction(PopulateArgumentsIntention())
+
+        val text = myFixture.file.text
+        assertTrue("Should use module alias dt.date, got: " + text, text.contains("d=dt.date("))
+    }
+
     override fun tearDown() {
         PopulateArgumentsIntentionHooks.popupHost = null
         super.tearDown()
