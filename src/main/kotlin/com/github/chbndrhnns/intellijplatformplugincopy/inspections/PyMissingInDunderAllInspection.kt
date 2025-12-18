@@ -243,6 +243,8 @@ class PyMissingInDunderAllInspection : PyInspection() {
         private fun isExportable(element: PyElement): Boolean {
             if (element is PyClass || element is PyFunction || element is PyTypeAliasStatement) return true
             if (element is PyTargetExpression) {
+                // Don't require imported aliases (e.g. `import typing as t`) to be exported in __all__
+                if (element.parent is PyImportElement) return false
                 return PyNames.ALL != element.name
             }
             return false

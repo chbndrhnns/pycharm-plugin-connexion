@@ -236,6 +236,29 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
         )
     }
 
+    fun testImportAliasNotExported() {
+        val modFile = myFixture.addFileToProject(
+            "pkg/_route_filter.py", """
+            import typing as t
+        """.trimIndent()
+        )
+
+        myFixture.addFileToProject(
+            "pkg/__init__.py", """
+            __all__ = []
+        """.trimIndent()
+        )
+
+        myFixture.configureFromExistingVirtualFile(modFile.virtualFile)
+        myFixture.enableInspections(PyMissingInDunderAllInspection::class.java)
+
+        val infos = myFixture.doHighlighting()
+        assertTrue(
+            "Import alias 't' should NOT be flagged as missing in __all__",
+            infos.none { it.description?.contains("Symbol 't' is not exported in package __all__") == true }
+        )
+    }
+
     private fun doTest(applyFix: Boolean = false) {
         val testName = getTestName(false)
         val basePath = "inspections/PyMissingInDunderAllInspection"
