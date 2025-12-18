@@ -62,7 +62,6 @@
 
 ## In Progress Tasks
 
-- [x] feat: Connexion: connect endpoints in code and spec
 - [x] fix: Wrap inconsistencies
   - [ ] _testNestedConstructor_InsideDict_WrapsInnerArgument
   - [x] Wrap case which failed initially
@@ -90,6 +89,7 @@ val2: list[Outer] = [
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Connexion: connect endpoints in code and spec
 - [x] feat: Convert between Protocol and Callable annotation
 - [x] feat: After return, suggest `list[T()]` if return type is a container type (?)
 - [x] fix: Should not offer custom type on keywords
