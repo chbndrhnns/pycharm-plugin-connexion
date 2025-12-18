@@ -2,7 +2,6 @@
 
 ## Pending Issues
 
-- [ ] fix: Never offer wrap for None
 - [ ] fix: Making one symbol public via import place quickfix makes all other symbols unimported
 - [ ] fix: Do not wrap with callable annotation
 - [ ] fix: When prefering relative import inside same package, do not add candidate if relative import exists already
@@ -13,6 +12,7 @@
 
 ## Pending Features
 
+- [ ] feat: Import should reuse existing module import (domain.ABC, domain.DEFG)
 - [ ] feat: Render quick doc for pydantic/dataclass, showing inherited members, as well
 - [ ] feat: In case of unexpected type, offer cast to the expected type
 - [S] feat: Turn dict into dataclass/pydantic model (spec/upgrade-dict.md)
@@ -63,7 +63,6 @@
 ## In Progress Tasks
 
 - [ ] refactor: `IntentionPreviewUtils.write<RuntimeException> { symbol.setName(newName) }`
-- [ ] feat: Do not allow to make private if used
 - [ ] fix: Does not filter rename to self quickfix
 - [x] fix: Wrap inconsistencies
   - [ ] _testNestedConstructor_InsideDict_WrapsInnerArgument
@@ -92,6 +91,8 @@ val2: list[Outer] = [
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Never offer wrap for None
+- [x] feat: Do not allow to make private if used
 - [x] fix: Does not preview make private
 - [x] feat: Suppress rename to self and add "Add self" (spec/add-self.md)
 - [x] fix: Do not offer wrap if takes collection or single and either is satisfied
@@ -107,13 +108,3 @@ val2: list[Outer] = [
 - [x] fix: Wrap should use set literal instead of set call, `vals: set[T] = T`
 - [x] feat: Enable parameter object action also if only one parameter
 - [x] fix: Wrap should pick inner problem first, offers `Prefix` here
-
-```python
-self._prefixes: dict[PrefixId, Prefix] = {
-    PrefixId(1): Prefix(
-        id=PrefixId(1),
-        prefix=IPv4Interface("10.10.10.0/24"),
-        vrf=Vrf(id=1, name=VrfName("5girs_flat_int_prod")),
-    )
-}
-```
