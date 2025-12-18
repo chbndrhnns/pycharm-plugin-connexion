@@ -62,8 +62,6 @@
 
 ## In Progress Tasks
 
-- [ ] feat: Offer toggle skip also inside `pytest.param`
-- [ ] fix: Do not offer wrap if takes collection or single and either is satisfied
 - [x] fix: Wrap inconsistencies
   - [ ] _testNestedConstructor_InsideDict_WrapsInnerArgument
   - [x] Wrap case which failed initially
@@ -91,6 +89,8 @@ val2: list[Outer] = [
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Do not offer wrap if takes collection or single and either is satisfied
+- [x] feat: Offer toggle skip also inside `pytest.param`
 - [x] feat: Connexion settings group and toggle
 - [x] fix: populate arguments should re-use import aliases
 - [x] fix: Do not offer export for import aliases
