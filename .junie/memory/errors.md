@@ -452,3 +452,33 @@
     "NEW INSTRUCTION": "WHEN editing a function return type annotation THEN replace only expression after '->'"
 }
 
+[2025-12-19 17:06] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "ParamSpec string literal not resolvable; rename element not found",
+    "ROOT CAUSE": "ParamSpec is not handled by the string-literal reference contributor nor the rename processor, so caret in ParamSpec(\"P\") finds no element and variable renames don’t update the first arg.",
+    "PROJECT NOTE": "Extend PyNewTypeTypeVarReferenceContributor.kt to also register references for typing.ParamSpec first-argument string, and update the RenamePsiElementProcessor used for NewType/TypeVar to include ParamSpec under the same PluginSettingsState.state.enableNewTypeTypeVarRename guard.",
+    "NEW INSTRUCTION": "WHEN first-arg call is typing.ParamSpec THEN add string-to-variable reference and update on rename"
+}
+
+[2025-12-19 17:06] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Tests failed; ParamSpec not handled in rename logic",
+    "ROOT CAUSE": "The reference contributor only recognized NewType and TypeVar, so ParamSpec string/variable links were not created.",
+    "PROJECT NOTE": "Update src/main/kotlin/com/github/chbndrhnns/intellijplatformplugincopy/psi/PyNewTypeTypeVarReferenceContributor.kt to include callee name 'ParamSpec' alongside 'NewType' and 'TypeVar'.",
+    "NEW INSTRUCTION": "WHEN callee name is ParamSpec in typing call THEN handle it same as TypeVar/NewType"
+}
+
+[2025-12-19 17:07] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "ParamSpec rename not handled; tests failed",
+    "ROOT CAUSE": "The reference contributor filtered out ParamSpec, so renames didn’t update its string literal.",
+    "PROJECT NOTE": "Update src/main/kotlin/.../psi/PyNewTypeTypeVarReferenceContributor.kt to treat 'ParamSpec' like 'NewType' and 'TypeVar' in the callee.name check, honoring the existing PluginSettingsState guard.",
+    "NEW INSTRUCTION": "WHEN callee name is validated for string-literal binding THEN include ParamSpec alongside NewType and TypeVar"
+}
+

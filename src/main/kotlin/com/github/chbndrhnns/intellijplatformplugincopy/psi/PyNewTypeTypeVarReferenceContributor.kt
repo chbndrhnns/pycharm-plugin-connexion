@@ -17,7 +17,7 @@ class PyNewTypeTypeVarReferenceContributor : PsiReferenceContributor() {
                     element: PsiElement,
                     context: ProcessingContext
                 ): Array<PsiReference> {
-                    if (!PluginSettingsState.instance().state.enableNewTypeTypeVarRename) return PsiReference.EMPTY_ARRAY
+                    if (!PluginSettingsState.instance().state.enableNewTypeTypeVarParamSpecRename) return PsiReference.EMPTY_ARRAY
 
                     val literal = element as? PyStringLiteralExpression ?: return PsiReference.EMPTY_ARRAY
                     val argumentList = literal.parent as? PyArgumentList ?: return PsiReference.EMPTY_ARRAY
@@ -25,7 +25,7 @@ class PyNewTypeTypeVarReferenceContributor : PsiReferenceContributor() {
                     val callee = call.callee as? PyReferenceExpression ?: return PsiReference.EMPTY_ARRAY
 
                     val name = callee.name
-                    if (name != "NewType" && name != "TypeVar") return PsiReference.EMPTY_ARRAY
+                    if (name != "NewType" && name != "TypeVar" && name != "ParamSpec") return PsiReference.EMPTY_ARRAY
 
                     val arguments = argumentList.arguments
                     if (arguments.isEmpty() || arguments[0] !== literal) return PsiReference.EMPTY_ARRAY

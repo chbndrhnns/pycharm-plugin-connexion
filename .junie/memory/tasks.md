@@ -1,13 +1,3 @@
-[2025-12-10 10:41] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "repeated failed file creation via multiline bash,changing working directory mid-edit",
-    "MISSING STEPS": "create plan,register intention,add tests,add intentionDescriptions,run tests,verify availability parity",
-    "BOTTLENECK": "Multiline bash file creation failed and wrong working directory disrupted edits.",
-    "PROJECT NOTE": "Reuse existing PopupHost/FakePopupHost and VisibilityIntentionsTest patterns; register intention and add description resources.",
-    "NEW INSTRUCTION": "WHEN adding or updating an intention THEN register in plugin.xml and add intentionDescriptions and tests"
-}
-
 [2025-12-10 10:45] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -866,4 +856,14 @@
     "BOTTLENECK": "Expensive computations executed in isAvailable across many intentions.",
     "PROJECT NOTE": "IntelliJ intentions run isAvailable frequently; prefer cheap PSI checks and codeInsight context.",
     "NEW INSTRUCTION": "WHEN task is performance audit of plugin intentions THEN search project for expensive calls in isAvailable and aggregate hotspots"
+}
+
+[2025-12-19 17:07] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "add tests (flag disabled), review settings, run full test suite",
+    "BOTTLENECK": "No negative test and setting review for ParamSpec feature gate.",
+    "PROJECT NOTE": "Ensure PluginSettingsState.enableNewTypeTypeVarRename also gates ParamSpec behavior.",
+    "NEW INSTRUCTION": "WHEN adding support for analogous symbol THEN mirror existing tests including feature-flag off case"
 }

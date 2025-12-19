@@ -110,8 +110,8 @@ class PyNewTypeRenameTest : TestBase() {
 
     fun testRenameDisabled_DoesNotUpdateLiteral() {
         val settings = com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState.instance()
-        val originalValue = settings.state.enableNewTypeTypeVarRename
-        settings.state.enableNewTypeTypeVarRename = false
+        val originalValue = settings.state.enableNewTypeTypeVarParamSpecRename
+        settings.state.enableNewTypeTypeVarParamSpecRename = false
         try {
             myFixture.configureByText(
                 "test.py", """
@@ -138,7 +138,7 @@ class PyNewTypeRenameTest : TestBase() {
             """.trimIndent()
             )
         } finally {
-            settings.state.enableNewTypeTypeVarRename = originalValue
+            settings.state.enableNewTypeTypeVarParamSpecRename = originalValue
         }
     }
 }

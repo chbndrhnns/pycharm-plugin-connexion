@@ -93,7 +93,7 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         // ---- Connexion ----
         var enableConnexionInspections: Boolean = true,
         var enableConnexionCompletion: Boolean = true,
-        var enableNewTypeTypeVarRename: Boolean = true,
+        var enableNewTypeTypeVarParamSpecRename: Boolean = true,
     )
 
     private var myState = State()
