@@ -61,6 +61,7 @@
 
 ## In Progress Tasks
 
+- [ ] refactor: Performance (spec/performance.md)
 - [ ] refactor: `IntentionPreviewUtils.write<RuntimeException> { symbol.setName(newName) }`
 - [ ] fix: Does not filter rename to self quickfix
 - [x] fix: Wrap inconsistencies
