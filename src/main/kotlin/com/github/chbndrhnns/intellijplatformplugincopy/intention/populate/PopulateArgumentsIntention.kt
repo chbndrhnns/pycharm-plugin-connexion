@@ -1,8 +1,8 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.populate
 
 import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.JbPopupHost
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.PopupHost
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.JbPopupHost
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PopupHost
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction

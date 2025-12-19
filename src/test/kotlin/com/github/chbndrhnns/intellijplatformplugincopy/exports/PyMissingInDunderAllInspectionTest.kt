@@ -1,4 +1,4 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.inspections
+package com.github.chbndrhnns.intellijplatformplugincopy.exports
 
 import com.intellij.testFramework.PsiTestUtil
 import fixtures.TestBase

@@ -1,4 +1,4 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.inspections
+package com.github.chbndrhnns.intellijplatformplugincopy.exports
 
 import com.github.chbndrhnns.intellijplatformplugincopy.python.PythonVersionGuard
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
@@ -41,7 +41,7 @@ class PyMissingInDunderAllInspection : PyInspection() {
         if (!PythonVersionGuard.isSatisfied(holder.project)) {
             return object : PyElementVisitor() {}
         }
-        val settings = PluginSettingsState.instance().state
+        val settings = PluginSettingsState.Companion.instance().state
         if (!settings.enablePyMissingInDunderAllInspection) {
             // Return a no-op visitor when the inspection is disabled in settings.
             return object : PyElementVisitor() {}

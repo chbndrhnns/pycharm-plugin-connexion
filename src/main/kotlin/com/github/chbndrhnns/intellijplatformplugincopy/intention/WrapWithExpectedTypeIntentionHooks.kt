@@ -1,6 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention
 
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.PopupHost
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PopupHost
 import org.jetbrains.annotations.TestOnly
 
 /**

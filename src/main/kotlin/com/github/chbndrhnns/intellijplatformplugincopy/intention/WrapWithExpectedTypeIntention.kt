@@ -2,8 +2,12 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention
 
 import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedCtor
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.JbPopupHost
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.*
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.ExpectedTypeAnalyzer
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.PyImportService
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.WrapApplier
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.WrapPreview
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction

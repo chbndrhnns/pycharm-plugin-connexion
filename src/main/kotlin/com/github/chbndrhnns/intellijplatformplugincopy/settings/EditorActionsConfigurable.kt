@@ -84,6 +84,10 @@ class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
                 checkBox("‘Toggle type alias’ intention")
                     .bindSelected(settings::enableToggleTypeAliasIntention)
             }
+            row {
+                checkBox("‘Export symbol to target’ intention")
+                    .bindSelected(settings::enableExportSymbolToTargetIntention)
+            }
         }
     }
 }

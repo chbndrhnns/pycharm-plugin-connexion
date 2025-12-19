@@ -1,4 +1,4 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.inspections
+package com.github.chbndrhnns.intellijplatformplugincopy.exports
 
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiParserFacade

@@ -111,6 +111,11 @@
         </intentionAction>
 
         <intentionAction>
+            <className>com.github.chbndrhnns.intellijplatformplugincopy.exports.PyExportSymbolToTargetIntention</className>
+            <category>Refactorings</category>
+        </intentionAction>
+
+        <intentionAction>
             <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.PyIntroduceParameterObjectIntention</className>
             <category>Refactorings</category>
         </intentionAction>
@@ -253,7 +258,7 @@
                 groupName="Python"
                 enabledByDefault="true"
                 level="WARNING"
-                implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyMissingInDunderAllInspection"/>
+                implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.exports.PyMissingInDunderAllInspection"/>
 
         <localInspection
                 language="Python"
@@ -263,7 +268,7 @@
                 groupName="Python"
                 enabledByDefault="true"
                 level="WARNING"
-                implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyPrivateModuleImportInspection"/>
+                implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.exports.PyPrivateModuleImportInspection"/>
 
         <localInspection
                 language="Python"

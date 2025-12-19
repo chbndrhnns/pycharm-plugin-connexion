@@ -27,16 +27,13 @@ abstract class PyToggleVisibilityIntention : IntentionAction, HighPriorityAction
 
     override fun getIcon(@Iconable.IconFlags flags: Int): Icon = AllIcons.Actions.IntentionBulb
 
-    // Do NOT start in a write action: refactorings must be invoked outside write actions
-    // (BaseRefactoringProcessor will manage write actions internally). Starting inside
-    // a write action leads to: "Refactorings should not be started inside write action".
     override fun startInWriteAction(): Boolean = false
 
     override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
-        if (!PluginSettingsState.instance().state.enableChangeVisibilityIntention) return false
+        if (!isSettingEnabled()) return false
         val symbol = findTargetSymbol(editor, file) ?: return false
         val name = symbol.name ?: return false
-        
+
         // Ignore conftest.py
         if (file.name == "conftest.py") return false
 
@@ -50,26 +47,18 @@ abstract class PyToggleVisibilityIntention : IntentionAction, HighPriorityAction
         if (symbol is PyClass && name.startsWith("Test_")) return false
 
         if (isDunder(name)) return false
+
+        return isAvailableForSymbol(symbol)
+    }
+
+    protected open fun isSettingEnabled(): Boolean = PluginSettingsState.instance().state.enableChangeVisibilityIntention
+
+    protected open fun isAvailableForSymbol(symbol: PsiNamedElement): Boolean {
+        val name = symbol.name ?: return false
         return isAvailableForName(name)
     }
 
-    override fun invoke(project: Project, editor: Editor, file: PsiFile) {
-        val symbol = findTargetSymbol(editor, file) ?: return
-        val name = symbol.name ?: return
-        val newName = calcNewName(name) ?: return
-        performRename(project, symbol, newName)
-    }
-
-    override fun generatePreview(project: Project, editor: Editor, file: PsiFile): IntentionPreviewInfo {
-        val symbol = findTargetSymbol(editor, file) ?: return IntentionPreviewInfo.EMPTY
-        val name = symbol.name ?: return IntentionPreviewInfo.EMPTY
-        val newName = calcNewName(name) ?: return IntentionPreviewInfo.EMPTY
-
-        IntentionPreviewUtils.write<RuntimeException> { symbol.setName(newName) }
-        return IntentionPreviewInfo.DIFF
-    }
-
-    protected open fun findTargetSymbol(editor: Editor, file: PsiFile): PsiNamedElement? {
+    protected fun findTargetSymbol(editor: Editor, file: PsiFile): PsiNamedElement? {
         val offset = editor.caretModel.offset
         val atCaret = file.findElementAt(offset) ?: return null
         val named = PsiTreeUtil.getParentOfType(
@@ -89,6 +78,22 @@ abstract class PyToggleVisibilityIntention : IntentionAction, HighPriorityAction
     }
 
     protected fun isDunder(name: String): Boolean = name.length >= 4 && name.startsWith("__") && name.endsWith("__")
+
+    override fun invoke(project: Project, editor: Editor, file: PsiFile) {
+        val symbol = findTargetSymbol(editor, file) ?: return
+        val name = symbol.name ?: return
+        val newName = calcNewName(name) ?: return
+        performRename(project, symbol, newName)
+    }
+
+    override fun generatePreview(project: Project, editor: Editor, file: PsiFile): IntentionPreviewInfo {
+        val symbol = findTargetSymbol(editor, file) ?: return IntentionPreviewInfo.EMPTY
+        val name = symbol.name ?: return IntentionPreviewInfo.EMPTY
+        val newName = calcNewName(name) ?: return IntentionPreviewInfo.EMPTY
+
+        IntentionPreviewUtils.write<RuntimeException> { symbol.setName(newName) }
+        return IntentionPreviewInfo.DIFF
+    }
 
     /** Return true when intention should be shown for [name]. */
     protected abstract fun isAvailableForName(name: String): Boolean

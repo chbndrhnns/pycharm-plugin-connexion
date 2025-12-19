@@ -482,3 +482,163 @@
     "NEW INSTRUCTION": "WHEN callee name is validated for string-literal binding THEN include ParamSpec alongside NewType and TypeVar"
 }
 
+[2025-12-19 17:36] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Argument type mismatch in method call",
+    "ROOT CAUSE": "findTargetInitFiles expects PyFile, but invoke passed a PsiFile without casting.",
+    "PROJECT NOTE": "Intention implementations commonly gate on file is PyFile in isAvailable; reuse that contract and cast to PyFile in invoke before passing to helpers.",
+    "NEW INSTRUCTION": "WHEN helper expects PyFile but caller has PsiFile THEN cast after verifying instance"
+}
+
+[2025-12-19 17:37] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Argument type mismatch: PsiFile passed where PyFile expected",
+    "ROOT CAUSE": "invoke received a PsiFile and passed it to findTargetInitFiles expecting PyFile without casting.",
+    "PROJECT NOTE": "After checking file is PyFile in isAvailable, cast file to PyFile in invoke before using Py-specific helpers.",
+    "NEW INSTRUCTION": "WHEN passing PsiFile to Py-specific utility THEN cast to PyFile after type check"
+}
+
+[2025-12-19 18:00] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Argument type mismatch calling helper function",
+    "ROOT CAUSE": "invoke passed PsiFile to findTargetInitFiles which expects a PyFile.",
+    "PROJECT NOTE": "In intentions, invoke receives PsiFile; cast only after confirming file is PyFile or change helper to accept PsiFile and narrow inside.",
+    "NEW INSTRUCTION": "WHEN helper expects PyFile but you have PsiFile THEN validate type and cast before call"
+}
+
+[2025-12-19 18:01] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Argument type mismatch: PsiFile passed where PyFile expected",
+    "ROOT CAUSE": "invoke received PsiFile and passed it to a helper requiring PyFile without casting or signature alignment.",
+    "PROJECT NOTE": "Intention actions often get PsiFile; guard with `file is PyFile` in isAvailable and cast in invoke, or change helper to accept PsiFile.",
+    "NEW INSTRUCTION": "WHEN helper requires PyFile but file is PsiFile THEN cast after is PyFile check or change helper signature"
+}
+
+[2025-12-19 18:02] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Argument type mismatch: PsiFile passed where PyFile expected",
+    "ROOT CAUSE": "invoke used a PsiFile to call a function requiring PyFile, causing a type mismatch.",
+    "PROJECT NOTE": "IntentionAction.invoke receives PsiFile; cast to PyFile only after checking file is PyFile before passing to Python utilities.",
+    "NEW INSTRUCTION": "WHEN passing file to Py-specific helpers THEN verify file is PyFile and cast safely"
+}
+
+[2025-12-19 18:02] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Argument type mismatch in function call",
+    "ROOT CAUSE": "invoke passed a PsiFile to a helper requiring PyFile, causing a type mismatch.",
+    "PROJECT NOTE": "In Kotlin intentions operating on Python PSI, ensure helpers accept/receive PyFile, not generic PsiFile; cast once in invoke or narrow the signature.",
+    "NEW INSTRUCTION": "WHEN calling helper that requires PyFile THEN cast file to PyFile before invocation"
+}
+
+[2025-12-19 18:03] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Passed PsiFile where PyFile was required",
+    "ROOT CAUSE": "invoke called findTargetInitFiles with PsiFile instead of PyFile, causing a type mismatch.",
+    "PROJECT NOTE": "In Python intentions, guard with `file is PyFile` in isAvailable and cast to PyFile in invoke before passing to utilities expecting PyFile.",
+    "NEW INSTRUCTION": "WHEN passing file to PyFile-specific utilities THEN cast file to PyFile after type check"
+}
+
+[2025-12-19 21:11] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Argument type mismatch for findTargetInitFiles parameter",
+    "ROOT CAUSE": "invoke passed a PsiFile to a function that requires a PyFile parameter.",
+    "PROJECT NOTE": "Intention.invoke receives PsiFile; utilities here often expect PyFile, so cast after validating file is PyFile in isAvailable.",
+    "NEW INSTRUCTION": "WHEN calling findTargetInitFiles in intention.invoke THEN pass a PyFile by safe cast"
+}
+
+[2025-12-19 21:12] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Argument type mismatch: PsiFile passed where PyFile required",
+    "ROOT CAUSE": "invoke used PsiFile with a helper expecting PyFile, causing a type mismatch.",
+    "PROJECT NOTE": "IntentionAction.invoke receives PsiFile; after isAvailable confirms PyFile, cast once and reuse that PyFile variable.",
+    "NEW INSTRUCTION": "WHEN helper expects PyFile but you have PsiFile THEN cast after type check and reuse cast"
+}
+
+[2025-12-19 21:12] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Argument type mismatch: PsiFile passed where PyFile expected",
+    "ROOT CAUSE": "invoke called findTargetInitFiles with a PsiFile parameter although the function expects PyFile.",
+    "PROJECT NOTE": "Guard isAvailable with file is PyFile and pass a PyFile variable through invoke to Py APIs.",
+    "NEW INSTRUCTION": "WHEN passing a PsiFile to Py-specific helpers THEN assert type and cast to PyFile"
+}
+
+[2025-12-19 21:12] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Passed PsiFile where PyFile was required",
+    "ROOT CAUSE": "invoke called findTargetInitFiles with a PsiFile instead of a PyFile, causing a type mismatch.",
+    "PROJECT NOTE": "Many helpers in this repo operate on PyFile; ensure call sites pass com.jetbrains.python.psi.PyFile to avoid validator errors on creation.",
+    "NEW INSTRUCTION": "WHEN helper function parameter type is PyFile THEN pass a PyFile instance or cast safely"
+}
+
+[2025-12-19 21:20] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "JbPopupHost.showChooserWithGreying",
+    "ERROR": "PSI read outside read action on EDT",
+    "ROOT CAUSE": "The popup cell renderer calls isAlreadyExported which reads PSI without a read action.",
+    "PROJECT NOTE": "In IntelliJ, any PSI access must occur inside a read action; do not access PSI from popup renderers. Precompute model data (e.g., greyed flags) within a read action before building the popup.",
+    "NEW INSTRUCTION": "WHEN determining greyed-out state for popup items THEN precompute booleans in a read action before popup creation"
+}
+
+[2025-12-19 21:35] - Updated by Junie - Error analysis
+{
+    "TYPE": "threading",
+    "TOOL": "JbPopupHost.showChooserWithGreying",
+    "ERROR": "PSI read outside read action during popup rendering",
+    "ROOT CAUSE": "The isGreyedOut callback accessed PSI on EDT without wrapping in a read action.",
+    "PROJECT NOTE": "Popup renderers and filters run on EDT without read access; wrap PSI reads in runReadAction inside lambdas passed to popup builders.",
+    "NEW INSTRUCTION": "WHEN popup item rendering or filtering touches PSI THEN wrap code in runReadAction"
+}
+
+[2025-12-19 22:12] - Updated by Junie - Error analysis
+{
+    "TYPE": "build failure",
+    "TOOL": "Gradle build",
+    "ERROR": "Could not create plugin from jar: intellij.fullLine.yaml.jar",
+    "ROOT CAUSE": "A non-plugin jar under plugins/fullLine/lib/modules is treated as an IntelliJ plugin, missing a valid plugin.xml descriptor.",
+    "PROJECT NOTE": "Only true IntelliJ plugins with META-INF/plugin.xml belong in the plugins dependency set; regular jars should be packaged under lib or declared as libraries, not as plugin dependencies.",
+    "NEW INSTRUCTION": "WHEN build log shows 'plugins could not be created' for a jar THEN validate it’s a real plugin or move it to lib"
+}
+
+[2025-12-19 22:12] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "bash",
+    "ERROR": "Gradle task 'cp' missing; kotlinc not in PATH",
+    "ROOT CAUSE": "The command called a non-existent Gradle task to get classpath and relied on a local kotlinc binary that isn’t installed.",
+    "PROJECT NOTE": "This project compiles via Gradle; use ./gradlew compileKotlin or ./gradlew classes instead of invoking kotlinc directly or custom cp tasks.",
+    "NEW INSTRUCTION": "WHEN needing to compile Kotlin THEN run './gradlew compileKotlin' instead of kotlinc"
+}
+
+[2025-12-19 22:13] - Updated by Junie - Error analysis
+{
+    "TYPE": "compilation",
+    "TOOL": "Gradle :compileTestKotlin",
+    "ERROR": "Anonymous test class misses showChooserWithGreying implementation",
+    "ROOT CAUSE": "The ChooserService interface gained showChooserWithGreying<T>, but test doubles don’t implement it.",
+    "PROJECT NOTE": "Update src/test/kotlin/com/github/chbndrhnns/intellijplatformplugincopy/intention/populate/PopulateArgumentsLocalTest.kt test stubs to implement fun <T> showChooserWithGreying(editor: Editor, title: String, items: List<T>, render: (T) -> String, isGreyedOut: (T) -> Boolean, onChosen: (T) -> Unit), possibly delegating to the simpler chooser and ignoring greying for tests.",
+    "NEW INSTRUCTION": "WHEN compileTestKotlin fails: showChooserWithGreying not implemented THEN implement it in test stubs or delegate"
+}
+

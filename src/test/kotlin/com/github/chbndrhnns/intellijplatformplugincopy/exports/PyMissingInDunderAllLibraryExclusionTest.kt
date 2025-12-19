@@ -1,4 +1,4 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.inspections
+package com.github.chbndrhnns.intellijplatformplugincopy.exports
 
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess

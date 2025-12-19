@@ -1,4 +1,4 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.inspections
+package com.github.chbndrhnns.intellijplatformplugincopy.exports
 
 import com.intellij.modcommand.ModPsiUpdater
 import com.intellij.modcommand.PsiUpdateModCommandQuickFix

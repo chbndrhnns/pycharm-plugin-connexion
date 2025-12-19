@@ -1,6 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.populate
 
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.PopupHost
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PopupHost
 import com.intellij.openapi.editor.Editor
 import fixtures.TestBase
 
@@ -22,6 +22,17 @@ class PopulateArgumentsLocalTest : TestBase() {
                 } else {
                     fail("Option with 'local' not found in chooser. Available: ${items.map { render(it) }}")
                 }
+            }
+
+            override fun <T> showChooserWithGreying(
+                editor: Editor,
+                title: String,
+                items: List<T>,
+                render: (T) -> String,
+                isGreyedOut: (T) -> Boolean,
+                onChosen: (T) -> Unit
+            ) {
+                showChooser(editor, title, items, render, onChosen)
             }
         }
         PopulateArgumentsIntentionHooks.popupHost = popupHost
@@ -66,6 +77,17 @@ class PopulateArgumentsLocalTest : TestBase() {
                     fail("Option with 'local' not found in chooser. Available: ${items.map { render(it) }}")
                 }
             }
+
+            override fun <T> showChooserWithGreying(
+                editor: Editor,
+                title: String,
+                items: List<T>,
+                render: (T) -> String,
+                isGreyedOut: (T) -> Boolean,
+                onChosen: (T) -> Unit
+            ) {
+                showChooser(editor, title, items, render, onChosen)
+            }
         }
         PopulateArgumentsIntentionHooks.popupHost = popupHost
 
@@ -109,6 +131,17 @@ class PopulateArgumentsLocalTest : TestBase() {
                     fail("Option 'All arguments' not found.")
                 }
             }
+
+            override fun <T> showChooserWithGreying(
+                editor: Editor,
+                title: String,
+                items: List<T>,
+                render: (T) -> String,
+                isGreyedOut: (T) -> Boolean,
+                onChosen: (T) -> Unit
+            ) {
+                showChooser(editor, title, items, render, onChosen)
+            }
         }
         PopulateArgumentsIntentionHooks.popupHost = popupHost
 
@@ -142,6 +175,17 @@ class PopulateArgumentsLocalTest : TestBase() {
             ) {
                 val item = items.find { render(it) == "All arguments" }!!
                 onChosen(item)
+            }
+
+            override fun <T> showChooserWithGreying(
+                editor: Editor,
+                title: String,
+                items: List<T>,
+                render: (T) -> String,
+                isGreyedOut: (T) -> Boolean,
+                onChosen: (T) -> Unit
+            ) {
+                showChooser(editor, title, items, render, onChosen)
             }
         }
         PopulateArgumentsIntentionHooks.popupHost = popupHost

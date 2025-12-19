@@ -1,4 +1,4 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
+package com.github.chbndrhnns.intellijplatformplugincopy.intention.shared
 
 import com.intellij.openapi.editor.Editor
 
@@ -9,6 +9,15 @@ interface PopupHost {
         title: String,
         items: List<T>,
         render: (T) -> String,
+        onChosen: (T) -> Unit
+    )
+
+    fun <T> showChooserWithGreying(
+        editor: Editor,
+        title: String,
+        items: List<T>,
+        render: (T) -> String,
+        isGreyedOut: (T) -> Boolean,
         onChosen: (T) -> Unit
     )
 }

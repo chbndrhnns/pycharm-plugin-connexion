@@ -1,33 +1,3 @@
-[2025-12-10 10:45] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "run tests, update settings, document deprecation plan",
-    "BOTTLENECK": "Availability is gated by a possibly misnamed setting affecting all visibility intentions.",
-    "PROJECT NOTE": "PluginSettingsState.enableMakePublicIntention appears to gate all visibility intentions, including the new Change Visibility.",
-    "NEW INSTRUCTION": "WHEN visibility intentions share an unrelated feature flag THEN introduce dedicated setting and update availability checks"
-}
-
-[2025-12-10 11:56] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "scan project",
-    "MISSING STEPS": "confirm pattern semantics",
-    "BOTTLENECK": "Test case pattern mismatched the intended Test_* class rule.",
-    "PROJECT NOTE": "In tests, import fixtures.assertIntentionNotAvailable to check unavailability.",
-    "NEW INSTRUCTION": "WHEN adding name-based ignore rules THEN add matching negative-availability tests before running"
-}
-
-[2025-12-10 12:09] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "broad code search",
-    "MISSING STEPS": "run changed test, run full test suite",
-    "BOTTLENECK": "No immediate test rerun after implementing the fix.",
-    "PROJECT NOTE": "Use VfsUtilCore.isAncestor on VirtualFile for directory ancestry checks.",
-    "NEW INSTRUCTION": "WHEN implementing a fix after reproducing with a new test THEN rerun the new test, then run the full test suite"
-}
-
 [2025-12-10 12:20] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -866,4 +836,44 @@
     "BOTTLENECK": "No negative test and setting review for ParamSpec feature gate.",
     "PROJECT NOTE": "Ensure PluginSettingsState.enableNewTypeTypeVarRename also gates ParamSpec behavior.",
     "NEW INSTRUCTION": "WHEN adding support for analogous symbol THEN mirror existing tests including feature-flag off case"
+}
+
+[2025-12-19 21:13] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "register intention, add tests, run tests, verify build",
+    "BOTTLENECK": "The new intention was not registered and tests were not created/executed.",
+    "PROJECT NOTE": "Match how other intentions are registered in plugin.xml to ensure availability.",
+    "NEW INSTRUCTION": "WHEN creating a new intention class THEN register it in plugin.xml immediately"
+}
+
+[2025-12-19 21:20] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "compute grey-out status in renderer",
+    "MISSING STEPS": "precompute grey-out flags, wrap read-action",
+    "BOTTLENECK": "Renderer performed PSI reads on EDT without read action.",
+    "PROJECT NOTE": "Precompute isAlreadyExported for all targets inside a read action before building the popup and pass booleans to the renderer.",
+    "NEW INSTRUCTION": "WHEN popup item rendering needs PSI state THEN precompute flags in read-action before popup"
+}
+
+[2025-12-19 21:36] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "refactor to shared base class",
+    "MISSING STEPS": "precompute popup greyed state,add test for precomputation thread-safety",
+    "BOTTLENECK": "Greyed state computed per-render with PSI access on EDT.",
+    "PROJECT NOTE": "User asked for intention independence; avoid new shared abstractions unless essential.",
+    "NEW INSTRUCTION": "WHEN preparing popup items THEN precompute greyed states in one read action before render"
+}
+
+[2025-12-19 22:17] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "run build repeatedly, ad-hoc local compile, run classes",
+    "MISSING STEPS": "search project, update all implementations, rerun failing task",
+    "BOTTLENECK": "Fixes were applied piecemeal without updating all interface implementers.",
+    "PROJECT NOTE": "PopupHost added showChooserWithGreying; all test doubles must implement it.",
+    "NEW INSTRUCTION": "WHEN compile error cites unimplemented interface method THEN search project for all implementations and update them"
 }

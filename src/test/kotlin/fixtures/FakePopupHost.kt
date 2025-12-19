@@ -1,6 +1,6 @@
 package fixtures
 
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.PopupHost
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PopupHost
 import com.intellij.openapi.editor.Editor
 
 class FakePopupHost : PopupHost {
@@ -17,7 +17,25 @@ class FakePopupHost : PopupHost {
     ) {
         lastTitle = title
         lastLabels = items.map(render)
-        val idx = selectedIndex.coerceIn(0, items.size - 1)
-        onChosen(items[idx])
+        if (items.isNotEmpty()) {
+            val idx = selectedIndex.coerceIn(0, items.size - 1)
+            onChosen(items[idx])
+        }
+    }
+
+    override fun <T> showChooserWithGreying(
+        editor: Editor,
+        title: String,
+        items: List<T>,
+        render: (T) -> String,
+        isGreyedOut: (T) -> Boolean,
+        onChosen: (T) -> Unit
+    ) {
+        lastTitle = title
+        lastLabels = items.map(render)
+        if (items.isNotEmpty()) {
+            val idx = selectedIndex.coerceIn(0, items.size - 1)
+            onChosen(items[idx])
+        }
     }
 }
