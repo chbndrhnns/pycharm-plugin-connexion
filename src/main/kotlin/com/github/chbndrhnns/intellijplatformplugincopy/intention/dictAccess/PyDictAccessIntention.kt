@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.dictAccess
 
+import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.python.PythonVersionGuard
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
@@ -30,7 +31,7 @@ class PyDictAccessIntention : PsiElementBaseIntentionAction() {
             val context = TypeEvalContext.codeAnalysis(project, element.containingFile)
             val type = context.getType(subscription.operand)
             if (type != null && PyABCUtil.isSubtype(type, PyNames.MAPPING, context)) {
-                text = "Replace 'dict[key]' with 'dict.get(key)'"
+                text = PluginConstants.ACTION_PREFIX + "Replace 'dict[key]' with 'dict.get(key)'"
                 return true
             }
         }
@@ -47,7 +48,7 @@ class PyDictAccessIntention : PsiElementBaseIntentionAction() {
                         val context = TypeEvalContext.codeAnalysis(project, element.containingFile)
                         val type = context.getType(qualifier)
                         if (type != null && PyABCUtil.isSubtype(type, PyNames.MAPPING, context)) {
-                            text = "Replace 'dict.get(key)' with 'dict[key]'"
+                            text = PluginConstants.ACTION_PREFIX + "Replace 'dict.get(key)' with 'dict[key]'"
                             return true
                         }
                     }

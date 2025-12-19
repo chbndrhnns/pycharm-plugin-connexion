@@ -13,8 +13,8 @@ class CallableToProtocolAdvancedTest : TestBase() {
         """.trimIndent()
         )
 
-        if (myFixture.availableIntentions.any { it.text == "Convert callable to Protocol" }) {
-            myFixture.launchAction(myFixture.findSingleIntention("Convert callable to Protocol"))
+        if (myFixture.availableIntentions.any { it.text == "BetterPy: Convert callable to Protocol" }) {
+            myFixture.launchAction(myFixture.findSingleIntention("BetterPy: Convert callable to Protocol"))
 
             val hostFile =
                 com.intellij.lang.injection.InjectedLanguageManager.getInstance(project).getTopLevelFile(myFixture.file)
@@ -34,7 +34,7 @@ class CallableToProtocolAdvancedTest : TestBase() {
                 throw RuntimeException("Mismatch! Actual:\n$actual\n\nExpected:\n$expected")
             }
         } else {
-            throw AssertionError("Intention 'Convert callable to Protocol' not found")
+            throw AssertionError("Intention 'BetterPy: Convert callable to Protocol' not found")
         }
     }
 
@@ -47,7 +47,7 @@ class CallableToProtocolAdvancedTest : TestBase() {
         """.trimIndent()
         )
 
-        val action = myFixture.availableIntentions.find { it.text == "Convert callable to Protocol" }
+        val action = myFixture.availableIntentions.find { it.text == "BetterPy: Convert callable to Protocol" }
         if (action != null) {
             myFixture.launchAction(action)
             myFixture.checkResult(
@@ -63,7 +63,7 @@ class CallableToProtocolAdvancedTest : TestBase() {
             """.trimIndent() + "\n"
             )
         } else {
-            throw AssertionError("Intention 'Convert callable to Protocol' not found for aliased import")
+            throw AssertionError("Intention 'BetterPy: Convert callable to Protocol' not found for aliased import")
         }
     }
 }

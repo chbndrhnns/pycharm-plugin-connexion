@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention
 
+import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.intellij.codeInsight.intention.PriorityAction
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
 import com.intellij.openapi.editor.Editor
@@ -11,7 +12,7 @@ import com.jetbrains.python.psi.PyFunction
 
 class AddSelfParameterIntention : PsiElementBaseIntentionAction(), PriorityAction {
     override fun getFamilyName() = "Add 'self' parameter"
-    override fun getText() = "Add 'self' parameter"
+    override fun getText() = PluginConstants.ACTION_PREFIX + "Add 'self' parameter"
 
     override fun getPriority(): PriorityAction.Priority = PriorityAction.Priority.TOP
 

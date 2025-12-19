@@ -22,7 +22,7 @@ class PytestParametrizeTest : TestBase() {
             """.trimIndent()
         )
         myFixture.doHighlighting()
-        val intention = myFixture.availableIntentions.find { it.text.startsWith("Introduce custom type from int") }
+        val intention = myFixture.availableIntentions.find { it.text.startsWith("BetterPy: Introduce custom type from int") }
             ?: throw AssertionError("Intention not found")
         myFixture.launchAction(intention)
 
@@ -57,7 +57,7 @@ class PytestParametrizeTest : TestBase() {
             """.trimIndent()
         )
         myFixture.doHighlighting()
-        val intention = myFixture.availableIntentions.find { it.text.startsWith("Introduce custom type from int") }
+        val intention = myFixture.availableIntentions.find { it.text.startsWith("BetterPy: Introduce custom type from int") }
             ?: throw AssertionError("Intention not found")
         myFixture.launchAction(intention)
 

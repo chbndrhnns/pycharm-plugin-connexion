@@ -36,7 +36,7 @@ class PopulateLeafImportsTest : TestBase() {
                 def test():
                     u = User(uid=UserId(...))
                 """,
-                "Populate arguments..."
+                "BetterPy: Populate arguments..."
             )
         }
     }

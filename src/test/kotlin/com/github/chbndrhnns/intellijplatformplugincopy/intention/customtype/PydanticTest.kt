@@ -35,7 +35,7 @@ class PydanticTest : TestBase() {
                 D(product_id=ProductId(123))
                 D(product_id=ProductId(456))
             """,
-            "Introduce custom type from int"
+            "BetterPy: Introduce custom type from int"
         )
     }
 }

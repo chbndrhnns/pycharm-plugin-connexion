@@ -48,7 +48,7 @@ class RecursiveArgumentsIntentionTest : TestBase() {
             a = A(b=B(c=C(x=..., z=...)))
 
             """,
-                "Populate arguments..."
+                "BetterPy: Populate arguments..."
             )
         }
     }
@@ -82,7 +82,7 @@ class RecursiveArgumentsIntentionTest : TestBase() {
             a = Outer(val=MyStr(...))
 
             """,
-                "Populate arguments..."
+                "BetterPy: Populate arguments..."
             )
         }
     }
@@ -120,7 +120,7 @@ class RecursiveArgumentsIntentionTest : TestBase() {
             a = Node(leaf=Leaf(val=...), other=...)
 
             """,
-                "Populate arguments..."
+                "BetterPy: Populate arguments..."
             )
         }
     }
@@ -158,7 +158,7 @@ class RecursiveArgumentsIntentionTest : TestBase() {
             e = E(d=D(v=...))
 
             """,
-                "Populate arguments..."
+                "BetterPy: Populate arguments..."
             )
         }
     }
@@ -202,7 +202,7 @@ class RecursiveArgumentsIntentionTest : TestBase() {
             c = Child(base=..., leaf=Leaf(val=...))
 
             """,
-                "Populate arguments..."
+                "BetterPy: Populate arguments..."
             )
         }
     }
@@ -230,7 +230,7 @@ class RecursiveArgumentsIntentionTest : TestBase() {
             a = Rec(r=Rec(r=Rec(r=Rec(r=Rec(r=Rec(r=Rec(r=...)))))))
 
             """,
-                "Populate arguments..."
+                "BetterPy: Populate arguments..."
             )
         }
     }

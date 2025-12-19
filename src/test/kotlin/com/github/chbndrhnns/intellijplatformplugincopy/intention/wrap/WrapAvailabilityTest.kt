@@ -11,7 +11,7 @@ class WrapAvailabilityTest : TestBase() {
             val: int | str | None
             val = <caret>2
             """,
-            "Wrap with"
+            "BetterPy: Wrap with"
         )
     }
 
@@ -23,7 +23,7 @@ class WrapAvailabilityTest : TestBase() {
             def func():
                 va<caret>l: dict[str, int] = dict(a=1, b=2, c=3)
             """,
-            "Wrap items with"
+            "BetterPy: Wrap items with"
         )
     }
 
@@ -34,7 +34,7 @@ class WrapAvailabilityTest : TestBase() {
             """
             print("a<caret>bc")
             """,
-            "Wrap with"
+            "BetterPy: Wrap with"
         )
     }
 
@@ -48,7 +48,7 @@ class WrapAvailabilityTest : TestBase() {
 
             val: dict[str, CustomInt] = di<caret>ct({"a": 1, "b": 2, "c": 3})
             """,
-            "Wrap items with CustomInt()"
+            "BetterPy: Wrap items with CustomInt()"
         )
     }
 }

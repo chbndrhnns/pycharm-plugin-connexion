@@ -15,7 +15,7 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
             """.trimIndent()
 
         myFixture.configureByText("a.py", before)
-        val intention = myFixture.findSingleIntention("Introduce parameter object")
+        val intention = myFixture.findSingleIntention("BetterPy: Introduce parameter object")
 
         withMockIntroduceParameterObjectDialog {
             myFixture.launchAction(intention)
@@ -73,7 +73,7 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
                 
                 def main():
                     create_user(CreateUserParams(first_name="John", last_name="Doe"))""".trimIndent(),
-                "Introduce parameter object"
+                "BetterPy: Introduce parameter object"
             )
         }
     }
@@ -90,7 +90,7 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
             """.trimIndent()
 
         myFixture.configureByText("a.py", before)
-        val intention = myFixture.findSingleIntention("Introduce parameter object")
+        val intention = myFixture.findSingleIntention("BetterPy: Introduce parameter object")
 
         withMockIntroduceParameterObjectDialog {
             myFixture.launchAction(intention)
@@ -153,7 +153,7 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
                 
                 def main():
                     Utils.helper(HelperParams(x=1, y=2))""".trimIndent(),
-                "Introduce parameter object"
+                "BetterPy: Introduce parameter object"
             )
         }
     }

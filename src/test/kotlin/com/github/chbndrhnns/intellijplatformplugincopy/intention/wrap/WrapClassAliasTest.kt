@@ -34,7 +34,7 @@ class WrapClassAliasTest : TestBase() {
                 def test_(self):
                     assert self.item(val="1")
             """,
-            "Wrap with str()"
+            "BetterPy: Wrap with str()"
         )
     }
 }

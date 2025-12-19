@@ -19,7 +19,7 @@ class WrapParenthesesTest : TestBase() {
             from pathlib import Path
             a: Path = Path("val")
             """,
-            "Wrap with Path()"
+            "BetterPy: Wrap with Path()"
         )
     }
 
@@ -34,7 +34,7 @@ class WrapParenthesesTest : TestBase() {
             from pathlib import Path
             a: Path = Path("val")
             """,
-            "Wrap with Path()"
+            "BetterPy: Wrap with Path()"
         )
     }
 
@@ -65,7 +65,7 @@ class WrapParenthesesTest : TestBase() {
             
             result = process_data(CustomWrapper("some_string"))
             """,
-            "Wrap with CustomWrapper()"
+            "BetterPy: Wrap with CustomWrapper()"
         )
     }
 }

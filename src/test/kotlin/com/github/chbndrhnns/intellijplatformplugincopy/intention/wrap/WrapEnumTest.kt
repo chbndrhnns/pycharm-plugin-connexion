@@ -31,7 +31,7 @@ class WrapEnumTest : TestBase() {
 
             f(MyEnum.VARIANT)
             """,
-            "Wrap with MyEnum.VARIANT"
+            "BetterPy: Wrap with MyEnum.VARIANT"
         )
     }
 
@@ -60,7 +60,7 @@ class WrapEnumTest : TestBase() {
 
             f(MyEnum.ONE)
             """,
-            "Wrap with MyEnum.ONE"
+            "BetterPy: Wrap with MyEnum.ONE"
         )
     }
 
@@ -78,7 +78,7 @@ class WrapEnumTest : TestBase() {
 
             f(<caret>"other")
             """,
-            "Wrap with"
+            "BetterPy: Wrap with"
         )
     }
 }

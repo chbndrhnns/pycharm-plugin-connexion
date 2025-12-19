@@ -28,7 +28,7 @@ class WrapUnionChoiceTest : TestBase() {
 
             f(Path("val"))
             """,
-            "Wrap with Path()"
+            "BetterPy: Wrap with Path()"
         )
     }
 
@@ -52,7 +52,7 @@ class WrapUnionChoiceTest : TestBase() {
     
                 a: Union[One | Two] = One("val")
                 """,
-                "Wrap with expected union type…"
+                "BetterPy: Wrap with expected union type…"
             )
         }
     }

@@ -37,7 +37,7 @@ class PyIntroduceParameterObjectCasesTest : TestBase() {
         """.trimIndent() + "\n"
 
         myFixture.configureByText("a.py", before)
-        val intention = myFixture.findSingleIntention("Introduce parameter object")
+        val intention = myFixture.findSingleIntention("BetterPy: Introduce parameter object")
 
         withMockIntroduceParameterObjectDialog {
             myFixture.launchAction(intention)
@@ -58,7 +58,7 @@ class PyIntroduceParameterObjectCasesTest : TestBase() {
         """.trimIndent()
 
         myFixture.configureByText("a.py", text)
-        val intention = myFixture.findSingleIntention("Introduce parameter object")
+        val intention = myFixture.findSingleIntention("BetterPy: Introduce parameter object")
 
         withMockIntroduceParameterObjectDialog {
             myFixture.launchAction(intention)
@@ -100,7 +100,7 @@ class PyIntroduceParameterObjectCasesTest : TestBase() {
         """.trimIndent()
 
         myFixture.configureByText("a.py", text)
-        val intention = myFixture.findSingleIntention("Introduce parameter object")
+        val intention = myFixture.findSingleIntention("BetterPy: Introduce parameter object")
 
         withMockIntroduceParameterObjectDialog {
             myFixture.launchAction(intention)
@@ -134,7 +134,7 @@ class PyIntroduceParameterObjectCasesTest : TestBase() {
         """.trimIndent()
 
         myFixture.configureByText("a.pyi", text)
-        assertEmpty(myFixture.filterAvailableIntentions("Introduce parameter object"))
+        assertEmpty(myFixture.filterAvailableIntentions("BetterPy: Introduce parameter object"))
     }
 
     fun testNestedFunction() {
@@ -147,7 +147,7 @@ class PyIntroduceParameterObjectCasesTest : TestBase() {
         """.trimIndent()
 
         myFixture.configureByText("a.py", before)
-        val intention = myFixture.findSingleIntention("Introduce parameter object")
+        val intention = myFixture.findSingleIntention("BetterPy: Introduce parameter object")
 
         withMockIntroduceParameterObjectDialog {
             myFixture.launchAction(intention)

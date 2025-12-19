@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention
 
+import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.CustomTypeApplier
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.CustomTypePlan
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.PlanBuilder
@@ -36,7 +37,7 @@ import javax.swing.Icon
  */
 class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityAction, DumbAware, Iconable {
 
-    private var lastText: String = "Introduce custom type from stdlib type"
+    private var lastText: String = PluginConstants.ACTION_PREFIX + "Introduce custom type from stdlib type"
     private val planBuilder = PlanBuilder()
     private val applier = CustomTypeApplier()
 
@@ -81,7 +82,7 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
         editor.putUserData(PLAN_KEY, plan)
 
         if (plan == null) {
-            lastText = "Introduce custom type from stdlib type"
+            lastText = PluginConstants.ACTION_PREFIX + "Introduce custom type from stdlib type"
             return false
         }
 
@@ -93,7 +94,7 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
             return false
         }
 
-        lastText = "Introduce custom type from ${plan.builtinName}"
+        lastText = PluginConstants.ACTION_PREFIX + "Introduce custom type from ${plan.builtinName}"
         return true
     }
 

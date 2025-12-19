@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention
 
+import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedCtor
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.*
@@ -25,7 +26,7 @@ import javax.swing.Icon
  */
 class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbAware, Iconable {
     // Minimal retained state: dynamic text shown by the IDE, updated in isAvailable().
-    private var lastText: String = "Wrap with expected type"
+    private var lastText: String = PluginConstants.ACTION_PREFIX + "Wrap with expected type"
 
     private companion object {
         val PLAN_KEY: Key<WrapPlan> = Key.create("wrap.with.expected.plan")
@@ -45,7 +46,7 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
         // Feature switch: hide intention entirely when disabled via settings
         if (!PluginSettingsState.instance().state.enableWrapWithExpectedTypeIntention) {
             editor.putUserData(PLAN_KEY, null)
-            lastText = "Wrap with expected type"
+            lastText = PluginConstants.ACTION_PREFIX + "Wrap with expected type"
             return false
         }
 
@@ -56,7 +57,7 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
             )
         if (elementAtCaret?.parent is PyStarArgument) {
             editor.putUserData(PLAN_KEY, null)
-            lastText = "Wrap with expected type"
+            lastText = PluginConstants.ACTION_PREFIX + "Wrap with expected type"
             return false
         }
 
@@ -64,20 +65,21 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
         val context = TypeEvalContext.codeAnalysis(project, file)
         val plan = analyzer.analyzeAtCaret(editor, file, context) ?: run {
             editor.putUserData(PLAN_KEY, null)
-            lastText = "Wrap with expected type"
+            lastText = PluginConstants.ACTION_PREFIX + "Wrap with expected type"
             return false
         }
         editor.putUserData(PLAN_KEY, plan)
 
         // Update dynamic text used by tests to locate the intention
         lastText = when (plan) {
-            is UnionChoice -> "Wrap with expected union type…"
-            is ElementwiseUnionChoice -> "Wrap with expected union type…"
-            is Single -> plan.ctorName.takeIf { it.isNotBlank() }?.let { "Wrap with $it()" }
-                ?: "Wrap with expected type"
+            is UnionChoice -> PluginConstants.ACTION_PREFIX + "Wrap with expected union type…"
+            is ElementwiseUnionChoice -> PluginConstants.ACTION_PREFIX + "Wrap with expected union type…"
+            is Single -> plan.ctorName.takeIf { it.isNotBlank() }
+                ?.let { PluginConstants.ACTION_PREFIX + "Wrap with $it()" }
+                ?: (PluginConstants.ACTION_PREFIX + "Wrap with expected type")
 
-            is Elementwise -> "Wrap items with ${plan.itemCtorName}()"
-            is ReplaceWithVariant -> "Wrap with ${plan.variantName}"
+            is Elementwise -> PluginConstants.ACTION_PREFIX + "Wrap items with ${plan.itemCtorName}()"
+            is ReplaceWithVariant -> PluginConstants.ACTION_PREFIX + "Wrap with ${plan.variantName}"
         }
         return true
     }

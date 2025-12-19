@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.inspections
 
+import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.python.PythonVersionGuard
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInspection.LocalInspectionToolSession
@@ -61,7 +62,7 @@ class PyDataclassMissingInspection : PyInspection() {
     }
 
     private class PyAddDataclassQuickFix : LocalQuickFix {
-        override fun getFamilyName(): String = "Add @dataclass decorator"
+        override fun getFamilyName(): String = PluginConstants.ACTION_PREFIX + "Add @dataclass decorator"
 
         override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
             val element = descriptor.psiElement

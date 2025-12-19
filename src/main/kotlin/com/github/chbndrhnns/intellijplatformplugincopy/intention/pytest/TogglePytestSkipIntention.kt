@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest
 
+import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
@@ -27,7 +28,7 @@ class TogglePytestSkipIntention : IntentionAction, HighPriorityAction, Iconable 
     }
 
     @Volatile
-    private var cachedText: String = "Toggle pytest skip"
+    private var cachedText: String = PluginConstants.ACTION_PREFIX + "Toggle pytest skip"
 
     override fun getText(): String = cachedText
     override fun getFamilyName(): String = "Toggle pytest skip"
@@ -39,7 +40,7 @@ class TogglePytestSkipIntention : IntentionAction, HighPriorityAction, Iconable 
         if (file !is PyFile) return false
 
         val scope = determineScope(editor, file) ?: return false
-        cachedText = "Toggle pytest skip (${scope.label})"
+        cachedText = PluginConstants.ACTION_PREFIX + "Toggle pytest skip (${scope.label})"
         return true
     }
 

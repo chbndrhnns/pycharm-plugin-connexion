@@ -22,7 +22,7 @@ class WrapExceptionsWithParenthesesIntentionTest : TestBase() {
                 except (IndexError, KeyError):
                     pass
             """,
-            "Wrap exceptions with parentheses"
+            "BetterPy: Wrap exceptions with parentheses"
         )
     }
 
@@ -43,7 +43,7 @@ class WrapExceptionsWithParenthesesIntentionTest : TestBase() {
                 except (IndexError, KeyError):
                     pass
             """,
-            "Wrap exceptions with parentheses"
+            "BetterPy: Wrap exceptions with parentheses"
         )
     }
 
@@ -59,7 +59,7 @@ class WrapExceptionsWithParenthesesIntentionTest : TestBase() {
             """
         )
 
-        var action = myFixture.availableIntentions.find { it.text == "Wrap exceptions with parentheses" }
+        var action = myFixture.availableIntentions.find { it.text == "BetterPy: Wrap exceptions with parentheses" }
         assertNotNull(action)
 
         while (action is com.intellij.codeInsight.intention.IntentionActionDelegate) {

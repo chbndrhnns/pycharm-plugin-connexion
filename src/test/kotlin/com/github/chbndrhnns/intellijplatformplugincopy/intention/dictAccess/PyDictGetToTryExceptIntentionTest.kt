@@ -6,15 +6,15 @@ class PyDictGetToTryExceptIntentionTest : TestBase() {
     override fun getTestDataPath(): String = "src/test/testData/intention/dictAccess/getToTryExcept"
 
     fun testAssignment() {
-        doTest("Replace 'dict.get(key, default)' with try/except KeyError")
+        doTest("BetterPy: Replace 'dict.get(key, default)' with try/except KeyError")
     }
 
     fun testReturn() {
-        doTest("Replace 'dict.get(key, default)' with try/except KeyError")
+        doTest("BetterPy: Replace 'dict.get(key, default)' with try/except KeyError")
     }
 
     fun testNoDefault() {
-        doTestNotAvailable("Replace 'dict.get(key, default)' with try/except KeyError")
+        doTestNotAvailable("BetterPy: Replace 'dict.get(key, default)' with try/except KeyError")
     }
 
     private fun doTest(intentionName: String) {

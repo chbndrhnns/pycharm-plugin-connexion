@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest
 
+import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
@@ -15,7 +16,7 @@ import com.jetbrains.python.psi.impl.PyPsiUtils
 
 class ParametrizePytestTestIntention : IntentionAction, HighPriorityAction {
 
-    override fun getText(): String = "Parametrize pytest test"
+    override fun getText(): String = PluginConstants.ACTION_PREFIX + "Parametrize pytest test"
     override fun getFamilyName(): String = "Parametrize pytest test"
     override fun startInWriteAction(): Boolean = true
 

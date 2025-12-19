@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.inspections
 
+import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInspection.LocalInspectionToolSession
 import com.intellij.codeInspection.LocalQuickFix
@@ -78,7 +79,7 @@ class PyConstantShouldBeFinalInspection : PyInspection() {
     }
 
     private class WrapConstantInFinalQuickFix : LocalQuickFix {
-        override fun getFamilyName(): String = "Wrap constant type in Final"
+        override fun getFamilyName(): String = PluginConstants.ACTION_PREFIX + "Wrap constant type in Final"
 
         override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
             val target = descriptor.psiElement as? PyTargetExpression ?: return

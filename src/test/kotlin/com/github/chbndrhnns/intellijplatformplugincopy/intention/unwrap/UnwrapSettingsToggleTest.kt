@@ -19,8 +19,8 @@ class UnwrapSettingsToggleTest : TestBase() {
 
             myFixture.doHighlighting()
             val intentions = myFixture.availableIntentions
-            val hasUnwrap = intentions.any { it.text.startsWith("Unwrap ") }
-            assertFalse("Unwrap intention should be hidden when disabled in settings", hasUnwrap)
+            val hasUnwrap = intentions.any { it.text.startsWith("BetterPy: Unwrap ") }
+            assertFalse("BetterPy: Unwrap intention should be hidden when disabled in settings", hasUnwrap)
         }
     }
 
@@ -37,7 +37,7 @@ class UnwrapSettingsToggleTest : TestBase() {
             )
 
             myFixture.doHighlighting()
-            myFixture.findSingleIntention("Unwrap UserId()")
+            myFixture.findSingleIntention("BetterPy: Unwrap UserId()")
         }
     }
 }

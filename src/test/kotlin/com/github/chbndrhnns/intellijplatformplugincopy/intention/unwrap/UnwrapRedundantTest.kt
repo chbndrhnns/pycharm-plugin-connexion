@@ -18,7 +18,7 @@ class UnwrapRedundantTest : TestBase() {
                 val: int = 1
                 return val
             """.trimIndent(),
-            "Unwrap int()"
+            "BetterPy: Unwrap int()"
         )
     }
 
@@ -35,7 +35,7 @@ class UnwrapRedundantTest : TestBase() {
                 val: int = 1
                 return val
             """.trimIndent(),
-            "Unwrap int()"
+            "BetterPy: Unwrap int()"
         )
     }
 }

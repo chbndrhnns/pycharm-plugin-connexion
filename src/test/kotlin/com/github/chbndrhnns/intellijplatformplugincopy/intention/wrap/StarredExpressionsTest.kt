@@ -13,7 +13,7 @@ class StarredExpressionsTest : TestBase() {
             l = ["s"]
             f(*<caret>l)
             """,
-            "Wrap with expected type"
+            "BetterPy: Wrap with expected type"
         )
     }
 
@@ -25,7 +25,7 @@ class StarredExpressionsTest : TestBase() {
             d = {"x": "s"}
             f(**<caret>d)
             """,
-            "Wrap with expected type"
+            "BetterPy: Wrap with expected type"
         )
     }
 
@@ -39,7 +39,7 @@ class StarredExpressionsTest : TestBase() {
             val = UserId(1)
             f(*<caret>val) 
             """,
-            "Unwrap UserId()"
+            "BetterPy: Unwrap UserId()"
         )
     }
 
@@ -52,7 +52,7 @@ class StarredExpressionsTest : TestBase() {
             """
             l = [*<caret>1]
             """,
-            "Wrap with expected type"
+            "BetterPy: Wrap with expected type"
         )
     }
 
@@ -64,7 +64,7 @@ class StarredExpressionsTest : TestBase() {
             val = [1]
             f(*<caret>list(val))
             """,
-            "Introduce custom type from list"
+            "BetterPy: Introduce custom type from list"
         )
     }
 

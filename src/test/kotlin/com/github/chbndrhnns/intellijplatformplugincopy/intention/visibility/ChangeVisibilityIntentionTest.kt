@@ -17,7 +17,7 @@ class ChangeVisibilityIntentionTest : TestBase() {
             class Internal:
                 pass
             """,
-            "Change visibility: make public"
+            "BetterPy: Change visibility: make public"
         )
     }
 
@@ -32,7 +32,7 @@ class ChangeVisibilityIntentionTest : TestBase() {
             class _Public:
                 pass
             """,
-            "Change visibility: make private"
+            "BetterPy: Change visibility: make private"
         )
     }
 
@@ -43,7 +43,7 @@ class ChangeVisibilityIntentionTest : TestBase() {
             def so<caret>me_fixture():
                 pass
             """,
-            "Change visibility: make private"
+            "BetterPy: Change visibility: make private"
         )
     }
 
@@ -54,7 +54,7 @@ class ChangeVisibilityIntentionTest : TestBase() {
             def hel<caret>per():
                 pass
             """,
-            "Change visibility: make private"
+            "BetterPy: Change visibility: make private"
         )
     }
 
@@ -65,7 +65,7 @@ class ChangeVisibilityIntentionTest : TestBase() {
             def test_so<caret>mething():
                 pass
             """,
-            "Change visibility: make private"
+            "BetterPy: Change visibility: make private"
         )
     }
 
@@ -76,7 +76,7 @@ class ChangeVisibilityIntentionTest : TestBase() {
             class Test<caret>_Class:
                 pass
             """,
-            "Change visibility: make private"
+            "BetterPy: Change visibility: make private"
         )
     }
 }

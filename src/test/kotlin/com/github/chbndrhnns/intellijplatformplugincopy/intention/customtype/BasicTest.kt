@@ -31,7 +31,7 @@ class BasicTest : TestBase() {
             def test_():
                 val: Customint = Customint(1234)
             """,
-            "Introduce custom type from int",
+            "BetterPy: Introduce custom type from int",
             renameTo = "Customint"
         )
     }
@@ -55,7 +55,7 @@ class BasicTest : TestBase() {
 
             MY_CONSTANT: Final[MyConstant] = MyConstant("VALUE")
             """,
-            "Introduce custom type from str"
+            "BetterPy: Introduce custom type from str"
         )
     }
 
@@ -75,7 +75,7 @@ class BasicTest : TestBase() {
             def f(x: Customint) -> None:
                 ...
             """,
-            "Introduce custom type from int",
+            "BetterPy: Introduce custom type from int",
             renameTo = "Customint"
         )
     }
@@ -113,7 +113,7 @@ class BasicTest : TestBase() {
                 D(product_id=ProductId(123))
                 D(product_id=ProductId(456))
             """,
-            "Introduce custom type from int"
+            "BetterPy: Introduce custom type from int"
         )
     }
 
@@ -148,7 +148,7 @@ class BasicTest : TestBase() {
                 D(product_id=ProductId(123))
                 D(product_id=ProductId(456))
             """,
-            "Introduce custom type from int"
+            "BetterPy: Introduce custom type from int"
         )
     }
 
@@ -237,7 +237,7 @@ class BasicTest : TestBase() {
             
             val = dict({Customstr("a"): 1, "b": 2, "c": 3})
             """,
-            "Introduce custom type from str",
+            "BetterPy: Introduce custom type from str",
             renameTo = "Customstr"
         )
     }
@@ -263,7 +263,7 @@ class BasicTest : TestBase() {
 
             do(arg1=Customstr("a"), arg2="b")
             """,
-            "Introduce custom type from str",
+            "BetterPy: Introduce custom type from str",
             renameTo = "Customstr"
         )
     }
@@ -281,7 +281,7 @@ class BasicTest : TestBase() {
             
             abc: Customstr = Customstr("text")
             """,
-            "Introduce custom type from str",
+            "BetterPy: Introduce custom type from str",
             renameTo = "Customstr"
         )
     }
@@ -301,7 +301,7 @@ class BasicTest : TestBase() {
             abc: Customstr = Customstr("text")
             s = f"{abc}"
             """,
-            "Introduce custom type from str",
+            "BetterPy: Introduce custom type from str",
             renameTo = "Customstr"
         )
     }
@@ -321,7 +321,7 @@ class BasicTest : TestBase() {
             def do(a: Customstr):
                 return f"{a}"
             """,
-            "Introduce custom type from str",
+            "BetterPy: Introduce custom type from str",
             renameTo = "Customstr"
         )
     }

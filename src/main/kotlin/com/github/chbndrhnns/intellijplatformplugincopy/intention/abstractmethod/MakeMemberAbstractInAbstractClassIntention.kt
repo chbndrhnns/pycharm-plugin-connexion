@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.abstractmethod
 
+import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.openapi.editor.Editor
@@ -11,7 +12,7 @@ import com.jetbrains.python.psi.*
 
 class MakeMemberAbstractInAbstractClassIntention : IntentionAction {
 
-    override fun getText(): String = "Make member abstract"
+    override fun getText(): String = PluginConstants.ACTION_PREFIX + "Make member abstract"
 
     override fun getFamilyName(): String = "Make member abstract"
 

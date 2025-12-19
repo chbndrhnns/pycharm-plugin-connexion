@@ -40,7 +40,7 @@ class LibraryTest : TestBase() {
             def do():
                 my_func(x=<caret>2)
             """,
-            "Introduce custom type"
+            "BetterPy: Introduce custom type"
         )
     }
 
@@ -53,7 +53,7 @@ class LibraryTest : TestBase() {
             def do(f):
                 json.dump({"key": <caret>123}, f)
             """,
-            "Introduce custom type"
+            "BetterPy: Introduce custom type"
         )
     }
 }

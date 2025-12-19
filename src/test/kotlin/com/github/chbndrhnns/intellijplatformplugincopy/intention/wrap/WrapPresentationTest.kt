@@ -22,7 +22,7 @@ class WrapPresentationTest : TestBase() {
 
         myFixture.doHighlighting()
 
-        val intention = myFixture.findSingleIntention("Wrap with str()")
+        val intention = myFixture.findSingleIntention("BetterPy: Wrap with str()")
         val previewText = myFixture.getIntentionPreviewText(intention)
         assertEquals("str(Path(\"val\"))", previewText)
     }
@@ -49,7 +49,7 @@ class WrapPresentationTest : TestBase() {
         )
 
         myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Wrap with B()")
+        val intention = myFixture.findSingleIntention("BetterPy: Wrap with B()")
         val previewText = myFixture.getIntentionPreviewText(intention)
         assertEquals("from b import B\nB(\"val\")", previewText)
     }
@@ -61,7 +61,7 @@ class WrapPresentationTest : TestBase() {
             from pathlib import Path  
             a: str = Path(<caret>"val")
             """,
-            "Wrap with str()"
+            "BetterPy: Wrap with str()"
         )
     }
 
@@ -86,7 +86,7 @@ class WrapPresentationTest : TestBase() {
             )
 
             myFixture.doHighlighting()
-            val intention = myFixture.findSingleIntention("Wrap with expected union type…")
+            val intention = myFixture.findSingleIntention("BetterPy: Wrap with expected union type…")
             myFixture.launchAction(intention)
 
             assertEquals(listOf("User (a.User)", "Token (a.Token)"), fake.lastLabels)

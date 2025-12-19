@@ -17,7 +17,7 @@ class VisibilityIntentionsTest : TestBase() {
             class Internal:
                 pass
             """,
-            "Change visibility: make public"
+            "BetterPy: Change visibility: make public"
         )
     }
 
@@ -29,7 +29,7 @@ class VisibilityIntentionsTest : TestBase() {
                 def __in<caret>it__(self):
                     pass
             """,
-            "Change visibility: make public"
+            "BetterPy: Change visibility: make public"
         )
     }
 
@@ -46,7 +46,7 @@ class VisibilityIntentionsTest : TestBase() {
                 def mangled(self):
                     pass
             """,
-            "Change visibility: make public"
+            "BetterPy: Change visibility: make public"
         )
     }
 
@@ -61,7 +61,7 @@ class VisibilityIntentionsTest : TestBase() {
             def internal():
                 pass
             """,
-            "Change visibility: make public"
+            "BetterPy: Change visibility: make public"
         )
     }
 
@@ -76,7 +76,7 @@ class VisibilityIntentionsTest : TestBase() {
             class _Public:
                 pass
             """,
-            "Change visibility: make private"
+            "BetterPy: Change visibility: make private"
         )
     }
 
@@ -87,7 +87,7 @@ class VisibilityIntentionsTest : TestBase() {
             def _in<caret>ternal():
                 pass
             """,
-            "Change visibility: make private"
+            "BetterPy: Change visibility: make private"
         )
     }
 
@@ -102,7 +102,7 @@ class VisibilityIntentionsTest : TestBase() {
             def _public():
                 pass
             """,
-            "Change visibility: make private"
+            "BetterPy: Change visibility: make private"
         )
     }
 
@@ -119,7 +119,7 @@ class VisibilityIntentionsTest : TestBase() {
                 def _public(self):
                     pass
             """,
-            "Change visibility: make private"
+            "BetterPy: Change visibility: make private"
         )
     }
 
@@ -131,7 +131,7 @@ class VisibilityIntentionsTest : TestBase() {
                 def __ca<caret>ll__(self):
                     pass
             """,
-            "Change visibility: make private"
+            "BetterPy: Change visibility: make private"
         )
     }
 
@@ -143,7 +143,7 @@ class VisibilityIntentionsTest : TestBase() {
                 def public(self):
                     p<caret>ass
             """,
-            "Change visibility: make private"
+            "BetterPy: Change visibility: make private"
         )
     }
 
@@ -155,7 +155,7 @@ class VisibilityIntentionsTest : TestBase() {
                 def _private(self):
                     p<caret>ass
             """,
-            "Change visibility: make public"
+            "BetterPy: Change visibility: make public"
         )
     }
 }

@@ -1,18 +1,20 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.visibility
 
+import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
+
 class PyChangeVisibilityIntention : PyToggleVisibilityIntention() {
     @Volatile
-    private var myText: String = "Change visibility"
+    private var myText: String = PluginConstants.ACTION_PREFIX + "Change visibility"
 
     override fun getText(): String = myText
     override fun getFamilyName(): String = "Change visibility"
 
     override fun isAvailableForName(name: String): Boolean {
         return if (name.startsWith("_")) {
-            myText = "Change visibility: make public"
+            myText = PluginConstants.ACTION_PREFIX + "Change visibility: make public"
             true
         } else {
-            myText = "Change visibility: make private"
+            myText = PluginConstants.ACTION_PREFIX + "Change visibility: make private"
             true
         }
     }

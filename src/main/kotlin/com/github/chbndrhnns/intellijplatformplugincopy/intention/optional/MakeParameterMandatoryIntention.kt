@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.optional
 
+import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.PriorityAction
@@ -20,7 +21,7 @@ import com.jetbrains.python.refactoring.changeSignature.PyMethodDescriptor
 
 class MakeParameterMandatoryIntention : IntentionAction, PriorityAction {
 
-    override fun getText(): String = "Make mandatory"
+    override fun getText(): String = PluginConstants.ACTION_PREFIX + "Make mandatory"
 
     override fun getFamilyName(): String = "Make mandatory"
 

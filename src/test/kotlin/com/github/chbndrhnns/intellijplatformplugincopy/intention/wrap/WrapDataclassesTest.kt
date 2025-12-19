@@ -46,7 +46,7 @@ class WrapDataclassesTest : TestBase() {
             def test_():
                 Data(val=OtherStr("abc"))
             """,
-            "Wrap with OtherStr()"
+            "BetterPy: Wrap with OtherStr()"
         )
     }
 
@@ -87,7 +87,7 @@ class WrapDataclassesTest : TestBase() {
             def test_():
                 Data(val=OtherStr("abc"))
             """,
-            "Wrap with OtherStr()"
+            "BetterPy: Wrap with OtherStr()"
         )
     }
 
@@ -118,7 +118,7 @@ class WrapDataclassesTest : TestBase() {
             def test_():
                 Data(val=int("3"))
             """,
-            "Wrap with int()"
+            "BetterPy: Wrap with int()"
         )
     }
 
@@ -153,7 +153,7 @@ class WrapDataclassesTest : TestBase() {
                 items = ["abc"]
                 Data(items=[Item(v) for v in items])
             """,
-            "Wrap items with Item()"
+            "BetterPy: Wrap items with Item()"
         )
     }
 
@@ -191,7 +191,7 @@ class WrapDataclassesTest : TestBase() {
                     items = ["abc"]
                     Data(items=[Item(v) for v in items])
                 """,
-                "Wrap with expected union type…"
+                "BetterPy: Wrap with expected union type…"
             )
         }
     }

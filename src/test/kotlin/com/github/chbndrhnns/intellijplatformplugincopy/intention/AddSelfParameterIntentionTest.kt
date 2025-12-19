@@ -13,7 +13,7 @@ class AddSelfParameterIntentionTest : TestBase() {
         """.trimIndent()
         )
 
-        val intention = myFixture.findSingleIntention("Add 'self' parameter")
+        val intention = myFixture.findSingleIntention("BetterPy: Add 'self' parameter")
         WriteCommandAction.runWriteCommandAction(myFixture.project) {
             val info = intention.generatePreview(myFixture.project, myFixture.editor, myFixture.file)
             assertFalse("Preview info should not be empty", info.toString().isEmpty())
@@ -28,7 +28,7 @@ class AddSelfParameterIntentionTest : TestBase() {
         """.trimIndent()
         )
 
-        val intentions = myFixture.filterAvailableIntentions("Add 'self' parameter")
+        val intentions = myFixture.filterAvailableIntentions("BetterPy: Add 'self' parameter")
         assertEmpty(intentions)
     }
 }

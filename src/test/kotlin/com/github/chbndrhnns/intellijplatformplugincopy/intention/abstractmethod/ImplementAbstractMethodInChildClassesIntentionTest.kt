@@ -19,7 +19,7 @@ class ImplementAbstractMethodInChildClassesIntentionTest : TestBase() {
                 pass
             """
         )
-        val action = myFixture.findSingleIntention("Implement abstract method in child classes")
+        val action = myFixture.findSingleIntention("BetterPy: Implement abstract method in child classes")
         myFixture.launchAction(action)
 
         myFixture.checkResult(

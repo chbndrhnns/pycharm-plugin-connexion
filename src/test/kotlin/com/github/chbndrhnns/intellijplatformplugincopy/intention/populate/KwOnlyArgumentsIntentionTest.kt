@@ -33,7 +33,7 @@ class KwOnlyArgumentsIntentionTest : TestBase() {
 
                 a = A(x=..., y=..., z=...)
                 """,
-                "Populate arguments..."
+                "BetterPy: Populate arguments..."
             )
         }
     }
@@ -56,7 +56,7 @@ class KwOnlyArgumentsIntentionTest : TestBase() {
 
                 C().foo(a=..., b=...)
                 """,
-                "Populate arguments..."
+                "BetterPy: Populate arguments..."
             )
         }
     }
@@ -85,7 +85,7 @@ class KwOnlyArgumentsIntentionTest : TestBase() {
 
                 Outer.Inner(f=...)
                 """,
-                "Populate arguments..."
+                "BetterPy: Populate arguments..."
             )
         }
     }
@@ -106,7 +106,7 @@ class KwOnlyArgumentsIntentionTest : TestBase() {
 
                 foo(1, b=..., c=...)
                 """,
-                "Populate arguments..."
+                "BetterPy: Populate arguments..."
             )
         }
     }

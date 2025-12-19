@@ -32,7 +32,7 @@ class TogglePytestSkipIntentionSimpleListTest : TestBase() {
             )
             def foo(): pass
             """,
-            "Toggle pytest skip (param value)"
+            "BetterPy: Toggle pytest skip (param value)"
         )
     }
 
@@ -63,7 +63,7 @@ class TogglePytestSkipIntentionSimpleListTest : TestBase() {
             )
             def foo(): pass
             """,
-            "Toggle pytest skip (param value)"
+            "BetterPy: Toggle pytest skip (param value)"
         )
     }
 
@@ -92,7 +92,7 @@ class TogglePytestSkipIntentionSimpleListTest : TestBase() {
             def test_foo(x, y):
                 pass
             """,
-            "Toggle pytest skip (param value)"
+            "BetterPy: Toggle pytest skip (param value)"
         )
     }
 
@@ -127,7 +127,7 @@ class TogglePytestSkipIntentionSimpleListTest : TestBase() {
             def test_foo(x, y):
                 pass
             """,
-            "Toggle pytest skip (param value)"
+            "BetterPy: Toggle pytest skip (param value)"
         )
     }
 
@@ -162,7 +162,7 @@ class TogglePytestSkipIntentionSimpleListTest : TestBase() {
             def test_foo(x, y):
                 pass
             """,
-            "Toggle pytest skip (param value)"
+            "BetterPy: Toggle pytest skip (param value)"
         )
     }
 
@@ -178,7 +178,7 @@ class TogglePytestSkipIntentionSimpleListTest : TestBase() {
         """.trimIndent()
         )
 
-        val intentions = myFixture.availableIntentions.filter { it.familyName == "Toggle pytest skip" }
+        val intentions = myFixture.availableIntentions.filter { it.familyName == "BetterPy: Toggle pytest skip" }
         assertEmpty(intentions)
     }
 }

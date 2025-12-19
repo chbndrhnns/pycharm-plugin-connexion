@@ -34,7 +34,7 @@ class SettingsToggleTest : TestBase() {
 
             myFixture.doHighlighting()
             val intentions = myFixture.availableIntentions
-            val hasIntention = intentions.any { it.text.startsWith("Introduce custom type") }
+            val hasIntention = intentions.any { it.text.startsWith("BetterPy: Introduce custom type") }
             assertTrue("Intention should be visible when enabled in settings", hasIntention)
         }
     }

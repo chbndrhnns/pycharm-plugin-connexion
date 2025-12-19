@@ -14,7 +14,7 @@ class IpAddressTest : TestBase() {
             def f(ip: ipaddress.IPv4A<caret>ddress):
                 pass
             """,
-            "Introduce custom type from IPv4Address"
+            "BetterPy: Introduce custom type from IPv4Address"
         )
     }
 
@@ -27,7 +27,7 @@ class IpAddressTest : TestBase() {
             def f(net: ipaddress.IPv4N<caret>etwork):
                 pass
             """,
-            "Introduce custom type from IPv4Network"
+            "BetterPy: Introduce custom type from IPv4Network"
         )
     }
 
@@ -40,7 +40,7 @@ class IpAddressTest : TestBase() {
             def f(p: Pa<caret>th):
                 pass
             """,
-            "Introduce custom type from Path"
+            "BetterPy: Introduce custom type from Path"
         )
     }
 }

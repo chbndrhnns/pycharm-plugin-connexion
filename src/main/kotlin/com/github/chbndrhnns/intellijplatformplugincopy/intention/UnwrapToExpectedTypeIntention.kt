@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention
 
+import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.CtorMatch
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.WrapperInfo
@@ -29,7 +30,7 @@ import javax.swing.Icon
  */
 class UnwrapToExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbAware, Iconable {
 
-    private var lastText: String = "Unwrap to expected type"
+    private var lastText: String = PluginConstants.ACTION_PREFIX + "Unwrap to expected type"
 
     private data class UnwrapContext(
         val call: PyCallExpression,
@@ -65,7 +66,7 @@ class UnwrapToExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
         }
 
         editor.putUserData(PLAN_KEY, plan)
-        lastText = "Unwrap ${plan.wrapperName}()"
+        lastText = PluginConstants.ACTION_PREFIX + "Unwrap ${plan.wrapperName}()"
         return true
     }
 

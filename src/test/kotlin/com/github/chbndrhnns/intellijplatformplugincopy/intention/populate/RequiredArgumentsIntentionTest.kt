@@ -33,7 +33,7 @@ class RequiredArgumentsIntentionTest : TestBase() {
 
                 a = A(x=..., y=...)
                 """,
-                "Populate arguments..."
+                "BetterPy: Populate arguments..."
             )
         }
     }
@@ -56,7 +56,7 @@ class RequiredArgumentsIntentionTest : TestBase() {
 
                 C().foo(a=...)
                 """,
-                "Populate arguments..."
+                "BetterPy: Populate arguments..."
             )
         }
     }
@@ -87,7 +87,7 @@ class RequiredArgumentsIntentionTest : TestBase() {
 
                 Outer.Inner(f=...)
                 """,
-                "Populate arguments..."
+                "BetterPy: Populate arguments..."
             )
         }
     }
@@ -108,7 +108,7 @@ class RequiredArgumentsIntentionTest : TestBase() {
 
                 foo(1, b=...)
                 """,
-                "Populate arguments..."
+                "BetterPy: Populate arguments..."
             )
         }
     }

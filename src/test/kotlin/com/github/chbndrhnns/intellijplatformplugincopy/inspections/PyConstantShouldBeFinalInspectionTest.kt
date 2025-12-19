@@ -6,7 +6,7 @@ import fixtures.doInspectionTest
 class PyConstantShouldBeFinalInspectionTest : TestBase() {
 
     private val inspection = PyConstantShouldBeFinalInspection::class.java
-    private val fixName = "Wrap constant type in Final"
+    private val fixName = "BetterPy: Wrap constant type in Final"
 
     fun testLiteral() {
         myFixture.doInspectionTest(

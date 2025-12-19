@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.dictAccess
 
+import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.python.PythonVersionGuard
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
@@ -39,12 +40,12 @@ class PyDictGetToTryExceptIntention : PsiElementBaseIntentionAction() {
             is PyAssignmentStatement -> {
                 if (parent.assignedValue != call) return false
                 if (parent.targets.size != 1) return false
-                text = "Replace 'dict.get(key, default)' with try/except KeyError"
+                text = PluginConstants.ACTION_PREFIX + "Replace 'dict.get(key, default)' with try/except KeyError"
                 true
             }
             is PyReturnStatement -> {
                 if (parent.expression != call) return false
-                text = "Replace 'dict.get(key, default)' with try/except KeyError"
+                text = PluginConstants.ACTION_PREFIX + "Replace 'dict.get(key, default)' with try/except KeyError"
                 true
             }
 

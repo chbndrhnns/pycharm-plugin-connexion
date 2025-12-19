@@ -33,7 +33,7 @@ class IgnoreRulesTest : TestBase() {
             def f():
                 value: int = 1<caret>23
             """,
-            "Introduce custom type"
+            "BetterPy: Introduce custom type"
         )
     }
 }

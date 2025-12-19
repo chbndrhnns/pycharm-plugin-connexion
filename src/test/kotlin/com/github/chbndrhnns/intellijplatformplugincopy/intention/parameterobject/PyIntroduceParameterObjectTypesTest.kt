@@ -29,7 +29,7 @@ class PyIntroduceParameterObjectTypesTest : TestBase() {
                 def process(params: ProcessParams):
                     print(params.val, params.count)
                 """.trimIndent(),
-                "Introduce parameter object"
+                "BetterPy: Introduce parameter object"
             )
         }
     }
@@ -58,7 +58,7 @@ class PyIntroduceParameterObjectTypesTest : TestBase() {
                 def process(params: ProcessParams):
                     print(params.val, params.count)
                 """.trimIndent(),
-                "Introduce parameter object"
+                "BetterPy: Introduce parameter object"
             )
         }
     }
@@ -90,7 +90,7 @@ class PyIntroduceParameterObjectTypesTest : TestBase() {
                 
                 class User: ...
                 """.trimIndent(),
-                "Introduce parameter object"
+                "BetterPy: Introduce parameter object"
             )
         }
     }
@@ -106,7 +106,7 @@ class PyIntroduceParameterObjectTypesTest : TestBase() {
             """.trimIndent()
 
         myFixture.configureByText("a.py", before)
-        val intention = myFixture.findSingleIntention("Introduce parameter object")
+        val intention = myFixture.findSingleIntention("BetterPy: Introduce parameter object")
 
         withMockIntroduceParameterObjectDialog {
             myFixture.launchAction(intention)

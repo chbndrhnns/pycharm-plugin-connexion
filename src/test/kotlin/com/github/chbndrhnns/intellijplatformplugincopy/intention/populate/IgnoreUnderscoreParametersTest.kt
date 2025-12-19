@@ -22,7 +22,7 @@ class IgnoreUnderscoreParametersTest : TestBase() {
 
                 foo(a=..., c=...)
                 """,
-                "Populate arguments..."
+                "BetterPy: Populate arguments..."
             )
         }
     }
@@ -55,7 +55,7 @@ class IgnoreUnderscoreParametersTest : TestBase() {
 
                 a = A(x=..., z=...)
                 """,
-                "Populate arguments..."
+                "BetterPy: Populate arguments..."
             )
         }
     }

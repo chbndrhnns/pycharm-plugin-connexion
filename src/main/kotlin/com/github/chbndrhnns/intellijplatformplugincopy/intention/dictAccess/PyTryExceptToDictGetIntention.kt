@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.dictAccess
 
+import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.python.PythonVersionGuard
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
@@ -34,7 +35,7 @@ class PyTryExceptToDictGetIntention : PsiElementBaseIntentionAction() {
         if (tryExcept.finallyPart?.textRange?.contains(textRange) == true) return false
 
         if (extractInfo(tryExcept) != null) {
-            text = "Replace try-except with dict.get"
+            text = PluginConstants.ACTION_PREFIX + "Replace try-except with dict.get"
             return true
         }
         return false

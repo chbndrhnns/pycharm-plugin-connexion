@@ -13,7 +13,7 @@ class ContainerTypesTest : TestBase() {
             def f(x: li<caret>st[int]):
                 pass
             """,
-            "Introduce custom type from list"
+            "BetterPy: Introduce custom type from list"
         )
     }
 
@@ -24,7 +24,7 @@ class ContainerTypesTest : TestBase() {
             def f(x: s<caret>et[int]):
                 pass
             """,
-            "Introduce custom type from set"
+            "BetterPy: Introduce custom type from set"
         )
     }
 
@@ -35,7 +35,7 @@ class ContainerTypesTest : TestBase() {
             def f(x: di<caret>ct[str, int]):
                 pass
             """,
-            "Introduce custom type from dict"
+            "BetterPy: Introduce custom type from dict"
         )
     }
 
@@ -54,7 +54,7 @@ class ContainerTypesTest : TestBase() {
             def do(arg: Customdict) -> None:
                 ...
             """,
-            "Introduce custom type from dict",
+            "BetterPy: Introduce custom type from dict",
             renameTo = "Customdict"
         )
     }
@@ -74,7 +74,7 @@ class ContainerTypesTest : TestBase() {
                 def f(x: Customlist):
                     pass
             """,
-            "Introduce custom type from list",
+            "BetterPy: Introduce custom type from list",
             renameTo = "Customlist"
         )
     }
@@ -102,7 +102,7 @@ class ContainerTypesTest : TestBase() {
                     "c": 3,
                 })
             """,
-            "Introduce custom type from dict",
+            "BetterPy: Introduce custom type from dict",
             renameTo = "Customdict"
 
         )

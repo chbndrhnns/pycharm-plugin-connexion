@@ -25,7 +25,7 @@ class LiteralsTest : TestBase() {
 
             expect_str(Customstr("abc"))
             """,
-            "Introduce custom type from str",
+            "BetterPy: Introduce custom type from str",
             renameTo = "Customstr"
         )
     }
@@ -49,7 +49,7 @@ class LiteralsTest : TestBase() {
 
             expect_str(Customstr("abc"))
             """,
-            "Introduce custom type from str",
+            "BetterPy: Introduce custom type from str",
             renameTo = "Customstr"
         )
     }
@@ -67,7 +67,7 @@ class LiteralsTest : TestBase() {
 
             val = Customstr("str")
             """,
-            "Introduce custom type from str",
+            "BetterPy: Introduce custom type from str",
             renameTo = "Customstr"
         )
     }
@@ -85,7 +85,7 @@ class LiteralsTest : TestBase() {
             
             val = Customfloat(4567.6)
             """,
-            "Introduce custom type from float",
+            "BetterPy: Introduce custom type from float",
             renameTo = "Customfloat"
         )
     }
@@ -103,7 +103,7 @@ class LiteralsTest : TestBase() {
 
             product_id = ProductId(1234)
             """,
-            "Introduce custom type from int"
+            "BetterPy: Introduce custom type from int"
         )
     }
 
@@ -128,7 +128,7 @@ class LiteralsTest : TestBase() {
             def test_():
                 do(my_arg=MyArg(1234))
             """.trimIndent(),
-            "Introduce custom type from int"
+            "BetterPy: Introduce custom type from int"
         )
     }
 
@@ -142,7 +142,7 @@ class LiteralsTest : TestBase() {
 
             val: dict[str, CustomInt] = {"a": <caret>1, "b": 2, "c": 3}
             """,
-            "Introduce custom type from int"
+            "BetterPy: Introduce custom type from int"
         )
     }
 
@@ -156,7 +156,7 @@ class LiteralsTest : TestBase() {
 
             val: dict[CustomStr, int] = {<caret>"a": 1, "b": 2}
             """,
-            "Introduce custom type from str"
+            "BetterPy: Introduce custom type from str"
         )
     }
 
@@ -175,7 +175,7 @@ class LiteralsTest : TestBase() {
             def extract_saved_reels(self, output_dir: OutputDir = OutputDir("saved_reels")):
                 pass
             """,
-            "Introduce custom type from str"
+            "BetterPy: Introduce custom type from str"
         )
     }
 
@@ -188,7 +188,7 @@ class LiteralsTest : TestBase() {
             def f(x: int) -> None:
                 ...
             """,
-            "Introduce custom type from int"
+            "BetterPy: Introduce custom type from int"
         )
     }
 
@@ -201,7 +201,7 @@ class LiteralsTest : TestBase() {
 
                 return x
             """,
-            "Introduce custom type from int"
+            "BetterPy: Introduce custom type from int"
         )
     }
 
@@ -219,7 +219,7 @@ class LiteralsTest : TestBase() {
 
         myFixture.doHighlighting()
 
-        val intentions = myFixture.filterAvailableIntentions("Introduce custom type from int")
+        val intentions = myFixture.filterAvailableIntentions("BetterPy: Introduce custom type from int")
         assertEmpty("Should not offer custom type introduction on class docstring", intentions)
     }
 
@@ -233,7 +233,7 @@ class LiteralsTest : TestBase() {
                 __slots__ = ()
                 ""<caret>"Some documentation""${'"'}
             """,
-            "Introduce custom type from str"
+            "BetterPy: Introduce custom type from str"
         )
     }
 }

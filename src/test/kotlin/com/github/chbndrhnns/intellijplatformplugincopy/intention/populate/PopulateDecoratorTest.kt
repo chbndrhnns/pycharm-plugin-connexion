@@ -38,7 +38,7 @@ class PopulateDecoratorTest : TestBase() {
                 def foo():
                     pass
                 """,
-                "Populate arguments..."
+                "BetterPy: Populate arguments..."
             )
         }
     }

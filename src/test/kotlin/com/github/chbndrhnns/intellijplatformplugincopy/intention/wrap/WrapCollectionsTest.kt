@@ -28,7 +28,7 @@ class WrapCollectionsTest : TestBase() {
             def test_():
                 do(["abc"])
             """,
-            "Wrap with list()"
+            "BetterPy: Wrap with list()"
         )
     }
 
@@ -49,7 +49,7 @@ class WrapCollectionsTest : TestBase() {
             def test_():
                 do([123])
             """,
-            "Wrap with list()"
+            "BetterPy: Wrap with list()"
         )
     }
 
@@ -70,7 +70,7 @@ class WrapCollectionsTest : TestBase() {
             def test_():
                 do(list((1, 2)))
             """,
-            "Wrap with list()"
+            "BetterPy: Wrap with list()"
         )
     }
 
@@ -89,7 +89,7 @@ class WrapCollectionsTest : TestBase() {
 
             do(list(set()))
             """,
-            "Wrap with list()"
+            "BetterPy: Wrap with list()"
         )
     }
 
@@ -108,7 +108,7 @@ class WrapCollectionsTest : TestBase() {
 
             do(list(range(3)))
             """,
-            "Wrap with list()"
+            "BetterPy: Wrap with list()"
         )
     }
 
@@ -121,7 +121,7 @@ class WrapCollectionsTest : TestBase() {
 
             do(l<caret>ist(0))
             """,
-            "Wrap with None()"
+            "BetterPy: Wrap with None()"
         )
     }
 
@@ -140,7 +140,7 @@ class WrapCollectionsTest : TestBase() {
 
             val: list[CloudId] = [CloudId("abc")]
             """,
-            "Wrap with CloudId()"
+            "BetterPy: Wrap with CloudId()"
         )
     }
 
@@ -165,7 +165,7 @@ class WrapCollectionsTest : TestBase() {
 
             do([CloudId("abc")])            
             """,
-            "Wrap with CloudId()"
+            "BetterPy: Wrap with CloudId()"
         )
     }
 
@@ -181,7 +181,7 @@ class WrapCollectionsTest : TestBase() {
             from typing import Dict
             val: Dict[int, int] = {int("k"): 1}
             """,
-            "Wrap with int()"
+            "BetterPy: Wrap with int()"
         )
 
         // Value wrapping
@@ -195,7 +195,7 @@ class WrapCollectionsTest : TestBase() {
             from typing import Dict
             val: Dict[str, int] = {"k": int(True)}
             """,
-            "Wrap with int()"
+            "BetterPy: Wrap with int()"
         )
     }
 
@@ -208,7 +208,7 @@ class WrapCollectionsTest : TestBase() {
 
             f([<caret>1])
             """,
-            "Wrap with list()"
+            "BetterPy: Wrap with list()"
         )
     }
 
@@ -221,7 +221,7 @@ class WrapCollectionsTest : TestBase() {
 
             f([<caret>1, "3"])
             """,
-            "Wrap with list()"
+            "BetterPy: Wrap with list()"
         )
     }
 
@@ -235,7 +235,7 @@ class WrapCollectionsTest : TestBase() {
             
             do([1, <caret>2, 3, "3"])
             """,
-            "Wrap with list()"
+            "BetterPy: Wrap with list()"
         )
     }
 
@@ -249,7 +249,7 @@ class WrapCollectionsTest : TestBase() {
             
             do([1,<caret> 2, 3, "3"])
             """,
-            "Wrap with list()"
+            "BetterPy: Wrap with list()"
         )
     }
 
@@ -259,7 +259,7 @@ class WrapCollectionsTest : TestBase() {
             """
             val: list[int] = [1, 2, <caret>3, "3"]
             """,
-            "Wrap with int()"
+            "BetterPy: Wrap with int()"
         )
     }
 
@@ -272,7 +272,7 @@ class WrapCollectionsTest : TestBase() {
 
             f({<caret>1})
             """,
-            "Wrap with set()"
+            "BetterPy: Wrap with set()"
         )
     }
 
@@ -291,7 +291,7 @@ class WrapCollectionsTest : TestBase() {
 
             t: tuple[CloudId, int] = [CloudId("abc"), 2]
             """,
-            "Wrap with CloudId()"
+            "BetterPy: Wrap with CloudId()"
         )
     }
 
@@ -312,7 +312,7 @@ class WrapCollectionsTest : TestBase() {
 
             m: dict[Key, Val] = {Key(1): "a"}
             """,
-            "Wrap with Key()"
+            "BetterPy: Wrap with Key()"
         )
     }
 
@@ -332,7 +332,7 @@ class WrapCollectionsTest : TestBase() {
 
             def test_():
                 do({"abc"})
-            """, "Wrap with set()"
+            """, "BetterPy: Wrap with set()"
         )
     }
 
@@ -344,7 +344,7 @@ class WrapCollectionsTest : TestBase() {
             vals: set[str] = {<caret>1}
             """, """
             vals: set[str] = {"1"}
-            """, "Wrap with str()"
+            """, "BetterPy: Wrap with str()"
         )
     }
 
@@ -365,7 +365,7 @@ class WrapCollectionsTest : TestBase() {
             def process(prefix: IPv4Interface): ...
             
             process(IPv4Interface("10.10.10.0/24"))
-            """, "Wrap with IPv4Interface()"
+            """, "BetterPy: Wrap with IPv4Interface()"
         )
     }
 
@@ -391,7 +391,7 @@ class WrapCollectionsTest : TestBase() {
             prefixes: dict[int, Prefix] = {
                 1: Prefix(prefix=IPv4Interface("10.10.10.0/24"))
             }
-            """, "Wrap with IPv4Interface()"
+            """, "BetterPy: Wrap with IPv4Interface()"
         )
     }
 }

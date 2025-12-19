@@ -39,7 +39,7 @@ class HeavyTest : HeavyTestBase() {
 
         configureTempDirAsContentAndSourceRoot()
         waitForSmartModeAndHighlight()
-        val intention = myFixture.findSingleIntention("Introduce custom type from int")
+        val intention = myFixture.findSingleIntention("BetterPy: Introduce custom type from int")
         myFixture.launchAction(intention)
 
         myFixture.openFileInEditor(usagePsi1.virtualFile)
@@ -83,7 +83,7 @@ class HeavyTest : HeavyTestBase() {
 
         configureTempDirAsContentAndSourceRoot()
         waitForSmartModeAndHighlight()
-        val intention = myFixture.findSingleIntention("Introduce custom type from int")
+        val intention = myFixture.findSingleIntention("BetterPy: Introduce custom type from int")
         myFixture.launchAction(intention)
 
         myFixture.openFileInEditor(usagePsi2.virtualFile)
@@ -126,7 +126,7 @@ class HeavyTest : HeavyTestBase() {
 
         configureTempDirAsContentAndSourceRoot()
         waitForSmartModeAndHighlight()
-        val intention = myFixture.findSingleIntention("Introduce custom type from int")
+        val intention = myFixture.findSingleIntention("BetterPy: Introduce custom type from int")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(

@@ -13,7 +13,7 @@ class ParametrizePytestTestIntentionTest : TestBase() {
             """.trimIndent(),
         )
 
-        val intention = myFixture.findSingleIntention("Parametrize pytest test")
+        val intention = myFixture.findSingleIntention("BetterPy: Parametrize pytest test")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(
@@ -37,7 +37,7 @@ class ParametrizePytestTestIntentionTest : TestBase() {
             """.trimIndent(),
         )
 
-        val intention = myFixture.findSingleIntention("Parametrize pytest test")
+        val intention = myFixture.findSingleIntention("BetterPy: Parametrize pytest test")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(
@@ -62,7 +62,7 @@ class ParametrizePytestTestIntentionTest : TestBase() {
             """.trimIndent(),
         )
 
-        val intention = myFixture.findSingleIntention("Parametrize pytest test")
+        val intention = myFixture.findSingleIntention("BetterPy: Parametrize pytest test")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(
@@ -89,7 +89,7 @@ class ParametrizePytestTestIntentionTest : TestBase() {
             """.trimIndent(),
         )
 
-        val intention = myFixture.findSingleIntention("Parametrize pytest test")
+        val intention = myFixture.findSingleIntention("BetterPy: Parametrize pytest test")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(
@@ -118,7 +118,7 @@ class ParametrizePytestTestIntentionTest : TestBase() {
             """.trimIndent(),
         )
 
-        val intentions = myFixture.filterAvailableIntentions("Parametrize pytest test")
+        val intentions = myFixture.filterAvailableIntentions("BetterPy: Parametrize pytest test")
         assertTrue(intentions.isEmpty())
     }
 
@@ -131,7 +131,7 @@ class ParametrizePytestTestIntentionTest : TestBase() {
             """.trimIndent(),
         )
 
-        val intentions = myFixture.filterAvailableIntentions("Parametrize pytest test")
+        val intentions = myFixture.filterAvailableIntentions("BetterPy: Parametrize pytest test")
         assertTrue(intentions.isEmpty())
     }
 
@@ -144,7 +144,7 @@ class ParametrizePytestTestIntentionTest : TestBase() {
             """.trimIndent(),
         )
 
-        val intention = myFixture.findSingleIntention("Parametrize pytest test")
+        val intention = myFixture.findSingleIntention("BetterPy: Parametrize pytest test")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(

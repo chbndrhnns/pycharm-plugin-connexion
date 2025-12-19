@@ -31,7 +31,7 @@ class ReplaceExpectedWithActualIntentionTest : TestBase() {
 
         setDiffData("test_module.TestClass.test_method", "actual", "expected")
 
-        val intention = myFixture.findSingleIntention("Use actual test outcome")
+        val intention = myFixture.findSingleIntention("BetterPy: Use actual test outcome")
         assertNotNull(intention)
     }
 
@@ -47,7 +47,7 @@ class ReplaceExpectedWithActualIntentionTest : TestBase() {
 
         setDiffData("test_repro.TestClass.test_foo", "bar", "foo")
 
-        val intention = myFixture.findSingleIntention("Use actual test outcome")
+        val intention = myFixture.findSingleIntention("BetterPy: Use actual test outcome")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(
@@ -70,7 +70,7 @@ class ReplaceExpectedWithActualIntentionTest : TestBase() {
 
         setDiffData("test_num.test_num", "2", "1")
 
-        val intention = myFixture.findSingleIntention("Use actual test outcome")
+        val intention = myFixture.findSingleIntention("BetterPy: Use actual test outcome")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(
@@ -92,7 +92,7 @@ class ReplaceExpectedWithActualIntentionTest : TestBase() {
 
         setDiffData("test_keyword.test_keyword", "bar", "foo")
 
-        val intention = myFixture.findSingleIntention("Use actual test outcome")
+        val intention = myFixture.findSingleIntention("BetterPy: Use actual test outcome")
         assertNotNull(intention)
     }
 
@@ -108,7 +108,7 @@ class ReplaceExpectedWithActualIntentionTest : TestBase() {
 
         setDiffData("test_other.test_other", "bar", "foo")
 
-        val intention = myFixture.getAvailableIntention("Use actual test outcome")
+        val intention = myFixture.getAvailableIntention("BetterPy: Use actual test outcome")
         assertNull("Intention should not be available on assignment", intention)
     }
 
@@ -124,7 +124,7 @@ class ReplaceExpectedWithActualIntentionTest : TestBase() {
 
         setDiffData("test_scope.test_scope", "bar", "foo")
 
-        val intention = myFixture.findSingleIntention("Use actual test outcome")
+        val intention = myFixture.findSingleIntention("BetterPy: Use actual test outcome")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(
@@ -168,7 +168,7 @@ class ReplaceExpectedWithActualIntentionTest : TestBase() {
             "{\"abc\": [1, 2, 3, 4, 5]}",
         )
 
-        val intention = myFixture.findSingleIntention("Use actual test outcome")
+        val intention = myFixture.findSingleIntention("BetterPy: Use actual test outcome")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(

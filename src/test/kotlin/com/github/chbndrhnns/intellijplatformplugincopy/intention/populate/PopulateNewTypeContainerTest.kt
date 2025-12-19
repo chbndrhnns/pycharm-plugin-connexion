@@ -34,7 +34,7 @@ class PopulateNewTypeContainerTest : TestBase() {
 
                 d = Data(val=[MyStr(...)])
                 """,
-                "Populate arguments..."
+                "BetterPy: Populate arguments..."
             )
         }
     }

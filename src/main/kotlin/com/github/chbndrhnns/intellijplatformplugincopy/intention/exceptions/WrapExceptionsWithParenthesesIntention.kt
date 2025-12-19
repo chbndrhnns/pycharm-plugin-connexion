@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.exceptions
 
+import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.PriorityAction
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
@@ -18,7 +19,7 @@ import javax.swing.Icon
 class WrapExceptionsWithParenthesesIntention : PsiElementBaseIntentionAction(), PriorityAction, Iconable {
     override fun getFamilyName(): String = "Wrap exceptions with parentheses"
 
-    override fun getText(): String = "Wrap exceptions with parentheses"
+    override fun getText(): String = PluginConstants.ACTION_PREFIX + "Wrap exceptions with parentheses"
 
     override fun getPriority(): PriorityAction.Priority = PriorityAction.Priority.TOP
 

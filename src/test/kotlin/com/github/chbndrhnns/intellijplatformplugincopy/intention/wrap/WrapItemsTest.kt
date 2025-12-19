@@ -21,12 +21,12 @@ class WrapItemsTest : TestBase() {
         myFixture.assertIntentionAvailable(
             "a.py",
             text,
-            "Wrap with CustomInt()"
+            "BetterPy: Wrap with CustomInt()"
         )
         myFixture.assertIntentionAvailable(
             "a.py",
             text,
-            "Wrap items with CustomInt()"
+            "BetterPy: Wrap items with CustomInt()"
         )
     }
 
@@ -53,7 +53,7 @@ class WrapItemsTest : TestBase() {
                 3,
             ]
             """,
-            "Wrap with CustomInt()"
+            "BetterPy: Wrap with CustomInt()"
         )
     }
 
@@ -80,7 +80,7 @@ class WrapItemsTest : TestBase() {
                 CustomInt(3),
             ]
             """,
-            "Wrap items with CustomInt()"
+            "BetterPy: Wrap items with CustomInt()"
         )
     }
 
@@ -95,7 +95,7 @@ class WrapItemsTest : TestBase() {
             Custom<caret>Int(1),
             ] 
             """,
-            "Wrap items with"
+            "BetterPy: Wrap items with"
         )
     }
 

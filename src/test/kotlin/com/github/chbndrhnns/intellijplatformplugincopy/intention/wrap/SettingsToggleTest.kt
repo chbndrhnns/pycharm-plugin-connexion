@@ -15,7 +15,7 @@ class SettingsToggleTest : TestBase() {
                 from pathlib import Path
                 a: str = Path(<caret>"val")
                 """,
-                "Wrap with"
+                "BetterPy: Wrap with"
             )
         }
     }
@@ -28,7 +28,7 @@ class SettingsToggleTest : TestBase() {
                 from pathlib import Path
                 a: str = Path(<caret>"val")
                 """,
-                "Wrap with str()"
+                "BetterPy: Wrap with str()"
             )
         }
     }

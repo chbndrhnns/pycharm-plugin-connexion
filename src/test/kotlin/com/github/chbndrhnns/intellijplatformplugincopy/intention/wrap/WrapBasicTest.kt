@@ -21,7 +21,7 @@ class WrapBasicTest : TestBase() {
             from pathlib import Path
             a: str = str(Path("val"))
             """,
-            "Wrap with str()"
+            "BetterPy: Wrap with str()"
         )
     }
 
@@ -36,7 +36,7 @@ class WrapBasicTest : TestBase() {
             CustomInt(<caret>1),
             ] 
             """,
-            "Wrap with"
+            "BetterPy: Wrap with"
         )
     }
 
@@ -51,7 +51,7 @@ class WrapBasicTest : TestBase() {
             from pathlib import Path
             a: Path = Path("val")
             """,
-            "Wrap with Path()"
+            "BetterPy: Wrap with Path()"
         )
     }
 
@@ -66,7 +66,7 @@ class WrapBasicTest : TestBase() {
             def do(val: float) -> str:
                 return str(val)
             """,
-            "Wrap with str()"
+            "BetterPy: Wrap with str()"
         )
     }
 
@@ -79,7 +79,7 @@ class WrapBasicTest : TestBase() {
             
             result = process_data<caret>()
             """,
-            "Wrap with str()"
+            "BetterPy: Wrap with str()"
         )
     }
 
@@ -98,7 +98,7 @@ class WrapBasicTest : TestBase() {
             
             result = process_data("123")
             """,
-            "Wrap with str()"
+            "BetterPy: Wrap with str()"
         )
     }
 
@@ -121,7 +121,7 @@ class WrapBasicTest : TestBase() {
             
             run(shell=bool(0))
             """,
-            "Wrap with bool()"
+            "BetterPy: Wrap with bool()"
         )
     }
 
@@ -139,7 +139,7 @@ class WrapBasicTest : TestBase() {
             
             Client(val="a<caret>bc")
             """,
-            "Wrap with"
+            "BetterPy: Wrap with"
         )
     }
 
@@ -149,7 +149,7 @@ class WrapBasicTest : TestBase() {
             """
             print("a<caret>bc")
             """,
-            "Wrap with object()"
+            "BetterPy: Wrap with object()"
         )
     }
 
@@ -164,7 +164,7 @@ class WrapBasicTest : TestBase() {
             
             foo("s<caret>tr")
             """,
-            "Wrap with Any()"
+            "BetterPy: Wrap with Any()"
         )
     }
 
@@ -184,7 +184,7 @@ class WrapBasicTest : TestBase() {
             val = Path()
             open(v<caret>al)
             """,
-            "Wrap with"
+            "BetterPy: Wrap with"
         )
     }
 
@@ -209,7 +209,7 @@ class WrapBasicTest : TestBase() {
             def run():
                 raise MyError("123")
             """,
-            "Wrap with str()"
+            "BetterPy: Wrap with str()"
         )
     }
 }

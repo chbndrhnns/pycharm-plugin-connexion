@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.localvariable
 
+import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.PriorityAction
 import com.intellij.icons.AllIcons
@@ -20,7 +21,7 @@ class CreateLocalVariableIntention : PyBaseIntentionAction(), PriorityAction, Ic
     }
 
     override fun getText(): String {
-        return "Create local variable"
+        return PluginConstants.ACTION_PREFIX + "Create local variable"
     }
 
     override fun getPriority(): PriorityAction.Priority {

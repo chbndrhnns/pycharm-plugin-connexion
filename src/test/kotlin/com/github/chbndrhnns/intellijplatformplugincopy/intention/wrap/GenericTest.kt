@@ -14,7 +14,7 @@ class GenericTest : TestBase() {
                 val: ProductId
                 val = 12<caret>34
             """,
-            "Wrap with ProductId()"
+            "BetterPy: Wrap with ProductId()"
         )
     }
 
@@ -25,7 +25,7 @@ class GenericTest : TestBase() {
             from pathlib import Path
             a: str = Path(<caret>"val")
             """,
-            "Wrap with str()"
+            "BetterPy: Wrap with str()"
         )
     }
 
@@ -36,7 +36,7 @@ class GenericTest : TestBase() {
             def do(val: float) -> str:
                 return <caret>val
             """,
-            "Wrap with str()"
+            "BetterPy: Wrap with str()"
         )
     }
 
@@ -69,7 +69,7 @@ class GenericTest : TestBase() {
             
             result = process_data(CustomWrapper("some_string"))
             """,
-            "Wrap with CustomWrapper()"
+            "BetterPy: Wrap with CustomWrapper()"
         )
     }
 
@@ -97,7 +97,7 @@ class GenericTest : TestBase() {
         myFixture.configureByFile("src/main.py")
         myFixture.doHighlighting()
 
-        val intention = myFixture.findSingleIntention("Wrap with CustomWrapper()")
+        val intention = myFixture.findSingleIntention("BetterPy: Wrap with CustomWrapper()")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(
@@ -134,7 +134,7 @@ class GenericTest : TestBase() {
 
             result = process_data(CustomWrapper("some_string"))
             """,
-            "Wrap with CustomWrapper()"
+            "BetterPy: Wrap with CustomWrapper()"
         )
     }
 
@@ -158,7 +158,7 @@ class GenericTest : TestBase() {
                 
                 f(str(Path("val")))
                 """,
-                "Wrap with expected union type…"
+                "BetterPy: Wrap with expected union type…"
             )
             val labels = fake.lastLabels
             assertTrue("Expected 'str' in chooser, got: ${'$'}labels", labels.any { it.startsWith("str") })
@@ -175,7 +175,7 @@ class GenericTest : TestBase() {
             from pathlib import Path
             a: Annotated[str, "meta"] = Path(<caret>"val")
             """,
-            "Wrap with str()"
+            "BetterPy: Wrap with str()"
         )
     }
 
@@ -200,7 +200,7 @@ class GenericTest : TestBase() {
             
             f(str(Path("val")))
             """,
-            "Wrap with str()"
+            "BetterPy: Wrap with str()"
         )
     }
 
@@ -221,7 +221,7 @@ class GenericTest : TestBase() {
         )
 
         myFixture.doHighlighting()
-        val intention = myFixture.findSingleIntention("Wrap with CustomWrapper()")
+        val intention = myFixture.findSingleIntention("BetterPy: Wrap with CustomWrapper()")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(
@@ -261,7 +261,7 @@ class GenericTest : TestBase() {
             
             f(CustomWrapper(123))
             """,
-            "Wrap with CustomWrapper()"
+            "BetterPy: Wrap with CustomWrapper()"
         )
     }
 
@@ -278,7 +278,7 @@ class GenericTest : TestBase() {
             def test_():
                 do(One(<caret>"abc"))
             """,
-            "Wrap with One()"
+            "BetterPy: Wrap with One()"
         )
     }
 
@@ -306,7 +306,7 @@ class GenericTest : TestBase() {
 
                 do(One("abc"))
                 """,
-                "Wrap with expected union type…"
+                "BetterPy: Wrap with expected union type…"
             )
             // Verify chooser labels include fully qualified names for NewType aliases and that first was picked
             assertEquals(listOf("One (a.One)", "Two (a.Two)"), fake.lastLabels)
@@ -330,7 +330,7 @@ class GenericTest : TestBase() {
             )
 
             myFixture.doHighlighting()
-            val intention = myFixture.findSingleIntention("Wrap with expected union type…")
+            val intention = myFixture.findSingleIntention("BetterPy: Wrap with expected union type…")
             myFixture.launchAction(intention)
 
             // Be tolerant to formatting/import reflows; verify the essential transformation occurred

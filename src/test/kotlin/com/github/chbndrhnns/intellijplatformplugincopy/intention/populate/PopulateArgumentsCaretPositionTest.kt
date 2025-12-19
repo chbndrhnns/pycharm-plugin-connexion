@@ -27,7 +27,7 @@ class PopulateArgumentsCaretPositionTest : TestBase() {
 
                 A(x=...)
                 """,
-                "Populate arguments..."
+                "BetterPy: Populate arguments..."
             )
         }
     }
@@ -43,7 +43,7 @@ class PopulateArgumentsCaretPositionTest : TestBase() {
 
             A<caret>()
             """,
-            "Populate arguments..."
+            "BetterPy: Populate arguments..."
         )
     }
 
@@ -58,7 +58,7 @@ class PopulateArgumentsCaretPositionTest : TestBase() {
 
             A<caret>()
             """,
-            "Populate arguments..."
+            "BetterPy: Populate arguments..."
         )
     }
 
@@ -73,7 +73,7 @@ class PopulateArgumentsCaretPositionTest : TestBase() {
 
             A()<caret>
             """,
-            "Populate arguments..."
+            "BetterPy: Populate arguments..."
         )
     }
 }

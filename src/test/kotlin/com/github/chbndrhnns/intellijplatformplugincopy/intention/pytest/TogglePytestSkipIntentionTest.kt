@@ -23,7 +23,7 @@ class TogglePytestSkipIntentionTest : TestBase() {
             def test_something():
                 pass
             """,
-            "Toggle pytest skip"
+            "BetterPy: Toggle pytest skip"
         )
     }
 
@@ -39,8 +39,8 @@ class TogglePytestSkipIntentionTest : TestBase() {
         )
         myFixture.doHighlighting()
 
-        val intention = myFixture.availableIntentions.single { it.text.startsWith("Toggle pytest skip") }
-        assertEquals("Toggle pytest skip (function)", intention.text)
+        val intention = myFixture.availableIntentions.single { it.text.startsWith("BetterPy: Toggle pytest skip") }
+        assertEquals("BetterPy: Toggle pytest skip (function)", intention.text)
     }
 
     fun testAvailableInsideTestMethodBody() {
@@ -61,7 +61,7 @@ class TogglePytestSkipIntentionTest : TestBase() {
                 def test_something(self):
                     pass
             """,
-            "Toggle pytest skip"
+            "BetterPy: Toggle pytest skip"
         )
     }
 
@@ -83,7 +83,7 @@ class TogglePytestSkipIntentionTest : TestBase() {
                 def test_something(self):
                     pass
             """,
-            "Toggle pytest skip"
+            "BetterPy: Toggle pytest skip"
         )
     }
 
@@ -100,8 +100,8 @@ class TogglePytestSkipIntentionTest : TestBase() {
         )
         myFixture.doHighlighting()
 
-        val intention = myFixture.availableIntentions.single { it.text.startsWith("Toggle pytest skip") }
-        assertEquals("Toggle pytest skip (class)", intention.text)
+        val intention = myFixture.availableIntentions.single { it.text.startsWith("BetterPy: Toggle pytest skip") }
+        assertEquals("BetterPy: Toggle pytest skip (class)", intention.text)
     }
 
     fun testClassLevelNotAvailableInsideClassBody() {
@@ -116,7 +116,7 @@ class TogglePytestSkipIntentionTest : TestBase() {
             def test_something(self):
                 pass
             """,
-            "Toggle pytest skip"
+            "BetterPy: Toggle pytest skip"
         )
     }
 
@@ -132,7 +132,7 @@ class TogglePytestSkipIntentionTest : TestBase() {
             def test_something():
                 pass
             """,
-            "Toggle pytest skip"
+            "BetterPy: Toggle pytest skip"
         )
     }
 
@@ -148,7 +148,7 @@ class TogglePytestSkipIntentionTest : TestBase() {
             def test_something():
                 pass
             """,
-            "Toggle pytest skip"
+            "BetterPy: Toggle pytest skip"
         )
     }
 
@@ -164,7 +164,7 @@ class TogglePytestSkipIntentionTest : TestBase() {
         """.trimIndent()
         )
 
-        val intention = myFixture.findSingleIntention("Toggle pytest skip")
+        val intention = myFixture.findSingleIntention("BetterPy: Toggle pytest skip")
         myFixture.launchAction(intention)
 
         val text = myFixture.file.text
@@ -187,8 +187,8 @@ class TogglePytestSkipIntentionTest : TestBase() {
         )
         myFixture.doHighlighting()
 
-        val intention = myFixture.availableIntentions.single { it.text.startsWith("Toggle pytest skip") }
-        assertEquals("Toggle pytest skip (module)", intention.text)
+        val intention = myFixture.availableIntentions.single { it.text.startsWith("BetterPy: Toggle pytest skip") }
+        assertEquals("BetterPy: Toggle pytest skip (module)", intention.text)
     }
 
     fun testSkipModuleUpdate() {
@@ -203,7 +203,7 @@ class TogglePytestSkipIntentionTest : TestBase() {
         """.trimIndent()
         )
 
-        val intention = myFixture.findSingleIntention("Toggle pytest skip")
+        val intention = myFixture.findSingleIntention("BetterPy: Toggle pytest skip")
         myFixture.launchAction(intention)
 
         val text = myFixture.file.text
@@ -225,7 +225,7 @@ class TogglePytestSkipIntentionTest : TestBase() {
         """.trimIndent()
         )
 
-        val intention = myFixture.findSingleIntention("Toggle pytest skip")
+        val intention = myFixture.findSingleIntention("BetterPy: Toggle pytest skip")
         myFixture.launchAction(intention)
 
         val text = myFixture.file.text
@@ -241,7 +241,7 @@ class TogglePytestSkipIntentionTest : TestBase() {
             def test_something():
                 <caret>pass
             """,
-            "Toggle pytest skip"
+            "BetterPy: Toggle pytest skip"
         )
     }
 }

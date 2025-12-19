@@ -16,7 +16,7 @@ class PyMakeMemberAbstractInAbstractClassIntention : TestBase() {
             """.trimIndent()
         )
 
-        val fix = myFixture.findSingleIntention("Make member abstract")
+        val fix = myFixture.findSingleIntention("BetterPy: Make member abstract")
         myFixture.launchAction(fix)
 
         myFixture.checkResult(
@@ -43,7 +43,7 @@ class PyMakeMemberAbstractInAbstractClassIntention : TestBase() {
             """.trimIndent()
         )
 
-        val fix = myFixture.findSingleIntention("Make member abstract")
+        val fix = myFixture.findSingleIntention("BetterPy: Make member abstract")
         myFixture.launchAction(fix)
 
         myFixture.checkResult(
@@ -71,7 +71,7 @@ class PyMakeMemberAbstractInAbstractClassIntention : TestBase() {
             """.trimIndent()
         )
 
-        val fix = myFixture.findSingleIntention("Make member abstract")
+        val fix = myFixture.findSingleIntention("BetterPy: Make member abstract")
         myFixture.launchAction(fix)
 
         myFixture.checkResult(
@@ -101,8 +101,8 @@ class PyMakeMemberAbstractInAbstractClassIntention : TestBase() {
         )
 
         val intentions = myFixture.availableIntentions.map { it.text }
-        if (intentions.contains("Make member abstract")) {
-            throw AssertionError("Unexpected intention 'Make member abstract' available. Available: $intentions")
+        if (intentions.contains("BetterPy: Make member abstract")) {
+            throw AssertionError("Unexpected intention 'BetterPy: Make member abstract' available. Available: $intentions")
         }
     }
 
@@ -118,7 +118,7 @@ class PyMakeMemberAbstractInAbstractClassIntention : TestBase() {
             """.trimIndent()
         )
 
-        val fix = myFixture.findSingleIntention("Make member abstract")
+        val fix = myFixture.findSingleIntention("BetterPy: Make member abstract")
         myFixture.launchAction(fix)
 
         myFixture.checkResult(

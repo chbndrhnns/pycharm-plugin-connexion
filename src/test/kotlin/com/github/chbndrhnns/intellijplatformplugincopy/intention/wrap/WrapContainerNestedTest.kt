@@ -27,8 +27,8 @@ class WrapContainerNestedTest : TestBase() {
 
         val intentions = myFixture.availableIntentions.map { it.text }
         assertTrue(
-            "Intention 'Wrap with Outer()' should NOT be offered on deeply nested element, but it was. Available: $intentions",
-            "Wrap with Outer()" !in intentions
+            "Intention 'BetterPy: Wrap with Outer()' should NOT be offered on deeply nested element, but it was. Available: $intentions",
+            "BetterPy: Wrap with Outer()" !in intentions
         )
     }
 }

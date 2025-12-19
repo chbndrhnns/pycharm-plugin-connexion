@@ -22,7 +22,7 @@ class PopulateArgumentsIntentionTest : TestBase() {
 
             a = A(<caret>)
             """,
-            "Populate arguments..."
+            "BetterPy: Populate arguments..."
         )
     }
 
@@ -35,7 +35,7 @@ class PopulateArgumentsIntentionTest : TestBase() {
 
             sleep(1<caret>)
             """,
-            "Populate arguments..."
+            "BetterPy: Populate arguments..."
         )
     }
 
@@ -51,7 +51,7 @@ class PopulateArgumentsIntentionTest : TestBase() {
 
             a = A(x=1<caret>)
             """,
-            "Populate arguments..."
+            "BetterPy: Populate arguments..."
         )
     }
 
@@ -74,7 +74,7 @@ class PopulateArgumentsIntentionTest : TestBase() {
             )
 
             myFixture.doHighlighting()
-            val intention = myFixture.findSingleIntention("Populate arguments...")
+            val intention = myFixture.findSingleIntention("BetterPy: Populate arguments...")
             myFixture.launchAction(intention)
 
             assertEquals("Populate arguments", fake.lastTitle)
@@ -110,7 +110,7 @@ class PopulateArgumentsIntentionTest : TestBase() {
             )
 
             myFixture.doHighlighting()
-            val intention = myFixture.findSingleIntention("Populate arguments...")
+            val intention = myFixture.findSingleIntention("BetterPy: Populate arguments...")
             myFixture.launchAction(intention)
 
             assertEquals("Populate arguments", fake.lastTitle)
@@ -147,7 +147,7 @@ class PopulateArgumentsIntentionTest : TestBase() {
             )
 
             myFixture.doHighlighting()
-            val intention = myFixture.findSingleIntention("Populate arguments...")
+            val intention = myFixture.findSingleIntention("BetterPy: Populate arguments...")
             myFixture.launchAction(intention)
 
             myFixture.checkResult(
@@ -187,7 +187,7 @@ class PopulateArgumentsIntentionTest : TestBase() {
             )
 
             myFixture.doHighlighting()
-            val intention = myFixture.findSingleIntention("Populate arguments...")
+            val intention = myFixture.findSingleIntention("BetterPy: Populate arguments...")
             myFixture.launchAction(intention)
 
             myFixture.checkResult(
@@ -226,7 +226,7 @@ class PopulateArgumentsIntentionTest : TestBase() {
             )
 
             myFixture.doHighlighting()
-            val intention = myFixture.findSingleIntention("Populate arguments...")
+            val intention = myFixture.findSingleIntention("BetterPy: Populate arguments...")
             myFixture.launchAction(intention)
 
             myFixture.checkResult(
@@ -255,7 +255,7 @@ class PopulateArgumentsIntentionTest : TestBase() {
             )
 
             myFixture.doHighlighting()
-            val intention = myFixture.findSingleIntention("Populate arguments...")
+            val intention = myFixture.findSingleIntention("BetterPy: Populate arguments...")
             myFixture.launchAction(intention)
 
             myFixture.checkResult(

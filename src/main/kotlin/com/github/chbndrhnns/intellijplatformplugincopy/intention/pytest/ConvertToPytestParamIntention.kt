@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest
 
+import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
@@ -16,7 +17,7 @@ import com.jetbrains.python.psi.*
  */
 class ConvertToPytestParamIntention : IntentionAction, HighPriorityAction {
 
-    override fun getText(): String = "Convert argument to pytest.param()"
+    override fun getText(): String = PluginConstants.ACTION_PREFIX + "Convert argument to pytest.param()"
     override fun getFamilyName(): String = "Convert argument to pytest.param()"
     override fun startInWriteAction(): Boolean = true
 

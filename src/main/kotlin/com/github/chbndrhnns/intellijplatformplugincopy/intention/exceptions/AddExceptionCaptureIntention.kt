@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.exceptions
 
+import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
 import com.intellij.openapi.editor.Editor
@@ -31,7 +32,7 @@ class AddExceptionCaptureIntention : PsiElementBaseIntentionAction() {
         // `except Exception:` is required for `as`.
         if (exceptPart.exceptClass == null) return false
 
-        text = "Add 'as $fromName' to except clause"
+        text = PluginConstants.ACTION_PREFIX + "Add 'as $fromName' to except clause"
         return true
     }
 

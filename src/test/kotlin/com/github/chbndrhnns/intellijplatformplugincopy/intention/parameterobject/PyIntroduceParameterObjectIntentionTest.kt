@@ -37,7 +37,7 @@ class PyIntroduceParameterObjectIntentionTest : TestBase() {
                 def main():
                     create_user(CreateUserParams(first_name="John", last_name="Doe", email="john@example.com", age=30))
                 """.trimIndent(),
-                "Introduce parameter object"
+                "BetterPy: Introduce parameter object"
             )
         }
     }
@@ -65,7 +65,7 @@ class PyIntroduceParameterObjectIntentionTest : TestBase() {
                 class Class:
                     def do(self, params: DoParams):
                         return {}""".trimIndent(),
-                "Introduce parameter object"
+                "BetterPy: Introduce parameter object"
             )
         }
     }
@@ -100,7 +100,7 @@ class PyIntroduceParameterObjectIntentionTest : TestBase() {
                 def main():
                     create_user(CreateUserParams(first_name="John", last_name="Doe"))
                 """.trimIndent(),
-                "Introduce parameter object"
+                "BetterPy: Introduce parameter object"
             )
         }
     }
@@ -133,7 +133,7 @@ class PyIntroduceParameterObjectIntentionTest : TestBase() {
 
                 do(params=DoParams(arg1=1, arg2=2))
                 """.trimIndent(),
-                "Introduce parameter object"
+                "BetterPy: Introduce parameter object"
             )
         }
     }
@@ -160,7 +160,7 @@ class PyIntroduceParameterObjectIntentionTest : TestBase() {
                 def _1(params: _1Params):
                     print(params.abc, params.defg)
                 """.trimIndent(),
-                "Introduce parameter object"
+                "BetterPy: Introduce parameter object"
             )
         }
     }
@@ -174,7 +174,7 @@ class PyIntroduceParameterObjectIntentionTest : TestBase() {
             """.trimIndent()
         )
 
-        assertEmpty(myFixture.filterAvailableIntentions("Introduce parameter object"))
+        assertEmpty(myFixture.filterAvailableIntentions("BetterPy: Introduce parameter object"))
     }
 
     fun testUnavailableForPytestTestFunction() {
@@ -186,7 +186,7 @@ class PyIntroduceParameterObjectIntentionTest : TestBase() {
             """.trimIndent()
         )
 
-        assertEmpty(myFixture.filterAvailableIntentions("Introduce parameter object"))
+        assertEmpty(myFixture.filterAvailableIntentions("BetterPy: Introduce parameter object"))
     }
 
     fun testUnavailableForPytestFixture() {
@@ -202,7 +202,7 @@ class PyIntroduceParameterObjectIntentionTest : TestBase() {
             """.trimIndent()
         )
 
-        assertEmpty(myFixture.filterAvailableIntentions("Introduce parameter object"))
+        assertEmpty(myFixture.filterAvailableIntentions("BetterPy: Introduce parameter object"))
     }
 
     fun testSingleParameter() {
@@ -226,7 +226,7 @@ class PyIntroduceParameterObjectIntentionTest : TestBase() {
                 def process_data(params: ProcessDataParams):
                     print(params.data)
                 """.trimIndent(),
-                "Introduce parameter object"
+                "BetterPy: Introduce parameter object"
             )
         }
     }

@@ -15,7 +15,7 @@ class WrapSelfTest : TestBase() {
                 def other(self):
                     self.do("ab<caret>c")
             """,
-            "Wrap with"
+            "BetterPy: Wrap with"
         )
     }
 }

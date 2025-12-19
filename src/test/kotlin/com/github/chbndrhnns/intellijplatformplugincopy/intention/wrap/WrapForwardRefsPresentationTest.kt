@@ -40,7 +40,7 @@ class WrapForwardRefsPresentationTest : TestBase() {
             )
 
             myFixture.doHighlighting()
-            val intention = myFixture.findSingleIntention("Wrap with expected union type…")
+            val intention = myFixture.findSingleIntention("BetterPy: Wrap with expected union type…")
             myFixture.launchAction(intention)
 
             assertEquals(listOf("User (pkg.b.User)", "Token (pkg.b.Token)"), fake.lastLabels)
@@ -70,7 +70,7 @@ class WrapForwardRefsPresentationTest : TestBase() {
             )
 
             myFixture.doHighlighting()
-            val intention = myFixture.findSingleIntention("Wrap with expected union type…")
+            val intention = myFixture.findSingleIntention("BetterPy: Wrap with expected union type…")
             myFixture.launchAction(intention)
 
             // Expect FQNs for both candidates even when one comes from a quoted forward ref
@@ -101,7 +101,7 @@ class WrapForwardRefsPresentationTest : TestBase() {
             )
 
             myFixture.doHighlighting()
-            val intention = myFixture.findSingleIntention("Wrap with expected union type…")
+            val intention = myFixture.findSingleIntention("BetterPy: Wrap with expected union type…")
             myFixture.launchAction(intention)
 
             // Ensure chooser labels include fully qualified names for both quoted members
@@ -127,7 +127,7 @@ class WrapForwardRefsPresentationTest : TestBase() {
             )
 
             myFixture.doHighlighting()
-            val intention = myFixture.findSingleIntention("Wrap with expected union type…")
+            val intention = myFixture.findSingleIntention("BetterPy: Wrap with expected union type…")
             myFixture.launchAction(intention)
 
             // Ensure chooser labels use fully qualified names for NewType-based forward refs

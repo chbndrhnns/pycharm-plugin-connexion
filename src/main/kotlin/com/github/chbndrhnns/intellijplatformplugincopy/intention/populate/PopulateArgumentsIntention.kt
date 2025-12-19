@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.populate
 
+import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.JbPopupHost
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.PopupHost
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
@@ -39,7 +40,7 @@ class PopulateArgumentsIntention : IntentionAction, HighPriorityAction, DumbAwar
 
     private val service = PopulateArgumentsService()
 
-    override fun getText(): String = "Populate arguments..."
+    override fun getText(): String = PluginConstants.ACTION_PREFIX + "Populate arguments..."
 
     override fun getFamilyName(): String = "Populate arguments"
 

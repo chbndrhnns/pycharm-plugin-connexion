@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.optional
 
+import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.PriorityAction
@@ -11,7 +12,7 @@ import com.jetbrains.python.psi.*
 
 class MakeParameterOptionalIntention : IntentionAction, PriorityAction {
 
-    override fun getText(): String = "Make optional"
+    override fun getText(): String = PluginConstants.ACTION_PREFIX + "Make optional"
 
     override fun getFamilyName(): String = "Make optional"
 

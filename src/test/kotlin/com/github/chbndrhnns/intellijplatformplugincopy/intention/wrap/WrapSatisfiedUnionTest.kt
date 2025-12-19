@@ -16,7 +16,7 @@ class WrapSatisfiedUnionTest : TestBase() {
             f(<caret>"abc")
             """.trimIndent()
         )
-        val intention = myFixture.availableIntentions.find { it.text.startsWith("Wrap with") }
+        val intention = myFixture.availableIntentions.find { it.text.startsWith("BetterPy: Wrap with") }
         assertNull(
             "Should not offer wrap if argument already satisfies one union option. Found: ${intention?.text}",
             intention
@@ -35,7 +35,7 @@ class WrapSatisfiedUnionTest : TestBase() {
             f(<caret>["abc"])
             """.trimIndent()
         )
-        val intention = myFixture.availableIntentions.find { it.text.startsWith("Wrap with") }
+        val intention = myFixture.availableIntentions.find { it.text.startsWith("BetterPy: Wrap with") }
         assertNull(
             "Should not offer wrap if argument already satisfies one union option. Found: ${intention?.text}",
             intention
@@ -54,7 +54,7 @@ class WrapSatisfiedUnionTest : TestBase() {
             f(<caret>1)
             """.trimIndent()
         )
-        val intention = myFixture.availableIntentions.find { it.text.startsWith("Wrap with") }
+        val intention = myFixture.availableIntentions.find { it.text.startsWith("BetterPy: Wrap with") }
         assertNull(
             "Should not offer wrap if argument already satisfies one union option. Found: ${intention?.text}",
             intention
@@ -73,7 +73,7 @@ class WrapSatisfiedUnionTest : TestBase() {
             f(<caret>"val")
             """.trimIndent()
         )
-        val intention = myFixture.availableIntentions.find { it.text.startsWith("Wrap with") }
+        val intention = myFixture.availableIntentions.find { it.text.startsWith("BetterPy: Wrap with") }
         assertNotNull("Known working case should have intention", intention)
     }
 
@@ -92,7 +92,7 @@ class WrapSatisfiedUnionTest : TestBase() {
             f(<caret>[MyClass()])
             """.trimIndent()
         )
-        val intention = myFixture.availableIntentions.find { it.text.startsWith("Wrap with") }
+        val intention = myFixture.availableIntentions.find { it.text.startsWith("BetterPy: Wrap with") }
         assertNull(
             "Should not offer wrap if argument satisfies lower priority union option. Found: ${intention?.text}",
             intention

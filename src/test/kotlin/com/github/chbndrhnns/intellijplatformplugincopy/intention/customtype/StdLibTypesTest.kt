@@ -14,7 +14,7 @@ class StdLibTypesTest : TestBase() {
             def f(d: datetime.date<caret>time):
                 pass
             """,
-            "Introduce custom type from datetime"
+            "BetterPy: Introduce custom type from datetime"
         )
     }
 
@@ -27,7 +27,7 @@ class StdLibTypesTest : TestBase() {
             def f(d: datetime.da<caret>te):
                 pass
             """,
-            "Introduce custom type from date"
+            "BetterPy: Introduce custom type from date"
         )
     }
 
@@ -40,7 +40,7 @@ class StdLibTypesTest : TestBase() {
             def f(id: uuid.U<caret>UID):
                 pass
             """,
-            "Introduce custom type from UUID"
+            "BetterPy: Introduce custom type from UUID"
         )
     }
 }

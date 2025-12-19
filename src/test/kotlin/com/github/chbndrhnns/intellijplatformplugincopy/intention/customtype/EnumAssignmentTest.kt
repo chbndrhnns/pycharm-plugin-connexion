@@ -15,7 +15,7 @@ class EnumAssignmentTest : TestBase() {
                 RED = "r<caret>ed"
                 GREEN = "green"
             """,
-            "Introduce custom type from str"
+            "BetterPy: Introduce custom type from str"
         )
     }
 }

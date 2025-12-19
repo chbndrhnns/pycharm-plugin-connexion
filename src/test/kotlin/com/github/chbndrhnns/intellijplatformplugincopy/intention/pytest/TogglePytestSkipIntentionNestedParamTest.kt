@@ -28,7 +28,7 @@ class TogglePytestSkipIntentionNestedParamTest : TestBase() {
             def test_something(a, b):
                 pass
             """,
-            "Toggle pytest skip"
+            "BetterPy: Toggle pytest skip"
         )
     }
 
@@ -55,7 +55,7 @@ class TogglePytestSkipIntentionNestedParamTest : TestBase() {
             def test_something(a, b):
                 pass
             """,
-            "Toggle pytest skip"
+            "BetterPy: Toggle pytest skip"
         )
     }
 
@@ -82,7 +82,7 @@ class TogglePytestSkipIntentionNestedParamTest : TestBase() {
             def test_something(a, b):
                 pass
             """,
-            "Toggle pytest skip"
+            "BetterPy: Toggle pytest skip"
         )
     }
 }

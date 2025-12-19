@@ -34,7 +34,7 @@ class PyIntroduceParameterObjectNameCollisionTest : TestBase() {
                 def create_user(params: CreateUserParams1):
                     print(params.first_name, params.last_name)
                 """.trimIndent(),
-                "Introduce parameter object"
+                "BetterPy: Introduce parameter object"
             )
         }
     }
@@ -65,7 +65,7 @@ class PyIntroduceParameterObjectNameCollisionTest : TestBase() {
                 def create_user(params: CreateUserParams1):
                     print(params.first_name, params.last_name)
                 """.trimIndent(),
-                "Introduce parameter object"
+                "BetterPy: Introduce parameter object"
             )
         }
     }

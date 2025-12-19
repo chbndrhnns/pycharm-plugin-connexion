@@ -6,31 +6,31 @@ class PyTryExceptToDictGetIntentionTest : TestBase() {
     override fun getTestDataPath(): String = "src/test/testData/intention/dictAccess/tryExcept"
 
     fun testTryExceptAssignment() {
-        doTest("Replace try-except with dict.get")
+        doTest("BetterPy: Replace try-except with dict.get")
     }
 
     fun testTryExceptPass() {
-        doTest("Replace try-except with dict.get")
+        doTest("BetterPy: Replace try-except with dict.get")
     }
 
     fun testTryExceptReturn() {
-        doTest("Replace try-except with dict.get")
+        doTest("BetterPy: Replace try-except with dict.get")
     }
 
     fun testTryExceptNone() {
-        doTest("Replace try-except with dict.get")
+        doTest("BetterPy: Replace try-except with dict.get")
     }
 
     fun testTryExceptComplexDefault() {
-        doTestNotAvailable("Replace try-except with dict.get")
+        doTestNotAvailable("BetterPy: Replace try-except with dict.get")
     }
 
     fun testTryExceptNested() {
-        doTestNotAvailable("Replace try-except with dict.get")
+        doTestNotAvailable("BetterPy: Replace try-except with dict.get")
     }
 
     fun testTryExceptMixed() {
-        doTestNotAvailable("Replace try-except with dict.get")
+        doTestNotAvailable("BetterPy: Replace try-except with dict.get")
     }
 
     private fun doTest(intentionName: String) {

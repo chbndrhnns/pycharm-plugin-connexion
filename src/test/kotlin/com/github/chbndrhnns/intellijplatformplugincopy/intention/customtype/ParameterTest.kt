@@ -20,7 +20,7 @@ class ParameterTest : TestBase() {
             def do(val: int | Customstr | None = Customstr("2")): 
                 pass
             """,
-            "Introduce custom type from str",
+            "BetterPy: Introduce custom type from str",
             renameTo = "Customstr"
         )
     }
@@ -40,7 +40,7 @@ class ParameterTest : TestBase() {
             def do(val: Customint = Customint(1)): 
                 pass
             """,
-            "Introduce custom type from int",
+            "BetterPy: Introduce custom type from int",
             renameTo = "Customint"
         )
     }
@@ -68,7 +68,7 @@ class ParameterTest : TestBase() {
                 def other(self):
                     self.do(Customstr("abc"))
             """,
-            "Introduce custom type from str",
+            "BetterPy: Introduce custom type from str",
             renameTo = "Customstr"
         )
     }
@@ -94,7 +94,7 @@ class ParameterTest : TestBase() {
                 def other(self):
                     self.do(Customstr(str("abc")))
             """,
-            "Introduce custom type from str",
+            "BetterPy: Introduce custom type from str",
             renameTo = "Customstr"
         )
     }

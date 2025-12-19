@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention
 
+import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
@@ -14,7 +15,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.*
 
 class ToggleTypeAliasIntention : IntentionAction, HighPriorityAction, DumbAware {
-    override fun getText(): String = "Toggle type alias"
+    override fun getText(): String = PluginConstants.ACTION_PREFIX + "Toggle type alias"
     override fun getFamilyName(): String = "Toggle type alias"
 
     override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {

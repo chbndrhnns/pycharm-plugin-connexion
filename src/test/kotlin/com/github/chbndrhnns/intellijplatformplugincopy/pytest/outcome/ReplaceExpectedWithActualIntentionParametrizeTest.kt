@@ -42,7 +42,7 @@ class ReplaceExpectedWithActualIntentionParametrizeTest : TestBase() {
         setDiffData("test_param.test_str[case-1]", "defg", "abc")
 
         // Currently this should fail because the intention looks for exact match on "test_param.test_str"
-        val intention = myFixture.getAvailableIntention("Use actual test outcome")
+        val intention = myFixture.getAvailableIntention("BetterPy: Use actual test outcome")
         assertNotNull("Intention should be available for parametrized test failure", intention)
 
         myFixture.launchAction(intention!!)
@@ -76,7 +76,7 @@ class ReplaceExpectedWithActualIntentionParametrizeTest : TestBase() {
         // Simulate failure for the first parameter set
         setDiffData("test_param.test_str[case-1]", "defg", "abc")
 
-        val intention = myFixture.getAvailableIntention("Use actual test outcome")
+        val intention = myFixture.getAvailableIntention("BetterPy: Use actual test outcome")
         assertNotNull("Intention should be available for parametrized test failure", intention)
 
         myFixture.launchAction(intention!!)
@@ -152,7 +152,7 @@ class ReplaceExpectedWithActualIntentionParametrizeTest : TestBase() {
 
         setDiffData("test_param.test_str[case-2]", "yyy", "xxx")
 
-        val intention = myFixture.getAvailableIntention("Use actual test outcome")
+        val intention = myFixture.getAvailableIntention("BetterPy: Use actual test outcome")
         assertNotNull("Intention should be available for parametrized test failure", intention)
 
         myFixture.launchAction(intention!!)
@@ -190,7 +190,7 @@ class ReplaceExpectedWithActualIntentionParametrizeTest : TestBase() {
         // without an explicit literal `ids=[...]`.
         setDiffData("test_param.test_str[case-2]", "yyy", "xxx")
 
-        val intention = myFixture.getAvailableIntention("Use actual test outcome")
+        val intention = myFixture.getAvailableIntention("BetterPy: Use actual test outcome")
         assertNotNull("Intention should be available for parametrized test failure", intention)
 
         myFixture.launchAction(intention!!)
@@ -229,7 +229,7 @@ class ReplaceExpectedWithActualIntentionParametrizeTest : TestBase() {
 
         setDiffData("test_param.test_str[case-2]", "yyy", "xxx")
 
-        val intention = myFixture.getAvailableIntention("Use actual test outcome")
+        val intention = myFixture.getAvailableIntention("BetterPy: Use actual test outcome")
         assertNotNull("Intention should be available for parametrized test failure", intention)
 
         myFixture.launchAction(intention!!)

@@ -22,7 +22,7 @@ class AddExceptionCaptureIntentionTest : TestBase() {
                 except Exception as original_error:
                     raise Exception("Test failed") from original_error
             """,
-            "Add 'as original_error' to except clause"
+            "BetterPy: Add 'as original_error' to except clause"
         )
     }
 
@@ -43,7 +43,7 @@ class AddExceptionCaptureIntentionTest : TestBase() {
                 except (IndexError, KeyError) as err:
                     raise Exception from err
             """,
-            "Add 'as err' to except clause"
+            "BetterPy: Add 'as err' to except clause"
         )
     }
 }

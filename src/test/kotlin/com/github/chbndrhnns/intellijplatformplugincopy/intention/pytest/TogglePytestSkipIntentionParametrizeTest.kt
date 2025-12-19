@@ -36,7 +36,7 @@ class TogglePytestSkipIntentionParametrizeTest : TestBase() {
             )
             def foo(): pass
             """,
-            "Toggle pytest skip"
+            "BetterPy: Toggle pytest skip"
         )
     }
 
@@ -72,7 +72,7 @@ class TogglePytestSkipIntentionParametrizeTest : TestBase() {
             )
             def foo(): pass
             """,
-            "Toggle pytest skip"
+            "BetterPy: Toggle pytest skip"
         )
     }
 
@@ -101,7 +101,7 @@ class TogglePytestSkipIntentionParametrizeTest : TestBase() {
             )
             def foo(): pass
             """,
-            "Toggle pytest skip"
+            "BetterPy: Toggle pytest skip"
         )
     }
 }

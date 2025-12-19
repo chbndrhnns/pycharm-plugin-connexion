@@ -17,7 +17,7 @@ class ConvertPytestParamIntentionTest : TestBase() {
 
         myFixture.doHighlighting()
 
-        val intention = myFixture.findSingleIntention("Convert argument to pytest.param()")
+        val intention = myFixture.findSingleIntention("BetterPy: Convert argument to pytest.param()")
         val previewText = myFixture.getIntentionPreviewText(intention)
         assertEquals(
             "@pytest.mark.parametrize(\"x\", [pytest.param(1), pytest.param(2), pytest.param(3)])",
@@ -36,7 +36,7 @@ class ConvertPytestParamIntentionTest : TestBase() {
 
         myFixture.doHighlighting()
 
-        val intention = myFixture.findSingleIntention("Convert argument to pytest.param()")
+        val intention = myFixture.findSingleIntention("BetterPy: Convert argument to pytest.param()")
         val previewText = myFixture.getIntentionPreviewText(intention)
         assertEquals(
             "import pytest\n@pytest.mark.parametrize(\"x\", [pytest.param(1), pytest.param(2), pytest.param(3)])",
@@ -57,7 +57,7 @@ class ConvertPytestParamIntentionTest : TestBase() {
 
         myFixture.doHighlighting()
 
-        val intention = myFixture.findSingleIntention("Convert pytest.param() to plain values")
+        val intention = myFixture.findSingleIntention("BetterPy: Convert pytest.param() to plain values")
         val previewText = myFixture.getIntentionPreviewText(intention)
         assertEquals(
             "@pytest.mark.parametrize(\"x\", [1, 2])",
@@ -76,7 +76,7 @@ class ConvertPytestParamIntentionTest : TestBase() {
         """.trimIndent()
         )
 
-        val intention = myFixture.findSingleIntention("Convert argument to pytest.param()")
+        val intention = myFixture.findSingleIntention("BetterPy: Convert argument to pytest.param()")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(
@@ -101,7 +101,7 @@ class ConvertPytestParamIntentionTest : TestBase() {
         """.trimIndent()
         )
 
-        val intention = myFixture.findSingleIntention("Convert argument to pytest.param()")
+        val intention = myFixture.findSingleIntention("BetterPy: Convert argument to pytest.param()")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(
@@ -126,7 +126,7 @@ class ConvertPytestParamIntentionTest : TestBase() {
         """.trimIndent()
         )
 
-        val intention = myFixture.findSingleIntention("Convert argument to pytest.param()")
+        val intention = myFixture.findSingleIntention("BetterPy: Convert argument to pytest.param()")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(
@@ -151,7 +151,7 @@ class ConvertPytestParamIntentionTest : TestBase() {
         """.trimIndent()
         )
 
-        val intention = myFixture.findSingleIntention("Convert argument to pytest.param()")
+        val intention = myFixture.findSingleIntention("BetterPy: Convert argument to pytest.param()")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(
@@ -174,7 +174,7 @@ class ConvertPytestParamIntentionTest : TestBase() {
         """.trimIndent()
         )
 
-        val intention = myFixture.findSingleIntention("Convert argument to pytest.param()")
+        val intention = myFixture.findSingleIntention("BetterPy: Convert argument to pytest.param()")
         myFixture.launchAction(intention)
 
         val result = myFixture.file.text
@@ -195,7 +195,7 @@ class ConvertPytestParamIntentionTest : TestBase() {
         """.trimIndent()
         )
 
-        val intention = myFixture.findSingleIntention("Convert pytest.param() to plain values")
+        val intention = myFixture.findSingleIntention("BetterPy: Convert pytest.param() to plain values")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(
@@ -220,7 +220,7 @@ class ConvertPytestParamIntentionTest : TestBase() {
         """.trimIndent()
         )
 
-        val intention = myFixture.findSingleIntention("Convert pytest.param() to plain values")
+        val intention = myFixture.findSingleIntention("BetterPy: Convert pytest.param() to plain values")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(
@@ -245,7 +245,7 @@ class ConvertPytestParamIntentionTest : TestBase() {
         """.trimIndent()
         )
 
-        val intention = myFixture.findSingleIntention("Convert pytest.param() to plain values")
+        val intention = myFixture.findSingleIntention("BetterPy: Convert pytest.param() to plain values")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(
@@ -270,7 +270,7 @@ class ConvertPytestParamIntentionTest : TestBase() {
         """.trimIndent()
         )
 
-        val intention = myFixture.findSingleIntention("Convert pytest.param() to plain values")
+        val intention = myFixture.findSingleIntention("BetterPy: Convert pytest.param() to plain values")
         myFixture.launchAction(intention)
 
         // Only the second param without marks should be converted
@@ -296,7 +296,7 @@ class ConvertPytestParamIntentionTest : TestBase() {
         """.trimIndent()
         )
 
-        val intention = myFixture.findSingleIntention("Convert pytest.param() to plain values")
+        val intention = myFixture.findSingleIntention("BetterPy: Convert pytest.param() to plain values")
         myFixture.launchAction(intention)
 
         // Only the second param without id should be converted
@@ -322,7 +322,7 @@ class ConvertPytestParamIntentionTest : TestBase() {
         """.trimIndent()
         )
 
-        val intention = myFixture.findSingleIntention("Convert pytest.param() to plain values")
+        val intention = myFixture.findSingleIntention("BetterPy: Convert pytest.param() to plain values")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(
@@ -349,7 +349,7 @@ class ConvertPytestParamIntentionTest : TestBase() {
         """.trimIndent()
         )
 
-        val intentions = myFixture.filterAvailableIntentions("Convert argument to pytest.param()")
+        val intentions = myFixture.filterAvailableIntentions("BetterPy: Convert argument to pytest.param()")
         assertTrue("Should not be available when all values are already pytest.param()", intentions.isEmpty())
     }
 
@@ -364,7 +364,7 @@ class ConvertPytestParamIntentionTest : TestBase() {
         """.trimIndent()
         )
 
-        val intentions = myFixture.filterAvailableIntentions("Convert pytest.param() to plain values")
+        val intentions = myFixture.filterAvailableIntentions("BetterPy: Convert pytest.param() to plain values")
         assertTrue("Should not be available when all values are already plain", intentions.isEmpty())
     }
 
@@ -379,8 +379,8 @@ class ConvertPytestParamIntentionTest : TestBase() {
         """.trimIndent()
         )
 
-        val toPytestParam = myFixture.filterAvailableIntentions("Convert argument to pytest.param()")
-        val toPlain = myFixture.filterAvailableIntentions("Convert pytest.param() to plain values")
+        val toPytestParam = myFixture.filterAvailableIntentions("BetterPy: Convert argument to pytest.param()")
+        val toPlain = myFixture.filterAvailableIntentions("BetterPy: Convert pytest.param() to plain values")
 
         assertTrue("ConvertToPytestParam should not be available outside decorator", toPytestParam.isEmpty())
         assertTrue("ConvertToPlain should not be available outside decorator", toPlain.isEmpty())
@@ -397,7 +397,7 @@ class ConvertPytestParamIntentionTest : TestBase() {
         """.trimIndent()
         )
 
-        val intentions = myFixture.filterAvailableIntentions("Convert argument to pytest.param()")
+        val intentions = myFixture.filterAvailableIntentions("BetterPy: Convert argument to pytest.param()")
         assertTrue(
             "Should not be available when caret is inside the decorated function (only inside the parametrize decorator)",
             intentions.isEmpty()

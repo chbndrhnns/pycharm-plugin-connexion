@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome
 
+import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
@@ -9,7 +10,7 @@ import com.intellij.psi.PsiFile
 
 class ReplaceExpectedWithActualIntention : IntentionAction, HighPriorityAction {
 
-    override fun getText(): String = "Use actual test outcome"
+    override fun getText(): String = PluginConstants.ACTION_PREFIX + "Use actual test outcome"
     override fun getFamilyName(): String = "Use actual test outcome"
     override fun startInWriteAction(): Boolean = true
 

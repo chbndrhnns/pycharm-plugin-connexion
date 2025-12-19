@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.signature
 
+import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
@@ -18,7 +19,7 @@ import com.jetbrains.python.psi.PyNamedParameter
 
 class StripSignatureTypeAnnotationsIntention : IntentionAction, HighPriorityAction, DumbAware {
 
-    override fun getText(): String = "Strip type annotations from signature"
+    override fun getText(): String = PluginConstants.ACTION_PREFIX + "Strip type annotations from signature"
 
     override fun getFamilyName(): String = "Strip signature type annotations"
 

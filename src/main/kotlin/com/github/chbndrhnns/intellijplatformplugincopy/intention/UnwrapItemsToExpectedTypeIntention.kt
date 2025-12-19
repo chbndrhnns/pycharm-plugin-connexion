@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention
 
+import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.CtorMatch
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
@@ -19,7 +20,7 @@ import com.jetbrains.python.psi.types.TypeEvalContext
 import javax.swing.Icon
 
 class UnwrapItemsToExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbAware, Iconable {
-    private var lastText: String = "Unwrap items"
+    private var lastText: String = PluginConstants.ACTION_PREFIX + "Unwrap items"
 
     private companion object {
         val PLAN_KEY: Key<UnwrapItemsPlan> = Key.create("unwrap.items.plan")
@@ -55,7 +56,7 @@ class UnwrapItemsToExpectedTypeIntention : IntentionAction, HighPriorityAction, 
             return false
         }
         editor.putUserData(PLAN_KEY, plan)
-        lastText = "Unwrap items ${plan.wrapperName}()"
+        lastText = PluginConstants.ACTION_PREFIX + "Unwrap items ${plan.wrapperName}()"
         return true
     }
 

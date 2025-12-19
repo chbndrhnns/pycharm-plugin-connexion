@@ -44,7 +44,7 @@ class RecursiveArgumentsPydanticTest : TestBase() {
 
             u = User(userName=...)
             """,
-                "Populate arguments..."
+                "BetterPy: Populate arguments..."
             )
         }
     }
@@ -90,7 +90,7 @@ class RecursiveArgumentsPydanticTest : TestBase() {
             o = Outer(inner=Inner(value=...))
 
             """,
-                "Populate arguments..."
+                "BetterPy: Populate arguments..."
             )
         }
     }
@@ -135,7 +135,7 @@ class RecursiveArgumentsPydanticTest : TestBase() {
 
             u = ChildUser(userName=..., age=...)
             """,
-                "Populate arguments..."
+                "BetterPy: Populate arguments..."
             )
         }
     }

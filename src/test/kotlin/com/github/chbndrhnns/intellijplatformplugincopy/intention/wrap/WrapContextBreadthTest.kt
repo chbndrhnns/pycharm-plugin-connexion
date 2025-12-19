@@ -20,7 +20,7 @@ class WrapContextBreadthTest : TestBase() {
                 val_int = 1
                 yield str(val_int)
             """,
-            "Wrap with str()"
+            "BetterPy: Wrap with str()"
         )
     }
 
@@ -35,7 +35,7 @@ class WrapContextBreadthTest : TestBase() {
             def foo(x: str = "1"):
                 pass
             """,
-            "Wrap with str()"
+            "BetterPy: Wrap with str()"
         )
     }
 
@@ -52,7 +52,7 @@ class WrapContextBreadthTest : TestBase() {
             val_int = 1
             f: Callable[[], str] = lambda: str(val_int)
             """,
-            "Wrap with str()"
+            "BetterPy: Wrap with str()"
         )
     }
 
@@ -67,7 +67,7 @@ class WrapContextBreadthTest : TestBase() {
             from typing import List
             l: List[str] = [str(x) for x in range(3)]
             """,
-            "Wrap with str()"
+            "BetterPy: Wrap with str()"
         )
     }
 
@@ -88,7 +88,7 @@ class WrapContextBreadthTest : TestBase() {
                     case 1:
                         y: str = str(val_int)
             """,
-            "Wrap with str()"
+            "BetterPy: Wrap with str()"
         )
     }
 
@@ -105,7 +105,7 @@ class WrapContextBreadthTest : TestBase() {
             if (x := 1):
                f(str(x))
             """,
-            "Wrap with str()"
+            "BetterPy: Wrap with str()"
         )
     }
 
@@ -124,7 +124,7 @@ class WrapContextBreadthTest : TestBase() {
             a = A()
             y: str = str(a.x)
             """,
-            "Wrap with str()"
+            "BetterPy: Wrap with str()"
         )
     }
 
@@ -143,7 +143,7 @@ class WrapContextBreadthTest : TestBase() {
             b = B()
             y: str = str(b.foo())
             """,
-            "Wrap with str()"
+            "BetterPy: Wrap with str()"
         )
     }
 

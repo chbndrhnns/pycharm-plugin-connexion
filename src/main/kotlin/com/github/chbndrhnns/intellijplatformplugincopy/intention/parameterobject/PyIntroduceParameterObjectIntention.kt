@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject
 
+import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
 import com.intellij.openapi.editor.Editor
@@ -8,7 +9,7 @@ import com.intellij.psi.PsiElement
 
 class PyIntroduceParameterObjectIntention : PsiElementBaseIntentionAction() {
 
-    override fun getText(): String = "Introduce parameter object"
+    override fun getText(): String = PluginConstants.ACTION_PREFIX + "Introduce parameter object"
     override fun getFamilyName(): String = text
 
     override fun startInWriteAction(): Boolean = false

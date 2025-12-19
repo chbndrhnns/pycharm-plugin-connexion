@@ -18,7 +18,7 @@ class WrapNoneTest : TestBase() {
             
             func(<caret>None)
             """,
-            "Wrap with Wrapper()"
+            "BetterPy: Wrap with Wrapper()"
         )
     }
 
@@ -35,7 +35,7 @@ class WrapNoneTest : TestBase() {
             
             func([<caret>None])
             """,
-            "Wrap items with Wrapper()"
+            "BetterPy: Wrap items with Wrapper()"
         )
     }
 }

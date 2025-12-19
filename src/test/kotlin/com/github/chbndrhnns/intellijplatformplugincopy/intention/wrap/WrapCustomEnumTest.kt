@@ -26,7 +26,7 @@ class WrapCustomEnumTest : TestBase() {
             class MyEnum(MyType, Enum):
                 ONE = MyType(1)
             """,
-            "Wrap with MyType"
+            "BetterPy: Wrap with MyType"
         )
     }
 
@@ -45,7 +45,7 @@ class WrapCustomEnumTest : TestBase() {
             class MyEnum(float, Enum):
                 ONE = float(1)
             """,
-            "Wrap with float"
+            "BetterPy: Wrap with float"
         )
     }
 
@@ -65,7 +65,7 @@ class WrapCustomEnumTest : TestBase() {
             class Variant(StrEnum):
                 ONE = str(1)
             """,
-            "Wrap with str"
+            "BetterPy: Wrap with str"
         )
     }
 }

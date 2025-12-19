@@ -18,8 +18,8 @@ class UnwrapItemsTest : TestBase() {
                 CustomInt(3),
             ]
             """
-        myFixture.assertIntentionAvailable("a.py", text, "Unwrap CustomInt()")
-        myFixture.assertIntentionAvailable("a.py", text, "Unwrap items CustomInt()")
+        myFixture.assertIntentionAvailable("a.py", text, "BetterPy: Unwrap CustomInt()")
+        myFixture.assertIntentionAvailable("a.py", text, "BetterPy: Unwrap items CustomInt()")
     }
 
     fun testUnwrapItems_InvokesAllItemsUnwrapping() {
@@ -45,7 +45,7 @@ class UnwrapItemsTest : TestBase() {
                 3,
             ]
             """,
-            "Unwrap items CustomInt()"
+            "BetterPy: Unwrap items CustomInt()"
         )
     }
 }

@@ -44,7 +44,7 @@ class RecursiveArgumentsImportTest : TestBase() {
                 m = Main(f=Other(val=...))
 
             """,
-                "Populate arguments..."
+                "BetterPy: Populate arguments..."
             )
         }
     }
@@ -95,7 +95,7 @@ class RecursiveArgumentsImportTest : TestBase() {
                 m = Main(b=B(c=C(x=..., z=...)))
 
             """,
-                "Populate arguments..."
+                "BetterPy: Populate arguments..."
             )
         }
     }

@@ -40,7 +40,7 @@
 
         <localInspection language="JSON"
                          implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.connexion.ConnexionJsonInspection"
-                         displayName="Unresolved Connexion reference"
+                         displayName="DDD: Unresolved Connexion reference"
                          groupName="Connexion"
                          enabledByDefault="true"
                          level="ERROR"/>
@@ -248,7 +248,7 @@
         <localInspection
                 language="Python"
                 shortName="PyMissingInDunderAllInspection"
-                displayName="Symbol not exported in __all__"
+                displayName="DDD: Symbol not exported in __all__"
                 groupPath="Python"
                 groupName="Python"
                 enabledByDefault="true"
@@ -258,7 +258,7 @@
         <localInspection
                 language="Python"
                 shortName="PyPrivateModuleImportInspection"
-                displayName="Import from private module when symbol is exported from package"
+                displayName="DDD: Import from private module when symbol is exported from package"
                 groupPath="Python"
                 groupName="Python"
                 enabledByDefault="true"
@@ -268,7 +268,7 @@
         <localInspection
                 language="Python"
                 shortName="PyDataclassMissingInspection"
-                displayName="Subclass of a dataclass should also be decorated with @dataclass"
+                displayName="DDD: Subclass of a dataclass should also be decorated with @dataclass"
                 groupPath="Python"
                 groupName="Python"
                 enabledByDefault="true"
@@ -278,7 +278,7 @@
         <localInspection
                 language="Python"
                 shortName="PyAbstractMethodNotImplementedInChildInspection"
-                displayName="Abstract method not implemented in child classes"
+                displayName="DDD: Abstract method not implemented in child classes"
                 groupPath="Python"
                 groupName="Python"
                 enabledByDefault="true"
@@ -288,7 +288,7 @@
         <localInspection
                 language="Python"
                 shortName="PyConstantShouldBeFinalInspection"
-                displayName="Constant should be declared as Final"
+                displayName="DDD: Constant should be declared as Final"
                 groupPath="Python"
                 groupName="Python"
                 enabledByDefault="true"
@@ -298,7 +298,7 @@
         <localInspection
                 language="Python"
                 shortName="PyShadowingStdlibModuleInspection"
-                displayName="File name shadows a Python standard library module"
+                displayName="DDD: File name shadows a Python standard library module"
                 groupPath="Python"
                 groupName="Python"
                 enabledByDefault="true"
@@ -349,7 +349,7 @@
     <actions>
         <action id="com.github.chbndrhnns.intellijplatformplugincopy.actions.CopyPackageContentAction"
                 class="com.github.chbndrhnns.intellijplatformplugincopy.actions.CopyPackageContentAction"
-                text="Copy Package Content"
+                text="DDD: Copy Package Content"
                 description="Copies the content of all files in the selected directory to the clipboard">
 
             <!-- Add to the Project View context menu (right-click on a folder) -->
@@ -358,78 +358,78 @@
 
         <action id="Python.ShowTypeAnnotations"
                 class="com.intellij.openapi.actionSystem.EmptyAction"
-                text="Show Type Annotations"
+                text="DDD: Show Type Annotations"
                 description="Show references occurring within type hints"
                 icon="AllIcons.Nodes.Type">
         </action>
 
         <action id="com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.PyIntroduceParameterObjectAction"
                 class="com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.PyIntroduceParameterObjectAction"
-                text="Introduce Parameter Object..."
+                text="DDD: Introduce Parameter Object..."
                 description="Introduces a parameter object for the current function">
             <add-to-group group-id="RefactoringMenu" anchor="last"/>
         </action>
 
         <action id="com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectRefactoringAction"
                 class="com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectRefactoringAction"
-                text="Introduce Parameter Object..."
+                text="DDD: Introduce Parameter Object..."
                 description="Introduces a parameter object for the current function">
             <add-to-group group-id="RefactoringMenu" anchor="last"/>
         </action>
         <action id="com.github.chbndrhnns.intellijplatformplugincopy.actions.CopyBuildNumberAction"
                 class="com.github.chbndrhnns.intellijplatformplugincopy.actions.CopyBuildNumberAction"
-                text="Copy Build Number"
+                text="DDD: Copy Build Number"
                 description="Copies the current IDE build number to the clipboard">
             <add-to-group group-id="HelpMenu" anchor="last"/>
         </action>
         <action id="com.github.chbndrhnns.intellijplatformplugincopy.actions.RebuildClassMembersIndexAction"
                 class="com.github.chbndrhnns.intellijplatformplugincopy.actions.RebuildClassMembersIndexAction"
-                text="Rebuild Python Class Members Index"
+                text="DDD: Rebuild Python Class Members Index"
                 description="Triggers a rebuild of the Python class members index used for Protocol implementation search">
         </action>
         <action id="MyPlugin.CopyBlockWithDependenciesAction"
                 class="com.github.chbndrhnns.intellijplatformplugincopy.actions.CopyBlockWithDependenciesAction"
-                text="Copy with Dependencies">
+                text="DDD: Copy with Dependencies">
             <add-to-group group-id="Copy.Paste.Special" anchor="last"/>
         </action>
 
-        <group id="MyPlugin.CopySpecialGroup" text="Copy Special" popup="true">
+        <group id="MyPlugin.CopySpecialGroup" text="DDD: Copy Special" popup="true">
             <add-to-group group-id="TestTreePopupMenu" anchor="last"/>
             <action id="MyPlugin.CopyPytestNodeIds"
                     class="com.github.chbndrhnns.intellijplatformplugincopy.pytest.testtree.CopyPytestNodeIdAction"
-                    text="Copy Pytest Node IDs"/>
+                    text="DDD: Copy Pytest Node IDs"/>
             <action id="MyPlugin.CopyFQNs"
                     class="com.github.chbndrhnns.intellijplatformplugincopy.pytest.testtree.CopyFQNAction"
-                    text="Copy FQNs"/>
+                    text="DDD: Copy FQNs"/>
             <action id="MyPlugin.CopyStacktrace"
                     class="com.github.chbndrhnns.intellijplatformplugincopy.pytest.testtree.CopyStacktraceAction"
-                    text="Copy Stacktrace"/>
+                    text="DDD: Copy Stacktrace"/>
         </group>
 
         <action id="MyPlugin.TogglePytestSkipFromTestTree"
                 class="com.github.chbndrhnns.intellijplatformplugincopy.pytest.testtree.TogglePytestSkipFromTestTreeAction"
-                text="Toggle Pytest Skip"
+                text="DDD: Toggle Pytest Skip"
                 description="Toggles pytest skip marker for the selected test node (function/class/module)">
             <add-to-group group-id="TestTreePopupMenu" anchor="last"/>
         </action>
 
         <action id="MyPlugin.UseActualTestOutcomeFromTree"
                 class="com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome.UseActualTestOutcomeFromTreeAction"
-                text="Use Actual Test Outcome"
+                text="DDD: Use Actual Test Outcome"
                 description="Replaces expected value with actual value for the selected failed test">
             <add-to-group group-id="TestTreePopupMenu" anchor="last"/>
         </action>
 
         <action id="MyPlugin.JumpToPytestNodeInTestTree"
                 class="com.github.chbndrhnns.intellijplatformplugincopy.pytest.testtree.JumpToPytestNodeInTestTreeAction"
-                text="Jump to Test Tree Node"
+                text="DDD: Jump to Test Tree Node"
                 description="Selects the corresponding pytest node in the active test tree">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
 
         <action id="Connexion.GoToOpenApiOperation"
                 class="com.github.chbndrhnns.intellijplatformplugincopy.connexion.GoToOpenApiOperationAction"
-                text="Go to OpenAPI Operation"
+                text="DDD: Go to OpenAPI Operation"
                 description="Navigate to OpenAPI declaration">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>

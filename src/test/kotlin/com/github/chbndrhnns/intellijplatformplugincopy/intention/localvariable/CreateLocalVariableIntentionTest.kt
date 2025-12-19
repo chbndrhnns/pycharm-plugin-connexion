@@ -25,7 +25,7 @@ class CreateLocalVariableIntentionTest : TestBase() {
                 x = None
                 print(x)
             """,
-            "Create local variable"
+            "BetterPy: Create local variable"
         )
     }
 
@@ -43,7 +43,7 @@ class CreateLocalVariableIntentionTest : TestBase() {
                 if y > 10:
                     pass
             """,
-            "Create local variable"
+            "BetterPy: Create local variable"
         )
     }
 
@@ -56,7 +56,7 @@ class CreateLocalVariableIntentionTest : TestBase() {
         """.trimIndent()
         )
 
-        val action = myFixture.availableIntentions.find { it.text == "Create local variable" }
+        val action = myFixture.availableIntentions.find { it.text == "BetterPy: Create local variable" }
         assertNull(action)
     }
 
@@ -70,7 +70,7 @@ class CreateLocalVariableIntentionTest : TestBase() {
             """.trimIndent()
             )
 
-            val action = myFixture.availableIntentions.find { it.text == "Create local variable" }
+            val action = myFixture.availableIntentions.find { it.text == "BetterPy: Create local variable" }
             assertNull(action)
         } finally {
             PluginSettingsState.instance().state.enableCreateLocalVariableIntention = true
@@ -85,7 +85,7 @@ class CreateLocalVariableIntentionTest : TestBase() {
         """.trimIndent()
         )
 
-        var action = myFixture.availableIntentions.find { it.text == "Create local variable" }
+        var action = myFixture.availableIntentions.find { it.text == "BetterPy: Create local variable" }
         assertNotNull(action)
 
         while (action is com.intellij.codeInsight.intention.IntentionActionDelegate) {

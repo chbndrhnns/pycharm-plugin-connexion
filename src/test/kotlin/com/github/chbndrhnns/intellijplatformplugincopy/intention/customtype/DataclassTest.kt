@@ -39,7 +39,7 @@ class DataclassTest : TestBase() {
                 D(product_id=ProductId(123))
                 D(product_id=ProductId(456))
             """,
-            "Introduce custom type from int"
+            "BetterPy: Introduce custom type from int"
         )
     }
 
@@ -78,7 +78,7 @@ class DataclassTest : TestBase() {
                 D(ProductId(123), "x")
                 D(ProductId(456), other="y")
             """,
-            "Introduce custom type from int"
+            "BetterPy: Introduce custom type from int"
         )
     }
 
@@ -115,7 +115,7 @@ class DataclassTest : TestBase() {
                 D(product_id=ProductId(123))
                 D(product_id=ProductId(456))
             """,
-            "Introduce custom type from int"
+            "BetterPy: Introduce custom type from int"
         )
     }
 
@@ -154,7 +154,7 @@ class DataclassTest : TestBase() {
                     D(ProductId(123), "a")
                     D(ProductId(456), "b")
             """,
-            "Introduce custom type from int"
+            "BetterPy: Introduce custom type from int"
         )
     }
 
@@ -177,7 +177,7 @@ class DataclassTest : TestBase() {
             def do():
                 D(product_id=12<caret>3)
             """,
-            "Introduce custom type from int"
+            "BetterPy: Introduce custom type from int"
         )
     }
 
@@ -204,7 +204,7 @@ class DataclassTest : TestBase() {
             class D:
                 product_id: ProductId
             """,
-            "Introduce custom type from int"
+            "BetterPy: Introduce custom type from int"
         )
     }
 
@@ -231,7 +231,7 @@ class DataclassTest : TestBase() {
             class FileUpload:
                 files: Files
             """,
-            "Introduce custom type from list"
+            "BetterPy: Introduce custom type from list"
         )
     }
 
@@ -258,7 +258,7 @@ class DataclassTest : TestBase() {
             class C:
                 val: Customint | None = None
             """,
-            "Introduce custom type from int",
+            "BetterPy: Introduce custom type from int",
             renameTo = "Customint"
         )
     }

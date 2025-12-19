@@ -17,7 +17,7 @@ class MakeParameterMandatoryIntentionTest : TestBase() {
             def func(arg: str):
                 pass
             """,
-            "Make mandatory"
+            "BetterPy: Make mandatory"
         )
     }
 
@@ -34,7 +34,7 @@ class MakeParameterMandatoryIntentionTest : TestBase() {
             def func(arg: str):
                 pass
             """,
-            "Make mandatory"
+            "BetterPy: Make mandatory"
         )
     }
 
@@ -51,7 +51,7 @@ class MakeParameterMandatoryIntentionTest : TestBase() {
             def func(arg: str):
                 pass
             """,
-            "Make mandatory"
+            "BetterPy: Make mandatory"
         )
     }
 
@@ -68,7 +68,7 @@ class MakeParameterMandatoryIntentionTest : TestBase() {
             def func(arg: str):
                 pass
             """,
-            "Make mandatory"
+            "BetterPy: Make mandatory"
         )
     }
 
@@ -89,7 +89,7 @@ class MakeParameterMandatoryIntentionTest : TestBase() {
             class Data:
                 field: str
             """,
-            "Make mandatory"
+            "BetterPy: Make mandatory"
         )
     }
 
@@ -100,7 +100,7 @@ class MakeParameterMandatoryIntentionTest : TestBase() {
             def func(a<caret>rg: str):
                 pass
             """,
-            "Make mandatory"
+            "BetterPy: Make mandatory"
         )
     }
 
@@ -120,7 +120,7 @@ class MakeParameterMandatoryIntentionTest : TestBase() {
             
             func(arg=...)
             """,
-            "Make mandatory"
+            "BetterPy: Make mandatory"
         )
     }
 }

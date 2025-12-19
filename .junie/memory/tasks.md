@@ -1,13 +1,3 @@
-[2025-12-10 08:24] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "refactor, implement new action, update registration, add tests",
-    "MISSING STEPS": "run inspections, adjust action constructors, move presentation config to update, verify warning resolved",
-    "BOTTLENECK": "The plan solved a different feature instead of fixing the warning.",
-    "PROJECT NOTE": "For IntelliJ actions, avoid presentation changes in constructors; set text in plugin.xml or in update().",
-    "NEW INSTRUCTION": "WHEN inspection flags constructor presentation usage THEN move presentation setup to update or plugin.xml"
-}
-
 [2025-12-10 10:41] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -866,4 +856,14 @@
     "BOTTLENECK": "Syntax errors in newly created files prevented implementing and testing the intention.",
     "PROJECT NOTE": "Ensure package declarations match directory structure and import typing types in tests (e.g., from typing import List).",
     "NEW INSTRUCTION": "WHEN creating a new intention class THEN register in plugin.xml and add intentionDescriptions"
+}
+
+[2025-12-19 14:24] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "check git diff stat,open huge unified diff",
+    "MISSING STEPS": "scan project,pattern search,prioritize hotspots,summarize fixes",
+    "BOTTLENECK": "Expensive computations executed in isAvailable across many intentions.",
+    "PROJECT NOTE": "IntelliJ intentions run isAvailable frequently; prefer cheap PSI checks and codeInsight context.",
+    "NEW INSTRUCTION": "WHEN task is performance audit of plugin intentions THEN search project for expensive calls in isAvailable and aggregate hotspots"
 }

@@ -50,7 +50,7 @@ class PyDataclassMissingInspectionTest : TestBase() {
         myFixture.enableInspections(PyDataclassMissingInspection::class.java)
         myFixture.checkHighlighting(true, false, false)
 
-        val fix = myFixture.findSingleIntention("Add @dataclass decorator")
+        val fix = myFixture.findSingleIntention("BetterPy: Add @dataclass decorator")
         myFixture.launchAction(fix)
 
         myFixture.checkResult(
@@ -85,7 +85,7 @@ class PyDataclassMissingInspectionTest : TestBase() {
         myFixture.enableInspections(PyDataclassMissingInspection::class.java)
         myFixture.checkHighlighting(true, false, false)
 
-        val fix = myFixture.findSingleIntention("Add @dataclass decorator")
+        val fix = myFixture.findSingleIntention("BetterPy: Add @dataclass decorator")
         myFixture.launchAction(fix)
 
         myFixture.checkResult(

@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest
 
+import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
@@ -16,7 +17,7 @@ import com.jetbrains.python.psi.*
  */
 class ConvertToPlainParametrizeValuesIntention : IntentionAction, HighPriorityAction {
 
-    override fun getText(): String = "Convert pytest.param() to plain values"
+    override fun getText(): String = PluginConstants.ACTION_PREFIX + "Convert pytest.param() to plain values"
     override fun getFamilyName(): String = "Convert pytest.param() to plain values"
     override fun startInWriteAction(): Boolean = true
 

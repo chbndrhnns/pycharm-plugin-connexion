@@ -34,7 +34,7 @@ class PyIntroduceParameterObjectVariadicTest : TestBase() {
                 def main():
                     foo(FooParams(a=1, b=2), 3, 4)
                 """.trimIndent(),
-                "Introduce parameter object"
+                "BetterPy: Introduce parameter object"
             )
         }
     }
@@ -68,7 +68,7 @@ class PyIntroduceParameterObjectVariadicTest : TestBase() {
                 def main():
                     foo(FooParams(a=1, b=2), x=3)
                 """.trimIndent(),
-                "Introduce parameter object"
+                "BetterPy: Introduce parameter object"
             )
         }
     }
@@ -102,7 +102,7 @@ class PyIntroduceParameterObjectVariadicTest : TestBase() {
                 def main():
                     foo(FooParams(a=1, b=2))
                 """.trimIndent(),
-                "Introduce parameter object"
+                "BetterPy: Introduce parameter object"
             )
         }
     }
@@ -136,7 +136,7 @@ class PyIntroduceParameterObjectVariadicTest : TestBase() {
                  def main():
                      foo(FooParams(a=1, b=2))
                  """.trimIndent(),
-                "Introduce parameter object"
+                "BetterPy: Introduce parameter object"
             )
         }
     }

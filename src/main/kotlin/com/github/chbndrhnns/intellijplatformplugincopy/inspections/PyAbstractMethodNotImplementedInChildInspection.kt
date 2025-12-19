@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.inspections
 
+import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.abstractmethod.AbstractMethodUtils
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInspection.LocalInspectionToolSession
@@ -82,7 +83,8 @@ class PyAbstractMethodNotImplementedInChildInspection : PyInspection() {
         private val baseClassPointer: SmartPsiElementPointer<PyClass> = 
             SmartPointerManager.getInstance(baseClass.project).createSmartPsiElementPointer(baseClass)
 
-        override fun getFamilyName(): String = "Implement missing abstract methods in child classes"
+        override fun getFamilyName(): String =
+            PluginConstants.ACTION_PREFIX + "Implement missing abstract methods in child classes"
 
         override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
             val baseClass = baseClassPointer.element ?: return

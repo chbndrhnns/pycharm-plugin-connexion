@@ -16,7 +16,7 @@ class WrapLiteralTest : TestBase() {
 
             foo(<caret>'w')
             """,
-            "Wrap with Literal"
+            "BetterPy: Wrap with Literal"
         )
     }
 
@@ -32,7 +32,7 @@ class WrapLiteralTest : TestBase() {
 
             my_open('data.json', <caret>'x')
             """,
-            "Wrap with Literal"
+            "BetterPy: Wrap with Literal"
         )
     }
 }

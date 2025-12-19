@@ -67,7 +67,7 @@ class ParametrizeFixTest : TestBase() {
         // Mock failure
         setDiffData("test_list_args.test_foo[input-exp]", "exp", "input")
 
-        val intention = myFixture.findSingleIntention("Use actual test outcome")
+        val intention = myFixture.findSingleIntention("BetterPy: Use actual test outcome")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(
@@ -98,7 +98,7 @@ class ParametrizeFixTest : TestBase() {
 
         setDiffData("test_kwargs.test_kwargs[input-exp]", "exp", "input")
 
-        val intention = myFixture.findSingleIntention("Use actual test outcome")
+        val intention = myFixture.findSingleIntention("BetterPy: Use actual test outcome")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(
@@ -127,7 +127,7 @@ class ParametrizeFixTest : TestBase() {
 
         setDiffData("test_extra.test_extra[case1]", "exp", "actual")
 
-        val intention = myFixture.findSingleIntention("Use actual test outcome")
+        val intention = myFixture.findSingleIntention("BetterPy: Use actual test outcome")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(
@@ -154,7 +154,7 @@ class ParametrizeFixTest : TestBase() {
 
         setDiffData("test_int.test_int[case-1]", "1", "2")
 
-        val intention = myFixture.findSingleIntention("Use actual test outcome")
+        val intention = myFixture.findSingleIntention("BetterPy: Use actual test outcome")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(
@@ -181,7 +181,7 @@ class ParametrizeFixTest : TestBase() {
 
         setDiffData("test_dict.test_[case-1]", "{'abc': 2}", "{'abc': 1}")
 
-        val intention = myFixture.findSingleIntention("Use actual test outcome")
+        val intention = myFixture.findSingleIntention("BetterPy: Use actual test outcome")
         myFixture.launchAction(intention)
 
         myFixture.checkResult(

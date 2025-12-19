@@ -41,7 +41,7 @@ class PyAbstractMethodNotImplementedInChildInspectionTest : TestBase() {
         myFixture.enableInspections(PyAbstractMethodNotImplementedInChildInspection::class.java)
         myFixture.checkHighlighting(true, false, false)
 
-        val fix = myFixture.findSingleIntention("Implement missing abstract methods in child classes")
+        val fix = myFixture.findSingleIntention("BetterPy: Implement missing abstract methods in child classes")
         myFixture.launchAction(fix)
 
         myFixture.checkResult(

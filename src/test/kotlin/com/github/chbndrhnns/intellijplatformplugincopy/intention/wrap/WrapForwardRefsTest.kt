@@ -35,7 +35,7 @@ class WrapForwardRefsTest : TestBase() {
 
             f(A(value))
             """,
-            "Wrap with A()"
+            "BetterPy: Wrap with A()"
         )
     }
 
@@ -69,7 +69,7 @@ class WrapForwardRefsTest : TestBase() {
 
                 f(A(v))
                 """,
-                "Wrap with expected union type…"
+                "BetterPy: Wrap with expected union type…"
             )
             // We should offer both A and B; order is not strictly important, but A first is fine
             assertTrue(fake.lastLabels.any { it.startsWith("A") })
@@ -103,7 +103,7 @@ class WrapForwardRefsTest : TestBase() {
 
                 f([A(v)])
                 """,
-                "Wrap with A()"
+                "BetterPy: Wrap with A()"
             )
         }
     }
@@ -125,7 +125,7 @@ class WrapForwardRefsTest : TestBase() {
 
             f(Ghost(v))
             """,
-            "Wrap with Ghost()"
+            "BetterPy: Wrap with Ghost()"
         )
     }
 
@@ -136,7 +136,7 @@ class WrapForwardRefsTest : TestBase() {
             def do(val: "int | str | None" = <caret>2):
                 pass
             """,
-            "Wrap with"
+            "BetterPy: Wrap with"
         )
     }
 
@@ -146,7 +146,7 @@ class WrapForwardRefsTest : TestBase() {
             """
             val: "int | str | None" = <caret>2
             """,
-            "Wrap with"
+            "BetterPy: Wrap with"
         )
     }
 }

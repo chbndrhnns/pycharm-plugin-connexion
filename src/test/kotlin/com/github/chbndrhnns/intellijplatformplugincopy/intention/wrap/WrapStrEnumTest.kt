@@ -20,7 +20,7 @@ class WrapStrEnumTest : TestBase() {
             class Variant(StrEnum):
                 ONE = str(1)
             """,
-            "Wrap with str"
+            "BetterPy: Wrap with str"
         )
     }
 }

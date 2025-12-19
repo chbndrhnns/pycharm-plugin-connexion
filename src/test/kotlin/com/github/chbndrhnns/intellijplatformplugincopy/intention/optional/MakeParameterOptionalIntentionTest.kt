@@ -17,7 +17,7 @@ class MakeParameterOptionalIntentionTest : TestBase() {
             def func(arg: str | None = None):
                 pass
             """,
-            "Make optional"
+            "BetterPy: Make optional"
         )
     }
 
@@ -32,7 +32,7 @@ class MakeParameterOptionalIntentionTest : TestBase() {
             def func(arg: str | None = "default"):
                 pass
             """,
-            "Make optional"
+            "BetterPy: Make optional"
         )
     }
 
@@ -53,7 +53,7 @@ class MakeParameterOptionalIntentionTest : TestBase() {
             class Data:
                 field: str | None = None
             """,
-            "Make optional"
+            "BetterPy: Make optional"
         )
     }
 
@@ -74,7 +74,7 @@ class MakeParameterOptionalIntentionTest : TestBase() {
             class Data:
                 field: str | None = "default"
             """,
-            "Make optional"
+            "BetterPy: Make optional"
         )
     }
 
@@ -89,7 +89,7 @@ class MakeParameterOptionalIntentionTest : TestBase() {
             class Data:
                 field: str | None = None
             """,
-            "Make optional"
+            "BetterPy: Make optional"
         )
     }
 
@@ -100,7 +100,7 @@ class MakeParameterOptionalIntentionTest : TestBase() {
             def func(a<caret>rg: str | None = None):
                 pass
             """,
-            "Make optional"
+            "BetterPy: Make optional"
         )
     }
 
@@ -112,7 +112,7 @@ class MakeParameterOptionalIntentionTest : TestBase() {
             def func(a<caret>rg: Union[str, None] = None):
                 pass
             """,
-            "Make optional"
+            "BetterPy: Make optional"
         )
     }
 
@@ -124,7 +124,7 @@ class MakeParameterOptionalIntentionTest : TestBase() {
             def func(a<caret>rg: Optional[str] = None):
                 pass
             """,
-            "Make optional"
+            "BetterPy: Make optional"
         )
     }
 
@@ -135,7 +135,7 @@ class MakeParameterOptionalIntentionTest : TestBase() {
             def func(a<caret>rg):
                 pass
             """,
-            "Make optional"
+            "BetterPy: Make optional"
         )
     }
 
@@ -150,7 +150,7 @@ class MakeParameterOptionalIntentionTest : TestBase() {
             def func():
                 local_var: str | None = "value"
             """,
-            "Make optional"
+            "BetterPy: Make optional"
         )
     }
 
@@ -163,7 +163,7 @@ class MakeParameterOptionalIntentionTest : TestBase() {
             """
             global_var: int | None = 42
             """,
-            "Make optional"
+            "BetterPy: Make optional"
         )
     }
 
@@ -178,7 +178,7 @@ class MakeParameterOptionalIntentionTest : TestBase() {
             def func():
                 local_var: str | None = "value"
             """,
-            "Make optional"
+            "BetterPy: Make optional"
         )
     }
 }

@@ -19,7 +19,7 @@ class ForwardRefTest : TestBase() {
             
             val: "Customint | str | None" = Customint(2)
             """,
-            "Introduce custom type from int",
+            "BetterPy: Introduce custom type from int",
             renameTo = "Customint"
         )
     }
@@ -39,7 +39,7 @@ class ForwardRefTest : TestBase() {
             def do(val: "Customint | str | None" = Customint(2)):
                 pass
             """,
-            "Introduce custom type from int",
+            "BetterPy: Introduce custom type from int",
             renameTo = "Customint"
         )
     }
@@ -59,7 +59,7 @@ class ForwardRefTest : TestBase() {
             # This is valid python if types are defined
             val: str | "Customint" = Customint(2)
             """,
-            "Introduce custom type from int",
+            "BetterPy: Introduce custom type from int",
             renameTo = "Customint"
         )
     }

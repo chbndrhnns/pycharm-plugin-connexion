@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention
 
+import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedCtor
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.ExpectedTypeInfo
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions
@@ -25,7 +26,7 @@ import com.jetbrains.python.psi.types.TypeEvalContext
 import javax.swing.Icon
 
 class WrapItemsWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbAware, Iconable {
-    private var lastText: String = "Wrap items with expected type"
+    private var lastText: String = PluginConstants.ACTION_PREFIX + "Wrap items with expected type"
 
     private companion object {
         val PLAN_KEY: Key<WrapPlan> = Key.create("wrap.items.with.expected.plan")
@@ -66,9 +67,9 @@ class WrapItemsWithExpectedTypeIntention : IntentionAction, HighPriorityAction, 
 
         editor.putUserData(PLAN_KEY, plan)
         lastText = when (plan) {
-            is ElementwiseUnionChoice -> "Wrap items with expected union type…"
-            is Elementwise -> "Wrap items with ${plan.itemCtorName}()"
-            else -> "Wrap items with expected type"
+            is ElementwiseUnionChoice -> PluginConstants.ACTION_PREFIX + "Wrap items with expected union type…"
+            is Elementwise -> PluginConstants.ACTION_PREFIX + "Wrap items with ${plan.itemCtorName}()"
+            else -> PluginConstants.ACTION_PREFIX + "Wrap items with expected type"
         }
         return true
     }

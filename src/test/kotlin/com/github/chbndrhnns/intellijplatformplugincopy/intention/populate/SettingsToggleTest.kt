@@ -26,7 +26,7 @@ class SettingsToggleTest : TestBase() {
             configureTriggeringFile()
             myFixture.doHighlighting()
             val intentions = myFixture.availableIntentions
-            val hasIntention = intentions.any { it.text == "Populate arguments..." }
+            val hasIntention = intentions.any { it.text == "BetterPy: Populate arguments..." }
             assertFalse("Populate arguments intention should be hidden when disabled in settings", hasIntention)
         }
     }
@@ -36,7 +36,7 @@ class SettingsToggleTest : TestBase() {
             configureTriggeringFile()
             myFixture.doHighlighting()
             val intentions = myFixture.availableIntentions
-            val hasIntention = intentions.any { it.text == "Populate arguments..." }
+            val hasIntention = intentions.any { it.text == "BetterPy: Populate arguments..." }
             assertTrue("Populate arguments intention should be visible when enabled in settings", hasIntention)
         }
     }

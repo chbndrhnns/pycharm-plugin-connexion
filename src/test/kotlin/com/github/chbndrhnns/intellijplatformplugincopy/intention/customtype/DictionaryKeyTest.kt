@@ -20,7 +20,7 @@ class DictionaryKeyTest : TestBase() {
             d: dict[Customstr, int] = {}
             val = d[Customstr("abc")]
             """,
-            "Introduce custom type from str",
+            "BetterPy: Introduce custom type from str",
             renameTo = "Customstr"
         )
     }
