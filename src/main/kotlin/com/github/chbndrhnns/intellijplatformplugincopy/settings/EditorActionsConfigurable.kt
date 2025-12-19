@@ -80,6 +80,10 @@ class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
                 checkBox("‘Pytest identifiers’ Search Everywhere contributor")
                     .bindSelected(settings::enablePytestIdentifierSearchEverywhereContributor)
             }
+            row {
+                checkBox("‘Toggle type alias’ intention")
+                    .bindSelected(settings::enableToggleTypeAliasIntention)
+            }
         }
     }
 }

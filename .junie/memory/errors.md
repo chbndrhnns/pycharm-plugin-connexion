@@ -332,3 +332,123 @@
     "NEW INSTRUCTION": "WHEN renaming PyTargetExpression bound to NewType or TypeVar THEN update first-argument string literal accordingly"
 }
 
+[2025-12-18 23:07] - Updated by Junie - Error analysis
+{
+    "TYPE": "tool failure",
+    "TOOL": "get_file_structure",
+    "ERROR": "File structure could not be displayed",
+    "ROOT CAUSE": "get_file_structure was used on plugin.xml, which the tool cannot parse for structure.",
+    "PROJECT NOTE": "For plugin.xml and other non-Kotlin/unsupported files, use the raw file reader.",
+    "NEW INSTRUCTION": "WHEN get_file_structure reports parsing not supported THEN read the file via open to view contents"
+}
+
+[2025-12-18 23:10] - Updated by Junie - Error analysis
+{
+    "TYPE": "syntax",
+    "TOOL": "create",
+    "ERROR": "Kotlin package directive considered invalid",
+    "ROOT CAUSE": "The created Kotlin files start with a malformed or mismatched package declaration.",
+    "PROJECT NOTE": "Use package com.github.chbndrhnns.intellijplatformplugincopy... matching src/.../kotlin directory; ensure only dot-separated identifiers and correct nesting.",
+    "NEW INSTRUCTION": "WHEN creating Kotlin files THEN set a valid dot-separated package matching the folder path"
+}
+
+[2025-12-18 23:10] - Updated by Junie - Error analysis
+{
+    "TYPE": "syntax",
+    "TOOL": "create",
+    "ERROR": "Package segment uses reserved keyword",
+    "ROOT CAUSE": "The package ends with 'typealias', which is a Kotlin reserved keyword and invalid in package names.",
+    "PROJECT NOTE": "Use package names matching src path under com.github.chbndrhnns.intellijplatformplugincopy while avoiding Kotlin keywords as segments; e.g., use intention.typealiasing and align directory.",
+    "NEW INSTRUCTION": "WHEN package segment equals a Kotlin keyword THEN replace segment with a valid identifier"
+}
+
+[2025-12-18 23:17] - Updated by Junie - Error analysis
+{
+    "TYPE": "syntax",
+    "TOOL": "create",
+    "ERROR": "Invalid Kotlin package directive",
+    "ROOT CAUSE": "The package path includes the Kotlin keyword 'typealias', which is not a valid identifier segment.",
+    "PROJECT NOTE": "Use a valid dot-separated package matching src path and avoid keywords; e.g., com.github.chbndrhnns.intellijplatformplugincopy.intention.typealiases (and place file under .../intention/typealiases/).",
+    "NEW INSTRUCTION": "WHEN package segment equals a Kotlin keyword THEN rename segment to a valid identifier and align directory"
+}
+
+[2025-12-18 23:19] - Updated by Junie - Error analysis
+{
+    "TYPE": "syntax",
+    "TOOL": "create",
+    "ERROR": "Invalid Kotlin package: contains keyword 'typealias'",
+    "ROOT CAUSE": "The created Kotlin files used a package segment named 'typealias', which is a Kotlin keyword and not a valid identifier.",
+    "PROJECT NOTE": "Use a valid package matching src path, e.g., com.github.chbndrhnns.intellijplatformplugincopy.intention.typealiases, and place files under src/main/kotlin/.../intention/typealiases/ (same for tests under src/test).",
+    "NEW INSTRUCTION": "WHEN Kotlin package segment equals a keyword THEN rename segment to a valid identifier"
+}
+
+[2025-12-18 23:20] - Updated by Junie - Error analysis
+{
+    "TYPE": "syntax",
+    "TOOL": "create",
+    "ERROR": "Invalid Kotlin package uses reserved keyword",
+    "ROOT CAUSE": "The package segment 'typealias' is a Kotlin keyword and not a valid identifier.",
+    "PROJECT NOTE": "Use a valid package like com.github.chbndrhnns.intellijplatformplugincopy.intention.typealiases and place files under .../intention/typealiases/ (apply similarly for tests).",
+    "NEW INSTRUCTION": "WHEN package declaration contains segment 'typealias' THEN rename segment to 'typealiases' and align directories"
+}
+
+[2025-12-18 23:22] - Updated by Junie - Error analysis
+{
+    "TYPE": "syntax",
+    "TOOL": "create",
+    "ERROR": "Invalid Kotlin package directive",
+    "ROOT CAUSE": "The package path used the Kotlin keyword 'typealias' as a segment, making it invalid.",
+    "PROJECT NOTE": "Use a valid package matching src path and avoid keywords; e.g., com.github.chbndrhnns.intellijplatformplugincopy.intention.typealiases, and place files under .../intention/typealiases/ (same for tests).",
+    "NEW INSTRUCTION": "WHEN package path includes segment 'typealias' THEN replace it with 'typealiases' and align folder"
+}
+
+[2025-12-19 07:52] - Updated by Junie - Error analysis
+{
+    "TYPE": "runtime",
+    "TOOL": "ToggleTypeAliasIntention",
+    "ERROR": "Blocking package manager call executed on EDT",
+    "ROOT CAUSE": "inlineTypeAlias calls PythonPackageManager.forSdk via a blocking context from the EDT, which is forbidden.",
+    "PROJECT NOTE": "Move SDK/package resolution to a background thread or wrap it in com.intellij.openapi.progress.TasksKt.runWithModalProgressBlocking(project) within ToggleTypeAliasIntention.kt (around inlineTypeAlias). Also ensure inserted Python 'type' alias statements are placed after the import block.",
+    "NEW INSTRUCTION": "WHEN invoking PythonPackageManager.forSdk on EDT THEN wrap in runWithModalProgressBlocking(project)"
+}
+
+[2025-12-19 07:53] - Updated by Junie - Error analysis
+{
+    "TYPE": "threading",
+    "TOOL": "ToggleTypeAliasIntention.invoke",
+    "ERROR": "Blocking operation called on EDT",
+    "ROOT CAUSE": "Inlining performs ReferencesSearch that leads to PythonPackageManager.forSdk, which is forbidden on the EDT.",
+    "PROJECT NOTE": "Do searches/resolution (ReferencesSearch, PythonPackageManager.forSdk) in background via TasksKt.runWithModalProgressBlocking; only wrap PSI edits in WriteCommandAction after background computation.",
+    "NEW INSTRUCTION": "WHEN intention performs ReferencesSearch on EDT THEN wrap work in runWithModalProgressBlocking"
+}
+
+[2025-12-19 07:54] - Updated by Junie - Error analysis
+{
+    "TYPE": "runtime/threading",
+    "TOOL": "ToggleTypeAliasIntention.inlineTypeAlias",
+    "ERROR": "Blocking operation invoked on EDT; requires background thread",
+    "ROOT CAUSE": "inlineTypeAlias triggers PythonPackageManager.forSdk via runBlocking on the EDT, which is forbidden.",
+    "PROJECT NOTE": "In src/main/kotlin/.../intention/ToggleTypeAliasIntention.kt around inlineTypeAlias, move any SDK/package manager or indexing-dependent work off the EDT using TasksKt.runWithModalProgressBlocking or a background thread, and wrap PSI reads in ReadAction.",
+    "NEW INSTRUCTION": "WHEN invoking PythonPackageManager or long tasks during intention THEN wrap in runWithModalProgressBlocking on BGT"
+}
+
+[2025-12-19 07:55] - Updated by Junie - Error analysis
+{
+    "TYPE": "runtime",
+    "TOOL": "-",
+    "ERROR": "Blocking operation invoked on EDT",
+    "ROOT CAUSE": "The intention performs blocking SDK/package queries (via ReferencesSearch -> PythonPackageManager.forSdk) on the Event Dispatch Thread.",
+    "PROJECT NOTE": "In intention.invoke, do global searches/usages collection inside com.intellij.openapi.progress.TasksKt.runWithModalProgressBlocking or a background task, then apply PSI edits within a write action.",
+    "NEW INSTRUCTION": "WHEN intention performs ReferencesSearch or global PSI queries THEN wrap work in runWithModalProgressBlocking off the EDT"
+}
+
+[2025-12-19 13:59] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic error",
+    "TOOL": "ToggleTypeAliasIntention",
+    "ERROR": "Return annotation replaced with colon causing syntax error",
+    "ROOT CAUSE": "The implementation treats function return annotations like parameter annotations and rewrites the separator as ':' instead of '->'.",
+    "PROJECT NOTE": "In Python PSI, function return types use the '->' return annotation; update only the annotation expression while preserving the '->' token.",
+    "NEW INSTRUCTION": "WHEN editing a function return type annotation THEN replace only expression after '->'"
+}
+

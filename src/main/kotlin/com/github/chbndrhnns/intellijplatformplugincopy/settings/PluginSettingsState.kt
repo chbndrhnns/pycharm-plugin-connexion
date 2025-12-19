@@ -78,6 +78,7 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enablePyMockPatchReferenceContributor: Boolean = true,
         var enablePyFilterWarningsReferenceContributor: Boolean = true,
         var enablePytestIdentifierSearchEverywhereContributor: Boolean = true,
+        var enableToggleTypeAliasIntention: Boolean = true,
 
         // ---- Import & Structure View Settings ----
         var enableRestoreSourceRootPrefix: Boolean = true,

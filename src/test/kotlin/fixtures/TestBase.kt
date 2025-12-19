@@ -63,6 +63,7 @@ abstract class TestBase : MyPlatformTestCase() {
                 enableConnexionInspections = true,
                 enableConnexionCompletion = true,
                 enableNewTypeTypeVarRename = true,
+                enableToggleTypeAliasIntention = true,
             ),
         )
         PythonTestSetup.createAndRegisterSdk(

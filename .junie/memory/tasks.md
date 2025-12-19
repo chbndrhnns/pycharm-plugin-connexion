@@ -1,13 +1,3 @@
-[2025-12-10 07:59] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "create base class, refactor existing actions, change existing tests, plan view-traversal switch",
-    "MISSING STEPS": "read existing tests, add tests, implement stacktrace action, register action, run tests",
-    "BOTTLENECK": "Scope-expanding refactor diverted effort and broke existing test assumptions.",
-    "PROJECT NOTE": "Existing CopyActionsTest expects current behavior; avoid altering it when adding new action.",
-    "NEW INSTRUCTION": "WHEN task requests another copy action THEN add standalone action and tests without refactoring"
-}
-
 [2025-12-10 08:24] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -866,4 +856,14 @@
     "BOTTLENECK": "The reference contributor was not registered in plugin.xml, so behavior cannot activate.",
     "PROJECT NOTE": "Use PyMockPatchReferenceContributor as a template and add a checkbox in Intentions/Inspections configurables for the new toggle.",
     "NEW INSTRUCTION": "WHEN adding a PsiReferenceContributor THEN register it in plugin.xml for Python language"
+}
+
+[2025-12-18 23:23] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "implement conversion, update references, handle Python 3.12, register intention, add intentionDescriptions, run tests, fix build",
+    "BOTTLENECK": "Syntax errors in newly created files prevented implementing and testing the intention.",
+    "PROJECT NOTE": "Ensure package declarations match directory structure and import typing types in tests (e.g., from typing import List).",
+    "NEW INSTRUCTION": "WHEN creating a new intention class THEN register in plugin.xml and add intentionDescriptions"
 }
