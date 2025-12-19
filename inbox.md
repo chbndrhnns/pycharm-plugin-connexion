@@ -2,9 +2,9 @@
 
 ## Pending Issues
 
-- [ ] fix: Change visibility destroys instance attribute
+- [ ] fix: Make optional destroys instance attribute
 - [ ] fix: When a public symbol is not used, do not display the refactoring preview
-- [ ] fix: Toggle type alias destroys instance attribute
+- [ ] fix: Toggle type alias on symbol (not annotation) destroys instance attribute
 - [ ] fix: warning is displayed in green with a checkmark when a file was created that shadows a stdlib module. Show in orange and offer link to rename the file.
 - [ ] fix: Making one symbol public via import place quickfix makes all other symbols unimported
 - [ ] fix: Do not wrap with callable annotation
