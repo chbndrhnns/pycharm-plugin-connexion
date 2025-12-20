@@ -1,13 +1,3 @@
-[2025-12-10 16:33] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "register intention, run tests, align availability checks",
-    "BOTTLENECK": "Intention likely undiscoverable due to missing plugin.xml registration.",
-    "PROJECT NOTE": "Mirror MakeParameterOptionalIntention availability logic; ensure plugin.xml registers the new intention for tests to find it by text.",
-    "NEW INSTRUCTION": "WHEN tests for a new intention are added THEN register the intention in plugin.xml"
-}
-
 [2025-12-10 21:08] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -876,4 +866,14 @@
     "BOTTLENECK": "Assumed opentest4j provides assertThrows and that kotlin.test is available.",
     "PROJECT NOTE": "Project uses JUnit 4; add kotlin(\"test\") if using assertFailsWith.",
     "NEW INSTRUCTION": "WHEN proposing alternative test assertions THEN inspect build files for testing dependencies and versions"
+}
+
+[2025-12-20 20:21] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "update imports",
+    "MISSING STEPS": "run build",
+    "BOTTLENECK": "Premature import changes caused temporary semantic errors before method body update.",
+    "PROJECT NOTE": "Prefer PyResolveUtil.resolveQualifiedNameInScope for Python name resolution; used elsewhere in repo.",
+    "NEW INSTRUCTION": "WHEN replacing an implementation requiring new imports THEN update imports and body in one patch"
 }
