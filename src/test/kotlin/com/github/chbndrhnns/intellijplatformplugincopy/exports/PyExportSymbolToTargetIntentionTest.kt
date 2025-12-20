@@ -161,4 +161,50 @@ class PyExportSymbolToTargetIntentionTest : TestBase() {
         assertTrue(isAlreadyExported.invoke(intention, file, "foo") as Boolean)
         assertFalse(isAlreadyExported.invoke(intention, file, "bar") as Boolean)
     }
+    fun testNotAvailableOnClassMethod() {
+        val modFile = myFixture.addFileToProject(
+            "mod.py", """
+            class MyClass:
+                def my_meth<caret>od(self):
+                    pass
+        """.trimIndent()
+        )
+        myFixture.configureFromExistingVirtualFile(modFile.virtualFile)
+        val intention = PyExportSymbolToTargetIntention()
+        assertFalse(
+            "Intention should not be available on class method",
+            intention.isAvailable(project, myFixture.editor, myFixture.file)
+        )
+    }
+
+    fun testNotAvailableOnLocalVariable() {
+        val modFile = myFixture.addFileToProject(
+            "mod.py", """
+            def my_func():
+                local_v<caret>ar = 1
+        """.trimIndent()
+        )
+        myFixture.configureFromExistingVirtualFile(modFile.virtualFile)
+        val intention = PyExportSymbolToTargetIntention()
+        assertFalse(
+            "Intention should not be available on local variable",
+            intention.isAvailable(project, myFixture.editor, myFixture.file)
+        )
+    }
+
+    fun testNotAvailableOnNestedClass() {
+        val modFile = myFixture.addFileToProject(
+            "mod.py", """
+            class Outer:
+                class Inn<caret>er:
+                    pass
+        """.trimIndent()
+        )
+        myFixture.configureFromExistingVirtualFile(modFile.virtualFile)
+        val intention = PyExportSymbolToTargetIntention()
+        assertFalse(
+            "Intention should not be available on nested class",
+            intention.isAvailable(project, myFixture.editor, myFixture.file)
+        )
+    }
 }

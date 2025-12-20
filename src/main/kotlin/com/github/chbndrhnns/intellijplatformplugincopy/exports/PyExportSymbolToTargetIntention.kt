@@ -41,6 +41,9 @@ class PyExportSymbolToTargetIntention : IntentionAction, HighPriorityAction, Dum
         if (!isSettingEnabled()) return false
 
         val symbol = findTargetSymbol(editor, file) ?: return false
+
+        if (PsiTreeUtil.getParentOfType(symbol, PyFunction::class.java, PyClass::class.java) != null) return false
+
         val name = symbol.name ?: return false
 
         // Ignore conftest.py
