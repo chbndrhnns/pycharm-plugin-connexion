@@ -307,7 +307,7 @@
                 groupPath="Python"
                 groupName="Python"
                 enabledByDefault="true"
-                level="WEAK WARNING"
+                level="WARNING"
                 implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyShadowingStdlibModuleInspection"/>
 
         <renamePsiElementProcessor

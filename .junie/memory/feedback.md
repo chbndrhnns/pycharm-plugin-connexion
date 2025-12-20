@@ -630,3 +630,11 @@
     "NEW INSTRUCTION": "WHEN callee param type equals argument constructor type THEN suppress wrap-with quickfix"
 }
 
+[2025-12-20 19:47] - Updated by Junie
+{
+    "TYPE": "preference",
+    "CATEGORY": "warning presentation",
+    "EXPECTATION": "Display the file-level shadowing as a yellow/orange warning, provide a rename quick action, and use an exclamation mark icon instead of a green check.",
+    "NEW INSTRUCTION": "WHEN file shadows stdlib module THEN style as warning, add rename, exclamation icon"
+}
+

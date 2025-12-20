@@ -682,3 +682,83 @@
     "NEW INSTRUCTION": "WHEN creating a new file THEN provide both 'path' and 'content' to create"
 }
 
+[2025-12-20 19:49] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Test run failed due to highlighting mismatch",
+    "ROOT CAUSE": "The inspection now reports WARNING, but tests still expect WEAK_WARNING/INFO highlights.",
+    "PROJECT NOTE": "Update PyShadowingStdlibModuleInspection tests to use <warning> markers and the new message; if using .py test data with <weak_warning> or <info>, replace them with <warning>.",
+    "NEW INSTRUCTION": "WHEN changing inspection highlight type THEN update test data highlighting markers to match"
+}
+
+[2025-12-20 19:49] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Highlighting test failed in PyShadowingStdlibModuleInspectionTest",
+    "ROOT CAUSE": "The inspection severity changed to WARNING but the test still expects WEAK_WARNING markup.",
+    "PROJECT NOTE": "Update the test data for PyShadowingStdlibModuleInspection to use <warning ...> instead of <weak_warning ...> in fixtures used by myFixture.testHighlighting.",
+    "NEW INSTRUCTION": "WHEN changing ProblemHighlightType severity THEN update highlighting test markup to match"
+}
+
+[2025-12-20 19:51] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Highlighting test failed after severity change",
+    "ROOT CAUSE": "The inspection now reports WARNING, but the test still expects WEAK_WARNING highlighting.",
+    "PROJECT NOTE": "Highlighting tests use myFixture.testHighlighting with <weak_warning> vs <warning> tags; update test data in PyShadowingStdlibModuleInspectionTest and its test files to match the new severity.",
+    "NEW INSTRUCTION": "WHEN changing ProblemHighlightType in an inspection THEN update testHighlighting expectations and tags accordingly"
+}
+
+[2025-12-20 19:51] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Highlighting severity mismatch in inspection test",
+    "ROOT CAUSE": "The test expects WEAK_WARNING/green check, but code now reports WARNING/exclamation.",
+    "PROJECT NOTE": "Update PyShadowingStdlibModuleInspection test data to use <warning> (or equivalent) instead of <weak_warning>, and adjust expected messages if they changed.",
+    "NEW INSTRUCTION": "WHEN inspection highlighting tests report severity mismatch THEN update expected tags to WARNING"
+}
+
+[2025-12-20 19:52] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Highlighting expectations mismatch due to severity change",
+    "ROOT CAUSE": "Inspection severity changed from WEAK_WARNING to WARNING but tests still expect weak warnings.",
+    "PROJECT NOTE": "Adjust PyShadowingStdlibModuleInspection tests (e.g., testHighlighting expectations) to use <warning> instead of <weak_warning> and ensure the problem description matches.",
+    "NEW INSTRUCTION": "WHEN changing inspection highlight severity THEN update test highlighting tags and expected messages"
+}
+
+[2025-12-20 19:52] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Highlighting test failed during testHighlighting",
+    "ROOT CAUSE": "Inspection severity changed to WARNING but tests still expect previous severity.",
+    "PROJECT NOTE": "Update PyShadowingStdlibModuleInspectionTest to expect ProblemHighlightType.WARNING (exclamation) instead of WEAK_WARNING/INFO.",
+    "NEW INSTRUCTION": "WHEN changing inspection highlight severity THEN update corresponding highlighting test expectations"
+}
+
+[2025-12-20 19:53] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Highlighting check failed in PyShadowingStdlibModuleInspectionTest",
+    "ROOT CAUSE": "The test still expects WEAK_WARNING, but the inspection now reports WARNING.",
+    "PROJECT NOTE": "Update the test highlighting markup from <weak_warning> to <warning> and adjust expected severity/messages in PyShadowingStdlibModuleInspectionTest and its test data.",
+    "NEW INSTRUCTION": "WHEN changing inspection highlight severity THEN update test highlighting tags and expectations accordingly"
+}
+
+[2025-12-20 19:56] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "RefactoringFactory.createRename",
+    "ERROR": "@NotNull newName parameter must not be null",
+    "ROOT CAUSE": "The quick fix calls createRename(file, null), which constructs a RenameProcessor with a null newName.",
+    "PROJECT NOTE": "Update PyShadowingStdlibModuleInspection.RenameFileQuickFix (lines ~60-63) to use a rename handler (e.g., RenameHandlerRegistry) or provide a non-null suggested new name instead of passing null.",
+    "NEW INSTRUCTION": "WHEN needing to prompt for new name on rename THEN invoke RenameHandlerRegistry handler for element"
+}
+
