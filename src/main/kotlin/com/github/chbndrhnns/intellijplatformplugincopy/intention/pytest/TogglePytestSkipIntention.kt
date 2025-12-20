@@ -110,7 +110,19 @@ class TogglePytestSkipIntention : IntentionAction, HighPriorityAction, Iconable 
             return if (nameIdentifier.textRange.containsOffset(offset)) Scope.CLASS else null
         }
 
-        return if (file.name.startsWith("test_") || file.name.endsWith("_test.py")) Scope.MODULE else null
+        if (!(file.name.startsWith("test_") || file.name.endsWith("_test.py"))) return null
+
+        val assignment = PsiTreeUtil.getParentOfType(element, PyAssignmentStatement::class.java)
+        if (assignment != null && assignment.targets.any { it.text == "pytestmark" }) {
+            return Scope.MODULE
+        }
+
+        val statement = PsiTreeUtil.getParentOfType(element, PyStatement::class.java)
+        if (statement != null) {
+            return null
+        }
+
+        return Scope.MODULE
     }
 
     private fun isSimpleParam(element: PsiElement): Boolean {

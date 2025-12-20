@@ -244,4 +244,19 @@ class TogglePytestSkipIntentionTest : TestBase() {
             "BetterPy: Toggle pytest skip"
         )
     }
+
+    fun testNotAvailableOnTopLevelAssignment() {
+        myFixture.assertIntentionNotAvailable(
+            "test_foo.py",
+            """
+            import pytest
+            
+            val3 = <caret>[]
+            
+            def test_something():
+                pass
+            """,
+            "BetterPy: Toggle pytest skip"
+        )
+    }
 }
