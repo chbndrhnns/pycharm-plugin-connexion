@@ -867,3 +867,14 @@
     "PROJECT NOTE": "Use Gradle via bash to run tests and adjust expectations for WARNING severity.",
     "NEW INSTRUCTION": "WHEN tests or build are required THEN run Gradle via bash (e.g., ./gradlew test)"
 }
+
+[2025-12-20 20:00] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "shell grep for docs",
+    "MISSING STEPS": "-",
+    "BOTTLENECK": "Wrong extension point tag in plugin.xml prevented filter registration.",
+    "PROJECT NOTE": "Under defaultExtensionNs=\"com.intellij\", the correct tag is daemon.intentionActionFilter.",
+    "NEW INSTRUCTION": "WHEN registering IntentionActionFilter in plugin.xml THEN use daemon.intentionActionFilter tag"
+}
+

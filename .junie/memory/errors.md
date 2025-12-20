@@ -762,3 +762,13 @@
     "NEW INSTRUCTION": "WHEN needing to prompt for new name on rename THEN invoke RenameHandlerRegistry handler for element"
 }
 
+[2025-12-20 20:00] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "plugin.xml",
+    "ERROR": "Wrong extension point: intentionActionFilter tag",
+    "ROOT CAUSE": "The filter was registered as com.intellij.intentionActionFilter instead of com.intellij.daemon.intentionActionFilter, so it never loaded.",
+    "PROJECT NOTE": "Under <extensions defaultExtensionNs=\"com.intellij\"> use <daemon.intentionActionFilter implementation=\"...RenameToSelfFilter\"/>.",
+    "NEW INSTRUCTION": "WHEN registering IntentionActionFilter in plugin.xml THEN use daemon.intentionActionFilter tag"
+}
+

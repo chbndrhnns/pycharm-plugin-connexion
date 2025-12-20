@@ -331,7 +331,7 @@
                 implementation="com.github.chbndrhnns.intellijplatformplugincopy.intention.suppressor.SuppressSuggestedRefactoringIntentionMenuContributor"
                 order="last"/>
 
-        <intentionActionFilter
+        <daemon.intentionActionFilter
                 implementation="com.github.chbndrhnns.intellijplatformplugincopy.intention.suppressor.RenameToSelfFilter"/>
     </extensions>
 
