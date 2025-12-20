@@ -2,6 +2,7 @@
 
 ## Pending Issues
 
+- [ ] fix: How to handle ProcessCanceledException correctly?
 - [ ] fix: Make optional destroys instance attribute
 - [ ] fix: When a public symbol is not used, do not display the refactoring preview
 - [ ] fix: Toggle type alias on symbol (not annotation) destroys instance attribute
