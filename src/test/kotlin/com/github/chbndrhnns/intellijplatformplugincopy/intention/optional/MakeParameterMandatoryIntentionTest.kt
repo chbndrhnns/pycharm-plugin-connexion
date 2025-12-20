@@ -123,4 +123,45 @@ class MakeParameterMandatoryIntentionTest : TestBase() {
             "BetterPy: Make mandatory"
         )
     }
+
+    fun testMakeMandatory_InstanceAttribute_Annotated_PreservesSelf() {
+        myFixture.doIntentionTest(
+            "a.py",
+            """
+            class C:
+                def __init__(self):
+                    self.f<caret>ield: int | None = None
+            """,
+            """
+            class C:
+                def __init__(self):
+                    self.field: int
+            """,
+            "BetterPy: Make mandatory"
+        )
+    }
+
+    fun testMakeMandatory_NotAvailable_ForUnannotatedNoneAssignment() {
+        myFixture.assertIntentionNotAvailable(
+            "a.py",
+            """
+            class C:
+                def __init__(self):
+                    self.b<caret>la = None
+            """,
+            "BetterPy: Make mandatory"
+        )
+    }
+
+    fun testMakeMandatory_NotAvailable_ForAnnotatedNoneAssignment() {
+        myFixture.assertIntentionNotAvailable(
+            "a.py",
+            """
+            class C:
+                def __init__(self):
+                    self.b<caret>la: None = None
+            """,
+            "BetterPy: Make mandatory"
+        )
+    }
 }

@@ -181,4 +181,21 @@ class MakeParameterOptionalIntentionTest : TestBase() {
             "BetterPy: Make optional"
         )
     }
+
+    fun testMakeOptional_InstanceAttribute_InsideInit() {
+        myFixture.doIntentionTest(
+            "a.py",
+            """
+            class A:
+                def __init__(self):
+                    self.f<caret>oo: int = 1
+            """,
+            """
+            class A:
+                def __init__(self):
+                    self.foo: int | None = 1
+            """,
+            "BetterPy: Make optional"
+        )
+    }
 }

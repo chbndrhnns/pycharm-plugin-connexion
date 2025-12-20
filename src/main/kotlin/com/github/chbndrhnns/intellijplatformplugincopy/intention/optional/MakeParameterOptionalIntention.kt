@@ -48,7 +48,7 @@ class MakeParameterOptionalIntention : IntentionAction, PriorityAction {
             element.replace(newParam)
         } else if (element is PyTargetExpression) {
             val defaultValueText = element.findAssignedValue()?.text ?: "None"
-            val newStatementText = "${element.name}: $newAnnotationText = $defaultValueText"
+            val newStatementText = "${element.text}: $newAnnotationText = $defaultValueText"
 
             // We need to replace the statement containing the target expression
             val parentStatement = PsiTreeUtil.getParentOfType(

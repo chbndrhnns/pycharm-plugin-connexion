@@ -31,10 +31,21 @@ class MakeParameterMandatoryIntention : IntentionAction, PriorityAction {
 
         val element = findTargetElement(editor, file) ?: return false
 
+        // if annotation is strictly "None", do not offer to make it mandatory
+        if (element is PyAnnotationOwner) {
+            val annotationValue = element.annotation?.value
+            if (annotationValue != null && annotationValue.text == "None") {
+                return false
+            }
+        }
+
         // Check default value is None
         val defaultValueText = when (element) {
             is PyNamedParameter -> element.defaultValue?.text
-            is PyTargetExpression -> element.findAssignedValue()?.text
+            is PyTargetExpression -> {
+                if (element.annotation == null) return false
+                element.findAssignedValue()?.text
+            }
             else -> null
         }
 
@@ -112,7 +123,7 @@ class MakeParameterMandatoryIntention : IntentionAction, PriorityAction {
             // 2. Update Assignment or Type Declaration
             // Get the updated annotation text. Use value.text to retrieve just the type expression (e.g., "int").
             val annotationText = element.annotation?.value?.text ?: "Any"
-            val newStatementText = "${element.name}: $annotationText"
+            val newStatementText = "${element.text}: $annotationText"
 
             if (parent is PyAssignmentStatement) {
                 val newStatement = generator.createFromText(
