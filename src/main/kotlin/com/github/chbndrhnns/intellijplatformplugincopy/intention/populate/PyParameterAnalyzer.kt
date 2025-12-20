@@ -96,13 +96,6 @@ class PyParameterAnalyzer {
                 !n.isNullOrBlank() && !PyBuiltinNames.isBuiltin(n)
             }
 
-            is PyClassType -> {
-                val n = type.name ?: type.classQName?.substringAfterLast('.')
-                // Treat as alias-like when there is no concrete class behind it.
-                val isAlias = type.pyClass == null || (n != null && type.pyClass?.name != n)
-                isAlias && !n.isNullOrBlank() && !PyBuiltinNames.isBuiltin(n)
-            }
-
             is PyUnionType -> type.members.any { isAliasLikeNonBuiltin(it) }
             else -> false
         }
