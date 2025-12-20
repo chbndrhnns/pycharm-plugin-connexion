@@ -51,7 +51,6 @@
 - [ ] feat: Create run config using package mode
 - [ ] Copy pydantic mock?
 - [ ] feat: Wrap default/default_factory after introducing custom type in dataclass/pydantic
-- [ ] feat: Render dataclass fields in preview
 - [ ] feat: Convert fn to lambda
 - [ ] feat: Block list: Do not allow names from typing or collections.abc.
 - [ ] feat: Configure default base classes
@@ -62,6 +61,7 @@
 
 ## In Progress Tasks
 
+- [ ] feat: Re-use import for qualified names
 - [ ] refactor: Performance (spec/performance.md)
 
 ## Completed Tasks (newest first)
