@@ -6,15 +6,18 @@ import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
 import com.intellij.codeInsight.intention.preview.IntentionPreviewUtils
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Iconable
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.PsiNamedElement
+import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.refactoring.RefactoringFactory
+import com.intellij.util.Processor
 import com.jetbrains.python.psi.PyClass
 import com.jetbrains.python.psi.PyFunction
 import com.jetbrains.python.psi.PyTargetExpression
@@ -23,7 +26,7 @@ import javax.swing.Icon
 /**
  * Shared utilities for visibility intentions working on Python symbols.
  */
-abstract class PyToggleVisibilityIntention : IntentionAction, HighPriorityAction, DumbAware, Iconable {
+abstract class PyToggleVisibilityIntention : IntentionAction, HighPriorityAction, Iconable {
 
     override fun getIcon(@Iconable.IconFlags flags: Int): Icon = AllIcons.Actions.IntentionBulb
 
@@ -104,11 +107,41 @@ abstract class PyToggleVisibilityIntention : IntentionAction, HighPriorityAction
         val factory = RefactoringFactory.getInstance(project)
         val rename = factory.createRename(element, newName, false, false)
 
-        val currentName = element.name
-        if (currentName != null && !currentName.startsWith("_") && newName.startsWith("_")) {
+        if (shouldShowPreview(element, newName)) {
             rename.isPreviewUsages = true
         }
 
         rename.run()
+    }
+
+    protected open fun shouldShowPreview(element: PsiNamedElement, newName: String): Boolean {
+        val currentName = element.name
+        val isMakePrivate = currentName != null && !currentName.startsWith("_") && newName.startsWith("_")
+
+        if (!isMakePrivate) return false
+
+        val containingFile = element.containingFile ?: return true
+        val project = element.project
+        val scope = GlobalSearchScope.projectScope(project)
+        val containingClass = PsiTreeUtil.getParentOfType(element, PyClass::class.java)
+
+        var hasExternalUsages = false
+
+        runReadAction {
+            ReferencesSearch.search(element, scope).forEach(Processor { ref ->
+                val refElement = ref.element
+                if (refElement.containingFile != null && !refElement.containingFile.isEquivalentTo(containingFile)) {
+                    hasExternalUsages = true
+                    false
+                } else if (containingClass != null && !PsiTreeUtil.isAncestor(containingClass, refElement, false)) {
+                    hasExternalUsages = true
+                    false
+                } else {
+                    true
+                }
+            })
+        }
+
+        return hasExternalUsages
     }
 }
