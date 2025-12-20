@@ -3,8 +3,6 @@
 ## Pending Issues
 
 - [ ] fix: How to handle ProcessCanceledException correctly?
-- [ ] fix: Make optional destroys instance attribute
-- [ ] fix: When a public symbol is not used, do not display the refactoring preview
 - [ ] fix: Toggle type alias on symbol (not annotation) destroys instance attribute
 - [ ] fix: warning is displayed in green with a checkmark when a file was created that shadows a stdlib module. Show in orange and offer link to rename the file.
 - [ ] fix: Making one symbol public via import place quickfix makes all other symbols unimported
@@ -95,6 +93,8 @@ val2: list[Outer] = [
 
 ## Completed Tasks (newest first)
 
+- [x] feat: When a public symbol is not used, do not display the refactoring preview
+- [x] fix: Make optional destroys instance attribute
 - [x] feat: Update names for TypeVar and NewType on rename
 - [x] feat: When creating and renaming, check against stdlib modules/packages and warn if name clashes (
   spec/shadow-stdlib.md)
