@@ -58,17 +58,19 @@
 - [ ] commit: if it fails for hooks, add option keep selection of files (docs/keep-commit-selection/spec.md, stash)
 - [ ] feat: Show red bubble if introduce parameter object is not available
 - [ ] feat: Collect symbols to check against for stdlib clashes dynamically
+- [ ] feat: Support what is tested in _testNestedConstructor_InsideDict_WrapsInnerArgument
 
 ## In Progress Tasks
 
-- [ ] fix: warning is displayed in green with a checkmark when a file was created that shadows a stdlib module. Show in
-  orange and offer link to rename the file.
 - [ ] refactor: Performance (spec/performance.md)
 - [ ] refactor: `IntentionPreviewUtils.write<RuntimeException> { symbol.setName(newName) }`
 - [ ] fix: Does not filter rename to self quickfix
-- [x] fix: Wrap inconsistencies
-  - [ ] _testNestedConstructor_InsideDict_WrapsInnerArgument
-  - [x] Wrap case which failed initially
+
+## Completed Tasks (newest first)
+
+- [x] fix: warning is displayed in green with a checkmark when a file was created that shadows a stdlib module. Show in
+  orange and offer link to rename the file.
+- [x] Wrap case which failed initially
 
 ```python
 import dataclasses
@@ -90,9 +92,6 @@ val2: list[Outer] = [
     )
 ]
 ```
-
-## Completed Tasks (newest first)
-
 - [x] feat: Wrap value in lambda if callable is expected
 - [x] feat: Wrap value in lambda if callable is expected
 - [x] fix: Toggle type alias on symbol (not annotation) destroys instance attribute
