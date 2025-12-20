@@ -17,11 +17,11 @@ class PyShadowingStdlibRenameProcessorTest : TestBase() {
         try {
             myFixture.renameElement(file, "os.py")
             fail("Should have thrown ProcessCanceledException")
-        } catch (e: ProcessCanceledException) {
+        } catch (_: ProcessCanceledException) {
             // Success
         } catch (e: Exception) {
             val message = e.message ?: e.cause?.message ?: ""
-            if (e.cause is ProcessCanceledException || e is ProcessCanceledException) {
+            if (e.cause is ProcessCanceledException) {
                 // Success
             } else {
                 fail("Expected ProcessCanceledException but got ${e::class.simpleName}: $message")

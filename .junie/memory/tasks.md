@@ -1,23 +1,3 @@
-[2025-12-10 16:12] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "run plugin verification, add require-restart flag",
-    "MISSING STEPS": "scan project",
-    "BOTTLENECK": "Initial reliance on verification and non-existent attribute delayed targeting the real cause.",
-    "PROJECT NOTE": "Prefer declarative <projectListeners> over programmatic messageBus listeners to stay dynamic.",
-    "NEW INSTRUCTION": "WHEN code registers listeners via message bus THEN move them to plugin.xml projectListeners"
-}
-
-[2025-12-10 16:16] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "handle intention preview,restrict enablement to target language/file type",
-    "BOTTLENECK": "Validation feedback relied on headless exception semantics in tests.",
-    "PROJECT NOTE": "In tests, assertThrows RefactoringErrorHintException instead of catching RuntimeException; also restrict enablement to Python files to avoid noisy UI in non-Python editors.",
-    "NEW INSTRUCTION": "WHEN intention preview mode is active THEN return early without side effects or UI hints"
-}
-
 [2025-12-10 16:33] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -878,3 +858,22 @@
     "NEW INSTRUCTION": "WHEN registering IntentionActionFilter in plugin.xml THEN use daemon.intentionActionFilter tag"
 }
 
+[2025-12-20 20:03] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "scan file",
+    "BOTTLENECK": "Insufficient verification of surrounding code context before concluding.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN question cites file/line about code usage THEN open file and inspect context"
+}
+
+[2025-12-20 20:05] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "research JUnit 4 assertion methods",
+    "MISSING STEPS": "verify test framework version,verify kotlin.test availability,validate API ownership",
+    "BOTTLENECK": "Assumed opentest4j provides assertThrows and that kotlin.test is available.",
+    "PROJECT NOTE": "Project uses JUnit 4; add kotlin(\"test\") if using assertFailsWith.",
+    "NEW INSTRUCTION": "WHEN proposing alternative test assertions THEN inspect build files for testing dependencies and versions"
+}
