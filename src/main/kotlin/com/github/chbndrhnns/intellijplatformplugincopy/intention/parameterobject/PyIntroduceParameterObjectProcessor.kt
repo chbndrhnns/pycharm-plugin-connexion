@@ -3,6 +3,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobje
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.project.Project
 import com.intellij.platform.ide.progress.runWithModalProgressBlocking
 import com.intellij.psi.PsiElement
@@ -17,6 +18,7 @@ import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.resolve.PyResolveContext
 import com.jetbrains.python.psi.types.TypeEvalContext
 import com.jetbrains.python.refactoring.PyReplaceExpressionUtil
+import java.util.concurrent.CancellationException
 
 private val LOG = logger<PyIntroduceParameterObjectProcessor>()
 
@@ -60,28 +62,36 @@ class PyIntroduceParameterObjectProcessor(
         var paramUsages: Map<PyNamedParameter, Collection<PsiReference>> = emptyMap()
         var callSiteUpdates: List<CallSiteUpdateInfo> = emptyList()
 
-        runWithModalProgressBlocking(project, "Searching for usages...") {
-            readAction {
-                val pUsages = mutableMapOf<PyNamedParameter, Collection<PsiReference>>()
-                for (p in params) {
-                    if (p.name != null) {
-                        pUsages[p] =
-                            ReferencesSearch.search(p, GlobalSearchScope.fileScope(function.containingFile)).findAll()
+        try {
+            runWithModalProgressBlocking(project, "Searching for usages...") {
+                readAction {
+                    val pUsages = mutableMapOf<PyNamedParameter, Collection<PsiReference>>()
+                    for (p in params) {
+                        if (p.name != null) {
+                            pUsages[p] =
+                                ReferencesSearch.search(p, GlobalSearchScope.fileScope(function.containingFile))
+                                    .findAll()
+                        }
                     }
-                }
-                paramUsages = pUsages
-                val functionUsages =
-                    ReferencesSearch.search(function, GlobalSearchScope.projectScope(project)).findAll()
+                    paramUsages = pUsages
+                    val functionUsages =
+                        ReferencesSearch.search(function, GlobalSearchScope.projectScope(project)).findAll()
 
-                callSiteUpdates = prepareCallSiteUpdates(
-                    project,
-                    function,
-                    dataclassName,
-                    params,
-                    parameterName,
-                    functionUsages
-                )
+                    callSiteUpdates = prepareCallSiteUpdates(
+                        project,
+                        function,
+                        dataclassName,
+                        params,
+                        parameterName,
+                        functionUsages
+                    )
+                }
             }
+        } catch (e: Exception) {
+            if (e is ProcessCanceledException || e is CancellationException) {
+                return
+            }
+            throw e
         }
 
         WriteCommandAction.writeCommandAction(project, function.containingFile)

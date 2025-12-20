@@ -58,10 +58,16 @@ class ToggleTypeAliasIntention : IntentionAction, HighPriorityAction, DumbAware 
             }
             if (name == null || valueText == null) return
 
-            val references =
+            val references = try {
                 com.intellij.platform.ide.progress.runWithModalProgressBlocking(project, "Finding references") {
                     com.intellij.psi.search.searches.ReferencesSearch.search(typeAlias).findAll().toList()
                 }
+            } catch (e: Exception) {
+                if (e is com.intellij.openapi.progress.ProcessCanceledException || e is java.util.concurrent.CancellationException) {
+                    return
+                }
+                throw e
+            }
 
             com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project) {
                 inlineTypeAlias(typeAlias, valueText, references)

@@ -59,10 +59,17 @@ class CustomTypeApplier(
 
             // If on EDT (and not in preview/test), we must move to BGT for search
             if (!isPreview && ApplicationManager.getApplication().isDispatchThread) {
-                runWithModalProgressBlocking(project, "Finding usages to update...") {
-                    readAction {
-                        rewriter.findUsagesToWrap(function, parameter)
+                try {
+                    runWithModalProgressBlocking(project, "Finding usages to update...") {
+                        readAction {
+                            rewriter.findUsagesToWrap(function, parameter)
+                        }
                     }
+                } catch (e: Exception) {
+                    if (e is com.intellij.openapi.progress.ProcessCanceledException || e is java.util.concurrent.CancellationException) {
+                        return
+                    }
+                    throw e
                 }
             } else {
                 // Already in BGT or allowed context (preview)

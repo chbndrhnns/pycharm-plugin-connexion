@@ -642,3 +642,43 @@
     "NEW INSTRUCTION": "WHEN compileTestKotlin fails: showChooserWithGreying not implemented THEN implement it in test stubs or delegate"
 }
 
+[2025-12-19 22:24] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "run_test",
+    "ERROR": "Missing test-log.properties for j.u.l.LogManager in test run",
+    "ROOT CAUSE": "The PyCharm SDK test runner references a non-existent logging config file, but tests still execute.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN Gradle test reports missing test-log.properties THEN ignore and rely on test summary"
+}
+
+[2025-12-19 22:54] - Updated by Junie - Error analysis
+{
+    "TYPE": "runtime",
+    "TOOL": "ToggleTypeAliasIntention.invoke",
+    "ERROR": "CeProcessCanceledException thrown during popup dispose",
+    "ROOT CAUSE": "invoke uses runWithModalProgressBlocking; cancellation propagates while the intention popup is being disposed.",
+    "PROJECT NOTE": "ToggleTypeAliasIntention.kt around line ~62 calls runWithModalProgressBlocking; avoid letting cancellation escape from invoke during popup selection.",
+    "NEW INSTRUCTION": "WHEN intention uses runWithModalProgressBlocking in invoke THEN catch ProcessCanceledException and return immediately"
+}
+
+[2025-12-19 22:55] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "create",
+    "ERROR": "Missing 'path' and incomplete file content",
+    "ROOT CAUSE": "The create tool was invoked without a path and with truncated placeholder content.",
+    "PROJECT NOTE": "Place new tests under src/test/kotlin/com/github/chbndrhnns/intellijplatformplugincopy/intention/typealias/ e.g., ToggleTypeAliasIntentionCanceledTest.kt.",
+    "NEW INSTRUCTION": "WHEN create tool call lacks path parameter THEN add path and complete file content"
+}
+
+[2025-12-19 23:01] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "create",
+    "ERROR": "Missing required 'path' parameter",
+    "ROOT CAUSE": "The create tool was invoked with content only and no file path.",
+    "PROJECT NOTE": "Place new tests under src/test/kotlin/... e.g., intention/typealias/ToggleTypeAliasIntentionCanceledTest.kt.",
+    "NEW INSTRUCTION": "WHEN creating a new file THEN provide both 'path' and 'content' to create"
+}
+
