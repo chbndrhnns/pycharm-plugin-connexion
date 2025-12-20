@@ -3,10 +3,7 @@
 ## Pending Issues
 
 - [ ] fix: How to handle ProcessCanceledException correctly?
-- [ ] fix: Toggle type alias on symbol (not annotation) destroys instance attribute
-- [ ] fix: warning is displayed in green with a checkmark when a file was created that shadows a stdlib module. Show in orange and offer link to rename the file.
 - [ ] fix: Making one symbol public via import place quickfix makes all other symbols unimported
-- [ ] fix: Do not wrap with callable annotation
 - [ ] fix: When prefering relative import inside same package, do not add candidate if relative import exists already
 - [ ] fix: implement abstract method is put above __init__
 - [ ] feat: Consider if this should only work for dataclass/classes, for others, there is change signature
@@ -15,6 +12,7 @@
 
 ## Pending Features
 
+- [ ] feat: Transform between lambda, function, partial
 - [ ] feat: Import should reuse existing module import (domain.ABC, domain.DEFG)
 - [ ] feat: Render quick doc for pydantic/dataclass, showing inherited members, as well
 - [ ] feat: In case of unexpected type, offer cast to the expected type
@@ -63,6 +61,8 @@
 
 ## In Progress Tasks
 
+- [ ] fix: warning is displayed in green with a checkmark when a file was created that shadows a stdlib module. Show in
+  orange and offer link to rename the file.
 - [ ] refactor: Performance (spec/performance.md)
 - [ ] refactor: `IntentionPreviewUtils.write<RuntimeException> { symbol.setName(newName) }`
 - [ ] fix: Does not filter rename to self quickfix
@@ -93,6 +93,9 @@ val2: list[Outer] = [
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Wrap value in lambda if callable is expected
+- [x] feat: Wrap value in lambda if callable is expected
+- [x] fix: Toggle type alias on symbol (not annotation) destroys instance attribute
 - [x] feat: When a public symbol is not used, do not display the refactoring preview
 - [x] fix: Make optional destroys instance attribute
 - [x] feat: Update names for TypeVar and NewType on rename
