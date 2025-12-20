@@ -6,6 +6,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNamedElement
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.impl.PyPsiUtils
+import com.jetbrains.python.psi.types.PyCallableType
 import com.jetbrains.python.psi.types.TypeEvalContext
 
 /**
@@ -27,6 +28,14 @@ object PyTypeIntentions {
 
     fun expectedCtorName(expr: PyExpression, ctx: TypeEvalContext): String? =
         ExpectedTypeInfo.expectedCtorName(expr, ctx)
+
+    fun getExpectedCallableType(
+        expr: PyExpression,
+        ctx: TypeEvalContext
+    ): PyCallableType? {
+        val info = ExpectedTypeInfo.getExpectedTypeInfo(expr, ctx)
+        return info?.type as? PyCallableType
+    }
 
     fun tryContainerItemCtor(element: PyExpression, ctx: TypeEvalContext): ExpectedCtor? =
         ContainerTyping.tryContainerItemCtor(element, ctx)

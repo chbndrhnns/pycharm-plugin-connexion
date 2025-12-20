@@ -91,7 +91,7 @@ class CallableToProtocolIntentionTest : TestBase() {
         )
 
         myFixture.launchAction(CallableToProtocolIntention())
-        
+
         myFixture.checkResult(
             """
             import typing

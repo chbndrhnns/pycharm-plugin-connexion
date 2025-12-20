@@ -84,6 +84,7 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
 
             is Elementwise -> PluginConstants.ACTION_PREFIX + "Wrap items with ${plan.itemCtorName}()"
             is ReplaceWithVariant -> PluginConstants.ACTION_PREFIX + "Wrap with ${plan.variantName}"
+            is LambdaWrap -> PluginConstants.ACTION_PREFIX + "Wrap with lambda"
         }
         return true
     }
@@ -147,6 +148,10 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
             is ReplaceWithVariant -> {
                 applier.applyVariant(project, file, plan.element, plan.variantName, plan.variantElement)
             }
+
+            is LambdaWrap -> {
+                applier.applyLambda(project, file, plan.element, plan.params)
+            }
         }
     }
 
@@ -179,6 +184,12 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
                 plan.element,
                 plan.variantName,
                 plan.variantElement
+            )
+
+            is LambdaWrap -> previewBuilder.buildLambda(
+                file,
+                plan.element,
+                plan.params
             )
         }
     }

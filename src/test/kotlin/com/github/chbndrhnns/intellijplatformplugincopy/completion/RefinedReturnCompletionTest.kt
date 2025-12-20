@@ -21,10 +21,10 @@ class RefinedReturnCompletionTest : TestBase() {
         // We want "[MyStr()]".
         // Note: completion variants usually return the lookup string.
         // If I change the lookup string to "[MyStr()]", then it should appear in variants.
-        
+
         assertTrue("Should contain '[MyStr()]', found: $variants", variants!!.contains("[MyStr()]"))
     }
-    
+
     fun testSetContainerSuggestion() {
         myFixture.configureByText(
             "test_set.py", """

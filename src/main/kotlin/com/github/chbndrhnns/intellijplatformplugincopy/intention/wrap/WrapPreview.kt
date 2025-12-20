@@ -34,6 +34,17 @@ class WrapPreview(
         return buildDiffWithOptionalImport(file, element, modifiedText, ctorElement)
     }
 
+    fun buildLambda(
+        file: PsiFile,
+        element: PyExpression,
+        params: String
+    ): IntentionPreviewInfo {
+        val unwrapped = PyPsiUtils.flattenParens(element) ?: element
+        val originalText = unwrapped.text
+        val lambdaText = if (params.isBlank()) "lambda: $originalText" else "lambda $params: $originalText"
+        return buildDiffWithOptionalImport(file, element, lambdaText, null)
+    }
+
     fun buildElementwise(
         file: PsiFile,
         element: PyExpression,

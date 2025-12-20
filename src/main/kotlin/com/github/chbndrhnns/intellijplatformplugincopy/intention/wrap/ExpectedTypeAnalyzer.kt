@@ -19,6 +19,7 @@ class ExpectedTypeAnalyzer(private val project: Project) {
     )
 
     private val unionStrategy = UnionStrategy()
+    private val callableStrategy = CallableStrategy()
     private val genericCtorStrategy = GenericCtorStrategy()
     private val outerContainerStrategy = OuterContainerStrategy()
     private val containerItemStrategy = ContainerItemStrategy()
@@ -39,7 +40,10 @@ class ExpectedTypeAnalyzer(private val project: Project) {
             StrategyContext.UNKNOWN -> listOf(outerContainerStrategy, containerItemStrategy)
         }
 
-        return containerStrategies + listOf(unionStrategy) + enumStrategies + listOf(genericCtorStrategy)
+        return containerStrategies + listOf(unionStrategy) + enumStrategies + listOf(
+            callableStrategy,
+            genericCtorStrategy
+        )
     }
 
     fun analyzeAtCaret(editor: Editor, file: PsiFile, context: TypeEvalContext): WrapPlan? {

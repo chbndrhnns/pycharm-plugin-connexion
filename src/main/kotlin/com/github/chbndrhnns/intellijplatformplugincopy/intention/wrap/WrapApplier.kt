@@ -130,4 +130,19 @@ class WrapApplier(
             element.replace(wrapped)
         }
     }
+
+    fun applyLambda(
+        project: Project,
+        file: PsiFile,
+        element: PyExpression,
+        params: String
+    ) {
+        WriteCommandAction.runWriteCommandAction(project) {
+            val generator = PyElementGenerator.getInstance(project)
+            val unwrapped = PyPsiUtils.flattenParens(element) ?: element
+            val lambdaText = if (params.isBlank()) "lambda: ${unwrapped.text}" else "lambda $params: ${unwrapped.text}"
+            val wrapped = generator.createExpressionFromText(LanguageLevel.getLatest(), lambdaText)
+            element.replace(wrapped)
+        }
+    }
 }

@@ -30,7 +30,10 @@ class AddSelfParameterTest : TestBase() {
             val intentions = myFixture.availableIntentions.map { it.text }
 
             assertFalse("Should not contain 'Rename to self'", intentions.contains("Rename to 'self'"))
-            assertTrue("Should contain 'BetterPy: Add 'self' parameter'", intentions.contains("BetterPy: Add 'self' parameter"))
+            assertTrue(
+                "Should contain 'BetterPy: Add 'self' parameter'",
+                intentions.contains("BetterPy: Add 'self' parameter")
+            )
 
             myFixture.launchAction(myFixture.findSingleIntention("BetterPy: Add 'self' parameter"))
 
@@ -55,7 +58,10 @@ class AddSelfParameterTest : TestBase() {
         )
 
         val intentions = myFixture.availableIntentions.map { it.text }
-        assertTrue("Should contain 'BetterPy: Add 'self' parameter'", intentions.contains("BetterPy: Add 'self' parameter"))
+        assertTrue(
+            "Should contain 'BetterPy: Add 'self' parameter'",
+            intentions.contains("BetterPy: Add 'self' parameter")
+        )
 
         myFixture.launchAction(myFixture.findSingleIntention("BetterPy: Add 'self' parameter"))
 

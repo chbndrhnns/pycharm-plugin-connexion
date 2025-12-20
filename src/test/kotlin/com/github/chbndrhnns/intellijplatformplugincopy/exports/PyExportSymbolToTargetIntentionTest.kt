@@ -161,6 +161,7 @@ class PyExportSymbolToTargetIntentionTest : TestBase() {
         assertTrue(isAlreadyExported.invoke(intention, file, "foo") as Boolean)
         assertFalse(isAlreadyExported.invoke(intention, file, "bar") as Boolean)
     }
+
     fun testNotAvailableOnClassMethod() {
         val modFile = myFixture.addFileToProject(
             "mod.py", """

@@ -51,8 +51,7 @@ internal object ExpectedTypeInfo {
             val name = base.shortOrQualifiedTail()
             return if (isTooGenericCtorName(name)) null else name
         }
-        val name = base?.name
-        return if (isTooGenericCtorName(name)) null else name
+        return null
     }
 
     fun canonicalCtorName(element: PyTypedElement, ctx: TypeEvalContext): String? {
@@ -67,8 +66,7 @@ internal object ExpectedTypeInfo {
                 val name = base.shortOrQualifiedTail()
                 return if (isNonCtorName(name)) null else name
             }
-            val name = base.name
-            return if (isNonCtorName(name)) null else name
+            return null
         }
         return null
     }
@@ -91,7 +89,16 @@ internal object ExpectedTypeInfo {
 
     private fun isNonCtorName(name: String?): Boolean =
         name.isNullOrBlank() ||
-                name.equalsAnyIgnoreCase("Union", "UnionType", "None", "NoneType", "object", "Any") ||
+                name.equalsAnyIgnoreCase(
+                    "Union",
+                    "UnionType",
+                    "None",
+                    "NoneType",
+                    "object",
+                    "Any",
+                    "Callable",
+                    "Optional"
+                ) ||
                 (name.startsWith("Literal["))
 
     private fun String.equalsAnyIgnoreCase(vararg options: String): Boolean =

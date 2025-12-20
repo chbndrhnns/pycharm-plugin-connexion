@@ -38,3 +38,8 @@ data class ReplaceWithVariant(
     val variantName: String,
     val variantElement: PsiNamedElement?
 ) : WrapPlan
+
+data class LambdaWrap(
+    override val element: PyExpression,
+    val params: String
+) : WrapPlan

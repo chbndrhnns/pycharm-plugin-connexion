@@ -12,7 +12,7 @@ class ConnexionSettingsToggleTest : TestBase() {
         withPluginSettings({ enableConnexionInspections = false }) {
             myFixture.enableInspections(ConnexionJsonInspection::class.java)
 
-             myFixture.configureByText(
+            myFixture.configureByText(
                 "api.py", """
                 def existing_function():
                     pass
