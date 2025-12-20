@@ -63,10 +63,10 @@
 ## In Progress Tasks
 
 - [ ] refactor: Performance (spec/performance.md)
-- [ ] refactor: `IntentionPreviewUtils.write<RuntimeException> { symbol.setName(newName) }`
 
 ## Completed Tasks (newest first)
 
+- [x] refactor: `IntentionPreviewUtils.write<RuntimeException> { symbol.setName(newName) }` -> ok
 - [ ] fix: Does not filter rename to self quickfix
 - [x] fix: warning is displayed in green with a checkmark when a file was created that shadows a stdlib module. Show in
   orange and offer link to rename the file.
