@@ -64,10 +64,10 @@
 
 - [ ] refactor: Performance (spec/performance.md)
 - [ ] refactor: `IntentionPreviewUtils.write<RuntimeException> { symbol.setName(newName) }`
-- [ ] fix: Does not filter rename to self quickfix
 
 ## Completed Tasks (newest first)
 
+- [ ] fix: Does not filter rename to self quickfix
 - [x] fix: warning is displayed in green with a checkmark when a file was created that shadows a stdlib module. Show in
   orange and offer link to rename the file.
 - [x] Wrap case which failed initially
