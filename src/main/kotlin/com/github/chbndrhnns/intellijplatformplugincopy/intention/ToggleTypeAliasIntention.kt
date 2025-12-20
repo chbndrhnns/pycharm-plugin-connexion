@@ -24,26 +24,8 @@ class ToggleTypeAliasIntention : IntentionAction, HighPriorityAction, DumbAware 
 
         val element = file.findElementAt(editor.caretModel.offset) ?: return false
 
-        // Check if we are on a type alias definition or reference
-        val typeAlias = findTypeAlias(element)
-        if (typeAlias != null) {
-            return true
-        }
-
-        // Check if we are on a type annotation (and not on an alias reference already)
-        val annotation = findAnnotation(element)
-        if (annotation != null) {
-            // Avoid triggering on annotations that are just a single name (already potentially an alias)
-            // unless we want to allow nested aliases. For now, let's only allow on complex annotations
-            // or if it's not a reference to another alias.
-            val value = annotation.value
-            if (value is PyReferenceExpression && findTypeAlias(value.reference.resolve() ?: value) != null) {
-                return false
-            }
-            return true
-        }
-
-        return false
+        // Only available if caret is on a type annotation
+        return findAnnotation(element) != null
     }
 
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {

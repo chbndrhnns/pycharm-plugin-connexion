@@ -101,4 +101,30 @@ class ToggleTypeAliasIntentionTest : TestBase() {
         """
         )
     }
+
+    fun testShouldNotBeAvailableOnNormalAssignment() {
+        myFixture.configureByText(
+            "a.py", """
+            x = 1
+            print(<caret>x)
+        """.trimIndent()
+        )
+
+        // It should NOT be available
+        val action = ToggleTypeAliasIntention()
+        val available = action.isAvailable(project, myFixture.editor, myFixture.file)
+        assertFalse("Action should not be available on normal variable usage", available)
+    }
+
+    fun testShouldNotBeAvailableOnNormalAssignmentDefinition() {
+        myFixture.configureByText(
+            "a.py", """
+            x<caret> = 1
+        """.trimIndent()
+        )
+
+        val action = ToggleTypeAliasIntention()
+        val available = action.isAvailable(project, myFixture.editor, myFixture.file)
+        assertFalse("Action should not be available on normal variable definition", available)
+    }
 }
