@@ -2,6 +2,8 @@
 
 ## Pending Issues
 
+- [ ] fix: Offer parameter object on whole function signature
+- [ ] fix: Do not offer local variable here `if __name__ == '__main__':`
 - [ ] fix: Making one symbol public via import place quickfix makes all other symbols unimported
 - [ ] fix: When prefering relative import inside same package, do not add candidate if relative import exists already
 - [ ] fix: implement abstract method is put above __init__
