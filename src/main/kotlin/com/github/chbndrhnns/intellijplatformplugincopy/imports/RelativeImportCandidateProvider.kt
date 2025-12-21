@@ -38,7 +38,7 @@ class RelativeImportCandidateProvider : PyImportCandidateProvider {
 
                 // QualifiedName Component Configuration
                 val components = ArrayList<String>()
-                components.add("") // 첫 번째 빈 문자열은 앞쪽의 점(.)을 의미함
+                components.add("") // The first empty string means the preceding dot (.).
 
                 if (relativePart.componentCount == 0) {
                     // If it's the same package (e.g., from . import ...)
