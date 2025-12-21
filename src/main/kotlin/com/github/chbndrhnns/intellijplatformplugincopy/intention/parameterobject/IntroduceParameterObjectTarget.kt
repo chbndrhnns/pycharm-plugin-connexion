@@ -13,8 +13,9 @@ internal object IntroduceParameterObjectTarget {
         if (function != null) {
             val inName = function.nameIdentifier?.let { PsiTreeUtil.isAncestor(it, element, false) } == true
             val inParameters = PsiTreeUtil.isAncestor(function.parameterList, element, false)
+            val inReturnAnnotation = function.annotation?.let { PsiTreeUtil.isAncestor(it, element, false) } == true
 
-            if (element == function || inName || inParameters) {
+            if (element == function || inName || inParameters || inReturnAnnotation) {
                 return function
             }
         }

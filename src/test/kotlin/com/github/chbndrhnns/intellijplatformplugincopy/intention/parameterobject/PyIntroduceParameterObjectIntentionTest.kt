@@ -230,4 +230,58 @@ class PyIntroduceParameterObjectIntentionTest : TestBase() {
             )
         }
     }
+
+    fun testAvailableOnReturnTypeAnnotation() {
+        withMockIntroduceParameterObjectDialog {
+            myFixture.doIntentionTest(
+                "a.py",
+                """
+                def create_user(first_name: str, last_name: str) -> No<caret>ne:
+                    print(first_name, last_name)
+                """.trimIndent(),
+                """
+                from dataclasses import dataclass
+                from typing import Any
+                
+                
+                @dataclass(frozen=True, slots=True, kw_only=True)
+                class CreateUserParams:
+                    first_name: str
+                    last_name: str
+                
+                
+                def create_user(params: CreateUserParams) -> None:
+                    print(params.first_name, params.last_name)
+                """.trimIndent(),
+                "BetterPy: Introduce parameter object"
+            )
+        }
+    }
+
+    fun testAvailableOnParameterTypeAnnotation() {
+        withMockIntroduceParameterObjectDialog {
+            myFixture.doIntentionTest(
+                "a.py",
+                """
+                def create_user(first_name: st<caret>r, last_name: str) -> None:
+                    print(first_name, last_name)
+                """.trimIndent(),
+                """
+                from dataclasses import dataclass
+                from typing import Any
+                
+                
+                @dataclass(frozen=True, slots=True, kw_only=True)
+                class CreateUserParams:
+                    first_name: str
+                    last_name: str
+                
+                
+                def create_user(params: CreateUserParams) -> None:
+                    print(params.first_name, params.last_name)
+                """.trimIndent(),
+                "BetterPy: Introduce parameter object"
+            )
+        }
+    }
 }
