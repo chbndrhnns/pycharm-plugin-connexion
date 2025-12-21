@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject
 
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.generator.ParameterObjectGeneratorFactory
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
@@ -97,9 +98,12 @@ class PyIntroduceParameterObjectProcessor(
         WriteCommandAction.writeCommandAction(project, function.containingFile)
             .withName("Introduce Parameter Object")
             .run<Throwable> {
-                val dataclass = createDataclass(
+                val generator = ParameterObjectGeneratorFactory.getGenerator(settings.baseType)
+                val languageLevel = LanguageLevel.forElement(function)
+
+                val generatedClass = generator.generateClass(
                     project,
-                    function,
+                    languageLevel,
                     dataclassName,
                     params,
                     settings.generateFrozen,
@@ -107,7 +111,13 @@ class PyIntroduceParameterObjectProcessor(
                     settings.generateKwOnly
                 )
 
-                addDataclassImport(function)
+                val dataclass = insertClassIntoFile(project, function, generatedClass)
+
+                // Add required imports for the selected base type
+                val file = function.containingFile as? PyFile
+                if (file != null) {
+                    generator.addRequiredImports(file, function)
+                }
                 updateFunctionBody(project, function, params, paramUsages, parameterName)
                 applyCallSiteUpdates(project, function, dataclass, callSiteUpdates)
                 replaceFunctionSignature(project, function, dataclassName, params, parameterName)
@@ -178,69 +188,11 @@ class PyIntroduceParameterObjectProcessor(
         return false
     }
 
-    private fun createDataclass(
+    private fun insertClassIntoFile(
         project: Project,
         function: PyFunction,
-        className: String,
-        params: List<PyNamedParameter>,
-        generateFrozen: Boolean,
-        generateSlots: Boolean,
-        generateKwOnly: Boolean
+        pyClass: PyClass
     ): PyClass {
-        val generator = PyElementGenerator.getInstance(project)
-        val languageLevel = LanguageLevel.forElement(function)
-
-        // 1. Basic class shell generation (class ClassName: pass)
-        val pyClass = generator.createFromText(languageLevel, PyClass::class.java, "class $className:\n")
-
-        // 2. @dataclass decorator creation and addition
-        val decoratorArgs = mutableListOf<String>()
-        if (generateFrozen) decoratorArgs.add("frozen=True")
-        if (generateSlots) decoratorArgs.add("slots=True")
-        if (generateKwOnly) decoratorArgs.add("kw_only=True")
-
-        val decoratorText = if (decoratorArgs.isNotEmpty()) {
-            "@dataclass(${decoratorArgs.joinToString(", ")})"
-        } else {
-            "@dataclass"
-        }
-
-        // Decorator list creation
-        val decoratorList = generator.createDecoratorList(decoratorText)
-
-        // Add decorator before class definition ('class' keyword)
-        // pyClass.firstChild is usually the 'class' keyword.
-        val classKeyword = pyClass.firstChild
-        pyClass.addBefore(decoratorList, classKeyword)
-        // Add a newline between the decorator and the class definition
-        pyClass.addBefore(generator.createNewLine(), classKeyword)
-
-        // 3. Add Attribute (Field)
-        val statementList = pyClass.statementList
-        // Remove the initially generated 'pass' statement
-        statementList.statements.firstOrNull()?.delete()
-
-        for (p in params) {
-            val ann = p.annotationValue
-            val typeText = ann ?: "Any"
-
-            // Text generation for each field (e.g., name: str = "default")
-            val fieldText = StringBuilder().apply {
-                append(p.name)
-                append(": ")
-                append(typeText)
-                if (p.defaultValue != null) {
-                    append(" = ")
-                    append(p.defaultValueText)
-                }
-            }.toString()
-
-            // Statement PSI Element Creation and Addition to Class Body
-            val fieldStatement = generator.createFromText(languageLevel, PyStatement::class.java, fieldText)
-            statementList.add(fieldStatement)
-        }
-
-        // 4. Insert the generated class into the actual PSI tree
         val file = function.containingFile
         val containingClass = function.containingClass
 
@@ -263,19 +215,8 @@ class PyIntroduceParameterObjectProcessor(
         // Add blank line before class definition
         parent.addBefore(PsiParserFacade.getInstance(project).createWhiteSpaceFromText("\n\n\n"), anchor)
 
-        // 5. Run code formatting (automatic indentation and style cleanup)
+        // Run code formatting (automatic indentation and style cleanup)
         return CodeStyleManager.getInstance(project).reformat(addedClass) as PyClass
-    }
-    private fun addDataclassImport(function: PyFunction) {
-        val file = function.containingFile as? PyFile ?: return
-
-        AddImportHelper.addOrUpdateFromImportStatement(
-            file, "typing", "Any", null, AddImportHelper.ImportPriority.BUILTIN, function
-        )
-
-        AddImportHelper.addOrUpdateFromImportStatement(
-            file, "dataclasses", "dataclass", null, AddImportHelper.ImportPriority.BUILTIN, function
-        )
     }
 
     private fun replaceFunctionSignature(

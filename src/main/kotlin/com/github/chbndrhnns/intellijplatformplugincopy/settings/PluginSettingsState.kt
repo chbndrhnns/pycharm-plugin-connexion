@@ -69,6 +69,10 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enableIntroduceParameterObjectAction: Boolean = true,
         var enableIntroduceParameterObjectRefactoringAction: Boolean = true,
 
+        // ---- Parameter Object Settings ----
+        /** Default base type for parameter objects (dataclass, NamedTuple, TypedDict, pydantic.BaseModel) */
+        var defaultParameterObjectBaseType: String = "dataclass",
+
         // ---- Pytest Tree Actions ----
         var enableJumpToPytestNodeInTestTreeAction: Boolean = true,
         var enableTogglePytestSkipFromTestTreeAction: Boolean = true,

@@ -250,6 +250,12 @@
                 id="com.github.chbndrhnns.intellijplatformplugincopy.settings.importsprojectview"
                 instance="com.github.chbndrhnns.intellijplatformplugincopy.settings.ImportsProjectViewConfigurable"/>
 
+        <applicationConfigurable
+                parentId="com.github.chbndrhnns.intellijplatformplugincopy.settings"
+                displayName="Parameter Object"
+                id="com.github.chbndrhnns.intellijplatformplugincopy.settings.parameterobject"
+                instance="com.github.chbndrhnns.intellijplatformplugincopy.settings.ParameterObjectConfigurable"/>
+
         <localInspection
                 language="Python"
                 shortName="PyMissingInDunderAllInspection"

@@ -24,9 +24,9 @@ class PyIntroduceParameterObjectDialogTest : TestBase() {
         // Select only 'b' and 'c'
         val processor = PyIntroduceParameterObjectProcessor(function) { allParams, defaultName ->
             IntroduceParameterObjectSettings(
-                allParams.filter { it.name in listOf("b", "c") },
-                defaultName,
-                "params"
+                selectedParameters = allParams.filter { it.name in listOf("b", "c") },
+                className = defaultName,
+                parameterName = "params"
             )
         }
 
@@ -72,9 +72,9 @@ class PyIntroduceParameterObjectDialogTest : TestBase() {
         // Select 'a' and 'c'
         val processor = PyIntroduceParameterObjectProcessor(function) { allParams, defaultName ->
             IntroduceParameterObjectSettings(
-                allParams.filter { it.name in listOf("a", "c") },
-                defaultName,
-                "params"
+                selectedParameters = allParams.filter { it.name in listOf("a", "c") },
+                className = defaultName,
+                parameterName = "params"
             )
         }
 
@@ -121,6 +121,7 @@ class PyIntroduceParameterObjectDialogTest : TestBase() {
                 selectedParameters = allParams,
                 className = "MyCustomParams",
                 parameterName = "my_params",
+                baseType = ParameterObjectBaseType.DATACLASS,
                 generateFrozen = false,
                 generateSlots = false,
                 generateKwOnly = false
@@ -168,8 +169,10 @@ class PyIntroduceParameterObjectDialogTest : TestBase() {
                 selectedParameters = allParams,
                 className = "FrozenParams",
                 parameterName = "args",
+                baseType = ParameterObjectBaseType.DATACLASS,
                 generateFrozen = true,
-                generateSlots = true
+                generateSlots = true,
+                generateKwOnly = true
             )
         }
 
