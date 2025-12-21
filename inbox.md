@@ -61,6 +61,7 @@
 
 ## In Progress Tasks
 
+- [ ] feat: Offer NamedTuple, TypedDict and pydantic.BaseModel as bases for parameter object
 - [ ] feat: Re-use import for qualified names
 - [ ] refactor: Performance (spec/performance.md)
 
