@@ -2,6 +2,8 @@
 
 ## Pending Issues
 
+- [ ] fix: Inspection "Symbol 'InMemNetboxPrefixMatches' is not exported in package __all__" should ignore private
+  packages and not trigger if it's exported in the next public package
 - [ ] refactor: why do we need a different check during tests? `PyWrapHeuristics.isProtocol`
 - [ ] fix: Add to __all__ is missing the plugin prefix and shold probably go away
 - [ ] fix: Marks symbols referenced in `path()` as unresolved although they exist (imported)
@@ -19,6 +21,7 @@
 
 ## Pending Features
 
+- [ ] feat: copy special: copy test as pytest node id reference
 - [ ] feat: If callable is expected, complete without parens
 - [ ] feat: Inline parameter object should ask to remove/other invocations
 - [ ] feat: Transform between lambda, function, partial
