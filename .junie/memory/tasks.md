@@ -1,13 +1,3 @@
-[2025-12-11 08:21] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "update status",
-    "MISSING STEPS": "scan project, open reference tests, implement intention, add resources, add tests, run tests",
-    "BOTTLENECK": "The agent changed settings before confirming file patterns and adding the core intention and tests.",
-    "PROJECT NOTE": "Mirror TogglePytestSkipIntention patterns for class structure, resources, and tests.",
-    "NEW INSTRUCTION": "WHEN adding a new intention THEN first implement intention class and its tests before UI toggles"
-}
-
 [2025-12-11 08:42] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -877,3 +867,24 @@
     "PROJECT NOTE": "An unresolved EP name warning exists in IntentionsConfigurable.getDependencies; verify or remove the EP dependency.",
     "NEW INSTRUCTION": "WHEN starting a new intention THEN add a failing end-to-end test before wiring settings"
 }
+
+[2025-12-22 14:07] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "rerun test",
+    "MISSING STEPS": "open file,apply fix,run full tests",
+    "BOTTLENECK": "The code change to unblock/commit the document was never implemented.",
+    "PROJECT NOTE": "In insertStatementBelowDocstring, call PsiDocumentManager.doPostponedOperationsAndUnblockDocument(document) before CodeStyleManager.reformat and after PSI insert/replace.",
+    "NEW INSTRUCTION": "WHEN stack trace pinpoints a method THEN open it and implement the fix before tests"
+}
+
+[2025-12-22 14:16] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "run tests, update generic strategy, reuse existing helper",
+    "BOTTLENECK": "Uncertainty about reliable Protocol detection API caused ad-hoc implementation.",
+    "PROJECT NOTE": "There is search.PyProtocolImplementationsSearch.isProtocol(pyClass, context); prefer it over SDK aliasing.",
+    "NEW INSTRUCTION": "WHEN filtering expected ctor PyClass symbols THEN use search.isProtocol and skip candidates"
+}
+

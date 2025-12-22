@@ -136,6 +136,10 @@ class ContainerItemStrategy : WrapStrategy {
             return StrategyResult.Skip("Already wrapped")
         }
 
+        if (PyWrapHeuristics.isProtocol(ctor.symbol, context.typeEval)) {
+            return StrategyResult.Skip("Expected type is a Protocol")
+        }
+
         if (UnwrapStrategy.unwrapYieldsExpectedCtor(target, ctor.name, context.typeEval)) {
             return StrategyResult.Skip("Unwrap yields expected ctor")
         }

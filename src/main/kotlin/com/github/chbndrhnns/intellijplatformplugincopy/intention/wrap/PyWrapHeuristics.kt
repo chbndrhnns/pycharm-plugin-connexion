@@ -9,6 +9,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.types.PyClassType
 import com.jetbrains.python.psi.types.TypeEvalContext
+import com.jetbrains.python.codeInsight.typing.isProtocol as builtInIsProtocol
 
 /**
  * Small collection of heuristics used by the wrap intention.
@@ -34,6 +35,20 @@ object PyWrapHeuristics {
      * over [expr] to preserve iteration semantics rather than nesting.
      */
     fun isContainerExpression(expr: PyExpression): Boolean = ContainerDetector.isContainerExpression(expr)
+
+    /**
+     * Returns true if the given element represents a Protocol class.
+     */
+    fun isProtocol(symbol: PsiNamedElement?, context: TypeEvalContext): Boolean {
+        val pyClass = symbol as? PyClass ?: return false
+        val classType = context.getType(pyClass) as? PyClassType
+
+        if (classType != null && builtInIsProtocol(classType, context)) {
+            return true
+        }
+
+        return pyClass.getAncestorClasses(context).any { it.name == "Protocol" }
+    }
 
     /**
      * Returns true if the given expression is already wrapped by a call to the same constructor

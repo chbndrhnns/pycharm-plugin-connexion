@@ -27,11 +27,13 @@ class UnionStrategy : WrapStrategy {
 
         val unionCtors = annElement?.let { UnionCandidates.collect(it, element) } ?: emptyList()
 
-        if (unionCtors.size < 2) {
+        val filteredCtors = unionCtors.filter { !PyWrapHeuristics.isProtocol(it.symbol, context.typeEval) }
+
+        if (filteredCtors.size < 2) {
             return StrategyResult.Continue
         }
 
-        val anyMatches = unionCtors.any {
+        val anyMatches = filteredCtors.any {
             PyWrapHeuristics.elementMatchesCtor(element, it, context.typeEval)
         }
         if (anyMatches) return StrategyResult.Skip("Matches one union member")
@@ -39,7 +41,7 @@ class UnionStrategy : WrapStrategy {
         // Bucketize candidates to prefer OWN > THIRDPARTY > STDLIB > BUILTIN.
         data class BucketedCtor(val bucket: TypeBucket, val ctor: ExpectedCtor)
 
-        val bucketed = unionCtors.mapNotNull { ctor ->
+        val bucketed = filteredCtors.mapNotNull { ctor ->
             val bucket = TypeBucketClassifier.bucketFor(ctor.symbol, element) ?: return@mapNotNull null
 
             // Filter out STDLIB types if configured
@@ -121,6 +123,10 @@ class GenericCtorStrategy : WrapStrategy {
 
         if (PyWrapHeuristics.isAlreadyWrappedWith(context.element, ctor, ctorElem)) {
             return StrategyResult.Skip("Already wrapped")
+        }
+
+        if (PyWrapHeuristics.isProtocol(ctorElem, context.typeEval)) {
+            return StrategyResult.Skip("Expected type is a Protocol")
         }
 
         return StrategyResult.Found(Single(context.element, ctor, ctorElem))
