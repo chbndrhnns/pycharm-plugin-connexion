@@ -2,7 +2,6 @@
 
 ## Pending Issues
 
-- [ ] fix: Go to openapi definition should only be available when there is an endpoint method
 - [ ] refactor: why do we need a different check during tests? `PyWrapHeuristics.isProtocol`
 - [ ] fix: Add to __all__ is missing the plugin prefix and shold probably go away
 - [ ] fix: Marks symbols referenced in `path()` as unresolved although they exist (imported)
@@ -71,13 +70,14 @@
 
 ## In Progress Tasks
 
-- [x] fix: Jump to test node should only show when a) test tree is not empty and b) we are in a test context
 - [ ] feat: Offer NamedTuple, TypedDict and pydantic.BaseModel as bases for parameter object
 - [ ] feat: Re-use import for qualified names
 - [ ] refactor: Performance (spec/performance.md)
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Go to openapi definition should only be available when there is an endpoint method
+- [x] fix: Jump to test node should only show when a) test tree is not empty and b) we are in a test context
 - [x] fix: Do not offer wrap for Protocol classes
 - [x] fix: Runtime error
 
