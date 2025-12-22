@@ -2,6 +2,8 @@
 
 ## Pending Issues
 
+- [ ] fix: Duplicate entries in refactoring menu
+- [ ] fix: Combine settings for parameter object
 - [ ] fix: Offer parameter object on whole function signature
 - [ ] fix: Do not offer local variable here `if __name__ == '__main__':`
 - [ ] fix: Making one symbol public via import place quickfix makes all other symbols unimported
@@ -14,6 +16,7 @@
 
 ## Pending Features
 
+- [ ] feat: Inline parameter object should ask to remove/other invocations
 - [ ] feat: Transform between lambda, function, partial
 - [ ] feat: Import should reuse existing module import (domain.ABC, domain.DEFG)
 - [ ] feat: Render quick doc for pydantic/dataclass, showing inherited members, as well
