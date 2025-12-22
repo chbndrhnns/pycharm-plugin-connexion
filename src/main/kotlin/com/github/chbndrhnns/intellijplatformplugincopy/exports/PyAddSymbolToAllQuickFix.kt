@@ -21,7 +21,7 @@ import com.jetbrains.python.psi.PyFile
  */
 class PyAddSymbolToAllQuickFix(private val name: String) : PsiUpdateModCommandQuickFix() {
 
-    override fun getFamilyName(): String = "Add to __all__"
+    override fun getFamilyName(): String = "BetterPy: Add to __all__"
 
     override fun applyFix(project: Project, element: PsiElement, updater: ModPsiUpdater) {
         val contextFile = element.containingFile ?: return
