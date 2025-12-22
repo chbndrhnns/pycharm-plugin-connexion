@@ -19,6 +19,7 @@
 
 ## Pending Features
 
+- [ ] feat: When inlining parameter object, ask if named or position args
 - [ ] feat: Discover if pydantic v2 is installed and show parameter object option only in this case
 - [ ] feat: Add run configuration with package name to gutter
 - [ ] feat: If callable is expected, complete without parens
