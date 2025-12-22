@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.exports
 
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiParserFacade
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.codeStyle.CodeStyleManager
@@ -176,7 +177,15 @@ object PyAllExportUtil {
         )
 
         insertStatementBelowDocstring(project, file, assignment)
-        CodeStyleManager.getInstance(project).reformat(assignment)
+        reformat(project, file, assignment)
+    }
+
+    private fun reformat(project: Project, file: PyFile, element: PyElement) {
+        val document = PsiDocumentManager.getInstance(project).getDocument(file)
+        if (document != null) {
+            PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(document)
+        }
+        CodeStyleManager.getInstance(project).reformat(element)
     }
 
     private fun insertStatementBelowDocstring(
@@ -205,7 +214,7 @@ object PyAllExportUtil {
         }
 
         // 3) Let code style polish the result
-        CodeStyleManager.getInstance(project).reformat(inserted)
+        reformat(project, file, inserted)
     }
 
     /**
@@ -218,6 +227,7 @@ object PyAllExportUtil {
         sequence: PySequenceExpression,
         name: String,
     ) {
+        val file = sequence.containingFile as? PyFile ?: return
         val generator = PyElementGenerator.getInstance(project)
 
         val existingNames = getExportedNames(sequence)
@@ -232,7 +242,7 @@ object PyAllExportUtil {
             firstElement,
             newItem,
         )
-        CodeStyleManager.getInstance(project).reformat(sequence)
+        reformat(project, file, sequence)
     }
 
     private fun getExportedNames(sequence: PySequenceExpression): List<String> {

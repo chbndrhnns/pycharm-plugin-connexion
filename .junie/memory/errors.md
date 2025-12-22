@@ -1,13 +1,3 @@
-[2025-12-11 09:36] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "FileComparisonFailedError in ParametrizePytest tests",
-    "ROOT CAUSE": "The Parametrize pytest intention output doesn't match expected text, notably missing required pytest import and/or exact formatting.",
-    "PROJECT NOTE": "ParametrizePytestTestIntentionTest::testAddsImportIfMissing implies the intention must add 'import pytest' when absent and produce exact expected whitespace and decorator placement across top-level and class scopes.",
-    "NEW INSTRUCTION": "WHEN applying parametrize intention without existing pytest import THEN insert 'import pytest' at file top with exact expected formatting"
-}
-
 [2025-12-11 09:38] - Updated by Junie - Error analysis
 {
     "TYPE": "test assertion",
@@ -781,3 +771,34 @@
     "PROJECT NOTE": "In IntentionsConfigurable.getDependencies, return listOf(com.intellij.codeInsight.intention.IntentionActionBean.EP_NAME) instead of ExtensionPointName.create(\"com.intellij.intentionAction\").",
     "NEW INSTRUCTION": "WHEN declaring Configurable EP dependencies THEN use IntentionActionBean.EP_NAME instead of raw EP string"
 }
+
+[2025-12-22 14:05] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "run_test",
+    "ERROR": "Invalid file name passed to configureByText",
+    "ROOT CAUSE": "The test called myFixture.configureByText with 'pkg/__init__.py'; configureByText expects a simple file name, not a path.",
+    "PROJECT NOTE": "To create files in subdirectories during tests, use myFixture.addFileToProject(\"pkg/__init__.py\", content) and then myFixture.configureFromExistingVirtualFile(file.virtualFile) or openFileInEditor.",
+    "NEW INSTRUCTION": "WHEN creating test files in subdirectories THEN use addFileToProject and configureFromExistingVirtualFile"
+}
+
+[2025-12-22 14:06] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "run_test",
+    "ERROR": "Invalid file name for configureByText path",
+    "ROOT CAUSE": "configureByText was invoked with 'pkg/__init__.py', which must be a plain file name without directories.",
+    "PROJECT NOTE": "In CodeInsight tests, use addFileToProject for path-based files, then open via configureByFile; configureByText only accepts a simple filename.",
+    "NEW INSTRUCTION": "WHEN path includes directories for configureByText THEN use addFileToProject and configureByFile"
+}
+
+[2025-12-22 14:07] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "run_test",
+    "ERROR": "Invalid file name passed to configureByText",
+    "ROOT CAUSE": "configureByText was given a path ('pkg/__init__.py') instead of a plain filename.",
+    "PROJECT NOTE": "With CodeInsightTestFixture, use addFileToProject for files in subdirectories and open them via configureByFile; configureByText expects just a filename.",
+    "NEW INSTRUCTION": "WHEN test file name contains path separators THEN use addFileToProject and configureByFile"
+}
+
