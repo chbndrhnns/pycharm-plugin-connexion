@@ -31,7 +31,6 @@
 - [ ] feat: Convert parametrized test to multiple unparametrized tests
 - [ ] feat: Add field to dataclass/model in case of unexpected argument
 - [ ] feat: Suggest expected type for container types, like `vals: set[MyType] = set(<caret>)`
-- [ ] feat: Support skip toggle for single parameters
 - [ ] feat: pytest param: treat text as ref
 - [ ] feat: Move test inside of class
 - [ ] feat: When suggesting the expected type and it is an inner class, reference it using outer_class.inner_class
@@ -47,7 +46,6 @@
 - [ ] feat: Move to inner class
 - [ ] feat: Move symbol to any of the currently imported packages/modules, change references
 - [ ] feat: Inspect duplicates in __all__
-- [ ] feat: Introduce type alias for union type
 - [ ] feat: search everywhere: search for partial matches in test names
 - [ ] feat: copy element with dependencies should generate a preview about the direct copy (not including dependencies)
 - [ ] When populating arguments, highlight the target function (area) when the popup appears
@@ -76,6 +74,8 @@
 
 ## Completed Tasks (newest first)
 
+- [ ] feat: Introduce type alias for union type
+- [x] feat: Support skip toggle for single parameters
 - [x] fix: Go to openapi definition should only be available when there is an endpoint method
 - [x] fix: Jump to test node should only show when a) test tree is not empty and b) we are in a test context
 - [x] fix: Do not offer wrap for Protocol classes
