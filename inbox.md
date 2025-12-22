@@ -2,6 +2,10 @@
 
 ## Pending Issues
 
+- [ ] fix: Add to __all__ is missing the plugin prefix and shold probably go away
+- [ ] fix: Do not offer wrap for Protocol classes
+- [ ] fix: Jump to test node should only show when a) test tree is not empty and b) we are in a test context
+- [ ] fix: Marks symbols referenced in `path()` as unresolved although they exist (imported)
 - [ ] fix: Duplicate entries in refactoring menu
 - [ ] fix: Combine settings for parameter object
 - [ ] fix: Offer parameter object on whole function signature
@@ -72,8 +76,81 @@
 
 ## Completed Tasks (newest first)
 
+- [ ] fix: Runtime error
+
+```
+java.lang.RuntimeException: Document is locked by write PSI operations. Use PsiDocumentManager.doPostponedOperationsAndUnblockDocument() to commit PSI changes to the document.
+Unprocessed elements: Py:ASSIGNMENT_STATEMENT(0,38)
+	at com.intellij.psi.impl.source.PostprocessReformattingAspectImpl.assertDocumentChangeIsAllowed(PostprocessReformattingAspectImpl.java:332)
+	at com.intellij.psi.impl.PsiDocumentManagerImpl.beforeDocumentChangeOnUnlockedDocument(PsiDocumentManagerImpl.java:83)
+	at com.intellij.psi.impl.PsiDocumentManagerBase.beforeDocumentChange(PsiDocumentManagerBase.java:1044)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at com.intellij.util.EventDispatcher.dispatchVoidMethod(EventDispatcher.java:120)
+	at com.intellij.util.EventDispatcher.lambda$doCreateMulticaster$1(EventDispatcher.java:85)
+	at jdk.proxy2/jdk.proxy2.$Proxy100.beforeDocumentChange(Unknown Source)
+	at com.intellij.openapi.editor.impl.DocumentImpl.lambda$beforeChangedUpdate$5(DocumentImpl.java:935)
+	at com.intellij.openapi.progress.impl.CoreProgressManager.lambda$executeNonCancelableSection$3(CoreProgressManager.java:325)
+	at com.intellij.openapi.progress.impl.CoreProgressManager.registerIndicatorAndRun(CoreProgressManager.java:792)
+	at com.intellij.openapi.progress.impl.CoreProgressManager.computeUnderProgress(CoreProgressManager.java:748)
+	at com.intellij.openapi.progress.impl.CoreProgressManager.lambda$computeInNonCancelableSection$4(CoreProgressManager.java:333)
+	at com.intellij.openapi.progress.Cancellation.computeInNonCancelableSection(Cancellation.java:156)
+	at com.intellij.openapi.progress.impl.CoreProgressManager.computeInNonCancelableSection(CoreProgressManager.java:333)
+	at com.intellij.openapi.progress.impl.CoreProgressManager.executeNonCancelableSection(CoreProgressManager.java:324)
+	at com.intellij.openapi.editor.impl.DocumentImpl.beforeChangedUpdate(DocumentImpl.java:932)
+	at com.intellij.openapi.editor.impl.DocumentImpl.updateText(DocumentImpl.java:867)
+	at com.intellij.openapi.editor.impl.DocumentImpl.insertString(DocumentImpl.java:595)
+	at com.intellij.openapi.editor.impl.TrailingSpacesStripper$1.run(TrailingSpacesStripper.java:86)
+	at com.intellij.openapi.command.impl.CoreCommandProcessor.runUndoTransparentAction(CoreCommandProcessor.java:272)
+	at com.intellij.openapi.editor.impl.TrailingSpacesStripper.lambda$performUndoableWrite$1(TrailingSpacesStripper.java:127)
+	at com.intellij.openapi.application.impl.AppImplKt$runnableUnitFunction$1.invoke(appImpl.kt:121)
+	at com.intellij.openapi.application.impl.AppImplKt$runnableUnitFunction$1.invoke(appImpl.kt:121)
+	at com.intellij.platform.locking.impl.NestedLocksThreadingSupport.runWriteAction(NestedLocksThreadingSupport.kt:998)
+	at com.intellij.openapi.application.impl.ApplicationImpl.runWriteAction(ApplicationImpl.java:1132)
+	at com.intellij.openapi.editor.impl.TrailingSpacesStripper.performUndoableWrite(TrailingSpacesStripper.java:126)
+	at com.intellij.openapi.editor.impl.TrailingSpacesStripper.strip(TrailingSpacesStripper.java:78)
+	at com.intellij.openapi.editor.impl.TrailingSpacesStripper.beforeDocumentSaving(TrailingSpacesStripper.java:54)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at com.intellij.openapi.fileEditor.impl.FileDocumentManagerImpl$FileDocumentManagerListenerBackgroundableBridge.multiCast(FileDocumentManagerImpl.java:1051)
+	at com.intellij.openapi.fileEditor.impl.FileDocumentManagerImpl$FileDocumentManagerListenerBackgroundableBridge.lambda$new$0(FileDocumentManagerImpl.java:1076)
+	at jdk.proxy2/jdk.proxy2.$Proxy34.beforeDocumentSaving(Unknown Source)
+	at com.intellij.openapi.fileEditor.impl.FileDocumentManagerImpl$FileDocumentManagerListenerBackgroundableBridge.lambda$beforeDocumentSaving$3(FileDocumentManagerImpl.java:1095)
+	at com.intellij.openapi.fileEditor.impl.FileDocumentManagerImpl$FileDocumentManagerListenerBackgroundableBridge.invokeOnEdt(FileDocumentManagerImpl.java:1061)
+	at com.intellij.openapi.fileEditor.impl.FileDocumentManagerImpl$FileDocumentManagerListenerBackgroundableBridge.beforeDocumentSaving(FileDocumentManagerImpl.java:1095)
+	at com.intellij.util.messages.impl.MessageBusImplKt.invokeMethod(MessageBusImpl.kt:820)
+	at com.intellij.util.messages.impl.MessageBusImplKt.invokeListener(MessageBusImpl.kt:760)
+	at com.intellij.util.messages.impl.MessageBusImplKt.executeOrAddToQueue(MessageBusImpl.kt:585)
+	at com.intellij.util.messages.impl.ToDirectChildrenMessagePublisher.publish$intellij_platform_core(CompositeMessageBus.kt:156)
+	at com.intellij.util.messages.impl.MessagePublisher.invoke(MessageBusImpl.kt:533)
+	at jdk.proxy2/jdk.proxy2.$Proxy104.beforeDocumentSaving(Unknown Source)
+	at com.intellij.openapi.fileEditor.impl.FileDocumentManagerImpl.lambda$doSaveDocumentInWriteAction$9(FileDocumentManagerImpl.java:446)
+	at com.intellij.pom.core.impl.PomModelImpl.guardPsiModificationsIn(PomModelImpl.java:329)
+	at com.intellij.openapi.fileEditor.impl.FileDocumentManagerImpl.doSaveDocumentInWriteAction(FileDocumentManagerImpl.java:444)
+	at com.intellij.openapi.fileEditor.impl.FileDocumentManagerImpl.lambda$doSaveDocument$5(FileDocumentManagerImpl.java:389)
+	at com.intellij.openapi.application.impl.AppImplKt$rethrowCheckedExceptions$2.invoke(appImpl.kt:123)
+	at com.intellij.platform.locking.impl.NestedLocksThreadingSupport.runWriteAction(NestedLocksThreadingSupport.kt:998)
+	at com.intellij.openapi.application.impl.ApplicationImpl.runWriteAction(ApplicationImpl.java:1156)
+	at com.intellij.openapi.fileEditor.impl.FileDocumentManagerImpl.doSaveDocument(FileDocumentManagerImpl.java:388)
+	at com.intellij.openapi.fileEditor.impl.FileDocumentManagerImpl.saveDocumentInWriteSafeEnvironment(FileDocumentManagerImpl.java:337)
+	at com.intellij.openapi.fileEditor.impl.FileDocumentManagerImpl.saveDocument(FileDocumentManagerImpl.java:326)
+	at com.intellij.openapi.fileEditor.impl.FileDocumentManagerImpl.saveDocument(FileDocumentManagerImpl.java:315)
+	at com.intellij.formatting.service.AsyncDocumentFormattingService.prepareForFormatting(AsyncDocumentFormattingService.java:82)
+	at com.intellij.formatting.service.AsyncDocumentFormattingService.prepareForFormatting(AsyncDocumentFormattingService.java:144)
+	at com.intellij.formatting.service.AsyncDocumentFormattingSupportImpl.formatDocument(AsyncDocumentFormattingSupportImpl.kt:62)
+	at com.intellij.formatting.service.AsyncDocumentFormattingService.formatDocument(AsyncDocumentFormattingService.java:44)
+	at com.intellij.formatting.service.AbstractDocumentFormattingService.formatElement(AbstractDocumentFormattingService.java:47)
+	at com.intellij.formatting.service.AbstractDocumentFormattingService.formatElement(AbstractDocumentFormattingService.java:31)
+	at com.intellij.formatting.service.FormattingServiceUtil.formatElement(FormattingServiceUtil.java:67)
+	at com.intellij.psi.impl.source.codeStyle.CodeStyleManagerImpl.reformat(CodeStyleManagerImpl.java:82)
+	at com.intellij.psi.impl.source.codeStyle.CodeStyleManagerImpl.reformat(CodeStyleManagerImpl.java:66)
+	at com.github.chbndrhnns.intellijplatformplugincopy.exports.PyAllExportUtil.insertStatementBelowDocstring(PyAllExportUtil.kt:208)
+	at com.github.chbndrhnns.intellijplatformplugincopy.exports.PyAllExportUtil.createNewDunderAll(PyAllExportUtil.kt:178)
+	at com.github.chbndrhnns.intellijplatformplugincopy.exports.PyAllExportUtil.ensureSymbolExported(PyAllExportUtil.kt:47)
+	at com.github.chbndrhnns.intellijplatformplugincopy.exports.PyExportSymbolToTargetIntention.exportToTarget$lambda$6(PyExportSymbolToTargetIntention.kt:166)
+```
 - [x] refactor: `IntentionPreviewUtils.write<RuntimeException> { symbol.setName(newName) }` -> ok
-- [ ] fix: Does not filter rename to self quickfix
+- [x] fix: Does not filter rename to self quickfix
 - [x] fix: warning is displayed in green with a checkmark when a file was created that shadows a stdlib module. Show in
   orange and offer link to rename the file.
 - [x] Wrap case which failed initially
