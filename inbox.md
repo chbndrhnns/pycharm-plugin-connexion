@@ -2,8 +2,10 @@
 
 ## Pending Issues
 
+- [ ] fix: When toggling pytest mark skip on param, add trailing comma
+- [ ] fix: Use actual outcome should not be available for exceptions or binary operations (assert False)
+- [ ] fix: Introduce parameter object refactoring is not available no a str annotation
 - [ ] refactor: why do we need a different check during tests? `PyWrapHeuristics.isProtocol`
-- [ ] fix: Duplicate entries in refactoring menu
 - [ ] fix: Combine settings for parameter object
 - [ ] fix: Offer parameter object on whole function signature
 - [ ] fix: Do not offer local variable here `if __name__ == '__main__':`
@@ -17,6 +19,8 @@
 
 ## Pending Features
 
+- [ ] feat: Discover if pydantic v2 is installed and show parameter object option only in this case
+- [ ] feat: Add run configuration with package name to gutter
 - [ ] feat: If callable is expected, complete without parens
 - [ ] feat: Inline parameter object should ask to remove/other invocations
 - [ ] feat: Transform between lambda, function, partial
@@ -60,18 +64,19 @@
 - [ ] feat: Block list: Do not allow names from typing or collections.abc.
 - [ ] feat: Configure default base classes
 - [ ] commit: if it fails for hooks, add option keep selection of files (docs/keep-commit-selection/spec.md, stash)
-- [ ] feat: Show red bubble if introduce parameter object is not available
 - [ ] feat: Collect symbols to check against for stdlib clashes dynamically
 - [ ] feat: Support what is tested in _testNestedConstructor_InsideDict_WrapsInnerArgument
 
 ## In Progress Tasks
 
-- [ ] feat: Offer NamedTuple, TypedDict and pydantic.BaseModel as bases for parameter object
 - [ ] feat: Re-use import for qualified names
 - [ ] refactor: Performance (spec/performance.md)
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Offer NamedTuple, TypedDict and pydantic.BaseModel as bases for parameter object
+- [x] fix: Missing introduce parameter action if caret on type annotation of argument
+- [x] fix: Duplicate entries in refactoring menu
 - [x] fix: Marks symbols referenced in `patch()` as unresolved although they exist (imported)
 - [x] fix: Add to __all__ is missing the plugin prefix and shold probably go away
 - [x] fix: Inspection "Symbol 'InMemNetboxPrefixMatches' is not exported in package __all__" should ignore private
@@ -207,3 +212,4 @@ val2: list[Outer] = [
 - [x] fix: Wrap should use set literal instead of set call, `vals: set[T] = T`
 - [x] feat: Enable parameter object action also if only one parameter
 - [x] fix: Wrap should pick inner problem first, offers `Prefix` here
+- [N] feat: Show red bubble if introduce parameter object is not available
