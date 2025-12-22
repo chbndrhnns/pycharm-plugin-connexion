@@ -15,7 +15,8 @@ class GoToOpenApiOperationAction : AnAction() {
     }
 
     override fun update(e: AnActionEvent) {
-        e.presentation.isEnabledAndVisible = findTargetFunction(e) != null
+        val function = findTargetFunction(e)
+        e.presentation.isEnabledAndVisible = function != null && OpenApiSpecUtil.findSpecOperationsForFunction(function).isNotEmpty()
     }
 
     override fun actionPerformed(e: AnActionEvent) {

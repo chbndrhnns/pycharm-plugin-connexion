@@ -467,7 +467,7 @@
                 class="com.github.chbndrhnns.intellijplatformplugincopy.connexion.GoToOpenApiOperationAction"
                 text="BetterPy: Go to OpenAPI Operation"
                 description="Navigate to OpenAPI declaration">
-            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <add-to-group group-id="EditorPopupMenu.GoTo" anchor="after" relative-to-action="FindUsages"/>
         </action>
     </actions>
 </idea-plugin>

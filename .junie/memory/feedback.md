@@ -638,3 +638,11 @@
     "NEW INSTRUCTION": "WHEN file shadows stdlib module THEN style as warning, add rename, exclamation icon"
 }
 
+[2025-12-22 21:48] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "action availability",
+    "EXPECTATION": "The 'Go to OpenAPI definition' action should be available only when the caret is on an endpoint method that links to the OpenAPI spec.",
+    "NEW INSTRUCTION": "WHEN caret on endpoint method linked to OpenAPI spec THEN enable Go to OpenAPI action"
+}
+
