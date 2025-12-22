@@ -1,57 +1,3 @@
-[2025-12-11 10:17] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "apply_patch",
-    "ERROR": "Inserted raw Python code into Kotlin test caused syntax errors",
-    "ROOT CAUSE": "The patch added Python lines outside Kotlin string literals in LiteralsTest.kt, breaking syntax.",
-    "PROJECT NOTE": "Test expectations in src/test/.../*.kt are triple-quoted Kotlin strings passed to myFixture.doIntentionTest; modify content inside those strings and preserve trimIndent/quotes.",
-    "NEW INSTRUCTION": "WHEN editing Kotlin test expected output THEN modify inside triple-quoted strings only"
-}
-
-[2025-12-11 10:17] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid edit",
-    "TOOL": "apply_patch",
-    "ERROR": "Broke Kotlin test by malformed triple-quoted string patch",
-    "ROOT CAUSE": "Patched expected Python code outside the Kotlin triple-quoted string, corrupting syntax.",
-    "PROJECT NOTE": "Tests use myFixture.doIntentionTest with before/after Python embedded in Kotlin triple-quoted strings; edits must remain inside those strings.",
-    "NEW INSTRUCTION": "WHEN editing Kotlin test expected Python text THEN modify inside the triple-quoted strings only"
-}
-
-[2025-12-11 10:32] - Updated by Junie - Error analysis
-{
-    "TYPE": "tool failure",
-    "TOOL": "get_file_structure",
-    "ERROR": "File structure parsing failed",
-    "ROOT CAUSE": "The tool cannot parse Kotlin files or failed on this large Kotlin source.",
-    "PROJECT NOTE": "Target file: src/main/kotlin/.../inspections/PyMissingInDunderAllInspection.kt; prefer reading raw content when structure view is unsupported.",
-    "NEW INSTRUCTION": "WHEN get_file_structure returns unsupported or parsing failed THEN read the file via raw file-read tool"
-}
-
-[2025-12-11 10:36] - Updated by Junie - Error analysis
-{
-    "TYP
-
-[2025-12-16 23:24] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "Gradle :test",
-    "ERROR": "Test suite failed with 18 failing tests",
-    "ROOT CAUSE": "The full test suite was executed after a revert, and unrelated failing tests caused the task to fail.",
-    "PROJECT NOTE": "Run targeted tests via: ./gradlew test --tests 'com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.*' to isolate wrap-related regressions; consult build/reports/tests/test/index.html for details.",
-    "NEW INSTRUCTION": "WHEN isolating impact of a specific commit THEN run only affected test classes or packages"
-}
-
-[2025-12-17 07:33] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "Gradle :test",
-    "ERROR": "FileComparisonFailedError: actual text differs from expected",
-    "ROOT CAUSE": "Wrap logic outputs constructor calls where tests expect ellipsis placeholders in container contexts.",
-    "PROJECT NOTE": "In ExpectedTypeInfo and wrap intentions, preserve Ellipsis (...) for container item suggestions (e.g., list/set/dict literals) while still using constructors for direct argument conversions.",
-    "NEW INSTRUCTION": "WHEN suggesting placeholder for container element THEN insert Ellipsis (...) instead of constructor call"
-}
-
 [2025-12-18 20:05] - Updated by Junie - Error analysis
 {
     "TYPE": "semantic error",
@@ -790,4 +736,54 @@
     "ROOT CAUSE": "The run_test call passed a truncated path string with newline/ellipsis, making it invalid.",
     "PROJECT NOTE": "run_test usually does not require a path; prefer running by test class/pattern or provide a valid project-relative path.",
     "NEW INSTRUCTION": "WHEN run_test path contains newline or ellipsis THEN run without path or use valid path"
+}
+
+[2025-12-22 14:35] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "run_test",
+    "ERROR": "Missing test-log.properties during test run",
+    "ROOT CAUSE": "The IntelliJ test framework expects a cached logging config file that is absent or corrupted.",
+    "PROJECT NOTE": "Run targeted tests via Gradle wrapper; if SDK caches break, refresh dependencies before retrying.",
+    "NEW INSTRUCTION": "WHEN test run reports missing test-log.properties THEN rerun Gradle tests with --refresh-dependencies"
+}
+
+[2025-12-22 14:35] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "run_test",
+    "ERROR": "Missing j.u.l LogManager config: test-log.properties",
+    "ROOT CAUSE": "The IntelliJ/PyCharm test runtime wasn’t initialized, so the required logging config file wasn’t provisioned in Gradle caches.",
+    "PROJECT NOTE": "Use the Gradle wrapper from project root or the .run/Run Tests.run.xml configuration to execute tests so the IDE platform test artifacts (including test-log.properties) are prepared.",
+    "NEW INSTRUCTION": "WHEN run_test logs missing test-log.properties THEN run Gradle cleanTest test from project root"
+}
+
+[2025-12-22 14:36] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "run_test",
+    "ERROR": "Missing LogManager config test-log.properties",
+    "ROOT CAUSE": "Tests were executed without the IntelliJ Platform test logging configuration set, causing LogManager to fail.",
+    "PROJECT NOTE": "Run tests via Gradle with test filters, e.g., ./gradlew test --tests 'com.github.chbndrhnns.intellijplatformplugincopy.actions.JumpToPytestNodeInTestTreeActionTest'.",
+    "NEW INSTRUCTION": "WHEN test run fails with missing test-log.properties THEN run Gradle tests with --tests filter"
+}
+
+[2025-12-22 14:39] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "IntentionAction registration",
+    "ERROR": "Intention description directory URL is null (missing description.html)",
+    "ROOT CAUSE": "The newly registered intention lacks the required intentionDescriptions/<ClassName>/description.html resource.",
+    "PROJECT NOTE": "Add resources at src/main/resources/intentionDescriptions/JumpToPytestNodeInTestTreeIntention/description.html (optionally before.py/after.py) to satisfy the IDE’s intention metadata requirements.",
+    "NEW INSTRUCTION": "WHEN plugin.xml registers an intentionAction THEN add intentionDescriptions/<ClassName>/description.html resource directory"
+}
+
+[2025-12-22 14:41] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "-",
+    "ERROR": "Missing intention description.html resource",
+    "ROOT CAUSE": "JumpToPytestNodeInTestTreeIntention was registered without the required description directory and files.",
+    "PROJECT NOTE": "Place description files under src/main/resources/intentionDescriptions/JumpToPytestNodeInTestTreeIntention/ (description.html, before.py.template, after.py.template as needed) and ensure plugin.xml <intentionAction> is declared.",
+    "NEW INSTRUCTION": "WHEN adding a new IntentionAction THEN create intentionDescriptions/<ClassName>/description.html (with example templates)"
 }

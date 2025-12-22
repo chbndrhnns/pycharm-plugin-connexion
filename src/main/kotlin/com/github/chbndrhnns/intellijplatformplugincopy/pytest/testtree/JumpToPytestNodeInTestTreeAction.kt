@@ -27,6 +27,7 @@ class JumpToPytestNodeInTestTreeAction : AnAction() {
             return
         }
 
+        // Action is only visible if we have an active test tree
         if (!PytestTestTreeNavigator.hasActiveNonEmptyTestTree(project)) {
             e.presentation.isEnabledAndVisible = false
             return

@@ -24,6 +24,10 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
+        <intentionAction>
+            <className>com.github.chbndrhnns.intellijplatformplugincopy.pytest.testtree.JumpToPytestNodeInTestTreeIntention</className>
+            <category>BetterPy</category>
+        </intentionAction>
         <completion.contributor language="Python"
                                 implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.completion.PyExpectedTypeCompletionContributor"/>
         <completion.contributor language="Python"
@@ -456,7 +460,7 @@
                 class="com.github.chbndrhnns.intellijplatformplugincopy.pytest.testtree.JumpToPytestNodeInTestTreeAction"
                 text="BetterPy: Jump to Test Tree Node"
                 description="Selects the corresponding pytest node in the active test tree">
-            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <add-to-group group-id="GoToMenu" anchor="last"/>
         </action>
 
         <action id="Connexion.GoToOpenApiOperation"

@@ -1,13 +1,3 @@
-[2025-12-11 09:16] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "update refactoring action availability, add tests",
-    "BOTTLENECK": "Caret-on-name and call-callee positions were not validated by tests.",
-    "PROJECT NOTE": "BaseRefactoringAction needs isEnabledOnElementInsideEditor to delegate to IntroduceParameterObjectTarget.isAvailable.",
-    "NEW INSTRUCTION": "WHEN tests cover only parameter positions THEN add tests for name and call callee"
-}
-
 [2025-12-11 09:41] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -876,4 +866,14 @@
     "BOTTLENECK": "Action code was never updated and tests were not run correctly.",
     "PROJECT NOTE": "Use Gradle to execute tests (e.g., bash './gradlew test') and inspect JumpToPytestNodeInTestTreeAction.kt fully before changes.",
     "NEW INSTRUCTION": "WHEN tests are created or modified THEN run './gradlew test' via bash and summarize"
+}
+
+[2025-12-22 14:36] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "add tests, run tests",
+    "MISSING STEPS": "modify action, update plugin.xml, implement intention, decouple test tree check",
+    "BOTTLENECK": "No implementation or plugin.xml changes were made; only tests were edited.",
+    "PROJECT NOTE": "Use EditorPopupMenu.GoTo group in plugin.xml and register a Python intention via intentionActions.",
+    "NEW INSTRUCTION": "WHEN task requests menu grouping or intention exposure THEN update plugin.xml and implement intention before tests"
 }
