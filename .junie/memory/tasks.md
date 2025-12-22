@@ -1,13 +1,3 @@
-[2025-12-12 10:00] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "add tests",
-    "BOTTLENECK": "No new tests covered pytest-sugar progress/status edge cases.",
-    "PROJECT NOTE": "Add pytest-sugar lines to PytestConsoleFilterTest to guard link truncation.",
-    "NEW INSTRUCTION": "WHEN altering node-id parsing logic THEN add tests covering pytest-sugar progress output"
-}
-
 [2025-12-12 10:04] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -876,4 +866,14 @@
     "BOTTLENECK": "The new setting was added to state but not exposed in the settings UI.",
     "PROJECT NOTE": "Align the new action id with existing action id naming in plugin.xml for consistency.",
     "NEW INSTRUCTION": "WHEN new boolean setting added to PluginSettingsState THEN add bound checkbox in PluginSettingsConfigurable"
+}
+
+[2025-12-22 23:13] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "delete tests,remove settings",
+    "MISSING STEPS": "search usages,run tests,scan project",
+    "BOTTLENECK": "Edits were not verified with a usage scan and test run.",
+    "PROJECT NOTE": "Prefer PyBaseRefactoringAction-based entries over custom AnAction to avoid duplicate menu items; check settings configurables for references before removing flags.",
+    "NEW INSTRUCTION": "WHEN duplicate action registrations found in plugin.xml THEN keep refactoring action, remove duplicate, search usages, run tests"
 }

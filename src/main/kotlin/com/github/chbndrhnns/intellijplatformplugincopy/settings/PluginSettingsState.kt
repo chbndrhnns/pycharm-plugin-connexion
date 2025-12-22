@@ -68,9 +68,7 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enableCopyStacktraceAction: Boolean = true,
 
         // ---- Refactoring Actions ----
-        var enableIntroduceParameterObjectAction: Boolean = true,
         var enableIntroduceParameterObjectRefactoringAction: Boolean = true,
-        var enableInlineParameterObjectAction: Boolean = true,
         var enableInlineParameterObjectRefactoringAction: Boolean = true,
 
         // ---- Parameter Object Settings ----

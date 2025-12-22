@@ -19,19 +19,11 @@ class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
                     .bindSelected(settings::enableCopyBuildNumberAction)
             }
             row {
-                checkBox("‘Introduce Parameter Object…’ action (editor)")
-                    .bindSelected(settings::enableIntroduceParameterObjectAction)
-            }
-            row {
-                checkBox("‘Introduce Parameter Object…’ action (refactoring menu)")
+                checkBox("‘Introduce Parameter Object…’ action")
                     .bindSelected(settings::enableIntroduceParameterObjectRefactoringAction)
             }
             row {
-                checkBox("‘Inline Parameter Object…’ action (editor)")
-                    .bindSelected(settings::enableInlineParameterObjectAction)
-            }
-            row {
-                checkBox("‘Inline Parameter Object…’ action (refactoring menu)")
+                checkBox("‘Inline Parameter Object…’ action")
                     .bindSelected(settings::enableInlineParameterObjectRefactoringAction)
             }
             row {

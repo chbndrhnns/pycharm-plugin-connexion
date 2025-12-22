@@ -385,19 +385,6 @@
                 icon="AllIcons.Nodes.Type">
         </action>
 
-        <action id="com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.PyIntroduceParameterObjectAction"
-                class="com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.PyIntroduceParameterObjectAction"
-                text="BetterPy: Introduce Parameter Object..."
-                description="Introduces a parameter object for the current function">
-            <add-to-group group-id="RefactoringMenu" anchor="last"/>
-        </action>
-
-        <action id="com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.PyInlineParameterObjectAction"
-                class="com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.PyInlineParameterObjectAction"
-                text="BetterPy: Inline Parameter Object..."
-                description="Inlines a parameter object back into individual parameters">
-            <add-to-group group-id="RefactoringMenu" anchor="last"/>
-        </action>
 
         <action id="com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectRefactoringAction"
                 class="com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectRefactoringAction"
