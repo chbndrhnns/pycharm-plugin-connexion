@@ -63,6 +63,7 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enableCopyBuildNumberAction: Boolean = true,
         var enableCopyBlockWithDependenciesAction: Boolean = true,
         var enableCopyPytestNodeIdsAction: Boolean = true,
+        var enableCopyPytestNodeIdFromEditorAction: Boolean = true,
         var enableCopyFQNsAction: Boolean = true,
         var enableCopyStacktraceAction: Boolean = true,
 

@@ -52,6 +52,7 @@ abstract class TestBase : MyPlatformTestCase() {
                 enableIntroduceParameterObjectRefactoringAction = true,
                 enableCopyBlockWithDependenciesAction = true,
                 enableCopyPytestNodeIdsAction = true,
+                enableCopyPytestNodeIdFromEditorAction = true,
                 enableCopyFQNsAction = true,
                 enableCopyStacktraceAction = true,
                 enableJumpToPytestNodeInTestTreeAction = true,

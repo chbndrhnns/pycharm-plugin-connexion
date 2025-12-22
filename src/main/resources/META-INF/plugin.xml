@@ -429,6 +429,12 @@
             <add-to-group group-id="Copy.Paste.Special" anchor="last"/>
         </action>
 
+        <action id="MyPlugin.CopyPytestNodeIdFromEditorAction"
+                class="com.github.chbndrhnns.intellijplatformplugincopy.actions.CopyPytestNodeIdFromEditorAction"
+                text="BetterPy: Copy Pytest Node ID">
+            <add-to-group group-id="Copy.Paste.Special" anchor="last"/>
+        </action>
+
         <group id="MyPlugin.CopySpecialGroup" text="BetterPy: Copy Special" popup="true">
             <add-to-group group-id="TestTreePopupMenu" anchor="last"/>
             <action id="MyPlugin.CopyPytestNodeIds"

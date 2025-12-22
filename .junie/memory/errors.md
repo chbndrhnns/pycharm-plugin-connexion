@@ -1,23 +1,3 @@
-[2025-12-18 23:20] - Updated by Junie - Error analysis
-{
-    "TYPE": "syntax",
-    "TOOL": "create",
-    "ERROR": "Invalid Kotlin package uses reserved keyword",
-    "ROOT CAUSE": "The package segment 'typealias' is a Kotlin keyword and not a valid identifier.",
-    "PROJECT NOTE": "Use a valid package like com.github.chbndrhnns.intellijplatformplugincopy.intention.typealiases and place files under .../intention/typealiases/ (apply similarly for tests).",
-    "NEW INSTRUCTION": "WHEN package declaration contains segment 'typealias' THEN rename segment to 'typealiases' and align directories"
-}
-
-[2025-12-18 23:22] - Updated by Junie - Error analysis
-{
-    "TYPE": "syntax",
-    "TOOL": "create",
-    "ERROR": "Invalid Kotlin package directive",
-    "ROOT CAUSE": "The package path used the Kotlin keyword 'typealias' as a segment, making it invalid.",
-    "PROJECT NOTE": "Use a valid package matching src path and avoid keywords; e.g., com.github.chbndrhnns.intellijplatformplugincopy.intention.typealiases, and place files under .../intention/typealiases/ (same for tests).",
-    "NEW INSTRUCTION": "WHEN package path includes segment 'typealias' THEN replace it with 'typealiases' and align folder"
-}
-
 [2025-12-19 07:52] - Updated by Junie - Error analysis
 {
     "TYPE": "runtime",
@@ -776,4 +756,34 @@
     "ROOT CAUSE": "The inspection only checks the immediate parent package and still offers 'Make symbol public' for private packages instead of skipping or looking up to a public package.",
     "PROJECT NOTE": "Update src/main/kotlin/com/github/chbndrhnns/intellijplatformplugincopy/exports/PyPrivateModuleImportInspection.kt to ignore private packages and, if needed, search ancestor public packages for __all__ exports (see PyUseExportedSymbolFromPackageQuickFix).",
     "NEW INSTRUCTION": "WHEN parent package name starts with '_' THEN suppress 'Make symbol public' quick fix"
+}
+
+[2025-12-22 22:58] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Test references missing action id and setting symbol",
+    "ROOT CAUSE": "The test was added before defining the settings flag, action class, and plugin.xml action id.",
+    "PROJECT NOTE": "Register actions under Copy.Paste.Special in plugin.xml and use consistent action ids (e.g., MyPlugin.*). Add new toggles to PluginSettingsState.state before tests use them.",
+    "NEW INSTRUCTION": "WHEN test references unknown action id or setting THEN define setting and register action first"
+}
+
+[2025-12-22 22:59] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Test references missing action and setting",
+    "ROOT CAUSE": "The test file used a non-existent action id/class and a settings flag not yet defined.",
+    "PROJECT NOTE": "Define new settings in PluginSettingsState, implement the action class, and register the action id in plugin.xml under Copy.Paste.Special before adding tests that reference them.",
+    "NEW INSTRUCTION": "WHEN adding a test for a new action THEN define setting, implement action, and register id first"
+}
+
+[2025-12-22 22:59] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Test referenced undefined setting, action id, and class",
+    "ROOT CAUSE": "The test file was created before the new action, setting flag, and plugin.xml registration existed.",
+    "PROJECT NOTE": "Action IDs in this repo are registered in plugin.xml and referenced by performEditorAction; ensure the ID matches exactly.",
+    "NEW INSTRUCTION": "WHEN creating tests referencing a new action id THEN implement action and register id in plugin.xml first"
 }

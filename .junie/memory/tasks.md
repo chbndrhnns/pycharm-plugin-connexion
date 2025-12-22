@@ -1,23 +1,3 @@
-[2025-12-11 10:57] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "broad search",
-    "MISSING STEPS": "run tests before change",
-    "BOTTLENECK": "No baseline test run before applying the fix.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN starting a bug fix THEN run relevant tests to capture baseline"
-}
-
-[2025-12-11 11:08] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "run tests",
-    "BOTTLENECK": "Malformed regex string introduced a syntax error and was not validated by tests.",
-    "PROJECT NOTE": "Node id regex should allow quotes/brackets and stop before trailing status using a non-greedy group with whitespace lookahead.",
-    "NEW INSTRUCTION": "WHEN editing PytestConsoleFilter regex THEN run ./gradlew test and correct syntax or failing assertions immediately"
-}
-
 [2025-12-12 10:00] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -886,4 +866,14 @@
     "BOTTLENECK": "Mis-scoped test execution and unfocused initial search delayed progress.",
     "PROJECT NOTE": "Inspection classes are discoverable via src/main/resources/inspectionDescriptions and existing tests under src/test.",
     "NEW INSTRUCTION": "WHEN inspection search yields no results THEN search inspectionDescriptions and testData for class"
+}
+
+[2025-12-22 23:00] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "update settings UI, run tests",
+    "BOTTLENECK": "The new setting was added to state but not exposed in the settings UI.",
+    "PROJECT NOTE": "Align the new action id with existing action id naming in plugin.xml for consistency.",
+    "NEW INSTRUCTION": "WHEN new boolean setting added to PluginSettingsState THEN add bound checkbox in PluginSettingsConfigurable"
 }
