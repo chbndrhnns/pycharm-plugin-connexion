@@ -1,23 +1,3 @@
-[2025-12-12 10:04] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "ask user for raw console line,verify hyperlink range on provided sample",
-    "BOTTLENECK": "Lack of an exact raw console sample to reproduce precisely.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN user reports console parsing issue without raw sample THEN ask for exact console line and context"
-}
-
-[2025-12-12 10:09] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "run tests, inspect resolver",
-    "BOTTLENECK": "No verification run after adding the new test.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN new unit tests are added THEN run ./gradlew test and fix issues"
-}
-
 [2025-12-12 10:13] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -876,4 +856,24 @@
     "BOTTLENECK": "Edits were not verified with a usage scan and test run.",
     "PROJECT NOTE": "Prefer PyBaseRefactoringAction-based entries over custom AnAction to avoid duplicate menu items; check settings configurables for references before removing flags.",
     "NEW INSTRUCTION": "WHEN duplicate action registrations found in plugin.xml THEN keep refactoring action, remove duplicate, search usages, run tests"
+}
+
+[2025-12-22 23:19] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "search for isSubclass, search for getSuperClasses",
+    "MISSING STEPS": "run tests, add reproducer test",
+    "BOTTLENECK": "No test-backed verification; relied solely on static code inspection.",
+    "PROJECT NOTE": "Use doIntentionTest in src/test to reproduce and validate intention availability.",
+    "NEW INSTRUCTION": "WHEN feature is not suggested in code sample THEN run relevant tests and add reproducer"
+}
+
+[2025-12-22 23:25] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "run tests, skim unrelated files",
+    "MISSING STEPS": "open target file, review tests",
+    "BOTTLENECK": "Skipped inspecting IntroduceParameterObjectTarget.find and hit unrelated build failure.",
+    "PROJECT NOTE": "Use PyIntroduceParameterObjectIntentionTest#testAvailableOnParameterTypeAnnotation to verify signature-coverage logic.",
+    "NEW INSTRUCTION": "WHEN diagnosing intention availability THEN open IntroduceParameterObjectTarget.find and compare with availability tests"
 }

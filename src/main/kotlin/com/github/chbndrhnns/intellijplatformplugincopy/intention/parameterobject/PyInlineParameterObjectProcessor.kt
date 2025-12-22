@@ -52,7 +52,7 @@ class PyInlineParameterObjectProcessor(
 
                 val parameterName = parameter.name ?: return@readAction null
                 val parameterObjectClass = resolveParameterClass(parameter) ?: return@readAction null
-                val fields = extractDataclassFields(parameterObjectClass)
+                val fields = extractFields(parameterObjectClass)
                 if (fields.isEmpty()) return@readAction null
 
                 val functionUsages = ReferencesSearch.search(function, GlobalSearchScope.projectScope(project)).findAll()
@@ -82,7 +82,7 @@ class PyInlineParameterObjectProcessor(
             replaceFunctionSignature(plan)
             updateFunctionBody(plan)
             applyCallSiteUpdates(plan)
-            CodeStyleManager.getInstance(project).reformat(function.containingFile)
+            CodeStyleManager.getInstance(project).reformat(function)
         }, function.containingFile)
     }
 
@@ -134,7 +134,9 @@ class PyInlineParameterObjectProcessor(
     private fun updateFunctionBody(plan: Plan) {
         val generator = PyElementGenerator.getInstance(plan.project)
         val fieldNames = plan.fields.map { it.name }.toSet()
+        val isTypedDict = isTypedDict(plan.parameterObjectClass)
 
+        // 1. Replace attribute access: params.field -> field
         val references = PsiTreeUtil.collectElementsOfType(function, PyReferenceExpression::class.java)
         for (ref in references) {
             if (!ref.isValid) continue
@@ -152,6 +154,32 @@ class PyInlineParameterObjectProcessor(
                 ref.replace(parenthesized)
             } else {
                 ref.replace(newExpr)
+            }
+        }
+
+        // 2. Replace subscription access (TypedDict): params["field"] -> field
+        if (isTypedDict) {
+            val subscriptions = PsiTreeUtil.collectElementsOfType(function, PySubscriptionExpression::class.java)
+            for (sub in subscriptions) {
+                if (!sub.isValid) continue
+
+                val operand = sub.operand as? PyReferenceExpression ?: continue
+                if (operand.name != plan.parameterName) continue
+
+                val indexExpr = sub.indexExpression as? PyStringLiteralExpression ?: continue
+                val fieldName = indexExpr.stringValue
+                if (!fieldNames.contains(fieldName)) continue
+
+                val languageLevel = LanguageLevel.forElement(sub)
+                val newExpr = generator.createExpressionFromText(languageLevel, fieldName)
+                // Subscription usually has high precedence, but simple name replacement should be safe.
+                // We check parenthesis just in case.
+                if (PyReplaceExpressionUtil.isNeedParenthesis(sub, newExpr)) {
+                    val parenthesized = generator.createExpressionFromText(languageLevel, "($fieldName)")
+                    sub.replace(parenthesized)
+                } else {
+                    sub.replace(newExpr)
+                }
             }
         }
     }
@@ -272,6 +300,7 @@ class PyInlineParameterObjectProcessor(
     }
 
     private fun findInlineableParameter(function: PyFunction): PyNamedParameter? {
+        val context = TypeEvalContext.codeAnalysis(function.project, function.containingFile)
         return function.parameterList.parameters
             .filterIsInstance<PyNamedParameter>()
             .firstOrNull { p ->
@@ -279,8 +308,15 @@ class PyInlineParameterObjectProcessor(
                 if (p.isSelf || p.isPositionalContainer || p.isKeywordContainer) return@firstOrNull false
                 if (name == "self" || name == "cls") return@firstOrNull false
 
-                val cls = resolveParameterClass(p) ?: return@firstOrNull false
-                isDataclass(cls) && extractDataclassFields(cls).isNotEmpty()
+                val cls = resolveParameterClass(p)
+                if (cls == null) {
+                    return@firstOrNull false
+                }
+
+                val valid = isValidParameterObject(cls, context)
+                val fields = extractFields(cls)
+
+                valid && fields.isNotEmpty()
             }
     }
 
@@ -288,6 +324,19 @@ class PyInlineParameterObjectProcessor(
         val annotationValue = parameter.annotation?.value ?: return null
         val ref = annotationValue as? PyReferenceExpression ?: return null
         return ref.reference.resolve() as? PyClass
+    }
+
+    private fun isValidParameterObject(pyClass: PyClass, context: TypeEvalContext): Boolean {
+        if (isDataclass(pyClass)) return true
+        if (isTypedDict(pyClass)) return true
+
+        val superClasses = pyClass.getSuperClasses(context)
+        for (superClass in superClasses) {
+            val qName = superClass.qualifiedName
+            if (qName == "typing.NamedTuple" || superClass.name == "NamedTuple") return true
+            if (qName == "pydantic.BaseModel" || qName == "pydantic.main.BaseModel" || superClass.name == "BaseModel") return true
+        }
+        return false
     }
 
     private fun isDataclass(pyClass: PyClass): Boolean {
@@ -298,7 +347,22 @@ class PyInlineParameterObjectProcessor(
         }
     }
 
-    private fun extractDataclassFields(pyClass: PyClass): List<FieldInfo> {
+    private fun isTypedDict(pyClass: PyClass): Boolean {
+        val context = TypeEvalContext.codeAnalysis(pyClass.project, pyClass.containingFile)
+        val superClasses = pyClass.getSuperClasses(context)
+        if (superClasses.any {
+            it.qualifiedName == "typing.TypedDict" ||
+                    it.qualifiedName == "typing_extensions.TypedDict" ||
+                    it.name == "TypedDict"
+        }) return true
+
+        return pyClass.superClassExpressions.any { expr ->
+            val text = expr.text
+            text == "TypedDict" || text == "typing.TypedDict" || text == "typing_extensions.TypedDict"
+        }
+    }
+
+    private fun extractFields(pyClass: PyClass): List<FieldInfo> {
         val result = mutableListOf<FieldInfo>()
         val statements = pyClass.statementList.statements
         for (st in statements) {
@@ -321,6 +385,10 @@ class PyInlineParameterObjectProcessor(
             }
 
             val name = target?.name ?: continue
+
+            // Pydantic V2 config
+            if (name == "model_config") continue
+
             val typeText = target.annotation?.value?.text
 
             // Only treat it as a field if it has at least an annotation or a default value.

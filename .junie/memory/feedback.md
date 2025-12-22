@@ -654,3 +654,11 @@
     "NEW INSTRUCTION": "WHEN resolving mock.patch/mocker.patch dotted string THEN treat module-imported names as valid attributes"
 }
 
+[2025-12-22 23:29] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "inline support parity",
+    "EXPECTATION": "Inline Parameter Object must support the same parameter-object types as Introduce, and include Pydantic v2 (not v1).",
+    "NEW INSTRUCTION": "WHEN detecting inlineable parameter object THEN accept dataclass and Pydantic v2 BaseModel only"
+}
+

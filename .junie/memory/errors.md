@@ -1,13 +1,3 @@
-[2025-12-19 07:52] - Updated by Junie - Error analysis
-{
-    "TYPE": "runtime",
-    "TOOL": "ToggleTypeAliasIntention",
-    "ERROR": "Blocking package manager call executed on EDT",
-    "ROOT CAUSE": "inlineTypeAlias calls PythonPackageManager.forSdk via a blocking context from the EDT, which is forbidden.",
-    "PROJECT NOTE": "Move SDK/package resolution to a background thread or wrap it in com.intellij.openapi.progress.TasksKt.runWithModalProgressBlocking(project) within ToggleTypeAliasIntention.kt (around inlineTypeAlias). Also ensure inserted Python 'type' alias statements are placed after the import block.",
-    "NEW INSTRUCTION": "WHEN invoking PythonPackageManager.forSdk on EDT THEN wrap in runWithModalProgressBlocking(project)"
-}
-
 [2025-12-19 07:53] - Updated by Junie - Error analysis
 {
     "TYPE": "threading",
@@ -786,4 +776,14 @@
     "ROOT CAUSE": "The test file was created before the new action, setting flag, and plugin.xml registration existed.",
     "PROJECT NOTE": "Action IDs in this repo are registered in plugin.xml and referenced by performEditorAction; ensure the ID matches exactly.",
     "NEW INSTRUCTION": "WHEN creating tests referencing a new action id THEN implement action and register id in plugin.xml first"
+}
+
+[2025-12-22 23:22] - Updated by Junie - Error analysis
+{
+    "TYPE": "compilation",
+    "TOOL": "Gradle :compileKotlin",
+    "ERROR": "Unresolved reference 'isTypedDict' during compile",
+    "ROOT CAUSE": "The code calls isTypedDict, which is not defined or imported in this SDK.",
+    "PROJECT NOTE": "Update src/main/kotlin/.../intention/parameterobject/PyInlineParameterObjectProcessor.kt (~line 137) to use an existing Python typing API (e.g., PyTypedDictType check or a util like PyTypingTypeChecker/PyTypedDictUtil) or implement a local helper; ensure proper imports.",
+    "NEW INSTRUCTION": "WHEN compileKotlin reports unresolved reference 'isTypedDict' THEN replace with available SDK typing check or implement helper"
 }
