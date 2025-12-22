@@ -2,8 +2,8 @@
 
 ## Pending Issues
 
+- [ ] refactor: why do we need a different check during tests? `PyWrapHeuristics.isProtocol`
 - [ ] fix: Add to __all__ is missing the plugin prefix and shold probably go away
-- [ ] fix: Do not offer wrap for Protocol classes
 - [ ] fix: Jump to test node should only show when a) test tree is not empty and b) we are in a test context
 - [ ] fix: Marks symbols referenced in `path()` as unresolved although they exist (imported)
 - [ ] fix: Duplicate entries in refactoring menu
@@ -76,7 +76,8 @@
 
 ## Completed Tasks (newest first)
 
-- [ ] fix: Runtime error
+- [x] fix: Do not offer wrap for Protocol classes
+- [x] fix: Runtime error
 
 ```
 java.lang.RuntimeException: Document is locked by write PSI operations. Use PsiDocumentManager.doPostponedOperationsAndUnblockDocument() to commit PSI changes to the document.
