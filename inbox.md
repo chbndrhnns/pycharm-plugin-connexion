@@ -2,6 +2,7 @@
 
 ## Pending Issues
 
+- [ ] fix: Export to target needs to use import path when not using direct parent
 - [ ] fix: When toggling pytest mark skip on param, add trailing comma
 - [ ] fix: Use actual outcome should not be available for exceptions or binary operations (assert False)
 - [ ] fix: Introduce parameter object refactoring is not available no a str annotation
