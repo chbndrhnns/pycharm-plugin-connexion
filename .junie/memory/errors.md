@@ -1,23 +1,3 @@
-[2025-12-11 09:41] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "FileComparisonFailedError in checkResult",
-    "ROOT CAUSE": "The ParametrizePytestTestIntention output doesn't match expected text (import/decorator placement).",
-    "PROJECT NOTE": "Update src/main/.../pytest/ParametrizePytestTestIntention.kt to insert 'import pytest' when absent and attach '@pytest.mark.parametrize' directly to the target function/method across top-level, class, and inner-class cases.",
-    "NEW INSTRUCTION": "WHEN adding pytest parametrization for a test function THEN insert import pytest if missing and place decorator directly above target"
-}
-
-[2025-12-11 10:11] - Updated by Junie - Error analysis
-{
-    "TYPE": "tool failure",
-    "TOOL": "get_file_structure",
-    "ERROR": "File structure could not be displayed",
-    "ROOT CAUSE": "The tool cannot parse this file type or structure for the requested Kotlin file.",
-    "PROJECT NOTE": "To inspect Kotlin source contents, use get_file to read the raw text instead of get_file_structure.",
-    "NEW INSTRUCTION": "WHEN get_file_structure reports parsing not supported THEN use get_file to retrieve file content"
-}
-
 [2025-12-11 10:17] - Updated by Junie - Error analysis
 {
     "TYPE": "invalid args",
@@ -790,4 +770,24 @@
     "ROOT CAUSE": "Wrap strategies do not filter out typing.Protocol classes, so intention remains offered.",
     "PROJECT NOTE": "Add a Protocol check in wrap strategies (e.g., GenericCtorStrategy and UnionStrategy) or shared heuristics: detect if PyClassType's PyClass inherits from typing.Protocol and skip producing ExpectedCtor/choices for such types.",
     "NEW INSTRUCTION": "WHEN expected constructor resolves to Protocol or its subclass THEN skip creating wrap suggestion"
+}
+
+[2025-12-22 14:20] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "run_test",
+    "ERROR": "Truncated test path argument provided",
+    "ROOT CAUSE": "The run_test call passed an incomplete, cut-off path string, causing argument parsing failure.",
+    "PROJECT NOTE": "Use the project root or a valid relative path when running tests; if unsure, omit path to run from current project root.",
+    "NEW INSTRUCTION": "WHEN run_test path looks truncated or incomplete THEN omit path or use project root"
+}
+
+[2025-12-22 14:21] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "run_test",
+    "ERROR": "Malformed test path argument",
+    "ROOT CAUSE": "The run_test call passed a truncated path string with newline/ellipsis, making it invalid.",
+    "PROJECT NOTE": "run_test usually does not require a path; prefer running by test class/pattern or provide a valid project-relative path.",
+    "NEW INSTRUCTION": "WHEN run_test path contains newline or ellipsis THEN run without path or use valid path"
 }

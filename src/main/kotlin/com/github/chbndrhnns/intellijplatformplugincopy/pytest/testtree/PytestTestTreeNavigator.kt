@@ -33,6 +33,12 @@ object PytestTestTreeNavigator {
         return true
     }
 
+    fun hasActiveNonEmptyTestTree(project: Project): Boolean {
+        val view = findActiveTestTreeView(project) ?: return false
+        val root = view.model.root as? DefaultMutableTreeNode ?: return false
+        return root.childCount > 0
+    }
+
     private fun nodeIdForProxy(project: Project, proxy: SMTestProxy): String? {
         return PytestNodeIdGenerator.parseProxy(proxy, project)?.nodeid
     }

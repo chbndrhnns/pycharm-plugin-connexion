@@ -1,23 +1,3 @@
-[2025-12-11 08:42] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "scan project (duplicate), update status (duplicate)",
-    "MISSING STEPS": "add tests, modify implementation",
-    "BOTTLENECK": "No failing test reproduces the '*' and named-argument issue.",
-    "PROJECT NOTE": "Variadic tests cover '*' and '/' but not enforcing named argument creation when '*' makes params keyword-only; add a targeted test for that call-site behavior.",
-    "NEW INSTRUCTION": "WHEN all related tests pass but inbox notes a bug THEN write a minimal failing test first"
-}
-
-[2025-12-11 09:12] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "review target, add tests, run build",
-    "BOTTLENECK": "Availability was delegated to the target without verifying/adjusting target coverage or adding tests.",
-    "PROJECT NOTE": "IntroduceParameterObjectTarget centralizes caret-position eligibility and should be the single source of truth.",
-    "NEW INSTRUCTION": "WHEN expanding caret-position availability THEN implement logic in IntroduceParameterObjectTarget and add tests"
-}
-
 [2025-12-11 09:16] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -888,3 +868,12 @@
     "NEW INSTRUCTION": "WHEN filtering expected ctor PyClass symbols THEN use search.isProtocol and skip candidates"
 }
 
+[2025-12-22 14:22] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "open action file, implement update checks, add test-context detection, check non-empty test tree, run build/tests",
+    "BOTTLENECK": "Action code was never updated and tests were not run correctly.",
+    "PROJECT NOTE": "Use Gradle to execute tests (e.g., bash './gradlew test') and inspect JumpToPytestNodeInTestTreeAction.kt fully before changes.",
+    "NEW INSTRUCTION": "WHEN tests are created or modified THEN run './gradlew test' via bash and summarize"
+}

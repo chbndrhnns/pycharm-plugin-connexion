@@ -6,9 +6,6 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.application.ReadAction
-import com.intellij.psi.util.PsiTreeUtil
-import com.jetbrains.python.psi.PyClass
-import com.jetbrains.python.psi.PyFunction
 
 class JumpToPytestNodeInTestTreeAction : AnAction() {
 
@@ -30,14 +27,17 @@ class JumpToPytestNodeInTestTreeAction : AnAction() {
             return
         }
 
-        val isOnTestTarget = ReadAction.compute<Boolean, RuntimeException> {
-            val elementAtCaret = psiFile.findElementAt(editor.caretModel.offset)
-            val function = elementAtCaret?.let { PsiTreeUtil.getParentOfType(it, PyFunction::class.java, false) }
-            val clazz = elementAtCaret?.let { PsiTreeUtil.getParentOfType(it, PyClass::class.java, false) }
-            function != null || clazz != null
+        if (!PytestTestTreeNavigator.hasActiveNonEmptyTestTree(project)) {
+            e.presentation.isEnabledAndVisible = false
+            return
         }
 
-        e.presentation.isEnabledAndVisible = isOnTestTarget
+        val isInTestContext = ReadAction.compute<Boolean, RuntimeException> {
+            val elementAtCaret = psiFile.findElementAt(editor.caretModel.offset)
+            elementAtCaret != null && PytestTestContextUtils.isInTestContext(elementAtCaret)
+        }
+
+        e.presentation.isEnabledAndVisible = isInTestContext
     }
 
     override fun actionPerformed(e: AnActionEvent) {
