@@ -877,3 +877,14 @@
     "PROJECT NOTE": "Use EditorPopupMenu.GoTo group in plugin.xml and register a Python intention via intentionActions.",
     "NEW INSTRUCTION": "WHEN task requests menu grouping or intention exposure THEN update plugin.xml and implement intention before tests"
 }
+
+[2025-12-22 15:08] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "validate action ids",
+    "BOTTLENECK": "Risk of incorrect group or relative action identifiers in plugin.xml.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN adding action to menu group THEN search_project for group and action ids to verify"
+}
+

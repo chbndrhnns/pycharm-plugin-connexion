@@ -460,7 +460,7 @@
                 class="com.github.chbndrhnns.intellijplatformplugincopy.pytest.testtree.JumpToPytestNodeInTestTreeAction"
                 text="BetterPy: Jump to Test Tree Node"
                 description="Selects the corresponding pytest node in the active test tree">
-            <add-to-group group-id="GoToMenu" anchor="last"/>
+            <add-to-group group-id="EditorPopupMenu.GoTo" anchor="after" relative-to-action="FindUsages"/>
         </action>
 
         <action id="Connexion.GoToOpenApiOperation"
