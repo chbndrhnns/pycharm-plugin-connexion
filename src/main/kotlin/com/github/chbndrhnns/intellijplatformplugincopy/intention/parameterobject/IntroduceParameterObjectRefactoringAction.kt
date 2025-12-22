@@ -21,7 +21,12 @@ class IntroduceParameterObjectRefactoringAction : PyBaseRefactoringAction() {
         context: DataContext
     ): Boolean {
         if (!PluginSettingsState.instance().state.enableIntroduceParameterObjectRefactoringAction) return false
-        return IntroduceParameterObjectTarget.isAvailable(element)
+        // `PyBaseRefactoringAction` may provide a *resolved* target element (e.g. built-in `int` from library)
+        // when the caret is on a type annotation. For availability we must prefer the leaf PSI at the caret,
+        // just like the refactoring handler does.
+        val leafAtCaret = file.findElementAt(editor.caretModel.offset)
+        return (leafAtCaret != null && IntroduceParameterObjectTarget.isAvailable(leafAtCaret)) ||
+                IntroduceParameterObjectTarget.isAvailable(element)
     }
 
     override fun isEnabledOnElementsOutsideEditor(elements: Array<out PsiElement>): Boolean {

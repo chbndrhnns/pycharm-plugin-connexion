@@ -1,23 +1,3 @@
-[2025-12-12 10:13] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "add integration test,verify console filter end-to-end",
-    "BOTTLENECK": "No end-to-end test ensured console hyperlink navigation works via PytestConsoleFilter.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN fixing resolver parsing THEN add console filter integration test for node ids"
-}
-
-[2025-12-12 10:22] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "scan project, update docs",
-    "BOTTLENECK": "No holistic search for other node-id parsers beyond the resolver.",
-    "PROJECT NOTE": "PytestConsoleFilter also handles node-id boundaries; add note that dot-separated Class.test comes from pytest-sugar.",
-    "NEW INSTRUCTION": "WHEN modifying pytest node id parsing THEN scan project for all related parsers and docs"
-}
-
 [2025-12-12 10:33] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -877,3 +857,24 @@
     "PROJECT NOTE": "Use PyIntroduceParameterObjectIntentionTest#testAvailableOnParameterTypeAnnotation to verify signature-coverage logic.",
     "NEW INSTRUCTION": "WHEN diagnosing intention availability THEN open IntroduceParameterObjectTarget.find and compare with availability tests"
 }
+
+[2025-12-23 00:01] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "repeat search, repeat open",
+    "MISSING STEPS": "inspect test diff, adjust test data, re-run tests",
+    "BOTTLENECK": "Failure diff was not inspected to reconcile expected vs actual result.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN test fails with FileComparisonFailedError THEN inspect fixture diff and update code or expected"
+}
+
+[2025-12-23 00:14] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "inspect PSI",
+    "MISSING STEPS": "fix test harness,run full tests",
+    "BOTTLENECK": "Deprecated test event factory caused build errors, blocking validation.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN failing test cannot run due to test scaffolding errors THEN fix test harness first"
+}
+

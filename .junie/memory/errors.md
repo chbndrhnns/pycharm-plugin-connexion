@@ -1,83 +1,3 @@
-[2025-12-19 07:53] - Updated by Junie - Error analysis
-{
-    "TYPE": "threading",
-    "TOOL": "ToggleTypeAliasIntention.invoke",
-    "ERROR": "Blocking operation called on EDT",
-    "ROOT CAUSE": "Inlining performs ReferencesSearch that leads to PythonPackageManager.forSdk, which is forbidden on the EDT.",
-    "PROJECT NOTE": "Do searches/resolution (ReferencesSearch, PythonPackageManager.forSdk) in background via TasksKt.runWithModalProgressBlocking; only wrap PSI edits in WriteCommandAction after background computation.",
-    "NEW INSTRUCTION": "WHEN intention performs ReferencesSearch on EDT THEN wrap work in runWithModalProgressBlocking"
-}
-
-[2025-12-19 07:54] - Updated by Junie - Error analysis
-{
-    "TYPE": "runtime/threading",
-    "TOOL": "ToggleTypeAliasIntention.inlineTypeAlias",
-    "ERROR": "Blocking operation invoked on EDT; requires background thread",
-    "ROOT CAUSE": "inlineTypeAlias triggers PythonPackageManager.forSdk via runBlocking on the EDT, which is forbidden.",
-    "PROJECT NOTE": "In src/main/kotlin/.../intention/ToggleTypeAliasIntention.kt around inlineTypeAlias, move any SDK/package manager or indexing-dependent work off the EDT using TasksKt.runWithModalProgressBlocking or a background thread, and wrap PSI reads in ReadAction.",
-    "NEW INSTRUCTION": "WHEN invoking PythonPackageManager or long tasks during intention THEN wrap in runWithModalProgressBlocking on BGT"
-}
-
-[2025-12-19 07:55] - Updated by Junie - Error analysis
-{
-    "TYPE": "runtime",
-    "TOOL": "-",
-    "ERROR": "Blocking operation invoked on EDT",
-    "ROOT CAUSE": "The intention performs blocking SDK/package queries (via ReferencesSearch -> PythonPackageManager.forSdk) on the Event Dispatch Thread.",
-    "PROJECT NOTE": "In intention.invoke, do global searches/usages collection inside com.intellij.openapi.progress.TasksKt.runWithModalProgressBlocking or a background task, then apply PSI edits within a write action.",
-    "NEW INSTRUCTION": "WHEN intention performs ReferencesSearch or global PSI queries THEN wrap work in runWithModalProgressBlocking off the EDT"
-}
-
-[2025-12-19 13:59] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic error",
-    "TOOL": "ToggleTypeAliasIntention",
-    "ERROR": "Return annotation replaced with colon causing syntax error",
-    "ROOT CAUSE": "The implementation treats function return annotations like parameter annotations and rewrites the separator as ':' instead of '->'.",
-    "PROJECT NOTE": "In Python PSI, function return types use the '->' return annotation; update only the annotation expression while preserving the '->' token.",
-    "NEW INSTRUCTION": "WHEN editing a function return type annotation THEN replace only expression after '->'"
-}
-
-[2025-12-19 17:06] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "ParamSpec string literal not resolvable; rename element not found",
-    "ROOT CAUSE": "ParamSpec is not handled by the string-literal reference contributor nor the rename processor, so caret in ParamSpec(\"P\") finds no element and variable renames don’t update the first arg.",
-    "PROJECT NOTE": "Extend PyNewTypeTypeVarReferenceContributor.kt to also register references for typing.ParamSpec first-argument string, and update the RenamePsiElementProcessor used for NewType/TypeVar to include ParamSpec under the same PluginSettingsState.state.enableNewTypeTypeVarRename guard.",
-    "NEW INSTRUCTION": "WHEN first-arg call is typing.ParamSpec THEN add string-to-variable reference and update on rename"
-}
-
-[2025-12-19 17:06] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Tests failed; ParamSpec not handled in rename logic",
-    "ROOT CAUSE": "The reference contributor only recognized NewType and TypeVar, so ParamSpec string/variable links were not created.",
-    "PROJECT NOTE": "Update src/main/kotlin/com/github/chbndrhnns/intellijplatformplugincopy/psi/PyNewTypeTypeVarReferenceContributor.kt to include callee name 'ParamSpec' alongside 'NewType' and 'TypeVar'.",
-    "NEW INSTRUCTION": "WHEN callee name is ParamSpec in typing call THEN handle it same as TypeVar/NewType"
-}
-
-[2025-12-19 17:07] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "ParamSpec rename not handled; tests failed",
-    "ROOT CAUSE": "The reference contributor filtered out ParamSpec, so renames didn’t update its string literal.",
-    "PROJECT NOTE": "Update src/main/kotlin/.../psi/PyNewTypeTypeVarReferenceContributor.kt to treat 'ParamSpec' like 'NewType' and 'TypeVar' in the callee.name check, honoring the existing PluginSettingsState guard.",
-    "NEW INSTRUCTION": "WHEN callee name is validated for string-literal binding THEN include ParamSpec alongside NewType and TypeVar"
-}
-
-[2025-12-19 17:36] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "create",
-    "ERROR": "Argument type mismatch in method call",
-    "ROOT CAUSE": "findTargetInitFiles expects PyFile, but invoke passed a PsiFile without casting.",
-    "PROJECT NOTE": "Intention implementations commonly gate on file is PyFile in isAvailable; reuse that contract and cast to PyFile in invoke before passing to helpers.",
-    "NEW INSTRUCTION": "WHEN helper expects PyFile but caller has PsiFile THEN cast after verifying instance"
-}
-
 [2025-12-19 17:37] - Updated by Junie - Error analysis
 {
     "TYPE": "semantic error",
@@ -786,4 +706,84 @@
     "ROOT CAUSE": "The code calls isTypedDict, which is not defined or imported in this SDK.",
     "PROJECT NOTE": "Update src/main/kotlin/.../intention/parameterobject/PyInlineParameterObjectProcessor.kt (~line 137) to use an existing Python typing API (e.g., PyTypedDictType check or a util like PyTypingTypeChecker/PyTypedDictUtil) or implement a local helper; ensure proper imports.",
     "NEW INSTRUCTION": "WHEN compileKotlin reports unresolved reference 'isTypedDict' THEN replace with available SDK typing check or implement helper"
+}
+
+[2025-12-22 23:45] - Updated by Junie - Error analysis
+{
+    "TYPE": "compilation",
+    "TOOL": "Gradle :compileKotlin",
+    "ERROR": "Unresolved reference 'isTypedDict' during compile",
+    "ROOT CAUSE": "A file calls isTypedDict that exists only as a private helper inside PyInlineParameterObjectProcessor, making it invisible to other files.",
+    "PROJECT NOTE": "isTypedDict is defined as private in PyInlineParameterObjectProcessor.kt (~line 350); callers like TypedDictGenerator.kt cannot access it.",
+    "NEW INSTRUCTION": "WHEN shared helper is referenced across files THEN move it to public top-level util and import"
+}
+
+[2025-12-22 23:46] - Updated by Junie - Error analysis
+{
+    "TYPE": "compilation",
+    "TOOL": "Gradle :compileKotlin",
+    "ERROR": "Unresolved reference 'isTypedDict' causes compilation failure",
+    "ROOT CAUSE": "Code references isTypedDict from another file where it is private and not imported or shared.",
+    "PROJECT NOTE": "Extract the private isTypedDict from PyInlineParameterObjectProcessor into a shared top-level util (e.g., intention/parameterobject/TypedDictUtil.kt) and import it in TypedDictGenerator.kt.",
+    "NEW INSTRUCTION": "WHEN compile error shows unresolved 'isTypedDict' THEN move helper to shared util and import"
+}
+
+[2025-12-22 23:47] - Updated by Junie - Error analysis
+{
+    "TYPE": "compilation",
+    "TOOL": "Gradle :compileKotlin (test run)",
+    "ERROR": "Unresolved reference: isTypedDict",
+    "ROOT CAUSE": "A source file references isTypedDict which exists only as a private helper in another class, so it is not visible/importable.",
+    "PROJECT NOTE": "Move isTypedDict(pyClass: PyClass) into a shared top-level util (e.g., intention/parameterobject/TypingUtils.kt) and update both PyInlineParameterObjectProcessor and TypedDictGenerator to use it.",
+    "NEW INSTRUCTION": "WHEN Kotlin reports unresolved helper reference THEN define shared top-level util or import correct symbol"
+}
+
+[2025-12-22 23:48] - Updated by Junie - Error analysis
+{
+    "TYPE": "compilation",
+    "TOOL": "Gradle :compileKotlin",
+    "ERROR": "Unresolved reference 'isTypedDict' during Kotlin compilation",
+    "ROOT CAUSE": "isTypedDict is used from another file but is declared private inside PyInlineParameterObjectProcessor, making it inaccessible.",
+    "PROJECT NOTE": "TypedDictGenerator.kt references isTypedDict; expose a shared public helper (e.g., top‑level util or PyClass extension) and import it here.",
+    "NEW INSTRUCTION": "WHEN referencing internal helper across files THEN move it to shared util and import"
+}
+
+[2025-12-22 23:58] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Result text mismatch after intention applied",
+    "ROOT CAUSE": "The test expected PEP 604 union syntax (str | None) but the fixture language level likely renders Optional[str], causing a diff.",
+    "PROJECT NOTE": "Tests here typically run with Python 3.8 language level; use typing.Optional[...] instead of PEP 604 unions in expected/initial test content.",
+    "NEW INSTRUCTION": "WHEN writing Python union types in tests THEN use Optional[...] to match language level"
+}
+
+[2025-12-22 23:59] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Expected and actual file contents did not match",
+    "ROOT CAUSE": "The test expected a positional call do(\"x\"), but the intention preserves keyword style as do(arg=\"x\").",
+    "PROJECT NOTE": "Parameter object inlining rewrites calls with keyword arguments; align test expectations to keyword-preserving rewrites.",
+    "NEW INSTRUCTION": "WHEN crafting expected result for inline call rewrite THEN preserve keyword arguments in calls"
+}
+
+[2025-12-23 00:00] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Result text mismatch after intention execution",
+    "ROOT CAUSE": "The new test's expected output didn't match the intention's actual transformation (likely call-site argument style).",
+    "PROJECT NOTE": "Inline Parameter Object keeps keyword arguments at call sites; expected output should use named arguments (e.g., do(arg=\"x\")) and match plugin formatting.",
+    "NEW INSTRUCTION": "WHEN doIntentionTest fails with FileComparisonFailedError THEN align expected text to actual call-site argument style"
+}
+
+[2025-12-23 00:01] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "FileComparisonFailedError: expected/actual code mismatch",
+    "ROOT CAUSE": "The new test’s expected code does not match the intention’s actual output formatting/argument style.",
+    "PROJECT NOTE": "Intention tests with myFixture.doIntentionTest compare full-file text; keep exact whitespace and preserve call-site argument style (e.g., keyword vs positional) per existing tests.",
+    "NEW INSTRUCTION": "WHEN adding expected result for doIntentionTest THEN mirror actual intention output formatting and call-site style"
 }

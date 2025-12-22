@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.refactoring
 
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectRefactoringAction
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectTarget
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.withMockIntroduceParameterObjectDialog
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
@@ -49,6 +50,41 @@ class IntroduceParameterObjectRefactoringActionTest : TestBase() {
 
         assertTrue(
             "Action should be enabled for function with multiple parameters",
+            event.presentation.isEnabledAndVisible
+        )
+    }
+
+    fun testActionIsAvailableOnParameterTypeAnnotation() {
+        myFixture.configureByText(
+            "test.py", """
+            def foo(arg1: i<caret>nt, arg2):
+                pass
+        """.trimIndent()
+        )
+
+        val elementAtCaret = myFixture.file.findElementAt(myFixture.caretOffset)
+        assertNotNull("Expected a PSI element at caret", elementAtCaret)
+        assertNotNull(
+            "Expected target function to be detectable from caret inside parameter type annotation",
+            elementAtCaret?.let { IntroduceParameterObjectTarget.find(it) }
+        )
+        assertTrue(
+            "Expected action target to be available from caret element (sanity check)",
+            elementAtCaret?.let { IntroduceParameterObjectTarget.isAvailable(it) } == true
+        )
+
+        val action = IntroduceParameterObjectRefactoringAction()
+        val dataContext = SimpleDataContext.builder()
+            .add(CommonDataKeys.PROJECT, project)
+            .add(CommonDataKeys.EDITOR, myFixture.editor)
+            .add(CommonDataKeys.PSI_FILE, myFixture.file)
+            .build()
+
+        val event = createTestActionEvent(action, dataContext)
+        action.update(event)
+
+        assertTrue(
+            "Action should be enabled when caret is on a parameter type annotation",
             event.presentation.isEnabledAndVisible
         )
     }
