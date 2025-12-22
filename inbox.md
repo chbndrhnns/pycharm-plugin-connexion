@@ -21,7 +21,6 @@
 
 ## Pending Features
 
-- [ ] feat: copy special: copy test as pytest node id reference
 - [ ] feat: If callable is expected, complete without parens
 - [ ] feat: Inline parameter object should ask to remove/other invocations
 - [ ] feat: Transform between lambda, function, partial
@@ -77,7 +76,8 @@
 
 ## Completed Tasks (newest first)
 
-- [ ] feat: Introduce type alias for union type
+- [x] feat: copy special: copy test as pytest node id reference
+- [x] feat: Introduce type alias for union type
 - [x] feat: Support skip toggle for single parameters
 - [x] fix: Go to openapi definition should only be available when there is an endpoint method
 - [x] fix: Jump to test node should only show when a) test tree is not empty and b) we are in a test context
