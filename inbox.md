@@ -2,11 +2,7 @@
 
 ## Pending Issues
 
-- [ ] fix: Inspection "Symbol 'InMemNetboxPrefixMatches' is not exported in package __all__" should ignore private
-  packages and not trigger if it's exported in the next public package
 - [ ] refactor: why do we need a different check during tests? `PyWrapHeuristics.isProtocol`
-- [ ] fix: Add to __all__ is missing the plugin prefix and shold probably go away
-- [ ] fix: Marks symbols referenced in `path()` as unresolved although they exist (imported)
 - [ ] fix: Duplicate entries in refactoring menu
 - [ ] fix: Combine settings for parameter object
 - [ ] fix: Offer parameter object on whole function signature
@@ -76,6 +72,10 @@
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Marks symbols referenced in `patch()` as unresolved although they exist (imported)
+- [x] fix: Add to __all__ is missing the plugin prefix and shold probably go away
+- [x] fix: Inspection "Symbol 'InMemNetboxPrefixMatches' is not exported in package __all__" should ignore private
+  packages and not trigger if it's exported in the next public package
 - [x] feat: copy special: copy test as pytest node id reference
 - [x] feat: Introduce type alias for union type
 - [x] feat: Support skip toggle for single parameters
