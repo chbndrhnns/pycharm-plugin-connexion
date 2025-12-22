@@ -1,53 +1,3 @@
-[2025-12-18 20:05] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "create",
-    "ERROR": "Kotlin file has unresolved references and invalid overrides",
-    "ROOT CAUSE": "The implementation used PyCharm PSI/APIs not present in the project SDK, causing unresolved symbols and a wrong visitor override.",
-    "PROJECT NOTE": "Match APIs to this repo’s SDK: avoid PyTypingTypeProvider and PyAnnotatedAssignmentStatement; operate on PyAssignmentStatement and PyAnnotationOwner-like APIs used in existing inspections here.",
-    "NEW INSTRUCTION": "WHEN validator lists unresolved reference semantic errors THEN replace APIs with SDK-available equivalents before proceeding"
-}
-
-[2025-12-18 20:56] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "search_replace",
-    "ERROR": "Unresolved reference 'isPythonSdk'",
-    "ROOT CAUSE": "Code used PythonSdkType.isPythonSdk which is not available in this SDK.",
-    "PROJECT NOTE": "Use com.jetbrains.python.sdk.legacy.PythonSdkUtil APIs as in PythonVersionGuard; obtain an SDK from a Module or PsiElement, not Project, and avoid unavailable methods.",
-    "NEW INSTRUCTION": "WHEN SDK argument is null and no Module/PsiElement context THEN return emptySet without SDK autodetection"
-}
-
-[2025-12-18 21:27] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic error",
-    "TOOL": "-",
-    "ERROR": "Rename cancellation raised IncorrectOperationException",
-    "ROOT CAUSE": "The rename processor throws an exception when user cancels, which propagates as a runtime error instead of gracefully aborting the refactoring.",
-    "PROJECT NOTE": "In PyShadowingStdlibRenameProcessor.kt, move the warning/confirmation into substituteElementToRename and return null on cancel (or otherwise abort without throwing), rather than throwing IncorrectOperationException in prepareRenaming.",
-    "NEW INSTRUCTION": "WHEN user cancels stdlib-shadow warning during rename THEN return null from substituteElementToRename"
-}
-
-[2025-12-18 22:30] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic error",
-    "TOOL": "-",
-    "ERROR": "Rename cancellation throws IncorrectOperationException",
-    "ROOT CAUSE": "The cancel path throws from prepareRenaming instead of gracefully aborting the refactoring.",
-    "PROJECT NOTE": "In the stdlib shadowing rename processor, move confirmation to substituteElementToRename and return null on cancel so the refactoring stops without exceptions.",
-    "NEW INSTRUCTION": "WHEN rename confirmation canceled THEN return null from substituteElementToRename and abort"
-}
-
-[2025-12-18 22:56] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Rename tests failed; expected PSI edits not applied",
-    "ROOT CAUSE": "The project lacks a rename handler to update the first argument string of NewType/TypeVar, so the rename at caret does not propagate and checkResult fails.",
-    "PROJECT NOTE": "Add a RenamePsiElementProcessor for PyTargetExpression bound to typing.NewType/TypeVar that, on variable rename, updates the call’s first-arg string literal; register it in plugin.xml and guard via PluginSettingsState.",
-    "NEW INSTRUCTION": "WHEN adding rename tests for NewType or TypeVar THEN implement and register a RenamePsiElementProcessor updating first-arg string"
-}
-
 [2025-12-18 22:58] - Updated by Junie - Error analysis
 {
     "TYPE": "test assertion",
@@ -786,4 +736,54 @@
     "ROOT CAUSE": "JumpToPytestNodeInTestTreeIntention was registered without the required description directory and files.",
     "PROJECT NOTE": "Place description files under src/main/resources/intentionDescriptions/JumpToPytestNodeInTestTreeIntention/ (description.html, before.py.template, after.py.template as needed) and ensure plugin.xml <intentionAction> is declared.",
     "NEW INSTRUCTION": "WHEN adding a new IntentionAction THEN create intentionDescriptions/<ClassName>/description.html (with example templates)"
+}
+
+[2025-12-22 22:36] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Caret element not found; imported symbol unresolved",
+    "ROOT CAUSE": "PyResolveUtils.findMember only checks top-level declarations in a PyFile and ignores names brought in via import statements, so 'target_module.MyImportedClass' cannot resolve.",
+    "PROJECT NOTE": "Update PyResolveUtils.findMember to also resolve symbols imported into a module (handle both 'from source import Name' and 'import source as alias', including aliasing), not just classes/functions/attributes defined in the file.",
+    "NEW INSTRUCTION": "WHEN top-level member lookup returns null in module THEN search imported names and resolve their targets"
+}
+
+[2025-12-22 22:37] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "run_test",
+    "ERROR": "getElementAtCaret failed: element not found",
+    "ROOT CAUSE": "The PyMockPatch reference contributor is feature-flagged and not enabled in the test, so no reference exists at the caret.",
+    "PROJECT NOTE": "Enable PluginSettingsState.state.enablePyMockPatchReference = true in test setUp when asserting patch-string resolution.",
+    "NEW INSTRUCTION": "WHEN testing PyMockPatch string references THEN enable PluginSettingsState.enablePyMockPatchReference in setUp"
+}
+
+[2025-12-22 22:37] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "getElementAtCaret could not find element at caret",
+    "ROOT CAUSE": "Imported symbols are not considered in resolution, so patch string segment didn't resolve.",
+    "PROJECT NOTE": "Update src/main/kotlin/.../psi/PyResolveUtils.kt findMember to resolve names brought in via from-import and import-as in the target module.",
+    "NEW INSTRUCTION": "WHEN resolving module member in PyResolveUtils.findMember THEN include names imported via from/import-as"
+}
+
+[2025-12-22 22:38] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Element at caret not found",
+    "ROOT CAUSE": "Reference resolution ignores imported symbols; PyResolveUtils.findMember only checks top-level declarations.",
+    "PROJECT NOTE": "In src/main/kotlin/.../psi/PyResolveUtils.kt, extend findMember to resolve names brought in via 'import' and 'from ... import ...' (and consider __all__).",
+    "NEW INSTRUCTION": "WHEN resolving module members in PyResolveUtils.findMember THEN include names imported via import statements"
+}
+
+[2025-12-22 22:38] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Element at caret not found; no resolved target",
+    "ROOT CAUSE": "Member resolution checks only top-level declarations in a PyFile and ignores imported symbols.",
+    "PROJECT NOTE": "In PyResolveUtils.findMember, also inspect PyImportStatement and PyFromImportStatement to resolve names brought into the module when matching a dotted segment.",
+    "NEW INSTRUCTION": "WHEN module member lookup yields no symbol THEN resolve names introduced by import and from-import statements"
 }

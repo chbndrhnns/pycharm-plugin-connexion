@@ -10,7 +10,8 @@ class PyDottedSegmentReference(
     element: PyStringLiteralExpression,
     range: TextRange,
     private val fullPath: String,
-    private val fullPathOffsetInElement: Int
+    private val fullPathOffsetInElement: Int,
+    private val resolveImported: Boolean = true
 ) : PsiPolyVariantReferenceBase<PyStringLiteralExpression>(element, range) {
 
     override fun multiResolve(incompleteCode: Boolean): Array<ResolveResult> {
@@ -27,7 +28,7 @@ class PyDottedSegmentReference(
         
         val pathUpToSegment = fullPath.substring(0, segmentEndInPath)
         
-        val resolved = PyResolveUtils.resolveDottedName(pathUpToSegment, element)
+        val resolved = PyResolveUtils.resolveDottedName(pathUpToSegment, element, resolveImported)
         return if (resolved != null) arrayOf(PsiElementResolveResult(resolved)) else ResolveResult.EMPTY_ARRAY
     }
 
@@ -43,7 +44,7 @@ class PyDottedSegmentReference(
         if (fullPath[segmentStartInPath - 1] != '.') return emptyArray()
         
         val prefix = fullPath.substring(0, segmentStartInPath - 1)
-        val parent = PyResolveUtils.resolveDottedName(prefix, element)
+        val parent = PyResolveUtils.resolveDottedName(prefix, element, resolveImported)
         return PyResolveUtils.getVariants(parent)
     }
 }

@@ -72,7 +72,7 @@ class PyFilterWarningsReferenceContributor : PsiReferenceContributor() {
 
                         if (end > currentIndex) {
                             val range = TextRange(startOffsetInElement + currentIndex, startOffsetInElement + end)
-                            refs.add(PyDottedSegmentReference(literal, range, category, startOffsetInElement))
+                            refs.add(PyDottedSegmentReference(literal, range, category, startOffsetInElement, resolveImported = false))
                         }
 
                         currentIndex = end + 1

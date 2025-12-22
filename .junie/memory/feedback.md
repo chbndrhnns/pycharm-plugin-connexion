@@ -646,3 +646,11 @@
     "NEW INSTRUCTION": "WHEN caret on endpoint method linked to OpenAPI spec THEN enable Go to OpenAPI action"
 }
 
+[2025-12-22 22:34] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "patch string references",
+    "EXPECTATION": "Dotted string targets in patch()/mocker.patch() should resolve to symbols available in the target module, including names imported there (e.g., 'from requests import Session').",
+    "NEW INSTRUCTION": "WHEN resolving mock.patch/mocker.patch dotted string THEN treat module-imported names as valid attributes"
+}
+

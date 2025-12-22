@@ -36,4 +36,24 @@ class PyFilterWarningsReferenceTest : TestBase() {
         assertInstanceOf(element, PyClass::class.java)
         assertEquals("DeprecationWarning", (element as PyClass).name)
     }
+
+    fun testImportedSymbolResolution() {
+        myFixture.addFileToProject("source_warnings.py", "class MyWarning: pass")
+        myFixture.addFileToProject("target_warnings.py", "from source_warnings import MyWarning")
+
+        myFixture.configureByText(
+            "test_imported.py", """
+            import pytest
+            
+            @pytest.mark.filterwarnings("ignore::target_warnings.MyWar<caret>ning")
+            def test_imported():
+                pass
+        """.trimIndent()
+        )
+
+        val reference = myFixture.getReferenceAtCaretPosition()
+        assertNotNull(reference)
+        val resolved = reference!!.resolve()
+        assertNull("Should not resolve to imported symbol", resolved)
+    }
 }

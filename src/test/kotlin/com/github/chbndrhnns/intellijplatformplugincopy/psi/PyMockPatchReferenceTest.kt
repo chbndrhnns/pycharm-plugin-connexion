@@ -112,4 +112,27 @@ class PyMockPatchReferenceTest : TestBase() {
         assertTrue(variants!!.contains("TargetClass"))
         assertTrue(variants.contains("target_func"))
     }
+
+    fun testResolveImportedSymbol() {
+        // Define the symbol that will be imported
+        myFixture.addFileToProject("source_module.py", "class MyImportedClass: pass")
+        
+        // Define the module that imports it
+        myFixture.addFileToProject("target_module.py", "from source_module import MyImportedClass")
+
+        // Test patching the imported symbol in the target module
+        myFixture.configureByText(
+            "test_patch_imported.py", """
+            from unittest.mock import patch
+            
+            @patch('target_module.MyImported<caret>Class')
+            def test_something(mock_cls):
+                pass
+        """.trimIndent()
+        )
+
+        val element = myFixture.getElementAtCaret()
+        assertInstanceOf(element, PyClass::class.java)
+        assertEquals("MyImportedClass", (element as PyClass).name)
+    }
 }

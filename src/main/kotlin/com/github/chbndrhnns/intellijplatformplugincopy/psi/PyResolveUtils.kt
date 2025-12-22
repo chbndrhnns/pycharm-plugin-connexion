@@ -7,11 +7,14 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.PyClass
 import com.jetbrains.python.psi.PyFile
+import com.jetbrains.python.psi.PyFromImportStatement
+import com.jetbrains.python.psi.PyImportStatement
 
 object PyResolveUtils {
-    fun resolveDottedName(name: String, context: PsiElement): PsiElement? {
+    fun resolveDottedName(name: String, context: PsiElement, resolveImported: Boolean = true): PsiElement? {
         val project = context.project
         val parts = name.split(".")
         if (parts.isEmpty()) return null
@@ -23,7 +26,7 @@ object PyResolveUtils {
         if (current == null) {
             val builtins = findTopLevelModule(project, "builtins")
             if (builtins != null) {
-                val member = findMember(builtins, firstPart)
+                val member = findMember(builtins, firstPart, resolveImported)
                 if (member != null) {
                     current = member
                     // firstPart consumed as member of builtins
@@ -35,7 +38,7 @@ object PyResolveUtils {
 
         for (i in 1 until parts.size) {
             val part = parts[i]
-            val next = findMember(result, part) ?: return null
+            val next = findMember(result, part, resolveImported) ?: return null
             result = next
         }
         return result
@@ -63,7 +66,7 @@ object PyResolveUtils {
         return null
     }
 
-    private fun findMember(element: PsiElement, name: String): PsiElement? {
+    private fun findMember(element: PsiElement, name: String, resolveImported: Boolean = true): PsiElement? {
         if (element is PsiDirectory) {
             val file = element.findFile("$name.py")
             if (file != null) return file
@@ -73,14 +76,41 @@ object PyResolveUtils {
 
             val init = element.findFile("__init__.py")
             if (init is PyFile) {
-                return findMember(init, name)
+                return findMember(init, name, resolveImported)
             }
         }
         if (element is PyFile) {
-            return element.findTopLevelClass(name) ?: element.findTopLevelFunction(name)
+            val declared = element.findTopLevelClass(name) ?: element.findTopLevelFunction(name)
             ?: element.findTopLevelAttribute(
                 name
             )
+            if (declared != null) return declared
+
+            if (resolveImported) {
+                // Check from imports
+                val fromImports = PsiTreeUtil.findChildrenOfType(element, PyFromImportStatement::class.java)
+                for (stmt in fromImports) {
+                    for (el in stmt.importElements) {
+                        val visibleName = el.asName ?: el.importedQName?.lastComponent
+                        if (visibleName == name) {
+                            return el.resolve()
+                        }
+                    }
+                }
+
+                // Check regular imports
+                val imports = PsiTreeUtil.findChildrenOfType(element, PyImportStatement::class.java)
+                for (stmt in imports) {
+                    for (el in stmt.importElements) {
+                        val visibleName = el.asName ?: el.importedQName?.firstComponent
+                        if (visibleName == name) {
+                            return el.resolve()
+                        }
+                    }
+                }
+            }
+
+            return null
         }
         if (element is PyClass) {
             return element.findNestedClass(name, true) ?: element.findMethodByName(name, true, null)

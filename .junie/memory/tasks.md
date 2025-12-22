@@ -1,13 +1,3 @@
-[2025-12-11 09:41] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "add debug test",
-    "MISSING STEPS": "scan project, open tests, open implementation, edit code, run tests",
-    "BOTTLENECK": "No implementation changes were made despite clear failing test expectations.",
-    "PROJECT NOTE": "Tests compare transformed file text; inspect ParametrizePytestTestIntentionTest to derive expected edits.",
-    "NEW INSTRUCTION": "WHEN tests fail with FileComparisonFailedError THEN open tests and implementation, patch transformation, rerun suite"
-}
-
 [2025-12-11 10:18] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -888,3 +878,12 @@
     "NEW INSTRUCTION": "WHEN adding action to menu group THEN search_project for group and action ids to verify"
 }
 
+[2025-12-22 22:39] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "browse unrelated file",
+    "MISSING STEPS": "review existing tests, run tests, apply fix, re-run tests",
+    "BOTTLENECK": "Tried running tests with an unsupported tool and didn’t implement the fix.",
+    "PROJECT NOTE": "Resolution should include imported symbols; adjust PyResolveUtils.findMember accordingly.",
+    "NEW INSTRUCTION": "WHEN needing to run tests THEN execute './gradlew test' using bash"
+}
