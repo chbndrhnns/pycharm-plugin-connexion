@@ -30,6 +30,7 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enableMakeParameterOptionalIntention: Boolean = true,
         var enableMakeParameterMandatoryIntention: Boolean = true,
         var enableIntroduceParameterObjectIntention: Boolean = true,
+        var enableInlineParameterObjectIntention: Boolean = true,
         var enableCreateLocalVariableIntention: Boolean = true,
 
         // ---- Code Structure Intentions ----
@@ -68,6 +69,8 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         // ---- Refactoring Actions ----
         var enableIntroduceParameterObjectAction: Boolean = true,
         var enableIntroduceParameterObjectRefactoringAction: Boolean = true,
+        var enableInlineParameterObjectAction: Boolean = true,
+        var enableInlineParameterObjectRefactoringAction: Boolean = true,
 
         // ---- Parameter Object Settings ----
         /** Default base type for parameter objects (dataclass, NamedTuple, TypedDict, pydantic.BaseModel) */

@@ -1,0 +1,53 @@
+package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject
+
+import com.github.chbndrhnns.intellijplatformplugincopy.search.PyTestDetection
+import com.intellij.openapi.roots.ProjectFileIndex
+import com.intellij.psi.PsiElement
+import com.intellij.psi.util.PsiTreeUtil
+import com.jetbrains.python.psi.PyArgumentList
+import com.jetbrains.python.psi.PyCallExpression
+import com.jetbrains.python.psi.PyFunction
+import com.jetbrains.python.psi.PyReferenceExpression
+
+internal object InlineParameterObjectTarget {
+
+    fun find(element: PsiElement): PyFunction? {
+        val function = element as? PyFunction ?: PsiTreeUtil.getParentOfType(element, PyFunction::class.java)
+        if (function != null) {
+            val inName = function.nameIdentifier?.let { PsiTreeUtil.isAncestor(it, element, false) } == true
+            val inParameters = PsiTreeUtil.isAncestor(function.parameterList, element, false)
+            val inReturnAnnotation = function.annotation?.let { PsiTreeUtil.isAncestor(it, element, false) } == true
+
+            if (element == function || inName || inParameters || inReturnAnnotation) {
+                return function
+            }
+        }
+
+        val argumentList = PsiTreeUtil.getParentOfType(element, PyArgumentList::class.java, false)
+        val call = (argumentList?.parent as? PyCallExpression)
+            ?: PsiTreeUtil.getParentOfType(element, PyCallExpression::class.java, false)
+
+        val callee = call?.callee as? PyReferenceExpression ?: return null
+        val resolved = callee.reference.resolve() as? PyFunction ?: return null
+
+        return resolved
+    }
+
+    fun isAvailable(element: PsiElement): Boolean {
+        val function = find(element) ?: return false
+
+        val virtualFile = function.containingFile.virtualFile
+        if (virtualFile != null) {
+            val fileIndex = ProjectFileIndex.getInstance(function.project)
+            if (fileIndex.isInLibraryClasses(virtualFile) || fileIndex.isInLibrarySource(virtualFile)) {
+                return false
+            }
+        }
+
+        if (function.containingFile.name.endsWith(".pyi")) return false
+        if (PyTestDetection.isTestFunction(function)) return false
+        if (PyTestDetection.isPytestFixture(function)) return false
+
+        return PyInlineParameterObjectProcessor.hasInlineableParameterObject(function)
+    }
+}

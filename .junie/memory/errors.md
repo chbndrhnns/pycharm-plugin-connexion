@@ -1,113 +1,3 @@
-[2025-12-11 07:29] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "search_replace",
-    "ERROR": "Cannot resolve extension point 'com.intellij.intentionAction'",
-    "ROOT CAUSE": "The validator environment cannot resolve this IntelliJ extension point though it exists at build/runtime.",
-    "PROJECT NOTE": "IntentionsConfigurable.getDependencies uses EP 'com.intellij.intentionAction', which is correct; this repo often shows validator false positives for platform EPs.",
-    "NEW INSTRUCTION": "WHEN validator flags unresolved 'com.intellij.intentionAction' EP THEN keep code unchanged and continue"
-}
-
-[2025-12-11 08:18] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "apply_patch",
-    "ERROR": "Cannot resolve extension point intentionAction",
-    "ROOT CAUSE": "IntentionsConfigurable.getDependencies uses ExtensionPointName.create<Any>(\"com.intellij.intentionAction\"), which mismatches the EP bean type and breaks resolution.",
-    "PROJECT NOTE": "Use the correct bean type for the EP: ExtensionPointName.create<com.intellij.codeInsight.intention.IntentionActionBean>(\"com.intellij.intentionAction\"); alternatively remove getDependencies() if not required.",
-    "NEW INSTRUCTION": "WHEN getDependencies reports unresolved intentionAction EP THEN use IntentionActionBean as the EP type"
-}
-
-[2025-12-11 08:18] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "apply_patch",
-    "ERROR": "Cannot resolve extension point 'com.intellij.intentionAction'",
-    "ROOT CAUSE": "Configurable.getDependencies references an EP ID not resolvable in the current SDK.",
-    "PROJECT NOTE": "If the platform SDK lacks 'com.intellij.intentionAction', omit getDependencies() or use a resolvable EP for this SDK.",
-    "NEW INSTRUCTION": "WHEN IDE reports unresolved extension point ID THEN remove getDependencies override or use a valid EP ID"
-}
-
-[2025-12-11 08:19] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "apply_patch",
-    "ERROR": "Cannot resolve extension point id",
-    "ROOT CAUSE": "IntentionsConfigurable.getDependencies uses a raw EP id string the validator cannot resolve; use the platform EP constant.",
-    "PROJECT NOTE": "In settings IntentionsConfigurable, depend on IntentionActionBean.EP_NAME instead of \"com.intellij.intentionAction\".",
-    "NEW INSTRUCTION": "WHEN declaring EP dependency for intentions THEN use IntentionActionBean.EP_NAME constant"
-}
-
-[2025-12-11 08:21] - Updated by Junie - Error analysis
-{
-    "TYPE": "build failure",
-    "TOOL": "apply_patch",
-    "ERROR": "Cannot resolve extension point 'com.intellij.intentionAction'",
-    "ROOT CAUSE": "IntentionsConfigurable.getDependencies creates EP by string; the SDK expects using the typed EP constant.",
-    "PROJECT NOTE": "Use IntentionActionBean.EP_NAME instead of ExtensionPointName.create(\"com.intellij.intentionAction\") in IntentionsConfigurable.getDependencies.",
-    "NEW INSTRUCTION": "WHEN declaring intention EP dependency THEN use IntentionActionBean.EP_NAME instead of string-based create"
-}
-
-[2025-12-11 09:28] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "FileComparisonFailedError in ParametrizePytestTestIntentionTest",
-    "ROOT CAUSE": "The intention’s PSI edits produce text that doesn’t match the tests’ expected file content.",
-    "PROJECT NOTE": "ParametrizePytestTestIntentionTest uses myFixture.checkResult to compare the full file text; ensure the intention inserts '@pytest.mark.parametrize(...)' at the correct spot, adds 'import pytest' exactly once at the top when missing, and preserves blank lines/indentation so the final text matches expected. See ParametrizePytestTestIntentionTest.kt around line ~139.",
-    "NEW INSTRUCTION": "WHEN FileComparisonFailedError occurs in ParametrizePytestTestIntentionTest THEN replicate expected text including import, decorator, and whitespace"
-}
-
-[2025-12-11 09:29] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "FileComparisonFailedError during checkResult",
-    "ROOT CAUSE": "The ParametrizePytest intention output doesn't match expected file content (missing/incorrect import/decorator).",
-    "PROJECT NOTE": "Update ParametrizePytestTestIntention to insert 'import pytest' if absent and add @pytest.mark.parametrize on the target function/method; use PyElementGenerator and place the import among top-level imports.",
-    "NEW INSTRUCTION": "WHEN applying @pytest.mark.parametrize THEN ensure 'import pytest' exists or insert it at file top"
-}
-
-[2025-12-11 09:29] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "FileComparisonFailedError in checkResult",
-    "ROOT CAUSE": "The intention modifies the file to text that differs from the test's expected result.",
-    "PROJECT NOTE": "ParametrizePytestTestIntention must insert @pytest.mark.parametrize and a pytest import with the exact formatting and placement the tests expect.",
-    "NEW INSTRUCTION": "WHEN FileComparisonFailedError occurs in these tests THEN match intention output to expected text exactly"
-}
-
-[2025-12-11 09:32] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "FileComparisonFailedError: actual file content mismatched expected",
-    "ROOT CAUSE": "The ParametrizePytest intention edits do not match the tests' expected output (import/annotation formatting and placement).",
-    "PROJECT NOTE": "Fix src/main/.../intention/pytest/ParametrizePytestTestIntention.kt to insert 'import pytest' if missing and add '@pytest.mark.parametrize(...)' exactly as tests expect for top-level and class methods.",
-    "NEW INSTRUCTION": "WHEN checkResult fails in ParametrizePytest tests THEN insert 'import pytest' and correct '@pytest.mark.parametrize'"
-}
-
-[2025-12-11 09:33] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "FileComparisonFailedError: resulting file text mismatched",
-    "ROOT CAUSE": "The ParametrizePytestTestIntention produces decorators/imports that don't match expected text (e.g., missing 'import pytest' or wrong decorator placement).",
-    "PROJECT NOTE": "Tests use CodeInsightTestFixture.checkResult with exact text comparison; commit documents and reformat PSI after edits so imports and decorators match expected layout.",
-    "NEW INSTRUCTION": "WHEN adding the parametrize decorator THEN use '@pytest.mark.parametrize' and insert 'import pytest' if missing"
-}
-
-[2025-12-11 09:33] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "FileComparisonFailedError in pytest intention tests",
-    "ROOT CAUSE": "The intention output does not match expected text (import/decorator placement/formatting).",
-    "PROJECT NOTE": "ParametrizePytestTestIntention must insert 'import pytest' if missing and add '@pytest.mark.parametrize(...)' directly above the target function in module, class, and inner-class scopes, preserving indentation and blank lines so the file text exactly matches test expectations.",
-    "NEW INSTRUCTION": "WHEN FileComparisonFailedError occurs in ParametrizePytest tests THEN ensure pytest import and correctly formatted parametrize decorator insertion"
-}
-
 [2025-12-11 09:36] - Updated by Junie - Error analysis
 {
     "TYPE": "test assertion",
@@ -780,4 +670,114 @@
     "ROOT CAUSE": "The IntelliJ platform test harness expects a logging properties file in the IDE SDK cache, which is absent in this environment, causing pre-test build failure.",
     "PROJECT NOTE": "IntelliJ/PyCharm plugin tests require the Gradle IntelliJ Plugin to provision the IDE SDK; run targeted tests locally via ./gradlew test --tests 'com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.*' or use runIde so the SDK and logging config are properly set up.",
     "NEW INSTRUCTION": "WHEN run_test reports missing LogManager config THEN skip tests and validate by static analysis"
+}
+
+[2025-12-20 20:27] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_project",
+    "ERROR": "Search query too broad; over 100 matches",
+    "ROOT CAUSE": "The search term 'import' is generic and returns excessive results without focus.",
+    "PROJECT NOTE": "Target the Kotlin area handling Python imports; e.g., search for 'ImportManager.kt', 'import suggestion', or 'PyImport' under src/main/kotlin/com/github/chbndrhnns/intellijplatformplugincopy.",
+    "NEW INSTRUCTION": "WHEN search_project reports too many results THEN refine term or restrict path to specific package"
+}
+
+[2025-12-20 20:31] - Updated by Junie - Error analysis
+{
+    "TYPE": "tool limitation",
+    "TOOL": "search_project",
+    "ERROR": "Too many results; search not displayed",
+    "ROOT CAUSE": "The search term was too generic, returning over 100 results and truncating output.",
+    "PROJECT NOTE": "Limit searches to the Python import-related package or a specific Kotlin file/directory (e.g., src/main/kotlin/.../imports/).",
+    "NEW INSTRUCTION": "WHEN search_project warns more than 100 results THEN restrict path to relevant subdirectory and rerun"
+}
+
+[2025-12-20 20:34] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Unresolved reference and method in new Kotlin file",
+    "ROOT CAUSE": "The implementation referenced a non-existent settings flag and an AutoImportQuickFix API method not available in this SDK.",
+    "PROJECT NOTE": "In this project, AutoImportQuickFix exposes addImport(...) for import candidates; it does not accept arbitrary quick fixes. For reference rewriting, implement an IntentionAction or inspection-based quick fix instead of relying on PyImportCandidateProvider. Add any new settings fields in PluginSettingsState before usage.",
+    "NEW INSTRUCTION": "WHEN create reports unresolved reference semantic errors THEN replace unsupported APIs and add missing settings first"
+}
+
+[2025-12-20 20:36] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Used missing setting and invalid AutoImportQuickFix API",
+    "ROOT CAUSE": "The new provider referenced a non-existent settings flag and called AutoImportQuickFix.addQuickFix, which is not part of the API in this SDK.",
+    "PROJECT NOTE": "In this repo, PyImportCandidateProvider integrates only via quickFix.addImport(importable,...); it cannot register arbitrary IntentionAction rewrites.",
+    "NEW INSTRUCTION": "WHEN needing reference rewrite suggestion THEN implement an IntentionAction tied to unresolved reference inspection"
+}
+
+[2025-12-20 20:37] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Used nonexistent addQuickFix and undefined setting",
+    "ROOT CAUSE": "The code assumed AutoImportQuickFix accepts arbitrary quick fixes and referenced a non-existent settings flag.",
+    "PROJECT NOTE": "Use quickFix.addImport(importable, file, relativePath) as in RelativeImportCandidateProvider; implement reference-rewrite as a separate IntentionAction registered via plugin.xml, not through PyImportCandidateProvider.",
+    "NEW INSTRUCTION": "WHEN using PyImportCandidateProvider with AutoImportQuickFix THEN use addImport; do not add custom fixes"
+}
+
+[2025-12-20 21:41] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic error",
+    "TOOL": "AutoImportQuickFix via RelativeImportCandidateProvider",
+    "ERROR": "Added 'Second' to 'from . import src' line",
+    "ROOT CAUSE": "When same-package, the provider builds '.' as path, so AutoImportQuickFix merges a new from-import instead of rewriting usage to src.Second.",
+    "PROJECT NOTE": "In RelativeImportCandidateProvider.kt, avoid constructing QualifiedName(['','']) for same-package; instead detect existing 'from . import <module>' and pass the module element to quickFix to trigger qualified access rewriting.",
+    "NEW INSTRUCTION": "WHEN same-package target and module imported via 'from . import <module>' THEN avoid adding import; rewrite usage to '<module>.<symbol>'"
+}
+
+[2025-12-22 12:01] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "apply_patch",
+    "ERROR": "Cannot resolve extension point 'com.intellij.intentionAction'",
+    "ROOT CAUSE": "IntentionsConfigurable.getDependencies references an extension point not present in this platform SDK.",
+    "PROJECT NOTE": "In IntentionsConfigurable.getDependencies, only declare EP dependencies that exist in the target SDK; consider removing the override or guarding it to return an empty list if the EP is unavailable.",
+    "NEW INSTRUCTION": "WHEN apply_patch reports unresolved extension point id THEN replace or remove that EP dependency reference"
+}
+
+[2025-12-22 12:01] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "apply_patch",
+    "ERROR": "Cannot resolve extension point 'com.intellij.intentionAction'",
+    "ROOT CAUSE": "Code creates an EP from a raw string that is not recognized in this SDK; use the platform EP constant instead.",
+    "PROJECT NOTE": "In IntentionsConfigurable.getDependencies, return com.intellij.codeInsight.intention.IntentionActionBean.EP_NAME instead of ExtensionPointName.create(\"com.intellij.intentionAction\").",
+    "NEW INSTRUCTION": "WHEN declaring EP dependency in IntentionsConfigurable THEN use IntentionActionBean.EP_NAME constant"
+}
+
+[2025-12-22 12:02] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "apply_patch",
+    "ERROR": "Cannot resolve extension point 'com.intellij.intentionAction'",
+    "ROOT CAUSE": "getDependencies uses a raw string EP name; the validator requires a known EP_NAME constant or correct EP reference.",
+    "PROJECT NOTE": "In IntentionsConfigurable.getDependencies, return com.intellij.codeInsight.intention.IntentionActionBean.EP_NAME instead of ExtensionPointName.create(\"com.intellij.intentionAction\").",
+    "NEW INSTRUCTION": "WHEN declaring EP dependencies in Configurable THEN use EP_NAME constants instead of string literals"
+}
+
+[2025-12-22 12:03] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "apply_patch",
+    "ERROR": "Unresolved extension point 'com.intellij.intentionAction'",
+    "ROOT CAUSE": "getDependencies() references a hardcoded EP string not resolvable in this SDK.",
+    "PROJECT NOTE": "In IntentionsConfigurable.getDependencies, prefer IntentionActionBean.EP_NAME over ExtensionPointName.create(\"com.intellij.intentionAction\") or remove the override if unneeded.",
+    "NEW INSTRUCTION": "WHEN semantic error mentions unresolved 'com.intellij.intentionAction' EP THEN use IntentionActionBean.EP_NAME in getDependencies"
+}
+
+[2025-12-22 12:03] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "-",
+    "ERROR": "Cannot resolve extension point 'com.intellij.intentionAction'",
+    "ROOT CAUSE": "IntentionsConfigurable.getDependencies creates an EP by raw string instead of using the SDK’s EP_NAME constant.",
+    "PROJECT NOTE": "In IntentionsConfigurable.getDependencies, return listOf(com.intellij.codeInsight.intention.IntentionActionBean.EP_NAME) instead of ExtensionPointName.create(\"com.intellij.intentionAction\").",
+    "NEW INSTRUCTION": "WHEN declaring Configurable EP dependencies THEN use IntentionActionBean.EP_NAME instead of raw EP string"
 }

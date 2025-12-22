@@ -1,0 +1,15 @@
+from dataclasses import dataclass
+from typing import Any
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class Params:
+    a: Any
+    b: Any
+
+
+def foo(params: Params):
+    print(params.a, params.b)
+
+
+foo(Params(a=1, b=2))

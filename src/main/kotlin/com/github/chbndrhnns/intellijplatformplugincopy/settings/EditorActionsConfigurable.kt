@@ -27,6 +27,14 @@ class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
                     .bindSelected(settings::enableIntroduceParameterObjectRefactoringAction)
             }
             row {
+                checkBox("‘Inline Parameter Object…’ action (editor)")
+                    .bindSelected(settings::enableInlineParameterObjectAction)
+            }
+            row {
+                checkBox("‘Inline Parameter Object…’ action (refactoring menu)")
+                    .bindSelected(settings::enableInlineParameterObjectRefactoringAction)
+            }
+            row {
                 checkBox("‘Copy with Dependencies’ action")
                     .bindSelected(settings::enableCopyBlockWithDependenciesAction)
             }

@@ -1,83 +1,3 @@
-[2025-12-10 21:08] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "revise tests mid-implementation",
-    "MISSING STEPS": "implement core logic, run tests, add intentionDescriptions, add negative tests",
-    "BOTTLENECK": "Core implementation and required resources were not completed before iterating on tests.",
-    "PROJECT NOTE": "Place intentionDescriptions at src/main/resources/intentionDescriptions/ImplementAbstractMethodInChildClassesIntention/ with intentionDescription.xml, description.html, before.py.html, after.py.html.",
-    "NEW INSTRUCTION": "WHEN registering a new intention in plugin.xml THEN add intentionDescriptions with description and before/after examples"
-}
-
-[2025-12-10 21:35] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "search for dynamic keywords,search for ExtensionPointName usages,search for getExtensions/extensionList",
-    "MISSING STEPS": "modify all relevant configurables,verify build,ask clarification when dependencies ambiguous",
-    "BOTTLENECK": "Ambiguity identifying which configurables truly depend on dynamic EPs caused speculative edits.",
-    "PROJECT NOTE": "IntentionsConfigurable should also declare dependency on com.intellij.intentionAction.",
-    "NEW INSTRUCTION": "WHEN configurable EP dependencies are unspecified THEN inspect plugin.xml and add matching WithEpDependencies"
-}
-
-[2025-12-10 21:53] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "scan docs",
-    "MISSING STEPS": "update normalize, add import mapping, update docs",
-    "BOTTLENECK": "Type resolution and imports for non-builtin stdlib classes were not addressed.",
-    "PROJECT NOTE": "Extend TargetDetector.normalizeName to recognize ipaddress.* and pathlib.Path, and add preferred import rules in PyImportService/ImportManager so generated code imports from the correct modules.",
-    "NEW INSTRUCTION": "WHEN new supported type is from a stdlib module THEN update normalizeName and import mapping; add passing intention tests"
-}
-
-[2025-12-10 21:59] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "search symbol globally,open unrelated inspection file",
-    "MISSING STEPS": "ensure ordering,run tests",
-    "BOTTLENECK": "Did not guarantee or verify ordering of suggestions via tests.",
-    "PROJECT NOTE": "Use a CompletionWeigher or custom sorter; TypeEvalContext.userInitiated suits completion.",
-    "NEW INSTRUCTION": "WHEN requirement mentions suggestion priority or order THEN add CompletionWeigher and assert ranking in tests"
-}
-
-[2025-12-10 22:39] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "fetch external docs,search require-restart",
-    "MISSING STEPS": "open plugin.xml fully,scan plugin.xml for components,scan project for deprecated components,check built plugin.xml,run dynamic plugin verification,ask user for inspection result",
-    "BOTTLENECK": "Did not actually review full plugin.xml; relied on secondary docs.",
-    "PROJECT NOTE": "plugin.xml view was truncated; you must scroll to see component declarations.",
-    "NEW INSTRUCTION": "WHEN plugin.xml view shows truncated or partial content THEN scroll down to review entire file"
-}
-
-[2025-12-11 07:30] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "search project (exact string), duplicate file inspection",
-    "MISSING STEPS": "apply patch, run build, submit",
-    "BOTTLENECK": "Used bash for multi-line edit instead of apply_patch.",
-    "PROJECT NOTE": "Centralize deferral in PythonVersionNotifier so startup and listener both honor indexing completion.",
-    "NEW INSTRUCTION": "WHEN editing a file with multi-line changes THEN use apply_patch to modify the file"
-}
-
-[2025-12-11 08:17] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "broad search",
-    "MISSING STEPS": "update settings UI, register intention, summarize test results",
-    "BOTTLENECK": "Initial search was too broad and noisy, slowing navigation.",
-    "PROJECT NOTE": "Mirror TogglePytestSkipIntention for class/package naming and intentionDescriptions structure.",
-    "NEW INSTRUCTION": "WHEN search_project warns more than 100 results THEN refine query with specific package or class"
-}
-
-[2025-12-11 08:18] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "open file (duplicate)",
-    "MISSING STEPS": "scan project, identify write action scope",
-    "BOTTLENECK": "Root-cause was inferred without explicitly locating the write-action boundaries first.",
-    "PROJECT NOTE": "updateCallSites runs inside WriteCommandAction; heavy resolution must be done before entering write action.",
-    "NEW INSTRUCTION": "WHEN stacktrace mentions write action or runBlockingCancellable forbidden THEN search_project for WriteCommandAction and map methods invoked inside its block"
-}
-
 [2025-12-11 08:21] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -876,4 +796,84 @@
     "BOTTLENECK": "Premature import changes caused temporary semantic errors before method body update.",
     "PROJECT NOTE": "Prefer PyResolveUtil.resolveQualifiedNameInScope for Python name resolution; used elsewhere in repo.",
     "NEW INSTRUCTION": "WHEN replacing an implementation requiring new imports THEN update imports and body in one patch"
+}
+
+[2025-12-20 20:41] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "create provider",
+    "MISSING STEPS": "select correct extension point, implement quick fix, register extension, add tests, run tests",
+    "BOTTLENECK": "Misunderstood AutoImportQuickFix; it only adds imports, not reference rewrites.",
+    "PROJECT NOTE": "Use an intention/quick-fix tied to PyUnresolvedReferencesInspection instead of PyImportCandidateProvider for rewriting references.",
+    "NEW INSTRUCTION": "WHEN need to rewrite reference rather than add import THEN implement IntentionAction for PyUnresolvedReferencesInspection"
+}
+
+[2025-12-20 21:04] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "add quick-fix, register annotator",
+    "MISSING STEPS": "hook after import selection, rewrite caret expression, add tests",
+    "BOTTLENECK": "Implemented a separate quick-fix instead of post-selection rewrite behavior.",
+    "PROJECT NOTE": "Ensure RelativeImportCandidateProvider is registered in plugin.xml so import flow is influenced.",
+    "NEW INSTRUCTION": "WHEN import suggestion selected and module import already exists THEN rewrite caret reference to module.symbol"
+}
+
+[2025-12-20 21:23] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "add quick-fix, modify import candidates, submit",
+    "MISSING STEPS": "consult spec, implement post-selection rewrite, add tests, run tests",
+    "BOTTLENECK": "Chose wrong integration point by altering candidates instead of post-selection rewrite.",
+    "PROJECT NOTE": "Use a post-selection import application hook (e.g., listener) to rewrite the reference to a qualified name while preserving an existing module import.",
+    "NEW INSTRUCTION": "WHEN task mentions qualifier.md or post-selection import rewrite THEN open qualifier.md and implement post-selection rewrite, reusing existing imports"
+}
+
+[2025-12-20 21:32] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "add quickfix,add relative import candidate",
+    "MISSING STEPS": "rewrite reference after selection,prefer existing module import,add integration test for selection",
+    "BOTTLENECK": "Relied on candidate provider to alter imports instead of post-selection rewrite.",
+    "PROJECT NOTE": "RelativeImportCandidateProvider builds leading-dot imports, causing 'from .. import Second' instead of reusing 'from . import src'.",
+    "NEW INSTRUCTION": "WHEN existing module import matches selected symbol's module THEN rewrite reference to module.symbol and skip adding import"
+}
+
+[2025-12-20 21:39] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "submit",
+    "MISSING STEPS": "add tests,manual verify,scan project",
+    "BOTTLENECK": "No regression test for multiResolve candidate generation caused silent loss of suggestion.",
+    "PROJECT NOTE": "Verify RelativeImportCandidateProvider still contributes when references multiResolve to multiple targets and ensure parity with previous resolve() behavior.",
+    "NEW INSTRUCTION": "WHEN changing reference resolution API THEN add regression tests and manually verify suggestions"
+}
+
+[2025-12-20 23:38] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "broad search",
+    "MISSING STEPS": "-",
+    "BOTTLENECK": "Overly broad code search produced noisy results.",
+    "PROJECT NOTE": "Platform auto-import changes cannot be implemented here; implement intention-based qualification in plugin.",
+    "NEW INSTRUCTION": "WHEN project search returns more than 100 results THEN refine the query and narrow scope"
+}
+
+[2025-12-20 23:44] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "broad search",
+    "MISSING STEPS": "-",
+    "BOTTLENECK": "Core change requires PyCharm platform modifications not possible from this plugin.",
+    "PROJECT NOTE": "RelativeImportCandidateProvider exists and cannot alter apply path; implement an intention instead.",
+    "NEW INSTRUCTION": "WHEN project search reports more than 100 results THEN refine query or narrow search path"
+}
+
+[2025-12-22 12:03] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "collect context (repeat),wire settings UI",
+    "MISSING STEPS": "add tests,register intention,implement intention,implement processor,run tests",
+    "BOTTLENECK": "No tests or processor/intentional implementation were created to drive development.",
+    "PROJECT NOTE": "An unresolved EP name warning exists in IntentionsConfigurable.getDependencies; verify or remove the EP dependency.",
+    "NEW INSTRUCTION": "WHEN starting a new intention THEN add a failing end-to-end test before wiring settings"
 }
