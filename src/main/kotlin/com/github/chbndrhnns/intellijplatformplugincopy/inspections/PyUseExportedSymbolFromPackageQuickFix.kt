@@ -50,11 +50,26 @@ class PyUseExportedSymbolFromPackageQuickFix(
         // imports) or a simple reference expression. We rewrite the text
         // representation conservatively by dropping the last dotted
         // component when it starts with an underscore.
-        val referencedName = importSource.referencedName
-        if (referencedName == null || !referencedName.startsWith("_")) {
+        //
+        // Update: We now strip ALL trailing private components to support
+        // deep imports like 'mypkg._priv._impl'.
+        var current: PyExpression? = importSource
+        while (current is PyQualifiedExpression) {
+            val name = current.referencedName
+            if (name == null || !name.startsWith("_")) {
+                break
+            }
+            // Strip the private component
+            current = current.qualifier
+        }
+
+        // If 'current' is null, it means we stripped everything (e.g. 'from ._lib').
+        val newSourceText = current?.text ?: ""
+
+        // If we didn't change anything, we abort (though inspection logic ensures we start with a private module).
+        if (newSourceText == importSource.text) {
             return
         }
-        val newSourceText = importSource.qualifier?.text ?: return
 
         val alias = importElement.asName
 

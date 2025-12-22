@@ -1,13 +1,3 @@
-[2025-12-11 10:18] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "repeat file inspection,excess status updates",
-    "MISSING STEPS": "run tests,scan project,update all affected tests",
-    "BOTTLENECK": "No test run to catch broken Kotlin string literals.",
-    "PROJECT NOTE": "Tests embed Python code as Kotlin triple-quoted strings; maintain quotes and argument separators.",
-    "NEW INSTRUCTION": "WHEN Kotlin test data strings are edited THEN run full tests and fix failures"
-}
-
 [2025-12-11 10:57] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -886,4 +876,14 @@
     "BOTTLENECK": "Tried running tests with an unsupported tool and didn’t implement the fix.",
     "PROJECT NOTE": "Resolution should include imported symbols; adjust PyResolveUtils.findMember accordingly.",
     "NEW INSTRUCTION": "WHEN needing to run tests THEN execute './gradlew test' using bash"
+}
+
+[2025-12-22 22:50] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "broad search, run tests in source dir",
+    "MISSING STEPS": "run existing tests, read inspection code, modify inspection, re-run full tests",
+    "BOTTLENECK": "Mis-scoped test execution and unfocused initial search delayed progress.",
+    "PROJECT NOTE": "Inspection classes are discoverable via src/main/resources/inspectionDescriptions and existing tests under src/test.",
+    "NEW INSTRUCTION": "WHEN inspection search yields no results THEN search inspectionDescriptions and testData for class"
 }

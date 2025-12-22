@@ -71,8 +71,28 @@ class PyPrivateModuleImportInspection : PyInspection() {
         // Only care about private modules like _lib.py
         if (!resolved.name.startsWith("_")) return
 
-        val directory = resolved.containingDirectory ?: return
-        val packageInit = directory.findFile(PyNames.INIT_DOT_PY) as? PyFile ?: return
+        var directory = resolved.containingDirectory ?: return
+        val isDirectParentPrivate = directory.name.startsWith("_")
+
+        // Walk up until we find a public package (not starting with _)
+        // Also ensure it is a package (has __init__.py)
+        var packageInit: PyFile? = null
+
+        while (true) {
+            val init = directory.findFile(PyNames.INIT_DOT_PY) as? PyFile
+            if (init != null && !directory.name.startsWith("_")) {
+                packageInit = init
+                break
+            }
+            // If we hit root or can't go up
+            val parent = directory.parentDirectory
+            if (parent == null || parent == directory) {
+                break
+            }
+            directory = parent
+        }
+
+        if (packageInit == null) return
 
         // Do not offer this quick-fix inside the package __init__.py that
         // performs the re-export itself. In that file we *want* the import
@@ -111,11 +131,15 @@ class PyPrivateModuleImportInspection : PyInspection() {
                 // For the "make public" quick-fix we keep the anchor on the
                 // individual imported element, as the change is specific to
                 // that symbol.
-                holder.registerProblem(
-                    importElement,
-                    "Symbol '$name' is not exported from package __all__ yet; make it public and import from the package",
-                    PyMakeSymbolPublicAndUseExportedSymbolQuickFix(name),
-                )
+                //
+                // If the direct parent package is private, do not suggest making it public there.
+                if (!isDirectParentPrivate) {
+                    holder.registerProblem(
+                        importElement,
+                        "Symbol '$name' is not exported from package __all__ yet; make it public and import from the package",
+                        PyMakeSymbolPublicAndUseExportedSymbolQuickFix(name),
+                    )
+                }
             }
         }
     }
