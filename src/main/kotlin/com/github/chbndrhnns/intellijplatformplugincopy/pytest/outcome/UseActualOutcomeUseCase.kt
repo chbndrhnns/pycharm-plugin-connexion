@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.PyAssertStatement
+import com.jetbrains.python.psi.PyBinaryExpression
 import com.jetbrains.python.psi.PyFile
 import com.jetbrains.python.psi.PyFunction
 
@@ -18,6 +19,10 @@ class UseActualOutcomeUseCase(
 
         val element = file.findElementAt(editor.caretModel.offset) ?: return false
         val assertStatement = PsiTreeUtil.getParentOfType(element, PyAssertStatement::class.java) ?: return false
+
+        val expression = assertStatement.arguments.firstOrNull()
+        if (expression !is PyBinaryExpression || !expression.isOperator("==")) return false
+
         val pyFunction = PsiTreeUtil.getParentOfType(assertStatement, PyFunction::class.java) ?: return false
 
         val name = pyFunction.name ?: return false
@@ -32,6 +37,10 @@ class UseActualOutcomeUseCase(
         val element = file.findElementAt(editor.caretModel.offset) ?: return
 
         val assertStatement = PsiTreeUtil.getParentOfType(element, PyAssertStatement::class.java) ?: return
+
+        val expression = assertStatement.arguments.firstOrNull()
+        if (expression !is PyBinaryExpression || !expression.isOperator("==")) return
+
         val pyFunction = PsiTreeUtil.getParentOfType(assertStatement, PyFunction::class.java) ?: return
 
         val locationUrl = PytestLocationUrlFactory.fromPyFunction(pyFunction) ?: return

@@ -1,13 +1,3 @@
-[2025-12-12 14:00] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "run full test suite",
-    "MISSING STEPS": "create guidelines file, add example test, run example test, delete example test, write validated commands",
-    "BOTTLENECK": "Did not create .junie/guidelines.md or implement the example test workflow.",
-    "PROJECT NOTE": "Running a focused test class succeeds; full suite currently fails and is slow.",
-    "NEW INSTRUCTION": "WHEN guidelines task mentions runnable test example THEN create .junie/guidelines.md, add minimal test, run it, delete it, avoid full suite"
-}
-
 [2025-12-12 14:23] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -866,4 +856,14 @@
     "BOTTLENECK": "Changed availability logic before confirming test expectations and re-running tests.",
     "PROJECT NOTE": "IntroduceParameterObjectTarget controls action availability; ensure body positions are excluded.",
     "NEW INSTRUCTION": "WHEN availability test fails expecting action not available THEN inspect availability logic and restrict caret to name, parameters, or calls"
+}
+
+[2025-12-23 11:37] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "implement fix, add exception test, run all tests",
+    "BOTTLENECK": "Ambiguity around “exceptions or binary operations” led to incomplete test coverage.",
+    "PROJECT NOTE": "Gate availability via UseActualOutcomeUseCase.isAvailable for both intention and tree action.",
+    "NEW INSTRUCTION": "WHEN issue describes cases where feature must be unavailable THEN add failing availability tests for each case"
 }

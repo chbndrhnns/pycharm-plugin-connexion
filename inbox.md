@@ -3,8 +3,6 @@
 ## Pending Issues
 
 - [ ] refactor: Is doing PyAllExportUtil too much string magic?
-- [ ] fix: Use actual outcome should not be available for exceptions or binary operations (assert False)
-- [ ] fix: Introduce parameter object refactoring is not available no a str annotation
 - [ ] refactor: why do we need a different check during tests? `PyWrapHeuristics.isProtocol`
 - [ ] fix: Combine settings for parameter object
 - [ ] fix: Offer parameter object on whole function signature
@@ -74,6 +72,7 @@
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Use actual outcome should not be available for exceptions or binary operations (assert False)
 - [x] fix: When toggling pytest mark skip on param, add trailing comma
 - [x] fix: Export to target needs to use import path when not using direct parent
 - [x] feat: Offer NamedTuple, TypedDict and pydantic.BaseModel as bases for parameter object
