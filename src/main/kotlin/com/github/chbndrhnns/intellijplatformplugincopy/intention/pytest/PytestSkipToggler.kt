@@ -175,13 +175,18 @@ class PytestSkipToggler(private val generator: PyElementGenerator) {
                 items.add(skipMarker)
             }
 
-            val newListText = "[" + items.joinToString(", ") + "]"
+            val newListText = if (items.isNotEmpty()) {
+                val hasSkipMarker = items.any { it.contains(skipMarker) }
+                "[" + items.joinToString(", ") + (if (hasSkipMarker) "," else "") + "]"
+            } else {
+                "[]"
+            }
             val newExpression = generator.createExpressionFromText(LanguageLevel.getLatest(), newListText)
             marksArg.replace(newExpression)
         } else {
             val argList = callExpression.argumentList
             if (argList != null) {
-                val newArgText = "marks=[pytest.mark.skip]"
+                val newArgText = "marks=[pytest.mark.skip,]"
                 val argsText = argList.arguments.joinToString(", ") { it.text }
                 val separator = if (argsText.isBlank()) "" else ", "
                 val newArgListText = "($argsText$separator$newArgText)"

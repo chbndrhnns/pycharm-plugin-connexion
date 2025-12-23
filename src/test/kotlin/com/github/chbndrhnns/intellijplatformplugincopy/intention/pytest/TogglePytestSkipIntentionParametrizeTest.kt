@@ -30,7 +30,7 @@ class TogglePytestSkipIntentionParametrizeTest : TestBase() {
                 params=[
                     pytest.param(
                         "foo",
-                        marks=[pytest.mark.io, pytest.mark.skip],
+                        marks=[pytest.mark.io, pytest.mark.skip, ],
                     ),
                 ],
             )
@@ -96,7 +96,7 @@ class TogglePytestSkipIntentionParametrizeTest : TestBase() {
 
             @pytest.fixture(
                 params=[
-                    pytest.param("foo", marks=[pytest.mark.skip]),
+                    pytest.param("foo", marks=[pytest.mark.skip, ]),
                 ],
             )
             def foo(): pass

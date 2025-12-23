@@ -662,3 +662,11 @@
     "NEW INSTRUCTION": "WHEN detecting inlineable parameter object THEN accept dataclass and Pydantic v2 BaseModel only"
 }
 
+[2025-12-23 10:29] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "pytest param skip formatting",
+    "EXPECTATION": "When toggling skip on a parameter, the marks list should include a trailing comma after pytest.mark.skip.",
+    "NEW INSTRUCTION": "WHEN adding skip marker to param marks list THEN add trailing comma after marker"
+}
+

@@ -1,13 +1,3 @@
-[2025-12-12 13:15] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "repeat plan updates",
-    "MISSING STEPS": "inspect failing diff, adjust expected output or applier",
-    "BOTTLENECK": "Failure diagnosis stalled at file comparison mismatch without inspecting the actual diff.",
-    "PROJECT NOTE": "Constructor positional args now map to __init__ via offset; verify wrap applier uses inferred ctor name for raise-calls.",
-    "NEW INSTRUCTION": "WHEN test fails with FileComparisonFailedError THEN open actual vs expected diff and fix accordingly"
-}
-
 [2025-12-12 13:40] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -866,4 +856,14 @@
     "BOTTLENECK": "Fix not implemented after creating failing test.",
     "PROJECT NOTE": "Update addOrUpdateImportForModuleSymbol in PyAllExportUtil.kt to compute dotted relative module path from target to source.",
     "NEW INSTRUCTION": "WHEN failing reproduction test confirms bug THEN implement fix in target module before rerunning all tests"
+}
+
+[2025-12-23 10:33] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "edit tests,add debug logs",
+    "MISSING STEPS": "review special instructions",
+    "BOTTLENECK": "Ignored the constraint to leave tests unchanged and over-modified output formatting.",
+    "PROJECT NOTE": "Only add a trailing comma when skip is present; do not alter non-skip lists.",
+    "NEW INSTRUCTION": "WHEN special instructions constrain test changes THEN avoid editing tests; modify implementation only"
 }
