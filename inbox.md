@@ -4,7 +4,6 @@
 
 - [ ] refactor: Is doing PyAllExportUtil too much string magic?
 - [ ] refactor: why do we need a different check during tests? `PyWrapHeuristics.isProtocol`
-- [ ] fix: Do not offer local variable here `if __name__ == '__main__':`
 - [ ] fix: Making one symbol public via import place quickfix makes all other symbols unimported
 - [ ] fix: When prefering relative import inside same package, do not add candidate if relative import exists already
 - [ ] fix: implement abstract method is put above __init__
@@ -70,6 +69,7 @@
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Do not offer local variable here `if __name__ == '__main__':`
 - [x] fix: Combine settings for parameter object
 - [x] fix: Use actual outcome should not be available for exceptions or binary operations (assert False)
 - [x] fix: When toggling pytest mark skip on param, add trailing comma
