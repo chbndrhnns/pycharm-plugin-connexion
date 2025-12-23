@@ -2,6 +2,7 @@
 
 ## Pending Issues
 
+- [ ] refactor: Use module name in PyPackageRunLineMarkerContributor, also strip __main__, other special cases?
 - [ ] refactor: Is doing PyAllExportUtil too much string magic?
 - [ ] refactor: why do we need a different check during tests? `PyWrapHeuristics.isProtocol`
 - [ ] fix: Making one symbol public via import place quickfix makes all other symbols unimported
@@ -15,7 +16,6 @@
 
 - [ ] feat: Re-use import for qualified names
 - [ ] feat: Discover if pydantic v2 is installed and show parameter object option only in this case
-- [ ] feat: Add run configuration with package name to gutter
 - [ ] feat: If callable is expected, complete without parens
 - [ ] feat: Inline parameter object should ask to remove/other invocations
 - [ ] feat: Transform between lambda, function, partial
@@ -68,6 +68,7 @@
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Add run configuration with package name to gutter
 - [x] fix: Do not offer local variable here `if __name__ == '__main__':`
 - [x] fix: Combine settings for parameter object
 - [x] fix: Use actual outcome should not be available for exceptions or binary operations (assert False)
