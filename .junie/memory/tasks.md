@@ -1,23 +1,3 @@
-[2025-12-12 13:41] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "explore unrelated code",
-    "MISSING STEPS": "implement feature, add tests, run tests",
-    "BOTTLENECK": "No actual code or test changes were applied to the repository.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN task requires adding tests THEN create test files and run tests"
-}
-
-[2025-12-12 13:46] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "optimal",
-    "REDUNDANT STEPS": "repeat investigation, status updates",
-    "MISSING STEPS": "register intention, add intention descriptions, add tests, run tests",
-    "BOTTLENECK": "Intention not registered and untested, blocking discovery and validation.",
-    "PROJECT NOTE": "Register via <intentionAction> in plugin.xml and add resources under src/main/resources/intentionDescriptions/StripSignatureTypeAnnotationsIntention/ with description.html and before.py/after.py.",
-    "NEW INSTRUCTION": "WHEN new intention class is created THEN register intention and add intentionDescriptions resources"
-}
-
 [2025-12-12 14:00] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -866,4 +846,24 @@
     "BOTTLENECK": "Using a non-existent action group in plugin.xml introduced semantic errors.",
     "PROJECT NOTE": "Keep actions in RefactoringMenu; RefactoringPopupGroup is not defined in this project.",
     "NEW INSTRUCTION": "WHEN plugin.xml is modified THEN run build to catch unresolved groups and EPs"
+}
+
+[2025-12-23 11:15] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "run test (baseline), open specific test file",
+    "MISSING STEPS": "scan project, run all tests",
+    "BOTTLENECK": "Fix targeted only one file without first locating all deprecated usages.",
+    "PROJECT NOTE": "ActionHelpers is shared; similar deprecations may exist elsewhere and should be updated together.",
+    "NEW INSTRUCTION": "WHEN changing a shared helper API THEN scan project for all related deprecated usages"
+}
+
+[2025-12-23 11:31] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "open test, run test after changes",
+    "BOTTLENECK": "Changed availability logic before confirming test expectations and re-running tests.",
+    "PROJECT NOTE": "IntroduceParameterObjectTarget controls action availability; ensure body positions are excluded.",
+    "NEW INSTRUCTION": "WHEN availability test fails expecting action not available THEN inspect availability logic and restrict caret to name, parameters, or calls"
 }

@@ -16,7 +16,7 @@ object PythonVersionNotifier {
 
             if (!PythonVersionGuard.isSatisfied(project)) {
                 NotificationGroupManager.getInstance()
-                    .getNotificationGroup("Python DDD Toolkit")
+                    .getNotificationGroup("BetterPy")
                     .createNotification(
                         "Unsupported Python version",
                         "This plugin requires Python ${PythonVersionGuard.minVersionString()} or newer.",

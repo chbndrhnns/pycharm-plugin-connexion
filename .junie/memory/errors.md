@@ -1,23 +1,3 @@
-[2025-12-20 19:52] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Highlighting expectations mismatch due to severity change",
-    "ROOT CAUSE": "Inspection severity changed from WEAK_WARNING to WARNING but tests still expect weak warnings.",
-    "PROJECT NOTE": "Adjust PyShadowingStdlibModuleInspection tests (e.g., testHighlighting expectations) to use <warning> instead of <weak_warning> and ensure the problem description matches.",
-    "NEW INSTRUCTION": "WHEN changing inspection highlight severity THEN update test highlighting tags and expected messages"
-}
-
-[2025-12-20 19:52] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Highlighting test failed during testHighlighting",
-    "ROOT CAUSE": "Inspection severity changed to WARNING but tests still expect previous severity.",
-    "PROJECT NOTE": "Update PyShadowingStdlibModuleInspectionTest to expect ProblemHighlightType.WARNING (exclamation) instead of WEAK_WARNING/INFO.",
-    "NEW INSTRUCTION": "WHEN changing inspection highlight severity THEN update corresponding highlighting test expectations"
-}
-
 [2025-12-20 19:53] - Updated by Junie - Error analysis
 {
     "TYPE": "test assertion",
@@ -776,4 +756,24 @@
     "ROOT CAUSE": "The helper uses MapDataContext and event creation APIs not available in this SDK; use SimpleDataContext/TestActionEvent instead.",
     "PROJECT NOTE": "In action tests, prefer com.intellij.openapi.actionSystem.impl.SimpleDataContext and com.intellij.testFramework.TestActionEvent over MapDataContext; call action.update(event) before actionPerformed.",
     "NEW INSTRUCTION": "WHEN creating AnAction test event THEN use TestActionEvent with SimpleDataContext instead of MapDataContext"
+}
+
+[2025-12-23 11:29] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Intention offered where it must be unavailable",
+    "ROOT CAUSE": "IntroduceParameterObjectTarget.find returns the function for caret inside function body, enabling availability.",
+    "PROJECT NOTE": "Limit availability in src/main/kotlin/.../IntroduceParameterObjectTarget.kt to function name, parameter list (including annotations), return annotation, or call sites; exclude general function body.",
+    "NEW INSTRUCTION": "WHEN caret is inside function body (not name/params/return) THEN return null in find"
+}
+
+[2025-12-23 11:31] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Action unexpectedly available in function body",
+    "ROOT CAUSE": "The availability finder returns a target for carets inside a function body, so isAvailable() stays true where it should be false.",
+    "PROJECT NOTE": "Tighten IntroduceParameterObjectTarget.find/isAvailable (src/main/.../IntroduceParameterObjectTarget.kt) to only allow function header (name/parameters/return annotation) or explicit call sites, not arbitrary body elements.",
+    "NEW INSTRUCTION": "WHEN caret is inside function body block THEN return false from isAvailable"
 }

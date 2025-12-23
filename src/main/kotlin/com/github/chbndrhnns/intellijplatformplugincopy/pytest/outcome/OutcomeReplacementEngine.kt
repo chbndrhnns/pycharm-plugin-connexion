@@ -242,7 +242,7 @@ class OutcomeReplacementEngine {
 
     private fun notifyParametrizeIdsMustBeLiteral(project: Project) {
         NotificationGroupManager.getInstance()
-            .getNotificationGroup("Python DDD Toolkit")
+            .getNotificationGroup("BetterPy")
             .createNotification(
                 "Use actual test outcome for parametrized tests only works with literal ids",
                 "Provide literal values, e.g. ids=[\"case-1\", \"case-2\"]. Function-based ids are not supported.",

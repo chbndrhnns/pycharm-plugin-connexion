@@ -5,7 +5,7 @@ import com.intellij.openapi.options.SearchableConfigurable
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.dsl.builder.panel
 
-class PluginSettingsConfigurable : BoundConfigurable("DDD Toolkit"), SearchableConfigurable {
+class PluginSettingsConfigurable : BoundConfigurable("BetterPy"), SearchableConfigurable {
     override fun getId(): String = "com.github.chbndrhnns.intellijplatformplugincopy.settings"
 
     override fun createPanel(): DialogPanel {

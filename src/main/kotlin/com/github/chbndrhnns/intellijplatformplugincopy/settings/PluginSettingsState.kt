@@ -6,7 +6,7 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.service
 
 /**
- * Persistent settings state for the Python DDD Toolkit plugin.
+ * Persistent settings state for the plugin.
  * Settings are organized by feature category for easier navigation.
  */
 @State(name = "PycharmDddToolkitSettings", storages = [Storage("pycharm-ddd-toolkit.xml")])

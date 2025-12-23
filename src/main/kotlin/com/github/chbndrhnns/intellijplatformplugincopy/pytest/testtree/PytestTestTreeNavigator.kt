@@ -62,7 +62,7 @@ object PytestTestTreeNavigator {
 
     private fun notify(project: Project, message: String) {
         NotificationGroupManager.getInstance()
-            .getNotificationGroup("Python DDD Toolkit")
+            .getNotificationGroup("BetterPy")
             .createNotification(message, NotificationType.INFORMATION)
             .notify(project)
     }
