@@ -372,4 +372,26 @@ class PyUnresolvedReferenceAsErrorInspectionTest : TestBase() {
         myFixture.enableInspections(PyUnresolvedReferenceAsErrorInspection::class.java)
         myFixture.checkHighlighting(true, false, false)
     }
+
+
+    fun testDataclassFieldAliasNotFlagged() {
+        myFixture.configureByText(
+            "test.py",
+            """
+            from dataclasses import dataclass, field
+            
+            @dataclass
+            class Person:
+                name: str = field(alias="full_name")
+                age: int
+            
+            def foo():
+                p = Person(full_name="John", age=30)
+                # Accessing via alias should not be flagged
+                return p.full_name
+            """.trimIndent()
+        )
+        myFixture.enableInspections(PyUnresolvedReferenceAsErrorInspection::class.java)
+        myFixture.checkHighlighting(true, false, false)
+    }
 }

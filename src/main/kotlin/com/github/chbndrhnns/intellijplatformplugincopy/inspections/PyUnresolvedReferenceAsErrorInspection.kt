@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.inspections
 
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.isDataclassClass
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.populate.PyDataclassFieldExtractor
 import com.github.chbndrhnns.intellijplatformplugincopy.python.PythonVersionGuard
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInspection.LocalInspectionToolSession
@@ -61,14 +62,17 @@ class PyUnresolvedReferenceAsErrorInspection : PyInspection() {
                         )
                     } else {
                         if (isQualifierTypeInAllowlist(qualifier, context)) {
-                            // Report the problem on the name identifier only, not the entire qualified expression
-                            val nameElement = node.nameElement?.psi
-                            if (nameElement != null) {
-                                holder.registerProblem(
-                                    nameElement,
-                                    "Unresolved attribute '${node.name}'",
-                                    ProblemHighlightType.ERROR
-                                )
+                            // Check if the attribute name matches a field alias
+                            if (!isFieldAlias(qualifier, name, context)) {
+                                // Report the problem on the name identifier only, not the entire qualified expression
+                                val nameElement = node.nameElement?.psi
+                                if (nameElement != null) {
+                                    holder.registerProblem(
+                                        nameElement,
+                                        "Unresolved attribute '${node.name}'",
+                                        ProblemHighlightType.ERROR
+                                    )
+                                }
                             }
                         }
                     }
@@ -93,5 +97,25 @@ class PyUnresolvedReferenceAsErrorInspection : PyInspection() {
         val classType = qualifierType as? PyClassType ?: return false
         val pyClass = classType.pyClass
         return isDataclassClass(pyClass)
+    }
+
+    /**
+     * Checks if the given attribute name matches a field alias in the qualifier's class.
+     * Returns true if the name is a valid alias for any field in the dataclass/pydantic model.
+     */
+    private fun isFieldAlias(qualifier: PyExpression, attributeName: String?, context: TypeEvalContext): Boolean {
+        if (attributeName == null) return false
+
+        val qualifierType = context.getType(qualifier) ?: return false
+        val classType = qualifierType as? PyClassType ?: return false
+        val pyClass = classType.pyClass
+
+        if (!isDataclassClass(pyClass)) return false
+
+        // Extract fields and check if any field has this attribute name as an alias
+        val extractor = PyDataclassFieldExtractor()
+        val fields = extractor.extractDataclassFields(pyClass, context)
+
+        return fields.any { field -> field.aliasName == attributeName }
     }
 }
