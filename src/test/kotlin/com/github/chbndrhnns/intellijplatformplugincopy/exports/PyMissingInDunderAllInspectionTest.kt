@@ -39,7 +39,7 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
             targetFile = "$basePath/_client.py",
             checkHighlighting = false,
             checkWeakWarnings = true,
-            fixFamilyName = "Add to __all__",
+            fixFamilyName = "BetterPy: Add to __all__",
             resultFileToCheck = "$basePath/__init__.py",
             expectedResultFile = "inspections/PyMissingInDunderAllInspection/${testName}_after/__init__.py"
         )
@@ -55,7 +55,7 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
             targetFile = "$basePath/_module.py",
             checkHighlighting = false,
             checkWeakWarnings = false,
-            fixFamilyName = "Add to __all__",
+            fixFamilyName = "BetterPy: Add to __all__",
             resultFileToCheck = "$basePath/__init__.py",
             expectedResultFile = "inspections/PyMissingInDunderAllInspection/${testName}_after/__init__.py"
         )
@@ -90,7 +90,7 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
         myFixture.configureFromExistingVirtualFile(modFile.virtualFile)
         myFixture.enableInspections(PyMissingInDunderAllInspection::class.java)
 
-        val fix = myFixture.getAllQuickFixes().find { it.familyName == "Add to __all__" }
+        val fix = myFixture.getAllQuickFixes().find { it.familyName == "BetterPy: Add to __all__" }
         assertTrue("Fix 'Add to __all__' not found", fix != null)
 
         myFixture.launchAction(fix!!)
@@ -120,7 +120,7 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
         myFixture.configureFromExistingVirtualFile(modFile.virtualFile)
         myFixture.enableInspections(PyMissingInDunderAllInspection::class.java)
 
-        val fix = myFixture.getAllQuickFixes().find { it.familyName == "Add to __all__" }
+        val fix = myFixture.getAllQuickFixes().find { it.familyName == "BetterPy: Add to __all__" }
         assertTrue("Fix 'Add to __all__' not found", fix != null)
 
         myFixture.launchAction(fix!!)
@@ -143,7 +143,7 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
 
         val fixes = myFixture.getAllQuickFixes()
         assertTrue("Add to __all__ intention should not be offered for allowlisted symbols", fixes.none {
-            it.familyName == "Add to __all__"
+            it.familyName == "BetterPy: Add to __all__"
         })
     }
 
@@ -156,7 +156,7 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
 
         val fixes = myFixture.getAllQuickFixes()
         assertTrue("Add to __all__ intention should not be offered for symbols in allowlisted packages", fixes.none {
-            it.familyName == "Add to __all__"
+            it.familyName == "BetterPy: Add to __all__"
         })
     }
 
@@ -171,7 +171,7 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
 
         val fixes = myFixture.getAllQuickFixes()
         assertTrue("Add to __all__ intention should not be offered for symbols in allowlisted modules", fixes.none {
-            it.familyName == "Add to __all__"
+            it.familyName == "BetterPy: Add to __all__"
         })
     }
 
@@ -187,7 +187,7 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
         val fixes = myFixture.getAllQuickFixes()
         assertTrue(
             "Add to __all__ intention should not be offered for pytest conftest.py files",
-            fixes.none { it.familyName == "Add to __all__" }
+            fixes.none { it.familyName == "BetterPy: Add to __all__" }
         )
     }
 
@@ -266,7 +266,7 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
         myFixture.doInspectionTest(
             testFile = "$basePath/$testName/__init__.py",
             inspection = PyMissingInDunderAllInspection::class.java,
-            fixFamilyName = if (applyFix) "Add to __all__" else null,
+            fixFamilyName = if (applyFix) "BetterPy: Add to __all__" else null,
             expectedResultFile = if (applyFix) "$basePath/${testName}_after/__init__.py" else null,
             checkHighlighting = true
         )
@@ -291,7 +291,7 @@ class PyMissingInDunderAllInspectionTest : TestBase() {
             targetFile = "$basePath/$testName/_module.py",
             checkHighlighting = false,
             checkWeakWarnings = true,
-            fixFamilyName = "Add to __all__",
+            fixFamilyName = "BetterPy: Add to __all__",
             resultFileToCheck = "$basePath/$testName/__init__.py",
             expectedResultFile = "$basePath/${testName}_after/__init__.py"
         )
