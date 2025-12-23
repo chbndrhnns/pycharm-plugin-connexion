@@ -128,8 +128,10 @@ class PyExportSymbolToTargetIntention : IntentionAction, HighPriorityAction, Dum
         val projectFileIndex = ProjectRootManager.getInstance(project).fileIndex
         val targets = mutableListOf<PyFile>()
 
-        // Current file is also a target
-        targets.add(file)
+        // Current file is also a target if it is not private
+        if (!file.name.startsWith("_") || file.name == PyNames.INIT_DOT_PY) {
+            targets.add(file)
+        }
 
         var currentDir = file.containingDirectory
         while (currentDir != null && projectFileIndex.isInSourceContent(currentDir.virtualFile)) {
