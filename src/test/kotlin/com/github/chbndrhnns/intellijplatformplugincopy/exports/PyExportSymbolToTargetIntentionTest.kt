@@ -162,6 +162,26 @@ class PyExportSymbolToTargetIntentionTest : TestBase() {
         assertFalse(isAlreadyExported.invoke(intention, file, "bar") as Boolean)
     }
 
+    fun testPopupShowsAlreadyExported() {
+        myFixture.addFileToProject("__init__.py", "__all__ = ['foo']")
+        val modFile = myFixture.addFileToProject("mod.py", "def fo<caret>o(): pass")
+        myFixture.configureFromExistingVirtualFile(modFile.virtualFile)
+
+        val intention = PyExportSymbolToTargetIntention()
+        val fakePopupHost = FakePopupHost()
+        intention.popupHost = fakePopupHost
+
+        intention.invoke(project, myFixture.editor, myFixture.file)
+
+        // Index 0: mod.py (current module) - NOT exported
+        // Index 1: __init__.py - ALREADY exported
+        assertEquals(2, fakePopupHost.lastLabels.size)
+        assertTrue(fakePopupHost.greyedOutIndices.contains(1))
+        assertFalse(fakePopupHost.greyedOutIndices.contains(0))
+
+        assertTrue(fakePopupHost.lastLabels[1].contains("(already exported)"))
+    }
+
     fun testNotAvailableOnClassMethod() {
         val modFile = myFixture.addFileToProject(
             "mod.py", """

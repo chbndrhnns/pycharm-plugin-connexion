@@ -6,6 +6,7 @@ import com.intellij.openapi.editor.Editor
 class FakePopupHost : PopupHost {
     var lastTitle: String? = null
     var lastLabels: List<String> = emptyList()
+    var greyedOutIndices: Set<Int> = emptySet()
     var selectedIndex: Int = 0
 
     override fun <T> showChooser(
@@ -17,6 +18,7 @@ class FakePopupHost : PopupHost {
     ) {
         lastTitle = title
         lastLabels = items.map(render)
+        greyedOutIndices = emptySet()
         if (items.isNotEmpty()) {
             val idx = selectedIndex.coerceIn(0, items.size - 1)
             onChosen(items[idx])
@@ -32,7 +34,11 @@ class FakePopupHost : PopupHost {
         onChosen: (T) -> Unit
     ) {
         lastTitle = title
-        lastLabels = items.map(render)
+        lastLabels = items.map {
+            val baseText = render(it)
+            if (isGreyedOut(it)) "$baseText (already exported)" else baseText
+        }
+        greyedOutIndices = items.indices.filter { isGreyedOut(items[it]) }.toSet()
         if (items.isNotEmpty()) {
             val idx = selectedIndex.coerceIn(0, items.size - 1)
             onChosen(items[idx])

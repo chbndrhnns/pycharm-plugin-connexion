@@ -2,9 +2,9 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.shared
 
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.ui.popup.JBPopupFactory
+import com.intellij.openapi.ui.popup.PopupStep
+import com.intellij.openapi.ui.popup.util.BaseListPopupStep
 import com.intellij.ui.SimpleListCellRenderer
-import com.intellij.util.ui.JBUI
-import javax.swing.JList
 
 /** Default PopupHost implementation backed by the IntelliJ platform UI. */
 class JbPopupHost : PopupHost {
@@ -37,24 +37,21 @@ class JbPopupHost : PopupHost {
         isGreyedOut: (T) -> Boolean,
         onChosen: (T) -> Unit
     ) {
-        val builder = JBPopupFactory.getInstance()
-            .createPopupChooserBuilder(items)
-            .setTitle(title)
-            .setRenderer(object : SimpleListCellRenderer<T>() {
-                override fun customize(list: JList<out T>, value: T, index: Int, selected: Boolean, hasFocus: Boolean) {
-                    text = render(value)
-                    if (isGreyedOut(value)) {
-                        foreground = JBUI.CurrentTheme.Label.disabledForeground()
-                    }
-                }
-            })
-            .setNamerForFiltering { value: T -> render(value) }
-            .setItemChosenCallback { chosen -> onChosen(chosen) }
-            .setMovable(true)
-            .setResizable(true)
-            .setRequestFocus(true)
+        val step = object : BaseListPopupStep<T>(title, items) {
+            override fun getTextFor(value: T): String {
+                val baseText = render(value)
+                return if (isGreyedOut(value)) "$baseText (already exported)" else baseText
+            }
 
-        val popup = builder.createPopup()
+            override fun isSelectable(value: T): Boolean = !isGreyedOut(value)
+
+            override fun onChosen(selectedValue: T, finalChoice: Boolean): PopupStep<*>? {
+                onChosen(selectedValue)
+                return FINAL_CHOICE
+            }
+        }
+
+        val popup = JBPopupFactory.getInstance().createListPopup(step)
         popup.showInBestPositionFor(editor)
     }
 }

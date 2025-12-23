@@ -1,43 +1,3 @@
-[2025-12-20 20:21] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "run_test",
-    "ERROR": "Missing j.u.l.LogManager config: test-log.properties",
-    "ROOT CAUSE": "The IntelliJ platform test harness expects a logging properties file in the IDE SDK cache, which is absent in this environment, causing pre-test build failure.",
-    "PROJECT NOTE": "IntelliJ/PyCharm plugin tests require the Gradle IntelliJ Plugin to provision the IDE SDK; run targeted tests locally via ./gradlew test --tests 'com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.*' or use runIde so the SDK and logging config are properly set up.",
-    "NEW INSTRUCTION": "WHEN run_test reports missing LogManager config THEN skip tests and validate by static analysis"
-}
-
-[2025-12-20 20:27] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_project",
-    "ERROR": "Search query too broad; over 100 matches",
-    "ROOT CAUSE": "The search term 'import' is generic and returns excessive results without focus.",
-    "PROJECT NOTE": "Target the Kotlin area handling Python imports; e.g., search for 'ImportManager.kt', 'import suggestion', or 'PyImport' under src/main/kotlin/com/github/chbndrhnns/intellijplatformplugincopy.",
-    "NEW INSTRUCTION": "WHEN search_project reports too many results THEN refine term or restrict path to specific package"
-}
-
-[2025-12-20 20:31] - Updated by Junie - Error analysis
-{
-    "TYPE": "tool limitation",
-    "TOOL": "search_project",
-    "ERROR": "Too many results; search not displayed",
-    "ROOT CAUSE": "The search term was too generic, returning over 100 results and truncating output.",
-    "PROJECT NOTE": "Limit searches to the Python import-related package or a specific Kotlin file/directory (e.g., src/main/kotlin/.../imports/).",
-    "NEW INSTRUCTION": "WHEN search_project warns more than 100 results THEN restrict path to relevant subdirectory and rerun"
-}
-
-[2025-12-20 20:34] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "create",
-    "ERROR": "Unresolved reference and method in new Kotlin file",
-    "ROOT CAUSE": "The implementation referenced a non-existent settings flag and an AutoImportQuickFix API method not available in this SDK.",
-    "PROJECT NOTE": "In this project, AutoImportQuickFix exposes addImport(...) for import candidates; it does not accept arbitrary quick fixes. For reference rewriting, implement an IntentionAction or inspection-based quick fix instead of relying on PyImportCandidateProvider. Add any new settings fields in PluginSettingsState before usage.",
-    "NEW INSTRUCTION": "WHEN create reports unresolved reference semantic errors THEN replace unsupported APIs and add missing settings first"
-}
-
 [2025-12-20 20:36] - Updated by Junie - Error analysis
 {
     "TYPE": "semantic error",
@@ -776,4 +736,44 @@
     "ROOT CAUSE": "The inspection was created before adding its settings flag and required description resource.",
     "PROJECT NOTE": "Inspections here must have inspectionDescriptions/<ClassName>.html and any referenced settings must exist in PluginSettingsState before use.",
     "NEW INSTRUCTION": "WHEN create reports semantic errors for inspection THEN add setting and description HTML, then retry"
+}
+
+[2025-12-23 14:34] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Malformed multi-line replace; arguments truncated",
+    "ROOT CAUSE": "The multi-line search/replace payload was not properly escaped and got truncated, so the tool could not apply the change.",
+    "PROJECT NOTE": "Edits were targeting src/test/kotlin/fixtures/FakePopupHost.kt to track greyed-out indices and selection.",
+    "NEW INSTRUCTION": "WHEN change spans multiple lines or contains quotes THEN use apply_patch with explicit diff"
+}
+
+[2025-12-23 14:36] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "search_replace",
+    "ERROR": "Used nonexistent JBPopupChooserBuilder method",
+    "ROOT CAUSE": "The SDK lacks setSelectionCheck on JBPopupChooserBuilder, so the call is invalid.",
+    "PROJECT NOTE": "In JbPopupHost.kt, append \"(already exported)\" via renderer and use disabled foreground; to skip greyed items, guard in itemChosenCallback or manage selection via a custom ListSelectionModel instead of unsupported builder APIs.",
+    "NEW INSTRUCTION": "WHEN semantic errors mention unresolved builder method in JbPopupHost.kt THEN remove the call and handle via renderer and itemChosenCallback guards"
+}
+
+[2025-12-23 14:36] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "search_replace",
+    "ERROR": "Used nonexistent JBPopupChooserBuilder.setSelectionCheck",
+    "ROOT CAUSE": "The project’s IntelliJ SDK does not provide setSelectionCheck on JBPopupChooserBuilder.",
+    "PROJECT NOTE": "In JbPopupHost.kt, add the '(already exported)' suffix via the renderer. To skip greyed-out items, do not call setSelectionCheck; instead, handle skipping in onChosen or preselect the first non-greyed item before showing the popup.",
+    "NEW INSTRUCTION": "WHEN JBPopupChooserBuilder method is missing in SDK THEN avoid it and handle in renderer/onChosen"
+}
+
+[2025-12-23 14:36] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "search_replace",
+    "ERROR": "Unresolved 'setSelectionCheck' in JBPopupChooserBuilder",
+    "ROOT CAUSE": "The IntelliJ SDK in this project does not provide setSelectionCheck; a non-existent API was used.",
+    "PROJECT NOTE": "In JbPopupHost.showChooserWithGreying, rely on the renderer for '(already exported)' text and disabled color; to skip greyed items, preselect the first non-greyed item or ignore greyed choices in the chosen-callback rather than calling missing builder methods.",
+    "NEW INSTRUCTION": "WHEN builder method is an unresolved reference THEN remove it and implement behavior via callbacks"
 }

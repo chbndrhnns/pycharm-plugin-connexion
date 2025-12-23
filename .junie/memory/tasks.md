@@ -1,13 +1,3 @@
-[2025-12-12 15:05] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "-",
-    "BOTTLENECK": "Ambiguity between dot-only vs any attribute-access suppression scope.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN broader attribute-access suppression is requested THEN implement separately with dedicated tests"
-}
-
 [2025-12-12 15:20] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -866,4 +856,14 @@
     "BOTTLENECK": "Inspection not registered and no tests executed to validate behavior.",
     "PROJECT NOTE": "Inspections must be registered via localInspection in plugin.xml with level/group; settings toggles are exposed via InspectionsConfigurable.",
     "NEW INSTRUCTION": "WHEN new inspection class is added THEN register in plugin.xml and write tests"
+}
+
+[2025-12-23 14:37] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "guess APIs",
+    "MISSING STEPS": "add tests,add test for cursor skipping,run tests,implement fallback for skipping without API support",
+    "BOTTLENECK": "Used a nonexistent JBPopup builder method to enforce non-selectable items.",
+    "PROJECT NOTE": "Add a test asserting navigation skips greyed items, not just label suffix.",
+    "NEW INSTRUCTION": "WHEN UI API capability is uncertain THEN inspect available methods and add a failing test first"
 }
