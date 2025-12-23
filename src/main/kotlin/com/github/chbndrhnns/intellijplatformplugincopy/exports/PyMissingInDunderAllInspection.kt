@@ -169,7 +169,21 @@ class PyMissingInDunderAllInspection : PyInspection() {
          */
         private fun checkModuleExportsFromContainingPackage(moduleFile: PyFile) {
             if (isAllowlistedModule(moduleFile)) return
-            val directory = moduleFile.containingDirectory ?: return
+            var directory = moduleFile.containingDirectory ?: return
+
+            // If the containing package is private (starts with '_'), traverse up
+            // to find the nearest public package (or the root-most private package).
+            while (directory.name.startsWith("_")) {
+                val parent = directory.parent ?: break
+                // Stop traversal if the parent is not a package (no __init__.py)
+                if (parent.findFile(PyNames.INIT_DOT_PY) !is PyFile) break
+                directory = parent
+            }
+
+            // If the resolved package is still private, it means we never found a public package boundary.
+            // In that case, we treat it as internal implementation detail and do not enforce exports.
+            if (directory.name.startsWith("_")) return
+
             val packageInit = directory.findFile(PyNames.INIT_DOT_PY) as? PyFile ?: return
 
             if (isAllowlistedModule(moduleFile) || isAllowlistedModule(packageInit)) return

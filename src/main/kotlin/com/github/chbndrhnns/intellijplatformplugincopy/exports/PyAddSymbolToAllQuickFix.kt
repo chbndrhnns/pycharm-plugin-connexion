@@ -35,11 +35,21 @@ class PyAddSymbolToAllQuickFix(private val name: String) : PsiUpdateModCommandQu
             // We are already in the package __init__.py – operate on this file.
             (updater.getWritable(contextPyFile) as PyFile) to null
         } else {
-            // We are in a regular module. Use its containingDirectory so that the
-            // quick-fix operates on the *copied* test file (or the correct PSI
-            // file in the project), not on the original file on disk.
+            // We are in a regular module. Locate the containing package's __init__.py.
+            // If the immediate containing package is private (starts with '_'),
+            // traverse up to find the nearest public package (or the root-most private package).
+            
+            // Use VFS to navigate to ensure we handle test fixtures correctly (where PSI might differ).
             val vFile = PsiUtilCore.getVirtualFile(element) ?: return
-            val parentVFile = vFile.parent ?: return
+            var parentVFile = vFile.parent ?: return
+            
+            while (parentVFile.name.startsWith("_")) {
+                val nextParent = parentVFile.parent ?: break
+                // Stop traversal if the parent is not a package (no __init__.py)
+                if (nextParent.findChild(PyNames.INIT_DOT_PY) == null) break
+                parentVFile = nextParent
+            }
+            
             val parentPsiDir = PsiManager.getInstance(project).findDirectory(parentVFile) ?: return
             val initFile = parentPsiDir.findFile(PyNames.INIT_DOT_PY) as? PyFile ?: return
             (updater.getWritable(initFile) as PyFile) to contextPyFile

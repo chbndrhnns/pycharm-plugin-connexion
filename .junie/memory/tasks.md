@@ -1,13 +1,3 @@
-[2025-12-12 15:20] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "update action, add tests, run tests",
-    "BOTTLENECK": "Action visibility logic was not implemented to filter for failed tests.",
-    "PROJECT NOTE": "Adjust CopyStacktraceAction.update to inspect TestTreeView selection and gate visibility by SMTestProxy.isDefect stacktraces; add a corresponding update-visibility test.",
-    "NEW INSTRUCTION": "WHEN action update depends on TestTreeView selection THEN enable only if selection has defective leaf"
-}
-
 [2025-12-12 15:26] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -866,4 +856,14 @@
     "BOTTLENECK": "Used a nonexistent JBPopup builder method to enforce non-selectable items.",
     "PROJECT NOTE": "Add a test asserting navigation skips greyed items, not just label suffix.",
     "NEW INSTRUCTION": "WHEN UI API capability is uncertain THEN inspect available methods and add a failing test first"
+}
+
+[2025-12-23 14:49] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "scroll plugin.xml,create reproduction test,search for literal message",
+    "MISSING STEPS": "review existing tests,run full test suite",
+    "BOTTLENECK": "Created a new test instead of leveraging existing inspection tests.",
+    "PROJECT NOTE": "There are existing tests under src/test/.../exports, e.g., PyMissingInDunderAllInspectionTest.",
+    "NEW INSTRUCTION": "WHEN repository has a test for the inspection THEN extend existing test and run suite"
 }
