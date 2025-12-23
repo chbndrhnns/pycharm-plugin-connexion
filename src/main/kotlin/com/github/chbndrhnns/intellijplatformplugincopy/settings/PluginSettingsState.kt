@@ -99,6 +99,7 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enableConnexionInspections: Boolean = true,
         var enableConnexionCompletion: Boolean = true,
         var enableNewTypeTypeVarParamSpecRename: Boolean = true,
+        var enablePyPackageRunConfigurationAction: Boolean = true,
     )
 
     private var myState = State()

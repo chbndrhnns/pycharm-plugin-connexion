@@ -65,6 +65,7 @@ abstract class TestBase : MyPlatformTestCase() {
                 enableNewTypeTypeVarParamSpecRename = true,
                 enableToggleTypeAliasIntention = true,
                 enableExportSymbolToTargetIntention = true,
+                enablePyPackageRunConfigurationAction = true,
                 defaultParameterObjectBaseType = "dataclass",
             ),
         )

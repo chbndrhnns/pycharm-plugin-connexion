@@ -1,7 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.settings
 
 import com.intellij.openapi.extensions.BaseExtensionPointName
-import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.ui.DialogPanel
@@ -12,7 +11,7 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
     private val settings = PluginSettingsState.instance().state
 
     override fun getDependencies(): Collection<BaseExtensionPointName<*>> {
-        return listOf(ExtensionPointName.create<Any>("com.intellij.intentionAction"))
+        return emptyList()
     }
 
     override fun createPanel(): DialogPanel {
@@ -92,6 +91,10 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
             row {
                 checkBox("Hide ‘Suggested Refactoring: Update … to reflect signature change’ intention")
                     .bindSelected(settings::suppressSuggestedRefactoringSignatureChangeIntention)
+            }
+            row {
+                checkBox("‘Add run configuration with package name’ gutter action")
+                    .bindSelected(settings::enablePyPackageRunConfigurationAction)
             }
         }
     }

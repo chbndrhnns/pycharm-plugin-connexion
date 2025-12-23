@@ -1,13 +1,3 @@
-[2025-12-12 14:57] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "scan project (repeated), open unrelated tests",
-    "MISSING STEPS": "implement fix, add tests, run tests",
-    "BOTTLENECK": "No code change or test execution to verify the requirement.",
-    "PROJECT NOTE": "Extend CopyStacktraceActionTest.kt using TestBase to cover update visibility.",
-    "NEW INSTRUCTION": "WHEN bug fix requires action visibility change THEN implement update logic and add tests, then run tests"
-}
-
 [2025-12-12 15:00] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -868,12 +858,12 @@
     "NEW INSTRUCTION": "WHEN investigating an intention offering unexpectedly THEN open isAvailable implementation before anything else"
 }
 
-[2025-12-23 11:49] - Updated by Junie - Trajectory analysis
+[2025-12-23 13:38] - Updated by Junie - Trajectory analysis
 {
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "scan project",
-    "MISSING STEPS": "implement filter, run build",
-    "BOTTLENECK": "Lack of dunder-name filter prevents intention suppression.",
-    "PROJECT NOTE": "Add a guard in CreateLocalVariableIntention.isAvailable to skip names matching __.*__.",
-    "NEW INSTRUCTION": "WHEN unresolved reference name matches __.*__ THEN return false in isAvailable"
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "re-plan, research APIs",
+    "MISSING STEPS": "register extension, verify dependencies, run build, add tests",
+    "BOTTLENECK": "Implementation started without verifying API availability and plugin.xml registration.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN adding a new gutter/action via extension points THEN register plugin.xml entry and add stub class before implementing logic"
 }

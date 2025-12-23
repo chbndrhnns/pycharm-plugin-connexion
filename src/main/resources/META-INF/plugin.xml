@@ -68,6 +68,9 @@
         <applicationService
                 serviceImplementation="com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState"/>
 
+        <runLineMarkerContributor language="Python"
+                                  implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.run.PyPackageRunLineMarkerContributor"/>
+
         <notificationGroup id="BetterPy" displayType="BALLOON" isLogByDefault="true"/>
 
         <postStartupActivity

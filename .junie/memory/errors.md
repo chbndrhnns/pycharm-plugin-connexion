@@ -1,23 +1,3 @@
-[2025-12-20 20:07] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "search_replace",
-    "ERROR": "Introduced unresolved references after import changes",
-    "ROOT CAUSE": "Imports for GlobalSearchScope, ProcessCanceledException, and PyClassNameIndex were removed without updating resolveQualified to stop using them.",
-    "PROJECT NOTE": "When refactoring to PyResolveUtil/ScopeUtil, replace the entire resolveQualified body to the new approach in the same edit.",
-    "NEW INSTRUCTION": "WHEN changing imports to a new API THEN refactor dependent code in the same edit"
-}
-
-[2025-12-20 20:13] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "run_test",
-    "ERROR": "Gradle tests aborted by IDE test runtime misconfiguration",
-    "ROOT CAUSE": "The IntelliJ/PyCharm test runtime requires a logging config not present in this environment, causing the test process to abort.",
-    "PROJECT NOTE": "Running IDE-integrated tests needs the IntelliJ test harness; prefer targeted Gradle CLI runs (e.g., ./gradlew test --tests '...wrap.*') or skip tests and do compile-only checks when the harness is unavailable.",
-    "NEW INSTRUCTION": "WHEN run_test prints missing LogManager config and process kill warnings THEN run a single test via Gradle CLI --tests filter"
-}
-
 [2025-12-20 20:20] - Updated by Junie - Error analysis
 {
     "TYPE": "env/setup",
@@ -776,4 +756,24 @@
     "ROOT CAUSE": "The bash tool wrapper forbids newline-separated commands; a heredoc was used.",
     "PROJECT NOTE": "To add test files under src/test/kotlin/..., use apply_patch instead of bash heredocs.",
     "NEW INSTRUCTION": "WHEN bash command contains newline characters THEN use apply_patch to create or edit files"
+}
+
+[2025-12-23 12:40] - Updated by Junie - Error analysis
+{
+    "TYPE": "tool limitation",
+    "TOOL": "get_file_structure",
+    "ERROR": "File structure unavailable for this file type; parsing failed",
+    "ROOT CAUSE": "Requested structure for plugin.xml, which the tool cannot parse into a displayable outline.",
+    "PROJECT NOTE": "Inspect plugin.xml content directly to modify or register actions and intentions.",
+    "NEW INSTRUCTION": "WHEN get_file_structure reports unsupported or parsing failed THEN read the file content directly"
+}
+
+[2025-12-23 13:35] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "search_replace",
+    "ERROR": "Cannot resolve extension point 'com.intellij.intentionAction'",
+    "ROOT CAUSE": "IntentionsConfigurable.getDependencies uses a raw EP string not available in this SDK; it should reference the platform EP constant.",
+    "PROJECT NOTE": "In settings/IntentionsConfigurable.kt, return listOf(com.intellij.codeInsight.intention.IntentionActionBean.EP_NAME) or remove getDependencies override if unnecessary.",
+    "NEW INSTRUCTION": "WHEN referencing intention EP in Configurable.getDependencies THEN use IntentionActionBean.EP_NAME constant"
 }
