@@ -56,6 +56,18 @@ This section is used as the plugin description for the built `plugin.xml` during
   <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
 
 
+## Documentation
+
+This project's documentation is built with [MkDocs](https://www.mkdocs.org/).
+
+To serve the documentation locally:
+
+1. Install [uv](https://docs.astral.sh/uv/) if you haven't already.
+2. Run `uv run mkdocs serve`
+
+See [docs/development.md](docs/development.md) for more details.
+
+
 ---
 Plugin based on the [IntelliJ Platform Plugin Template][template].
 

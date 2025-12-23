@@ -1,0 +1,67 @@
+site_name: BetterPy PyCharm Plugin
+site_url: https://chbndrhnns.github.io/pycharm-ddd-toolkit
+site_description: IntelliJ plugin for Domain-Driven Design in Python
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - content.code.copy
+    - content.code.annotate
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:mermaid2.fence.fence_mermaid
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.keys
+  - attr_list
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+  - Features:
+    - Type Mismatch: features/type-mismatch.md
+    - Custom Types: features/custom-types.md
+    - Arguments: features/arguments.md
+    - Refactoring: features/refactoring.md
+    - Visibility: features/visibility.md
+    - Type Hints: features/type-hints.md
+    - Dictionary Access: features/dict-access.md
+    - Exceptions: features/exceptions.md
+    - Local Variables: features/local-variables.md
+    - Pytest Helpers: features/pytest.md
+    - Abstract Methods: features/abstract-methods.md
+  - Inspections: inspections/index.md
+  - Actions: actions/index.md
+  - Advanced:
+    - Import Handling: advanced/import-handling.md
+    - PSI References: advanced/psi-references.md
+    - Connexion / OpenAPI: advanced/connexion.md
+    - Search Everywhere: advanced/search-everywhere.md
+    - Structure View: advanced/structure-view.md
+    - Console & Usage Filtering: advanced/filtering.md
+  - Settings: settings.md
+  - Development: development.md
