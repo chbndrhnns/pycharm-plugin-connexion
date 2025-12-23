@@ -670,3 +670,11 @@
     "NEW INSTRUCTION": "WHEN adding skip marker to param marks list THEN add trailing comma after marker"
 }
 
+[2025-12-23 11:47] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "dunder names resolution",
+    "EXPECTATION": "Do not offer 'Create local variable' for __name__ or any __var__ dunder; treat them as effectively resolvable.",
+    "NEW INSTRUCTION": "WHEN identifier matches '^__.*__$' THEN treat reference as resolved and hide intention"
+}
+

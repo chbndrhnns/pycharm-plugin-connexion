@@ -1,43 +1,3 @@
-[2025-12-20 19:53] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Highlighting check failed in PyShadowingStdlibModuleInspectionTest",
-    "ROOT CAUSE": "The test still expects WEAK_WARNING, but the inspection now reports WARNING.",
-    "PROJECT NOTE": "Update the test highlighting markup from <weak_warning> to <warning> and adjust expected severity/messages in PyShadowingStdlibModuleInspectionTest and its test data.",
-    "NEW INSTRUCTION": "WHEN changing inspection highlight severity THEN update test highlighting tags and expectations accordingly"
-}
-
-[2025-12-20 19:56] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "RefactoringFactory.createRename",
-    "ERROR": "@NotNull newName parameter must not be null",
-    "ROOT CAUSE": "The quick fix calls createRename(file, null), which constructs a RenameProcessor with a null newName.",
-    "PROJECT NOTE": "Update PyShadowingStdlibModuleInspection.RenameFileQuickFix (lines ~60-63) to use a rename handler (e.g., RenameHandlerRegistry) or provide a non-null suggested new name instead of passing null.",
-    "NEW INSTRUCTION": "WHEN needing to prompt for new name on rename THEN invoke RenameHandlerRegistry handler for element"
-}
-
-[2025-12-20 20:00] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "plugin.xml",
-    "ERROR": "Wrong extension point: intentionActionFilter tag",
-    "ROOT CAUSE": "The filter was registered as com.intellij.intentionActionFilter instead of com.intellij.daemon.intentionActionFilter, so it never loaded.",
-    "PROJECT NOTE": "Under <extensions defaultExtensionNs=\"com.intellij\"> use <daemon.intentionActionFilter implementation=\"...RenameToSelfFilter\"/>.",
-    "NEW INSTRUCTION": "WHEN registering IntentionActionFilter in plugin.xml THEN use daemon.intentionActionFilter tag"
-}
-
-[2025-12-20 20:07] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "plugin.xml",
-    "ERROR": "Wrong extension point tag for intentionActionFilter",
-    "ROOT CAUSE": "The extension was registered under com.intellij.intentionActionFilter instead of com.intellij.daemon.intentionActionFilter, so it never loaded.",
-    "PROJECT NOTE": "In plugin.xml, within <extensions defaultExtensionNs=\"com.intellij\"> register the filter as <daemon.intentionActionFilter implementation=\"...RenameToSelfFilter\"/>; using <intentionActionFilter> is invalid for this SDK.",
-    "NEW INSTRUCTION": "WHEN registering IntentionActionFilter in plugin.xml THEN use daemon.intentionActionFilter tag"
-}
-
 [2025-12-20 20:07] - Updated by Junie - Error analysis
 {
     "TYPE": "semantic error",
@@ -776,4 +736,44 @@
     "ROOT CAUSE": "The availability finder returns a target for carets inside a function body, so isAvailable() stays true where it should be false.",
     "PROJECT NOTE": "Tighten IntroduceParameterObjectTarget.find/isAvailable (src/main/.../IntroduceParameterObjectTarget.kt) to only allow function header (name/parameters/return annotation) or explicit call sites, not arbitrary body elements.",
     "NEW INSTRUCTION": "WHEN caret is inside function body block THEN return false from isAvailable"
+}
+
+[2025-12-23 11:42] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Intention offered for __name__ in __main__ guard",
+    "ROOT CAUSE": "Only a test was added; CreateLocalVariableIntention.isAvailable was not updated to exclude __name__ in if __name__ == '__main__':.",
+    "PROJECT NOTE": "Implement the filter in src/main/kotlin/com/github/chbndrhnns/intellijplatformplugincopy/intention/localvariable/CreateLocalVariableIntention.kt: in isAvailable, detect a PyIfStatement with condition __name__ == '__main__' and return false when the caret is on __name__.",
+    "NEW INSTRUCTION": "WHEN caret identifier is '__name__' inside if __name__ == '__main__' THEN return intention unavailable"
+}
+
+[2025-12-23 11:43] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Intention offered for __name__ in __main__ guard",
+    "ROOT CAUSE": "CreateLocalVariableIntention.isAvailable still returns true on __name__ in if __name__ == '__main__' context.",
+    "PROJECT NOTE": "Guard isAvailable in CreateLocalVariableIntention to return false for __name__ (and optionally other dunder names) especially inside equality comparisons to '__main__'.",
+    "NEW INSTRUCTION": "WHEN run_test fails with message 'Should not offer local variable for __name__' THEN add explicit __name__ check in isAvailable and context check for __main__ guard"
+}
+
+[2025-12-23 11:44] - Updated by Junie - Error analysis
+{
+    "TYPE": "tool limitation",
+    "TOOL": "bash",
+    "ERROR": "Multi-line bash command not allowed here",
+    "ROOT CAUSE": "The heredoc used multiple newline-separated commands, which this bash tool forbids.",
+    "PROJECT NOTE": "Create or modify test files under src/test/kotlin using apply_patch instead of bash heredocs.",
+    "NEW INSTRUCTION": "WHEN bash command includes unescaped newlines THEN use apply_patch to create or edit files"
+}
+
+[2025-12-23 11:45] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "bash",
+    "ERROR": "Multi-line bash command not allowed; newline characters prohibited",
+    "ROOT CAUSE": "The bash tool wrapper forbids newline-separated commands; a heredoc was used.",
+    "PROJECT NOTE": "To add test files under src/test/kotlin/..., use apply_patch instead of bash heredocs.",
+    "NEW INSTRUCTION": "WHEN bash command contains newline characters THEN use apply_patch to create or edit files"
 }

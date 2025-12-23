@@ -1,23 +1,3 @@
-[2025-12-12 14:23] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "add ad-hoc debug tests,edit test expectations prematurely,delete debug tests mid-investigation",
-    "MISSING STEPS": "inspect failure diff,review and fix implementation,run intention.populate tests",
-    "BOTTLENECK": "Focused on changing tests instead of fixing the intention logic.",
-    "PROJECT NOTE": "Use the XML test report to see actual vs expected editor text produced by myFixture.checkResult.",
-    "NEW INSTRUCTION": "WHEN intention test fails with FileComparisonFailedError THEN open report and fix intention code"
-}
-
-[2025-12-12 14:57] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "add tests, implement fix, run tests, run build",
-    "BOTTLENECK": "No code change or test execution was performed to validate the analysis.",
-    "PROJECT NOTE": "TogglePytestSkipIntention.kt exists and tests have helpers to assert intention availability.",
-    "NEW INSTRUCTION": "WHEN proposing tests in analysis THEN add test files and run the full test suite"
-}
-
 [2025-12-12 14:57] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -866,4 +846,34 @@
     "BOTTLENECK": "Ambiguity around “exceptions or binary operations” led to incomplete test coverage.",
     "PROJECT NOTE": "Gate availability via UseActualOutcomeUseCase.isAvailable for both intention and tree action.",
     "NEW INSTRUCTION": "WHEN issue describes cases where feature must be unavailable THEN add failing availability tests for each case"
+}
+
+[2025-12-23 11:43] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "search project with wrong keyword",
+    "MISSING STEPS": "scan project, analyze PSI context, run all tests",
+    "BOTTLENECK": "Lack of PSI-context analysis led to overbroad availability check.",
+    "PROJECT NOTE": "Detect the exact pattern if __name__ == '__main__' via PSI (e.g., PyBinaryExpression with left __name__ and right '__main__').",
+    "NEW INSTRUCTION": "WHEN fix targets a specific code pattern THEN analyze PSI context and gate availability"
+}
+
+[2025-12-23 11:45] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "scan project, add tests",
+    "MISSING STEPS": "inspect implementation, run tests",
+    "BOTTLENECK": "Did not open and inspect isAvailable; relied on memory grep.",
+    "PROJECT NOTE": "Guard CreateLocalVariableIntention.isAvailable to return false for __name__ in if __name__ == '__main__' context.",
+    "NEW INSTRUCTION": "WHEN investigating an intention offering unexpectedly THEN open isAvailable implementation before anything else"
+}
+
+[2025-12-23 11:49] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "scan project",
+    "MISSING STEPS": "implement filter, run build",
+    "BOTTLENECK": "Lack of dunder-name filter prevents intention suppression.",
+    "PROJECT NOTE": "Add a guard in CreateLocalVariableIntention.isAvailable to skip names matching __.*__.",
+    "NEW INSTRUCTION": "WHEN unresolved reference name matches __.*__ THEN return false in isAvailable"
 }

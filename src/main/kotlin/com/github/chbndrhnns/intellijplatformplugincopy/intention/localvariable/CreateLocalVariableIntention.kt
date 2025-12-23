@@ -39,6 +39,7 @@ class CreateLocalVariableIntention : PyBaseIntentionAction(), PriorityAction, Ic
         val element = file.findElementAt(editor.caretModel.offset) ?: return false
         val refExpr = PsiTreeUtil.getParentOfType(element, PyReferenceExpression::class.java) ?: return false
         if (refExpr.isQualified) return false
+        if (refExpr.text.startsWith("__") && refExpr.text.endsWith("__")) return false
         return refExpr.reference.resolve() == null
     }
 

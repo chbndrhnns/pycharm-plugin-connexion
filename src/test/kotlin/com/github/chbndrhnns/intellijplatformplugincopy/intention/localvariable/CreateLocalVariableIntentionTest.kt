@@ -98,4 +98,16 @@ class CreateLocalVariableIntentionTest : TestBase() {
         assertTrue("Action should implement Iconable", action is com.intellij.openapi.util.Iconable)
         assertEquals(AllIcons.Actions.QuickfixBulb, (action as com.intellij.openapi.util.Iconable).getIcon(0))
     }
+
+    fun testNotAvailableForDunderVariables() {
+        myFixture.configureByText(
+            "test_dunder.py", """
+            if <caret>__name__ == '__main__':
+                pass
+        """.trimIndent()
+        )
+
+        val action = myFixture.availableIntentions.find { it.text == "BetterPy: Create local variable" }
+        assertNull("Intention should not be available for dunder variables", action)
+    }
 }
