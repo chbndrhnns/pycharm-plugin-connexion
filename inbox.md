@@ -7,7 +7,6 @@
 - [ ] fix: Making one symbol public via import place quickfix makes all other symbols unimported
 - [ ] fix: When prefering relative import inside same package, do not add candidate if relative import exists already
 - [ ] fix: implement abstract method is put above __init__
-- [ ] feat: Consider if this should only work for dataclass/classes, for others, there is change signature
 - [ ] fix: cancel introduce type rename dialog still keeps it
 - [ ] fix: Import `import bla as xyz` triggers warning about not exported in all -> repro?
 - [ ] fix: How to handle ProcessCanceledException correctly?
