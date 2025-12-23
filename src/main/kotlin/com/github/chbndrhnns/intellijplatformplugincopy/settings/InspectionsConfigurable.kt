@@ -33,6 +33,10 @@ class InspectionsConfigurable : BoundConfigurable("Inspections"), Configurable.W
                 checkBox("‘Abstract method not implemented in child classes’ inspection")
                     .bindSelected(settings::enableAbstractMethodNotImplementedInspection)
             }
+            row {
+                checkBox("'Unresolved reference as error' inspection")
+                    .bindSelected(settings::enableUnresolvedReferenceAsErrorInspection)
+            }
         }
     }
 }

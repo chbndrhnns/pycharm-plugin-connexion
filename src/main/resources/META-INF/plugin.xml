@@ -319,6 +319,16 @@
                 level="WARNING"
                 implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyShadowingStdlibModuleInspection"/>
 
+        <localInspection
+                language="Python"
+                shortName="PyUnresolvedReferenceAsErrorInspection"
+                displayName="BetterPy: Unresolved reference as error"
+                groupPath="Python"
+                groupName="Python"
+                enabledByDefault="true"
+                level="ERROR"
+                implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyUnresolvedReferenceAsErrorInspection"/>
+
         <renamePsiElementProcessor
                 implementation="com.github.chbndrhnns.intellijplatformplugincopy.refactoring.PyShadowingStdlibRenameProcessor"
                 order="first"/>

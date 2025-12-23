@@ -1,33 +1,3 @@
-[2025-12-20 20:20] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "run_test",
-    "ERROR": "Missing test-log.properties during IntelliJ test boot",
-    "ROOT CAUSE": "The IntelliJ platform test runtime expects a j.u.l LogManager config file that is not present in this environment.",
-    "PROJECT NOTE": "Running Gradle tests for IntelliJ/PyCharm plugins may require providing a test logging config; a simple empty test-log.properties under src/test/resources can satisfy the lookup in many setups.",
-    "NEW INSTRUCTION": "WHEN run_test reports missing test-log.properties THEN add src/test/resources/test-log.properties before re-running"
-}
-
-[2025-12-20 20:21] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "run_test",
-    "ERROR": "Missing test-log.properties for LogManager",
-    "ROOT CAUSE": "The IntelliJ/PyCharm test framework wasn’t initialized, so required logging config is absent.",
-    "PROJECT NOTE": "IDE plugin tests here rely on IntelliJ test framework resources; this environment often lacks test-log.properties, causing Gradle :test to abort before running tests.",
-    "NEW INSTRUCTION": "WHEN run_test reports missing LogManager config file THEN skip tests and proceed without executing them"
-}
-
-[2025-12-20 20:21] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "run_test",
-    "ERROR": "Build completed with errors during test run",
-    "ROOT CAUSE": "The full IDE-based test suite requires environment/SDK test setup not available here.",
-    "PROJECT NOTE": "Use Gradle to run targeted tests with a --tests filter for wrap-related classes; ensure the PyCharm SDK test infrastructure is configured when running full suites.",
-    "NEW INSTRUCTION": "WHEN run_test reports build completed with errors THEN run targeted Gradle tests with a --tests filter"
-}
-
 [2025-12-20 20:21] - Updated by Junie - Error analysis
 {
     "TYPE": "env/setup",
@@ -776,4 +746,34 @@
     "ROOT CAUSE": "IntentionsConfigurable.getDependencies uses a raw EP string not available in this SDK; it should reference the platform EP constant.",
     "PROJECT NOTE": "In settings/IntentionsConfigurable.kt, return listOf(com.intellij.codeInsight.intention.IntentionActionBean.EP_NAME) or remove getDependencies override if unnecessary.",
     "NEW INSTRUCTION": "WHEN referencing intention EP in Configurable.getDependencies THEN use IntentionActionBean.EP_NAME constant"
+}
+
+[2025-12-23 13:58] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Missing inspection description and undefined settings flag",
+    "ROOT CAUSE": "The new inspection referenced a non-existent settings field and lacked its required description resource.",
+    "PROJECT NOTE": "Inspections must have src/main/resources/inspectionDescriptions/<ClassName>.html and any feature flags must exist in PluginSettingsState before use.",
+    "NEW INSTRUCTION": "WHEN create reports missing setting or inspection description THEN add setting and create description HTML"
+}
+
+[2025-12-23 13:58] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Missing inspection description and undefined settings flag",
+    "ROOT CAUSE": "The new inspection referenced a non-existent settings property and lacked the required inspectionDescriptions/<ClassName>.html resource.",
+    "PROJECT NOTE": "Inspection descriptions live under src/main/resources/inspectionDescriptions/<InspectionClassName>.html; add any new boolean flags to PluginSettingsState before use.",
+    "NEW INSTRUCTION": "WHEN adding a new inspection class THEN define settings flag and add description HTML"
+}
+
+[2025-12-23 13:59] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Missing description and undefined settings flag",
+    "ROOT CAUSE": "The inspection was created before adding its settings flag and required description resource.",
+    "PROJECT NOTE": "Inspections here must have inspectionDescriptions/<ClassName>.html and any referenced settings must exist in PluginSettingsState before use.",
+    "NEW INSTRUCTION": "WHEN create reports semantic errors for inspection THEN add setting and description HTML, then retry"
 }

@@ -1,0 +1,97 @@
+package com.github.chbndrhnns.intellijplatformplugincopy.inspections
+
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.isDataclassClass
+import com.github.chbndrhnns.intellijplatformplugincopy.python.PythonVersionGuard
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
+import com.intellij.codeInspection.LocalInspectionToolSession
+import com.intellij.codeInspection.ProblemHighlightType
+import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.psi.PsiElementVisitor
+import com.jetbrains.python.inspections.PyInspection
+import com.jetbrains.python.psi.PyElementVisitor
+import com.jetbrains.python.psi.PyExpression
+import com.jetbrains.python.psi.PyReferenceExpression
+import com.jetbrains.python.psi.types.PyClassType
+import com.jetbrains.python.psi.types.TypeEvalContext
+
+/**
+ * Inspection that elevates unresolved references from warnings to errors.
+ * This helps enforce stricter code quality by treating unresolved references as errors.
+ * 
+ * For qualified references (e.g., obj.attr), the inspection checks if the qualifier's type
+ * is in the allowlist (dataclasses and pydantic.BaseModel by default). If so, unresolved
+ * attributes are also marked as errors.
+ */
+class PyUnresolvedReferenceAsErrorInspection : PyInspection() {
+
+    override fun buildVisitor(
+        holder: ProblemsHolder,
+        isOnTheFly: Boolean,
+        session: LocalInspectionToolSession
+    ): PsiElementVisitor {
+        if (!PythonVersionGuard.isSatisfied(holder.project)) {
+            return object : PyElementVisitor() {}
+        }
+        val settings = PluginSettingsState.instance().state
+        if (!settings.enableUnresolvedReferenceAsErrorInspection) {
+            return object : PyElementVisitor() {}
+        }
+
+        val context = TypeEvalContext.codeAnalysis(holder.project, holder.file)
+
+        return object : PyElementVisitor() {
+            override fun visitPyReferenceExpression(node: PyReferenceExpression) {
+                super.visitPyReferenceExpression(node)
+
+                val reference = node.reference
+                if (reference.resolve() == null) {
+                    val qualifier = node.qualifier
+                    val name = node.name
+
+                    // Skip dunder symbols (special module-level attributes like __name__, __file__, etc.)
+                    if (name != null && isDunderSymbol(name)) {
+                        return
+                    }
+
+                    if (qualifier == null) {
+                        holder.registerProblem(
+                            node,
+                            "Unresolved reference '${node.name}'",
+                            ProblemHighlightType.ERROR
+                        )
+                    } else {
+                        if (isQualifierTypeInAllowlist(qualifier, context)) {
+                            // Report the problem on the name identifier only, not the entire qualified expression
+                            val nameElement = node.nameElement?.psi
+                            if (nameElement != null) {
+                                holder.registerProblem(
+                                    nameElement,
+                                    "Unresolved attribute '${node.name}'",
+                                    ProblemHighlightType.ERROR
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Checks if a name is a dunder symbol (starts and ends with double underscores).
+     * These are special Python attributes like __name__, __file__, __all__, etc.
+     */
+    private fun isDunderSymbol(name: String): Boolean {
+        return name.startsWith("__") && name.endsWith("__") && name.length > 4
+    }
+
+    /**
+     * Checks if the qualifier's type is in the allowlist (dataclasses and pydantic.BaseModel).
+     */
+    private fun isQualifierTypeInAllowlist(qualifier: PyExpression, context: TypeEvalContext): Boolean {
+        val qualifierType = context.getType(qualifier) ?: return false
+        val classType = qualifierType as? PyClassType ?: return false
+        val pyClass = classType.pyClass
+        return isDataclassClass(pyClass)
+    }
+}

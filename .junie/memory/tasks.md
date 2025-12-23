@@ -1,13 +1,3 @@
-[2025-12-12 15:00] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "run focused tests, run full test suite",
-    "BOTTLENECK": "No tests were executed to validate the new guard and tests.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN completion logic or tests are changed THEN run focused PyExpectedTypeCompletionTest and fix failures"
-}
-
 [2025-12-12 15:05] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "optimal",
@@ -866,4 +856,14 @@
     "BOTTLENECK": "Implementation started without verifying API availability and plugin.xml registration.",
     "PROJECT NOTE": "-",
     "NEW INSTRUCTION": "WHEN adding a new gutter/action via extension points THEN register plugin.xml entry and add stub class before implementing logic"
+}
+
+[2025-12-23 14:00] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "research platform behavior, register inspection, add settings toggle, add tests, run tests",
+    "BOTTLENECK": "Inspection not registered and no tests executed to validate behavior.",
+    "PROJECT NOTE": "Inspections must be registered via localInspection in plugin.xml with level/group; settings toggles are exposed via InspectionsConfigurable.",
+    "NEW INSTRUCTION": "WHEN new inspection class is added THEN register in plugin.xml and write tests"
 }
