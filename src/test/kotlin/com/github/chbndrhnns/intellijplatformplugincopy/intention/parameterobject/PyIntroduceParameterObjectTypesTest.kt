@@ -1,13 +1,13 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject
 
 import fixtures.TestBase
-import fixtures.doIntentionTest
+import fixtures.doRefactoringTest
 
 class PyIntroduceParameterObjectTypesTest : TestBase() {
 
     fun testUnionType() {
         withMockIntroduceParameterObjectDialog {
-            myFixture.doIntentionTest(
+            myFixture.doRefactoringTest(
                 "a.py",
                 """
                 from typing import Union
@@ -29,14 +29,14 @@ class PyIntroduceParameterObjectTypesTest : TestBase() {
                 def process(params: ProcessParams):
                     print(params.val, params.count)
                 """.trimIndent(),
-                "BetterPy: Introduce parameter object"
+                "com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectRefactoringAction"
             )
         }
     }
 
     fun testAnnotatedType() {
         withMockIntroduceParameterObjectDialog {
-            myFixture.doIntentionTest(
+            myFixture.doRefactoringTest(
                 "a.py",
                 """
                 from typing import Annotated
@@ -58,14 +58,14 @@ class PyIntroduceParameterObjectTypesTest : TestBase() {
                 def process(params: ProcessParams):
                     print(params.val, params.count)
                 """.trimIndent(),
-                "BetterPy: Introduce parameter object"
+                "com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectRefactoringAction"
             )
         }
     }
 
     fun testForwardReferenceString() {
         withMockIntroduceParameterObjectDialog {
-            myFixture.doIntentionTest(
+            myFixture.doRefactoringTest(
                 "a.py",
                 """
                 def pro<caret>cess(user: "User", count: int):
@@ -90,49 +90,44 @@ class PyIntroduceParameterObjectTypesTest : TestBase() {
                 
                 class User: ...
                 """.trimIndent(),
-                "BetterPy: Introduce parameter object"
+                "com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectRefactoringAction"
             )
         }
     }
 
     fun testForwardReferenceFutureAnnotations() {
-        val before = """
-            from __future__ import annotations
-            
-            def pro<caret>cess(user: User, count: int):
-                print(user, count)
-                
-            class User: ...
-            """.trimIndent()
-
-        myFixture.configureByText("a.py", before)
-        val intention = myFixture.findSingleIntention("BetterPy: Introduce parameter object")
-
         withMockIntroduceParameterObjectDialog {
-            myFixture.launchAction(intention)
+            myFixture.doRefactoringTest(
+                "a.py",
+                """
+                from __future__ import annotations
+                
+                def pro<caret>cess(user: User, count: int):
+                    print(user, count)
+                    
+                class User: ...
+                """.trimIndent(),
+                """
+                from __future__ import annotations
+    
+                from dataclasses import dataclass
+                from typing import Any
+    
+    
+                @dataclass(frozen=True, slots=True, kw_only=True)
+                class ProcessParams:
+                    user: User
+                    count: int
+    
+    
+                def process(params: ProcessParams):
+                    print(params.user, params.count)
+    
+    
+                class User: ...
+                """.trimIndent(),
+                "com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectRefactoringAction"
+            )
         }
-
-        myFixture.checkResult(
-            """
-            from __future__ import annotations
-
-            from dataclasses import dataclass
-            from typing import Any
-
-
-            @dataclass(frozen=True, slots=True, kw_only=True)
-            class ProcessParams:
-                user: User
-                count: int
-
-
-            def process(params: ProcessParams):
-                print(params.user, params.count)
-
-
-            class User: ...
-            
-        """.trimIndent()
-        )
     }
 }

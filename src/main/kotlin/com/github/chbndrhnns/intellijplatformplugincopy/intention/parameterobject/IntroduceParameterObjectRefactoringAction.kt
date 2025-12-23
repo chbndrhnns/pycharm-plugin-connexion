@@ -25,8 +25,7 @@ class IntroduceParameterObjectRefactoringAction : PyBaseRefactoringAction() {
         // when the caret is on a type annotation. For availability we must prefer the leaf PSI at the caret,
         // just like the refactoring handler does.
         val leafAtCaret = file.findElementAt(editor.caretModel.offset)
-        return (leafAtCaret != null && IntroduceParameterObjectTarget.isAvailable(leafAtCaret)) ||
-                IntroduceParameterObjectTarget.isAvailable(element)
+        return leafAtCaret != null && IntroduceParameterObjectTarget.isAvailable(leafAtCaret)
     }
 
     override fun isEnabledOnElementsOutsideEditor(elements: Array<out PsiElement>): Boolean {

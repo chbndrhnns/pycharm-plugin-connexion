@@ -24,8 +24,6 @@ abstract class TestBase : MyPlatformTestCase() {
                 enableDictAccessIntention = true,
                 enableChangeVisibilityIntention = true,
                 enableCallableToProtocolIntention = true,
-                enableIntroduceParameterObjectIntention = true,
-                enableInlineParameterObjectIntention = true,
                 enableDataclassMissingInspection = true,
                 enablePrivateModuleImportInspection = true,
                 enableCopyBuildNumberAction = true,

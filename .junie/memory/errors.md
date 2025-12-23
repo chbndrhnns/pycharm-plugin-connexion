@@ -1,63 +1,3 @@
-[2025-12-19 22:55] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "create",
-    "ERROR": "Missing 'path' and incomplete file content",
-    "ROOT CAUSE": "The create tool was invoked without a path and with truncated placeholder content.",
-    "PROJECT NOTE": "Place new tests under src/test/kotlin/com/github/chbndrhnns/intellijplatformplugincopy/intention/typealias/ e.g., ToggleTypeAliasIntentionCanceledTest.kt.",
-    "NEW INSTRUCTION": "WHEN create tool call lacks path parameter THEN add path and complete file content"
-}
-
-[2025-12-19 23:01] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "create",
-    "ERROR": "Missing required 'path' parameter",
-    "ROOT CAUSE": "The create tool was invoked with content only and no file path.",
-    "PROJECT NOTE": "Place new tests under src/test/kotlin/... e.g., intention/typealias/ToggleTypeAliasIntentionCanceledTest.kt.",
-    "NEW INSTRUCTION": "WHEN creating a new file THEN provide both 'path' and 'content' to create"
-}
-
-[2025-12-20 19:49] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Test run failed due to highlighting mismatch",
-    "ROOT CAUSE": "The inspection now reports WARNING, but tests still expect WEAK_WARNING/INFO highlights.",
-    "PROJECT NOTE": "Update PyShadowingStdlibModuleInspection tests to use <warning> markers and the new message; if using .py test data with <weak_warning> or <info>, replace them with <warning>.",
-    "NEW INSTRUCTION": "WHEN changing inspection highlight type THEN update test data highlighting markers to match"
-}
-
-[2025-12-20 19:49] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Highlighting test failed in PyShadowingStdlibModuleInspectionTest",
-    "ROOT CAUSE": "The inspection severity changed to WARNING but the test still expects WEAK_WARNING markup.",
-    "PROJECT NOTE": "Update the test data for PyShadowingStdlibModuleInspection to use <warning ...> instead of <weak_warning ...> in fixtures used by myFixture.testHighlighting.",
-    "NEW INSTRUCTION": "WHEN changing ProblemHighlightType severity THEN update highlighting test markup to match"
-}
-
-[2025-12-20 19:51] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Highlighting test failed after severity change",
-    "ROOT CAUSE": "The inspection now reports WARNING, but the test still expects WEAK_WARNING highlighting.",
-    "PROJECT NOTE": "Highlighting tests use myFixture.testHighlighting with <weak_warning> vs <warning> tags; update test data in PyShadowingStdlibModuleInspectionTest and its test files to match the new severity.",
-    "NEW INSTRUCTION": "WHEN changing ProblemHighlightType in an inspection THEN update testHighlighting expectations and tags accordingly"
-}
-
-[2025-12-20 19:51] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Highlighting severity mismatch in inspection test",
-    "ROOT CAUSE": "The test expects WEAK_WARNING/green check, but code now reports WARNING/exclamation.",
-    "PROJECT NOTE": "Update PyShadowingStdlibModuleInspection test data to use <warning> (or equivalent) instead of <weak_warning>, and adjust expected messages if they changed.",
-    "NEW INSTRUCTION": "WHEN inspection highlighting tests report severity mismatch THEN update expected tags to WARNING"
-}
-
 [2025-12-20 19:52] - Updated by Junie - Error analysis
 {
     "TYPE": "test assertion",
@@ -776,4 +716,64 @@
     "ROOT CAUSE": "Tests were changed to expect a trailing comma while implementation still outputs without it.",
     "PROJECT NOTE": "Implement trailing comma in PytestSkipToggler.toggleOnParam by generating marks=[pytest.mark.skip,] via PSI; do not modify TogglePytestSkipIntentionParametrizeTest.",
     "NEW INSTRUCTION": "WHEN Parametrize skip requires trailing comma THEN generate marks=[pytest.mark.skip,] in toggleOnParam"
+}
+
+[2025-12-23 10:39] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "plugin.xml",
+    "ERROR": "Cannot resolve group 'RefactoringPopupGroup'",
+    "ROOT CAUSE": "An action was registered under a non-existent action group id in plugin.xml.",
+    "PROJECT NOTE": "Use only known group ids; in this project 'RefactoringMenu' is valid, 'RefactoringPopupGroup' is not.",
+    "NEW INSTRUCTION": "WHEN plugin.xml reports unresolved action group THEN remove or replace with valid 'RefactoringMenu' group id"
+}
+
+[2025-12-23 10:39] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "search_replace",
+    "ERROR": "Unknown action group 'RefactoringPopupGroup'",
+    "ROOT CAUSE": "plugin.xml was updated to add actions to a non-existent group id 'RefactoringPopupGroup'.",
+    "PROJECT NOTE": "In this project, only RefactoringMenu is a valid built-in group; 'RefactoringPopupGroup' is not defined. Actions in Refactor This appear when added to RefactoringMenu.",
+    "NEW INSTRUCTION": "WHEN adding add-to-group in plugin.xml THEN use valid group ids like RefactoringMenu only"
+}
+
+[2025-12-23 10:43] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "search_replace",
+    "ERROR": "Cannot resolve extension point 'com.intellij.intentionAction'",
+    "ROOT CAUSE": "IntentionsConfigurable.getDependencies uses a raw EP string not available in this SDK; use the SDK EP constant instead.",
+    "PROJECT NOTE": "In IntentionsConfigurable.getDependencies, return listOf(com.intellij.codeInsight.intention.IntentionActionBean.EP_NAME) or remove the override if unneeded.",
+    "NEW INSTRUCTION": "WHEN getDependencies uses raw 'com.intellij.intentionAction' EP string THEN return listOf(IntentionActionBean.EP_NAME)"
+}
+
+[2025-12-23 10:50] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Invalid MapDataContext import; class not found",
+    "ROOT CAUSE": "The test helper imports com.intellij.testFramework.MapDataContext which doesn't exist in this SDK.",
+    "PROJECT NOTE": "In tests, build AnActionEvent using com.intellij.openapi.actionSystem.impl.SimpleDataContext or DataManager.getDataContext(editor.component) instead of MapDataContext.",
+    "NEW INSTRUCTION": "WHEN creating AnActionEvent in tests THEN use SimpleDataContext instead of MapDataContext"
+}
+
+[2025-12-23 10:53] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Unresolved import MapDataContext in test helper",
+    "ROOT CAUSE": "The test helper uses MapDataContext from testFramework, which isn’t available in this SDK; SimpleDataContext should be used to build a DataContext.",
+    "PROJECT NOTE": "For action tests, create AnActionEvent via SimpleDataContext (or TestActionEvent) with PROJECT, EDITOR, PSI_FILE, and VIRTUAL_FILE.",
+    "NEW INSTRUCTION": "WHEN constructing DataContext for AnActionEvent in tests THEN use SimpleDataContext instead of MapDataContext"
+}
+
+[2025-12-23 10:54] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Unresolved test framework classes in new test helper",
+    "ROOT CAUSE": "The helper uses MapDataContext and event creation APIs not available in this SDK; use SimpleDataContext/TestActionEvent instead.",
+    "PROJECT NOTE": "In action tests, prefer com.intellij.openapi.actionSystem.impl.SimpleDataContext and com.intellij.testFramework.TestActionEvent over MapDataContext; call action.update(event) before actionPerformed.",
+    "NEW INSTRUCTION": "WHEN creating AnAction test event THEN use TestActionEvent with SimpleDataContext instead of MapDataContext"
 }

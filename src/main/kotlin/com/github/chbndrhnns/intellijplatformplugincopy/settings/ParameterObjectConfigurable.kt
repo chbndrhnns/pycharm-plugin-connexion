@@ -4,6 +4,7 @@ import com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobjec
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.dsl.builder.bindItem
+import com.intellij.ui.dsl.builder.bindSelected
 import com.intellij.ui.dsl.builder.panel
 
 class ParameterObjectConfigurable : BoundConfigurable("Parameter Object") {
@@ -11,6 +12,16 @@ class ParameterObjectConfigurable : BoundConfigurable("Parameter Object") {
 
     override fun createPanel(): DialogPanel {
         return panel {
+            group("Refactoring Actions") {
+                row {
+                    checkBox("Enable ‘Introduce Parameter Object’ refactoring")
+                        .bindSelected(settings::enableIntroduceParameterObjectRefactoringAction)
+                }
+                row {
+                    checkBox("Enable ‘Inline Parameter Object’ refactoring")
+                        .bindSelected(settings::enableInlineParameterObjectRefactoringAction)
+                }
+            }
             group("Parameter Object Settings") {
                 row("Default base type:") {
                     comboBox(ParameterObjectBaseType.entries)

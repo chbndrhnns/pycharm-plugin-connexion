@@ -1,53 +1,48 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject
 
 import fixtures.TestBase
-import fixtures.doIntentionTest
+import fixtures.doRefactoringTest
 
 class PyIntroduceParameterObjectHighPrioTest : TestBase() {
 
     fun testDefaultValues() {
-        val before = """
-            def create_<caret>user(first_name, last_name="Doe", email="unknown"):
-                print(first_name, last_name, email)
-            
-            def main():
-                create_user("John")
-            """.trimIndent()
-
-        myFixture.configureByText("a.py", before)
-        val intention = myFixture.findSingleIntention("BetterPy: Introduce parameter object")
-
         withMockIntroduceParameterObjectDialog {
-            myFixture.launchAction(intention)
+            myFixture.doRefactoringTest(
+                "a.py",
+                """
+                def create_<caret>user(first_name, last_name="Doe", email="unknown"):
+                    print(first_name, last_name, email)
+                
+                def main():
+                    create_user("John")
+                """.trimIndent(),
+                """
+                from dataclasses import dataclass
+                from typing import Any
+                
+                
+                @dataclass(frozen=True, slots=True, kw_only=True)
+                class CreateUserParams:
+                    first_name: Any
+                    last_name: Any = "Doe"
+                    email: Any = "unknown"
+                
+                
+                def create_user(params: CreateUserParams):
+                    print(params.first_name, params.last_name, params.email)
+                
+                
+                def main():
+                    create_user(CreateUserParams(first_name="John"))
+                """.trimIndent(),
+                "com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectRefactoringAction"
+            )
         }
-
-        val after = myFixture.file.text
-
-        val expected = """
-            from dataclasses import dataclass
-            from typing import Any
-            
-            
-            @dataclass(frozen=True, slots=True, kw_only=True)
-            class CreateUserParams:
-                first_name: Any
-                last_name: Any = "Doe"
-                email: Any = "unknown"
-            
-            
-            def create_user(params: CreateUserParams):
-                print(params.first_name, params.last_name, params.email)
-            
-            
-            def main():
-                create_user(CreateUserParams(first_name="John"))""".trimIndent() + "\n"
-
-        assertEquals(expected, after)
     }
 
     fun testKeywordArgumentsAtCallSite() {
         withMockIntroduceParameterObjectDialog {
-            myFixture.doIntentionTest(
+            myFixture.doRefactoringTest(
                 "a.py",
                 """
                 def create_<caret>user(first_name, last_name):
@@ -73,57 +68,52 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
                 
                 def main():
                     create_user(CreateUserParams(first_name="John", last_name="Doe"))""".trimIndent(),
-                "BetterPy: Introduce parameter object"
+                "com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectRefactoringAction"
             )
         }
     }
 
     fun testClassMethod() {
-        val before = """
-            class UserFactory:
-                @classmethod
-                def create_<caret>user(cls, name, age):
-                    print(cls, name, age)
-            
-            def main():
-                UserFactory.create_user("John", 30)
-            """.trimIndent()
-
-        myFixture.configureByText("a.py", before)
-        val intention = myFixture.findSingleIntention("BetterPy: Introduce parameter object")
-
         withMockIntroduceParameterObjectDialog {
-            myFixture.launchAction(intention)
+            myFixture.doRefactoringTest(
+                "a.py",
+                """
+                class UserFactory:
+                    @classmethod
+                    def create_<caret>user(cls, name, age):
+                        print(cls, name, age)
+                
+                def main():
+                    UserFactory.create_user("John", 30)
+                """.trimIndent(),
+                """
+                from dataclasses import dataclass
+                from typing import Any
+    
+    
+                @dataclass(frozen=True, slots=True, kw_only=True)
+                class CreateUserParams:
+                    name: Any
+                    age: Any
+    
+    
+                class UserFactory:
+                    @classmethod
+                    def create_user(cls, params: CreateUserParams):
+                        print(cls, params.name, params.age)
+    
+    
+                def main():
+                    UserFactory.create_user(CreateUserParams(name="John", age=30))
+                """.trimIndent(),
+                "com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectRefactoringAction"
+            )
         }
-
-        myFixture.checkResult(
-            """
-            from dataclasses import dataclass
-            from typing import Any
-
-
-            @dataclass(frozen=True, slots=True, kw_only=True)
-            class CreateUserParams:
-                name: Any
-                age: Any
-
-
-            class UserFactory:
-                @classmethod
-                def create_user(cls, params: CreateUserParams):
-                    print(cls, params.name, params.age)
-
-
-            def main():
-                UserFactory.create_user(CreateUserParams(name="John", age=30))
-
-        """.trimIndent()
-        )
     }
 
     fun testStaticMethod() {
         withMockIntroduceParameterObjectDialog {
-            myFixture.doIntentionTest(
+            myFixture.doRefactoringTest(
                 "a.py",
                 """
                 class Utils:
@@ -153,7 +143,7 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
                 
                 def main():
                     Utils.helper(HelperParams(x=1, y=2))""".trimIndent(),
-                "BetterPy: Introduce parameter object"
+                "com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectRefactoringAction"
             )
         }
     }

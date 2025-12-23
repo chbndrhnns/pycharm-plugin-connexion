@@ -1,13 +1,3 @@
-[2025-12-12 13:40] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "add test for no suggestions in positional-arg context",
-    "BOTTLENECK": "Correctly detecting keyword-name position and resolving in-scope symbols.",
-    "PROJECT NOTE": "Leverage existing PyParameterAnalyzer and PopulateArgumentsService for missing params and scope resolution.",
-    "NEW INSTRUCTION": "WHEN creating new completion contributor THEN register in plugin.xml and add targeted tests"
-}
-
 [2025-12-12 13:41] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -866,4 +856,14 @@
     "BOTTLENECK": "Ignored the constraint to leave tests unchanged and over-modified output formatting.",
     "PROJECT NOTE": "Only add a trailing comma when skip is present; do not alter non-skip lists.",
     "NEW INSTRUCTION": "WHEN special instructions constrain test changes THEN avoid editing tests; modify implementation only"
+}
+
+[2025-12-23 10:54] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "add to RefactoringPopupGroup",
+    "MISSING STEPS": "run build, delete classes, delete intention resources, scan project, update tests",
+    "BOTTLENECK": "Using a non-existent action group in plugin.xml introduced semantic errors.",
+    "PROJECT NOTE": "Keep actions in RefactoringMenu; RefactoringPopupGroup is not defined in this project.",
+    "NEW INSTRUCTION": "WHEN plugin.xml is modified THEN run build to catch unresolved groups and EPs"
 }

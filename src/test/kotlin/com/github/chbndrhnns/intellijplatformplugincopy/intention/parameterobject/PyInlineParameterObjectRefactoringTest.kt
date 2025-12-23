@@ -1,12 +1,14 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject
 
 import fixtures.TestBase
-import fixtures.doIntentionTest
+import fixtures.doRefactoringTest
 
-class PyInlineParameterObjectIntentionTest : TestBase() {
+class PyInlineParameterObjectRefactoringTest : TestBase() {
+
+    private val actionId = "com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.InlineParameterObjectRefactoringAction"
 
     fun testSimpleInlineParameterObject() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringTest(
             "a.py",
             """
             from dataclasses import dataclass
@@ -48,7 +50,7 @@ class PyInlineParameterObjectIntentionTest : TestBase() {
             def main():
                 create_user(first_name="John", last_name="Doe", email="john@example.com", age=30)
             """.trimIndent(),
-            "BetterPy: Inline parameter object",
+            actionId
         )
     }
 }

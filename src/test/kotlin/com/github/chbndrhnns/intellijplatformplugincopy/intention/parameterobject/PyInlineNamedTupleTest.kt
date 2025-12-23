@@ -1,12 +1,12 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject
 
 import fixtures.TestBase
-import fixtures.doIntentionTest
+import fixtures.doRefactoringTest
 
 class PyInlineNamedTupleTest : TestBase() {
 
     fun testInlineNamedTuple() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringTest(
             "a.py",
             """
         from typing import NamedTuple
@@ -34,7 +34,7 @@ class PyInlineNamedTupleTest : TestBase() {
         def main():
             dist(1, 2)
             """.trimIndent(),
-            "BetterPy: Inline parameter object",
+            "com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.InlineParameterObjectRefactoringAction",
         )
     }
 }

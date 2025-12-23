@@ -29,8 +29,6 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enablePopulateArgumentsIntention: Boolean = true,
         var enableMakeParameterOptionalIntention: Boolean = true,
         var enableMakeParameterMandatoryIntention: Boolean = true,
-        var enableIntroduceParameterObjectIntention: Boolean = true,
-        var enableInlineParameterObjectIntention: Boolean = true,
         var enableCreateLocalVariableIntention: Boolean = true,
 
         // ---- Code Structure Intentions ----

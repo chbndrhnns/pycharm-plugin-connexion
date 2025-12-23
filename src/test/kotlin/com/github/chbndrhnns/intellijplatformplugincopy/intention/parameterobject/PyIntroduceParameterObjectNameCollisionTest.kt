@@ -1,13 +1,13 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject
 
 import fixtures.TestBase
-import fixtures.doIntentionTest
+import fixtures.doRefactoringTest
 
 class PyIntroduceParameterObjectNameCollisionTest : TestBase() {
 
     fun testCollisionWithLocalClass() {
         withMockIntroduceParameterObjectDialog {
-            myFixture.doIntentionTest(
+            myFixture.doRefactoringTest(
                 "a.py",
                 """
                 class CreateUserParams:
@@ -34,14 +34,14 @@ class PyIntroduceParameterObjectNameCollisionTest : TestBase() {
                 def create_user(params: CreateUserParams1):
                     print(params.first_name, params.last_name)
                 """.trimIndent(),
-                "BetterPy: Introduce parameter object"
+                "com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectRefactoringAction"
             )
         }
     }
 
     fun testCollisionWithImportedClass() {
         withMockIntroduceParameterObjectDialog {
-            myFixture.doIntentionTest(
+            myFixture.doRefactoringTest(
                 "a.py",
                 """
                 from other import CreateUserParams
@@ -65,7 +65,7 @@ class PyIntroduceParameterObjectNameCollisionTest : TestBase() {
                 def create_user(params: CreateUserParams1):
                     print(params.first_name, params.last_name)
                 """.trimIndent(),
-                "BetterPy: Introduce parameter object"
+                "com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectRefactoringAction"
             )
         }
     }

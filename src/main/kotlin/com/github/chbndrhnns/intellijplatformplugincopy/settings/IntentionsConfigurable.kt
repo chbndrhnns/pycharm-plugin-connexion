@@ -50,14 +50,6 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                     .bindSelected(settings::enableChangeVisibilityIntention)
             }
             row {
-                checkBox("‘Introduce parameter object’ intention")
-                    .bindSelected(settings::enableIntroduceParameterObjectIntention)
-            }
-            row {
-                checkBox("‘Inline parameter object’ intention")
-                    .bindSelected(settings::enableInlineParameterObjectIntention)
-            }
-            row {
                 checkBox("‘Create local variable’ intention")
                     .bindSelected(settings::enableCreateLocalVariableIntention)
             }

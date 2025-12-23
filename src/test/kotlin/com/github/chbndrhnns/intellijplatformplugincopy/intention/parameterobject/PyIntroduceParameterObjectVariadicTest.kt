@@ -1,13 +1,13 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject
 
 import fixtures.TestBase
-import fixtures.doIntentionTest
+import fixtures.doRefactoringTest
 
 class PyIntroduceParameterObjectVariadicTest : TestBase() {
 
     fun testArgs() {
         withMockIntroduceParameterObjectDialog {
-            myFixture.doIntentionTest(
+            myFixture.doRefactoringTest(
                 "a.py",
                 """
                 def foo(a, <caret>b, *args):
@@ -34,14 +34,14 @@ class PyIntroduceParameterObjectVariadicTest : TestBase() {
                 def main():
                     foo(FooParams(a=1, b=2), 3, 4)
                 """.trimIndent(),
-                "BetterPy: Introduce parameter object"
+                "com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectRefactoringAction"
             )
         }
     }
 
     fun testKwargs() {
         withMockIntroduceParameterObjectDialog {
-            myFixture.doIntentionTest(
+            myFixture.doRefactoringTest(
                 "a.py",
                 """
                 def foo(a, <caret>b, **kwargs):
@@ -68,14 +68,14 @@ class PyIntroduceParameterObjectVariadicTest : TestBase() {
                 def main():
                     foo(FooParams(a=1, b=2), x=3)
                 """.trimIndent(),
-                "BetterPy: Introduce parameter object"
+                "com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectRefactoringAction"
             )
         }
     }
 
     fun testKwOnlySeparator() {
         withMockIntroduceParameterObjectDialog {
-            myFixture.doIntentionTest(
+            myFixture.doRefactoringTest(
                 "a.py",
                 """
                 def foo(a, *, <caret>b):
@@ -102,14 +102,14 @@ class PyIntroduceParameterObjectVariadicTest : TestBase() {
                 def main():
                     foo(FooParams(a=1, b=2))
                 """.trimIndent(),
-                "BetterPy: Introduce parameter object"
+                "com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectRefactoringAction"
             )
         }
     }
 
     fun testPositionalOnlySeparator() {
         withMockIntroduceParameterObjectDialog {
-            myFixture.doIntentionTest(
+            myFixture.doRefactoringTest(
                 "a.py",
                 """
                 def foo(a, <caret>b, /):
@@ -136,7 +136,7 @@ class PyIntroduceParameterObjectVariadicTest : TestBase() {
                  def main():
                      foo(FooParams(a=1, b=2))
                  """.trimIndent(),
-                "BetterPy: Introduce parameter object"
+                "com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectRefactoringAction"
             )
         }
     }

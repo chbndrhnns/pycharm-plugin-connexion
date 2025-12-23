@@ -1,13 +1,16 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject
 
 import fixtures.TestBase
-import fixtures.doIntentionTest
+import fixtures.assertActionNotAvailable
+import fixtures.doRefactoringTest
 
-class PyIntroduceParameterObjectIntentionTest : TestBase() {
+class PyIntroduceParameterObjectRefactoringTest : TestBase() {
+
+    private val actionId = "com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectRefactoringAction"
 
     fun testSimpleIntroduceParameterObject() {
         withMockIntroduceParameterObjectDialog {
-            myFixture.doIntentionTest(
+            myFixture.doRefactoringTest(
                 "a.py",
                 """
                 def create_<caret>user(first_name, last_name, email, age):
@@ -37,14 +40,14 @@ class PyIntroduceParameterObjectIntentionTest : TestBase() {
                 def main():
                     create_user(CreateUserParams(first_name="John", last_name="Doe", email="john@example.com", age=30))
                 """.trimIndent(),
-                "BetterPy: Introduce parameter object"
+                actionId
             )
         }
     }
 
     fun testMethodIntroduceParameterObject() {
         withMockIntroduceParameterObjectDialog {
-            myFixture.doIntentionTest(
+            myFixture.doRefactoringTest(
                 "a.py",
                 """
                 class Class:
@@ -65,14 +68,14 @@ class PyIntroduceParameterObjectIntentionTest : TestBase() {
                 class Class:
                     def do(self, params: DoParams):
                         return {}""".trimIndent(),
-                "BetterPy: Introduce parameter object"
+                actionId
             )
         }
     }
 
     fun testAvailableFromCallSite() {
         withMockIntroduceParameterObjectDialog {
-            myFixture.doIntentionTest(
+            myFixture.doRefactoringTest(
                 "a.py",
                 """
                 def create_user(first_name, last_name):
@@ -100,14 +103,14 @@ class PyIntroduceParameterObjectIntentionTest : TestBase() {
                 def main():
                     create_user(CreateUserParams(first_name="John", last_name="Doe"))
                 """.trimIndent(),
-                "BetterPy: Introduce parameter object"
+                actionId
             )
         }
     }
 
     fun testKeywordOnlyParamsCallSiteUsesKeywordArgument() {
         withMockIntroduceParameterObjectDialog {
-            myFixture.doIntentionTest(
+            myFixture.doRefactoringTest(
                 "a.py",
                 """
                 def do(*, arg1, arg2):
@@ -133,14 +136,14 @@ class PyIntroduceParameterObjectIntentionTest : TestBase() {
 
                 do(params=DoParams(arg1=1, arg2=2))
                 """.trimIndent(),
-                "BetterPy: Introduce parameter object"
+                actionId
             )
         }
     }
 
     fun testIntroduceParameterObjectCreatesValidClassNameForDigitLeadingFunction() {
         withMockIntroduceParameterObjectDialog {
-            myFixture.doIntentionTest(
+            myFixture.doRefactoringTest(
                 "a.py",
                 """
                 def _1(<caret>abc, defg):
@@ -160,37 +163,35 @@ class PyIntroduceParameterObjectIntentionTest : TestBase() {
                 def _1(params: _1Params):
                     print(params.abc, params.defg)
                 """.trimIndent(),
-                "BetterPy: Introduce parameter object"
+                actionId
             )
         }
     }
 
     fun testUnavailableInFunctionBody() {
-        myFixture.configureByText(
+        myFixture.assertActionNotAvailable(
             "a.py",
             """
             def create_user(first_name, last_name):
                 print(<caret>first_name, last_name)
-            """.trimIndent()
+            """.trimIndent(),
+            actionId
         )
-
-        assertEmpty(myFixture.filterAvailableIntentions("BetterPy: Introduce parameter object"))
     }
 
     fun testUnavailableForPytestTestFunction() {
-        myFixture.configureByText(
+        myFixture.assertActionNotAvailable(
             "test_a.py",
             """
             def test_create_<caret>user(first_name, last_name):
                 print(first_name, last_name)
-            """.trimIndent()
+            """.trimIndent(),
+            actionId
         )
-
-        assertEmpty(myFixture.filterAvailableIntentions("BetterPy: Introduce parameter object"))
     }
 
     fun testUnavailableForPytestFixture() {
-        myFixture.configureByText(
+        myFixture.assertActionNotAvailable(
             "a.py",
             """
             import pytest
@@ -199,15 +200,14 @@ class PyIntroduceParameterObjectIntentionTest : TestBase() {
             @pytest.fixture
             def create_<caret>user(first_name, last_name):
                 print(first_name, last_name)
-            """.trimIndent()
+            """.trimIndent(),
+            actionId
         )
-
-        assertEmpty(myFixture.filterAvailableIntentions("BetterPy: Introduce parameter object"))
     }
 
     fun testSingleParameter() {
         withMockIntroduceParameterObjectDialog {
-            myFixture.doIntentionTest(
+            myFixture.doRefactoringTest(
                 "a.py",
                 """
                 def process_<caret>data(data):
@@ -226,14 +226,14 @@ class PyIntroduceParameterObjectIntentionTest : TestBase() {
                 def process_data(params: ProcessDataParams):
                     print(params.data)
                 """.trimIndent(),
-                "BetterPy: Introduce parameter object"
+                actionId
             )
         }
     }
 
     fun testAvailableOnReturnTypeAnnotation() {
         withMockIntroduceParameterObjectDialog {
-            myFixture.doIntentionTest(
+            myFixture.doRefactoringTest(
                 "a.py",
                 """
                 def create_user(first_name: str, last_name: str) -> No<caret>ne:
@@ -253,14 +253,14 @@ class PyIntroduceParameterObjectIntentionTest : TestBase() {
                 def create_user(params: CreateUserParams) -> None:
                     print(params.first_name, params.last_name)
                 """.trimIndent(),
-                "BetterPy: Introduce parameter object"
+                actionId
             )
         }
     }
 
     fun testAvailableOnParameterTypeAnnotation() {
         withMockIntroduceParameterObjectDialog {
-            myFixture.doIntentionTest(
+            myFixture.doRefactoringTest(
                 "a.py",
                 """
                 def create_user(first_name: st<caret>r, last_name: str) -> None:
@@ -280,7 +280,7 @@ class PyIntroduceParameterObjectIntentionTest : TestBase() {
                 def create_user(params: CreateUserParams) -> None:
                     print(params.first_name, params.last_name)
                 """.trimIndent(),
-                "BetterPy: Introduce parameter object"
+                actionId
             )
         }
     }

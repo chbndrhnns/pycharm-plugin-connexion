@@ -1,12 +1,12 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject
 
 import fixtures.TestBase
-import fixtures.doIntentionTest
+import fixtures.doRefactoringTest
 
 class PyInlineTypedDictTest : TestBase() {
 
     fun testInlineTypedDict() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringTest(
             "a.py",
             """
             from typing import TypedDict
@@ -34,7 +34,7 @@ class PyInlineTypedDictTest : TestBase() {
             def main():
                 dist(x=1, y=2)
             """.trimIndent(),
-            "BetterPy: Inline parameter object",
+            "com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.InlineParameterObjectRefactoringAction",
         )
     }
 }

@@ -1,13 +1,13 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject
 
 import fixtures.TestBase
-import fixtures.doIntentionTest
+import fixtures.doRefactoringTest
 
 class PyInlinePydanticTest : TestBase() {
 
     fun testInlinePydanticModel() {
         myFixture.addFileToProject("pydantic.py", "class BaseModel: pass")
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringTest(
             "a.py",
             """
             from pydantic import BaseModel
@@ -37,7 +37,7 @@ class PyInlinePydanticTest : TestBase() {
             def main():
                 foo(x=1, y=2)
             """.trimIndent(),
-            "BetterPy: Inline parameter object",
+            "com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.InlineParameterObjectRefactoringAction",
         )
     }
 }

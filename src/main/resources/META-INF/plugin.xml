@@ -119,17 +119,6 @@
             <category>Refactorings</category>
         </intentionAction>
 
-        <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.PyIntroduceParameterObjectIntention</className>
-            <category>Refactorings</category>
-        </intentionAction>
-
-        <intentionAction>
-            <className>
-                com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.PyInlineParameterObjectIntention
-            </className>
-            <category>Refactorings</category>
-        </intentionAction>
 
         <intentionAction>
             <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.AddSelfParameterIntention</className>
