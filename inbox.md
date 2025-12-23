@@ -3,7 +3,6 @@
 ## Pending Issues
 
 - [ ] refactor: Is doing PyAllExportUtil too much string magic?
-- [ ] fix: Export to target needs to use import path when not using direct parent
 - [ ] fix: When toggling pytest mark skip on param, add trailing comma
 - [ ] fix: Use actual outcome should not be available for exceptions or binary operations (assert False)
 - [ ] fix: Introduce parameter object refactoring is not available no a str annotation
@@ -21,7 +20,7 @@
 
 ## Pending Features
 
-- [ ] feat: When inlining parameter object, ask if named or position args
+- [ ] feat: Re-use import for qualified names
 - [ ] feat: Discover if pydantic v2 is installed and show parameter object option only in this case
 - [ ] feat: Add run configuration with package name to gutter
 - [ ] feat: If callable is expected, complete without parens
@@ -72,11 +71,11 @@
 
 ## In Progress Tasks
 
-- [ ] feat: Re-use import for qualified names
 - [ ] refactor: Performance (spec/performance.md)
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Export to target needs to use import path when not using direct parent
 - [x] feat: Offer NamedTuple, TypedDict and pydantic.BaseModel as bases for parameter object
 - [x] fix: Missing introduce parameter action if caret on type annotation of argument
 - [x] fix: Duplicate entries in refactoring menu

@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.exports
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiParserFacade
 import com.intellij.psi.PsiWhiteSpace
@@ -70,7 +71,14 @@ object PyAllExportUtil {
         val generator = PyElementGenerator.getInstance(project)
         val languageLevel = LanguageLevel.forElement(file)
 
-        val moduleName = sourceModule.name.removeSuffix(".py")
+        val targetDir = file.containingDirectory?.virtualFile ?: file.virtualFile?.parent
+        val sourceFile = sourceModule.virtualFile
+        val relativePath = if (targetDir != null && sourceFile != null) {
+            VfsUtilCore.getRelativePath(sourceFile, targetDir)
+        } else {
+            null
+        }
+        val moduleName = relativePath?.removeSuffix(".py")?.replace('/', '.') ?: sourceModule.name.removeSuffix(".py")
 
         // Try to find an existing `from .<module> import ...` statement.
         val existingImport = findRelativeImport(file, moduleName)

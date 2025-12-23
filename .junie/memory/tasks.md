@@ -1,33 +1,3 @@
-[2025-12-12 10:33] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "inspect popup option ordering",
-    "MISSING STEPS": "run minimal targeted tests before broader suite, search tests for existing inheritance cases",
-    "BOTTLENECK": "The crafted test did not reproduce the suspected base-annotation issue, stalling validation.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN added test does not fail as expected THEN broaden scenario to overriding method without annotations"
-}
-
-[2025-12-12 10:37] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "run related tests",
-    "BOTTLENECK": "Locating the correct wiring where 'from locals' selects the populate mode.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN changing PopulateOptions or mode selection THEN run all populate intention tests"
-}
-
-[2025-12-12 10:42] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "adjust parameter selection, add test, run tests",
-    "BOTTLENECK": "Locals mode excludes optional params before checking for local matches.",
-    "PROJECT NOTE": "In PopulateArgumentsService.populateArguments, compute candidates for locals independently of REQUIRED_ONLY.",
-    "NEW INSTRUCTION": "WHEN useLocalScope option is active THEN include optional params only with local matches"
-}
-
 [2025-12-12 13:15] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -878,3 +848,22 @@
     "NEW INSTRUCTION": "WHEN failing test cannot run due to test scaffolding errors THEN fix test harness first"
 }
 
+[2025-12-23 09:48] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "broad search project,repeat update status",
+    "MISSING STEPS": "add tests,apply fix,run tests,submit",
+    "BOTTLENECK": "Never implemented the fix or a reproducing test after locating the code.",
+    "PROJECT NOTE": "Adjust PyAllExportUtil.addOrUpdateImportForModuleSymbol to compute relative path using QualifiedName between target __init__.py package and source module.",
+    "NEW INSTRUCTION": "WHEN export modifies __init__.py imports across packages THEN add failing nested-module test before code changes"
+}
+
+[2025-12-23 10:15] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "implement fix, run all tests, submit",
+    "BOTTLENECK": "Fix not implemented after creating failing test.",
+    "PROJECT NOTE": "Update addOrUpdateImportForModuleSymbol in PyAllExportUtil.kt to compute dotted relative module path from target to source.",
+    "NEW INSTRUCTION": "WHEN failing reproduction test confirms bug THEN implement fix in target module before rerunning all tests"
+}

@@ -1,63 +1,3 @@
-[2025-12-19 17:37] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "create",
-    "ERROR": "Argument type mismatch: PsiFile passed where PyFile expected",
-    "ROOT CAUSE": "invoke received a PsiFile and passed it to findTargetInitFiles expecting PyFile without casting.",
-    "PROJECT NOTE": "After checking file is PyFile in isAvailable, cast file to PyFile in invoke before using Py-specific helpers.",
-    "NEW INSTRUCTION": "WHEN passing PsiFile to Py-specific utility THEN cast to PyFile after type check"
-}
-
-[2025-12-19 18:00] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "create",
-    "ERROR": "Argument type mismatch calling helper function",
-    "ROOT CAUSE": "invoke passed PsiFile to findTargetInitFiles which expects a PyFile.",
-    "PROJECT NOTE": "In intentions, invoke receives PsiFile; cast only after confirming file is PyFile or change helper to accept PsiFile and narrow inside.",
-    "NEW INSTRUCTION": "WHEN helper expects PyFile but you have PsiFile THEN validate type and cast before call"
-}
-
-[2025-12-19 18:01] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "create",
-    "ERROR": "Argument type mismatch: PsiFile passed where PyFile expected",
-    "ROOT CAUSE": "invoke received PsiFile and passed it to a helper requiring PyFile without casting or signature alignment.",
-    "PROJECT NOTE": "Intention actions often get PsiFile; guard with `file is PyFile` in isAvailable and cast in invoke, or change helper to accept PsiFile.",
-    "NEW INSTRUCTION": "WHEN helper requires PyFile but file is PsiFile THEN cast after is PyFile check or change helper signature"
-}
-
-[2025-12-19 18:02] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "create",
-    "ERROR": "Argument type mismatch: PsiFile passed where PyFile expected",
-    "ROOT CAUSE": "invoke used a PsiFile to call a function requiring PyFile, causing a type mismatch.",
-    "PROJECT NOTE": "IntentionAction.invoke receives PsiFile; cast to PyFile only after checking file is PyFile before passing to Python utilities.",
-    "NEW INSTRUCTION": "WHEN passing file to Py-specific helpers THEN verify file is PyFile and cast safely"
-}
-
-[2025-12-19 18:02] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "create",
-    "ERROR": "Argument type mismatch in function call",
-    "ROOT CAUSE": "invoke passed a PsiFile to a helper requiring PyFile, causing a type mismatch.",
-    "PROJECT NOTE": "In Kotlin intentions operating on Python PSI, ensure helpers accept/receive PyFile, not generic PsiFile; cast once in invoke or narrow the signature.",
-    "NEW INSTRUCTION": "WHEN calling helper that requires PyFile THEN cast file to PyFile before invocation"
-}
-
-[2025-12-19 18:03] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "create",
-    "ERROR": "Passed PsiFile where PyFile was required",
-    "ROOT CAUSE": "invoke called findTargetInitFiles with PsiFile instead of PyFile, causing a type mismatch.",
-    "PROJECT NOTE": "In Python intentions, guard with `file is PyFile` in isAvailable and cast to PyFile in invoke before passing to utilities expecting PyFile.",
-    "NEW INSTRUCTION": "WHEN passing file to PyFile-specific utilities THEN cast file to PyFile after type check"
-}
-
 [2025-12-19 21:11] - Updated by Junie - Error analysis
 {
     "TYPE": "semantic error",
@@ -786,4 +726,54 @@
     "ROOT CAUSE": "The new test’s expected code does not match the intention’s actual output formatting/argument style.",
     "PROJECT NOTE": "Intention tests with myFixture.doIntentionTest compare full-file text; keep exact whitespace and preserve call-site argument style (e.g., keyword vs positional) per existing tests.",
     "NEW INSTRUCTION": "WHEN adding expected result for doIntentionTest THEN mirror actual intention output formatting and call-site style"
+}
+
+[2025-12-23 10:12] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Expected 'from .sub.mod', produced 'from .mod'",
+    "ROOT CAUSE": "Import builder assumes source is a direct child of target; nested modules need full relative path.",
+    "PROJECT NOTE": "Adjust PyAllExportUtil.addOrUpdateImportForModuleSymbol to derive a dotted path from targetFile's directory to sourceModule (e.g., sub.mod) instead of only using the source module filename.",
+    "NEW INSTRUCTION": "WHEN target is ancestor of source module THEN compute dotted relative path from target to source"
+}
+
+[2025-12-23 10:12] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Expected 'from .sub.mod' but generated 'from .mod'",
+    "ROOT CAUSE": "Import path generation assumes direct child module and ignores nested relative path segments.",
+    "PROJECT NOTE": "Fix PyAllExportUtil.addOrUpdateImportForModuleSymbol to compute the dotted relative path from target package dir to source module (e.g., via VfsUtilCore.getRelativePath and replacing '/' with '.') before creating the from-import.",
+    "NEW INSTRUCTION": "WHEN source module not direct child of target package THEN compute dotted relative module path and use it"
+}
+
+[2025-12-23 10:13] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Expected 'from .sub.mod' but generated 'from .mod' import",
+    "ROOT CAUSE": "Import module path is derived as direct child of target, ignoring nested subpackages.",
+    "PROJECT NOTE": "Adjust PyAllExportUtil.addOrUpdateImportForModuleSymbol to compute dotted module path from targetFile directory to sourceModule using relative VFS path segments.",
+    "NEW INSTRUCTION": "WHEN sourceModule is not a direct sibling of targetFile THEN derive dotted relative module path"
+}
+
+[2025-12-23 10:14] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Expected from .sub.mod import, but got from .mod",
+    "ROOT CAUSE": "Import module name was derived as direct child instead of full relative path from target to source.",
+    "PROJECT NOTE": "Fix addOrUpdateImportForModuleSymbol in PyAllExportUtil.kt to compute the module name by deriving a dotted path from targetFile's directory to sourceModule (e.g., via VfsUtilCore.getRelativePath and replacing '/' with '.').",
+    "NEW INSTRUCTION": "WHEN source module is not an immediate child of target directory THEN compute dotted relative path and use in from-import"
+}
+
+[2025-12-23 10:15] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Expected import from sub.mod, got from .mod",
+    "ROOT CAUSE": "Import generation assumes direct parent and uses only module filename, ignoring relative subpackage path.",
+    "PROJECT NOTE": "Fix in PyAllExportUtil.addOrUpdateImportForModuleSymbol: derive moduleName by computing the relative path from target __init__.py directory to source PyFile and dot-joining directories (e.g., using VfsUtilCore.getRelativePath).",
+    "NEW INSTRUCTION": "WHEN relative path includes subdirectories THEN build dotted module path and use it"
 }

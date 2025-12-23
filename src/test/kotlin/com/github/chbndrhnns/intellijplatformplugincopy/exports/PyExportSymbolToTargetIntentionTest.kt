@@ -121,7 +121,7 @@ class PyExportSymbolToTargetIntentionTest : TestBase() {
         }
 
         assertTrue(actual!!.contains("__all__ = [\"foo\"]"))
-        assertTrue(actual!!.contains("from .mod import foo"))
+        assertTrue(actual!!.contains("from ._private.mod import foo"))
     }
 
     fun testExportToSelf() {
