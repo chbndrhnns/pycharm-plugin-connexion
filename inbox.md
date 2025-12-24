@@ -8,7 +8,7 @@
 - [ ] fix: Making one symbol public via import place quickfix makes all other symbols unimported
 - [ ] fix: When prefering relative import inside same package, do not add candidate if relative import exists already
 - [ ] fix: implement abstract method is put above __init__
-- [ ] fix: cancel introduce type rename dialog still keeps it
+- [ ] fix: cancel introduce type rename dialog still keeps it -> platform issue
 - [ ] fix: Import `import bla as xyz` triggers warning about not exported in all -> repro?
 - [ ] fix: How to handle ProcessCanceledException correctly?
 
