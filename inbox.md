@@ -2,6 +2,7 @@
 
 ## Pending Issues
 
+- [ ] feat: Show BetterPy for "Show private members"
 - [ ] refactor: Use module name in PyPackageRunLineMarkerContributor, also strip __main__, other special cases?
 - [ ] refactor: Is doing PyAllExportUtil too much string magic?
 - [ ] refactor: why do we need a different check during tests? `PyWrapHeuristics.isProtocol`
