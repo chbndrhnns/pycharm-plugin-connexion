@@ -64,6 +64,7 @@
 
 ## In Progress Tasks
 
+- [ ] feat: Typing support for Mock, MagicMock, AsyncMock
 - [ ] refactor: Performance (spec/performance.md)
 
 ## Completed Tasks (newest first)
