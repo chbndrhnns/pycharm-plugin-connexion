@@ -1,13 +1,3 @@
-[2025-12-13 22:46] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "open file, scan project",
-    "BOTTLENECK": "Relied on truncated search output without confirming full implementation details.",
-    "PROJECT NOTE": "/src/main/kotlin/.../PythonVersionGuard.kt contains the guard; verify module selection logic there.",
-    "NEW INSTRUCTION": "WHEN search results are truncated or ambiguous THEN open the file and review fully"
-}
-
 [2025-12-13 23:50] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -876,4 +866,14 @@
     "BOTTLENECK": "No tests executed to validate source-root-prefixed first-segment completions.",
     "PROJECT NOTE": "Leverage SourceRootPrefixProviderTest and MyPlatformTestCase to set source roots and assert unittest.patch completions starting with the source root.",
     "NEW INSTRUCTION": "WHEN altering patch completion or resolution THEN add tests for source-root-prefixed first-segment completions"
+}
+
+[2025-12-28 22:51] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "run build",
+    "BOTTLENECK": "No compile/test run to verify refactor correctness.",
+    "PROJECT NOTE": "ProcessHighlights could use the target range offsets instead of full document for efficiency.",
+    "NEW INSTRUCTION": "WHEN refactoring platform API usages THEN run build to verify compilation"
 }

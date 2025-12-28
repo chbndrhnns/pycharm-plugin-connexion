@@ -6,12 +6,13 @@ import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.Cus
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.PlanBuilder
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
-import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerImpl
+import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerEx
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
 import com.intellij.codeInsight.intention.preview.IntentionPreviewUtils
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
@@ -123,13 +124,31 @@ class IntroduceCustomTypeFromStdlibIntention : IntentionAction, HighPriorityActi
     }
 
     private fun hasBlockingInspections(project: Project, editor: Editor, range: TextRange): Boolean {
-        val highlights = DaemonCodeAnalyzerImpl.getHighlights(editor.document, null, project)
+        val document = editor.document
 
-        return highlights.any { info ->
-            info.description != null &&
-                    (info.inspectionToolId == "PyTypeCheckerInspection" ||
-                            info.inspectionToolId == "PyArgumentListInspection") &&
-                    TextRange(info.startOffset, info.endOffset).intersects(range)
+        return ApplicationManager.getApplication().runReadAction<Boolean> {
+            var hasBlockingHighlight = false
+            DaemonCodeAnalyzerEx.processHighlights(
+                document,
+                project,
+                /* minSeverity = */ null,
+                0,
+                document.textLength
+            ) { info ->
+                val matches = info.description != null &&
+                        (info.inspectionToolId == "PyTypeCheckerInspection" ||
+                                info.inspectionToolId == "PyArgumentListInspection") &&
+                        TextRange(info.startOffset, info.endOffset).intersects(range)
+
+                if (matches) {
+                    hasBlockingHighlight = true
+                    return@processHighlights false
+                }
+
+                true
+            }
+
+            hasBlockingHighlight
         }
     }
 

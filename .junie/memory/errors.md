@@ -1,15 +1,5 @@
 [2025-12-22 22:37] - Updated by Junie - Error analysis
 {
-    "TYPE": "missing context",
-    "TOOL": "run_test",
-    "ERROR": "getElementAtCaret failed: element not found",
-    "ROOT CAUSE": "The PyMockPatch reference contributor is feature-flagged and not enabled in the test, so no reference exists at the caret.",
-    "PROJECT NOTE": "Enable PluginSettingsState.state.enablePyMockPatchReference = true in test setUp when asserting patch-string resolution.",
-    "NEW INSTRUCTION": "WHEN testing PyMockPatch string references THEN enable PluginSettingsState.enablePyMockPatchReference in setUp"
-}
-
-[2025-12-22 22:37] - Updated by Junie - Error analysis
-{
     "TYPE": "test assertion",
     "TOOL": "run_test",
     "ERROR": "getElementAtCaret could not find element at caret",
@@ -776,4 +766,14 @@
     "ROOT CAUSE": "The apply_patch request ended mid-hunk with ellipsis and lacked the *** End Patch terminator.",
     "PROJECT NOTE": "Tests live under src/test/kotlin/...; ensure patches fully specify updated hunks for those files.",
     "NEW INSTRUCTION": "WHEN composing apply_patch diff THEN include complete hunks and the closing *** End Patch marker"
+}
+
+[2025-12-28 22:45] - Updated by Junie - Error analysis
+{
+    "TYPE": "compilation",
+    "TOOL": "apply_patch",
+    "ERROR": "Semantic errors: unresolved references in imports",
+    "ROOT CAUSE": "The patch introduced new code that triggered unresolved 'com.intellij' references in the edited file, indicating broken or mismatched imports after the edit.",
+    "PROJECT NOTE": "Edits to PyResolveUtils.kt often require consistent IntelliJ and Python SDK imports; verify all added types are imported and no package/import lines were malformed.",
+    "NEW INSTRUCTION": "WHEN apply_patch returns semantic unresolved imports THEN open edited file and fix or restore correct imports"
 }
