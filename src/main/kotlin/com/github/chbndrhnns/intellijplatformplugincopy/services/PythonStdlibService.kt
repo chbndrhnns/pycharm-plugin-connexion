@@ -19,7 +19,7 @@ class PythonStdlibService(private val project: Project) {
     fun getStdlibModules(sdk: Sdk?): Set<String> {
         val actualSdk = sdk ?: com.intellij.openapi.module.ModuleManager.getInstance(project)
             .modules
-            .firstNotNullOfOrNull { com.jetbrains.python.sdk.legacy.PythonSdkUtil.findPythonSdk(it) }
+            .firstNotNullOfOrNull { com.jetbrains.python.sdk.PythonSdkUtil.findPythonSdk(it) }
         ?: return emptySet()
         val versionString = actualSdk.versionString ?: return emptySet()
 

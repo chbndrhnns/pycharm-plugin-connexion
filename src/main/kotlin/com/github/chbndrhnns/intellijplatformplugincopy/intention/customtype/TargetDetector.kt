@@ -9,8 +9,8 @@ import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.PyNames
-import com.jetbrains.python.codeInsight.stdlib.PyStdlibTypeProvider
 import com.jetbrains.python.psi.*
+import com.jetbrains.python.psi.types.PyClassType
 import com.jetbrains.python.psi.types.TypeEvalContext
 
 /**
@@ -489,8 +489,20 @@ class TargetDetector(
         val assignment = PsiTreeUtil.getParentOfType(expr, PyAssignmentStatement::class.java) ?: return false
         val target = assignment.targets.firstOrNull() as? PyTargetExpression ?: return false
         val pyClass = target.containingClass ?: return false
-        return PyStdlibTypeProvider.isCustomEnum(pyClass, ctx)
+        return isCustomEnum(pyClass, ctx)
     }
+
+    // Taken from com.jetbrains.python.codeInsight.stdlib.PyStdlibTypeProvider.isCustomEnum
+    fun isCustomEnum(cls: PyClass, context: TypeEvalContext): Boolean {
+        return isEnum(cls, context) && PyNames.TYPE_ENUM != cls.qualifiedName
+    }
+
+    fun isEnum(cls: PyClass, context: TypeEvalContext): Boolean {
+        val metaClassType = cls.getMetaClassType(true, context)
+        return metaClassType is PyClassType &&
+                metaClassType.pyClass.isSubclass(PyNames.TYPE_ENUM_META, context)
+    }
+
 
     private fun hasConflictingDataclassType(dataclassField: PyTargetExpression): Boolean {
         val typeDecl =

@@ -9,15 +9,6 @@
   @com.intellij.openapi.util.IntellijInternalApi annotation and indicates that the class is not supposed to be used in
   client code.
 
-- [ ] #Internal method com.jetbrains.python.codeInsight.stdlib.PyStdlibTypeProvider.isCustomEnum(PyClass,
-  TypeEvalContext) invocation
-  Internal method com.jetbrains.python.codeInsight.stdlib.PyStdlibTypeProvider.isCustomEnum(
-  com.jetbrains.python.psi.PyClass cls, com.jetbrains.python.psi.types.TypeEvalContext context) : boolean is invoked in
-  com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.TargetDetector.isEnumAssignment(PyExpression,
-  TypeEvalContext) : boolean. This method is marked with @org.jetbrains.annotations.ApiStatus.Internal annotation or
-  @com.intellij.openapi.util.IntellijInternalApi annotation and indicates that the method is not supposed to be used in
-  client code.
-
 - [ ] #Internal method com.jetbrains.python.psi.PyImportElement.resolve() invocation
   Internal method com.jetbrains.python.psi.PyImportElement.resolve() : com.intellij.psi.PsiElement is invoked in
   com.github.chbndrhnns.intellijplatformplugincopy.psi.PyResolveUtils.findMember(PsiElement, String, boolean) :
@@ -31,13 +22,6 @@
   @com.intellij.openapi.util.IntellijInternalApi annotation and indicates that the method is not supposed to be used in
   client code.
 
-- [ ] #Internal class com.jetbrains.python.psi.types.PyTypeUtil reference
-  Internal class com.jetbrains.python.psi.types.PyTypeUtil is referenced in
-  com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.UnionCandidates.collectFromTypes(PyTypedElement,
-  PyExpression) : List. This class is marked with @org.jetbrains.annotations.ApiStatus.Internal annotation or
-  @com.intellij.openapi.util.IntellijInternalApi annotation and indicates that the class is not supposed to be used in
-  client code.
-
 - [ ] #Internal method com.intellij.codeInsight.daemon.impl.IntentionMenuContributor.collectActions(Editor, PsiFile,
   ShowIntentionsPass.IntentionsInfo, int, int) is overridden
   Internal method com.intellij.codeInsight.daemon.impl.IntentionMenuContributor.collectActions(
@@ -49,7 +33,25 @@
   @com.intellij.openapi.util.IntellijInternalApi annotation and indicates that the method is not supposed to be used in
   client code.
 
-- [ ] #Internal class com.jetbrains.python.sdk.legacy.PythonSdkUtil reference
+- [ ] #Internal method com.intellij.util.SlowOperations.knownIssue(String) invocation
+  Internal method com.intellij.util.SlowOperations.knownIssue(java.lang.String ytIssueId) :
+  com.intellij.openapi.application.AccessToken is invoked in
+  com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.CustomTypeApplier.startInlineRename$lambda$6(
+  SmartPsiElementPointer, Project, Editor) : void. This method is marked with
+  @org.jetbrains.annotations.ApiStatus.Internal annotation or @com.intellij.openapi.util.IntellijInternalApi annotation
+  and indicates that the method is not supposed to be used in client code.
+
+## Done
+
+- [x] #Internal class com.jetbrains.python.psi.types.PyTypeUtil reference
+  Internal class com.jetbrains.python.psi.types.PyTypeUtil is referenced in
+  com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.UnionCandidates.collectFromTypes(PyTypedElement,
+  PyExpression) : List. This class is marked with @org.jetbrains.annotations.ApiStatus.Internal annotation or
+  @com.intellij.openapi.util.IntellijInternalApi annotation and indicates that the class is not supposed to be used in
+  client code.
+
+
+- [x] #Internal class com.jetbrains.python.sdk.legacy.PythonSdkUtil reference
   Internal class com.jetbrains.python.sdk.legacy.PythonSdkUtil is referenced in
   com.github.chbndrhnns.intellijplatformplugincopy.services.PythonStdlibService.getStdlibModules(Sdk) : Set. This class
   is marked with @org.jetbrains.annotations.ApiStatus.Internal annotation or
@@ -61,15 +63,15 @@
   @com.intellij.openapi.util.IntellijInternalApi annotation and indicates that the class is not supposed to be used in
   client code.
 
-- [ ] #Internal method com.intellij.util.SlowOperations.knownIssue(String) invocation
-  Internal method com.intellij.util.SlowOperations.knownIssue(java.lang.String ytIssueId) :
-  com.intellij.openapi.application.AccessToken is invoked in
-  com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.CustomTypeApplier.startInlineRename$lambda$6(
-  SmartPsiElementPointer, Project, Editor) : void. This method is marked with
-  @org.jetbrains.annotations.ApiStatus.Internal annotation or @com.intellij.openapi.util.IntellijInternalApi annotation
-  and indicates that the method is not supposed to be used in client code.
+- [x] #Internal method com.jetbrains.python.codeInsight.stdlib.PyStdlibTypeProvider.isCustomEnum(PyClass,
+  TypeEvalContext) invocation
+  Internal method com.jetbrains.python.codeInsight.stdlib.PyStdlibTypeProvider.isCustomEnum(
+  com.jetbrains.python.psi.PyClass cls, com.jetbrains.python.psi.types.TypeEvalContext context) : boolean is invoked in
+  com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.TargetDetector.isEnumAssignment(PyExpression,
+  TypeEvalContext) : boolean. This method is marked with @org.jetbrains.annotations.ApiStatus.Internal annotation or
+  @com.intellij.openapi.util.IntellijInternalApi annotation and indicates that the method is not supposed to be used in
+  client code.
 
-## Done
 
 - [x] #Internal method com.jetbrains.python.sdk.legacy.PythonSdkUtil.findPythonSdk(Module) invocation
  Internal method com.jetbrains.python.sdk.legacy.PythonSdkUtil.findPythonSdk(com.intellij.openapi.module.Module
