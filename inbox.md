@@ -2,6 +2,19 @@
 
 ## Pending Issues
 
+- [ ] fix: Do not offer builtins as expected type callables
+
+```python
+def do(arg: str | int):
+    ...
+
+
+def test_():
+    do()
+    do("")
+
+```
+
 - [ ] feat: Show BetterPy for "Show private members"
 - [ ] refactor: Use module name in PyPackageRunLineMarkerContributor, also strip __main__, other special cases?
 - [ ] refactor: Is doing PyAllExportUtil too much string magic?
