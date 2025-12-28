@@ -1,6 +1,6 @@
 # Internal APIs
 
-- [ ] #Internal method com.jetbrains.python.sdk.legacy.PythonSdkUtil.findPythonSdk(Module) invocation
+- [x] #Internal method com.jetbrains.python.sdk.legacy.PythonSdkUtil.findPythonSdk(Module) invocation
   Internal method com.jetbrains.python.sdk.legacy.PythonSdkUtil.findPythonSdk(com.intellij.openapi.module.Module
   module) : com.intellij.openapi.projectRoots.Sdk is invoked in
   com.github.chbndrhnns.intellijplatformplugincopy.python.PythonVersionGuard.isSatisfied(Project) : boolean. This method

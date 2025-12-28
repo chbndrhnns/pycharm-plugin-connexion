@@ -4,7 +4,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.jetbrains.python.psi.LanguageLevel
 import com.jetbrains.python.psi.PyFile
-import com.jetbrains.python.sdk.legacy.PythonSdkUtil
+import com.jetbrains.python.sdk.PythonSdkUtil
 
 /**
  * Centralized guard for minimum supported Python version across actions, intentions and inspections.
