@@ -9,13 +9,17 @@
   @com.intellij.openapi.util.IntellijInternalApi annotation and indicates that the class is not supposed to be used in
   client code.
 
-- [-] #Internal method com.intellij.util.SlowOperations.knownIssue(String) invocation
+## Keep
+
+- [x] #Internal method com.intellij.util.SlowOperations.knownIssue(String) invocation
   Internal method com.intellij.util.SlowOperations.knownIssue(java.lang.String ytIssueId) :
   com.intellij.openapi.application.AccessToken is invoked in
   com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.CustomTypeApplier.startInlineRename$lambda$6(
   SmartPsiElementPointer, Project, Editor) : void. This method is marked with
   @org.jetbrains.annotations.ApiStatus.Internal annotation or @com.intellij.openapi.util.IntellijInternalApi annotation
   and indicates that the method is not supposed to be used in client code.
+
+  -> spec/slow-operations.md
 
 ## Done
 
