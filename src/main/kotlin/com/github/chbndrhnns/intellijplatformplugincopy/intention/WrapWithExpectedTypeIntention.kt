@@ -65,7 +65,7 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
             return false
         }
 
-        val analyzer = ExpectedTypeAnalyzer(project)
+        val analyzer = ExpectedTypeAnalyzer()
         val context = TypeEvalContext.codeAnalysis(project, file)
         val plan = analyzer.analyzeAtCaret(editor, file, context) ?: run {
             editor.putUserData(PLAN_KEY, null)
@@ -90,7 +90,7 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
     }
 
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
-        val analyzer = ExpectedTypeAnalyzer(project)
+        val analyzer = ExpectedTypeAnalyzer()
         val context = TypeEvalContext.userInitiated(project, file)
         val plan = editor.getUserData(PLAN_KEY) ?: analyzer.analyzeAtCaret(editor, file, context) ?: return
 
@@ -159,7 +159,7 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
         if (!PluginSettingsState.instance().state.enableWrapWithExpectedTypeIntention) {
             return IntentionPreviewInfo.EMPTY
         }
-        val analyzer = ExpectedTypeAnalyzer(project)
+        val analyzer = ExpectedTypeAnalyzer()
         val context = TypeEvalContext.codeAnalysis(project, file)
         val plan =
             editor.getUserData(PLAN_KEY) ?: analyzer.analyzeAtCaret(editor, file, context)

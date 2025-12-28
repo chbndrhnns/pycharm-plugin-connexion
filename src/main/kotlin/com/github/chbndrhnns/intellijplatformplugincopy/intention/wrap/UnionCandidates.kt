@@ -11,9 +11,8 @@ import com.jetbrains.python.PyTokenTypes
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.impl.PyBuiltinCache
 import com.jetbrains.python.psi.stubs.PyClassNameIndex
-import com.jetbrains.python.psi.types.PyClassType
-import com.jetbrains.python.psi.types.PyTypeUtil
-import com.jetbrains.python.psi.types.TypeEvalContext
+import com.jetbrains.python.psi.types.*
+import one.util.streamex.StreamEx
 
 private val LOG = logger<StringAnnotationResolver>()
 
@@ -167,6 +166,25 @@ object UnionCandidates {
     }
 
     /**
+     * Given a type creates a stream of all its members if it's a union type or of only the type itself otherwise.
+     *
+     *
+     * It allows to process types received as the result of multiresolve uniformly with the others.
+     *
+     * Taken from com.jetbrains.python.psi.types.PyTypeUtil.toStream
+     */
+    fun toStream(type: PyType?): StreamEx<PyType?> {
+        if (type is PyUnionType) {
+            return StreamEx.of<PyType?>(type.getMembers())
+        }
+        if (type is PyUnsafeUnionType) {
+            return StreamEx.of<PyType?>(type.members)
+        }
+        return StreamEx.of<PyType?>(type)
+    }
+
+
+    /**
      * Primary implementation: rely on the type system to parse/normalize unions instead of hand-parsing text.
      * Falls back to the legacy PSI/text logic above when type information is missing or yields < 2 candidates.
      */
@@ -179,7 +197,7 @@ object UnionCandidates {
         val builtins = PyBuiltinCache.getInstance(anchor)
         val byName = LinkedHashMap<String, ExpectedCtor>()
 
-        PyTypeUtil.toStream(type).forEach { member ->
+        toStream(type).forEach { member ->
             val classType = member as? PyClassType ?: return@forEach
             val cls = classType.pyClass as? PsiNamedElement ?: return@forEach
             val name = cls.name ?: return@forEach

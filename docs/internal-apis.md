@@ -9,14 +9,6 @@
   @com.intellij.openapi.util.IntellijInternalApi annotation and indicates that the class is not supposed to be used in
   client code.
 
-- [ ] #Internal method com.jetbrains.python.psi.types.PyTypeUtil.toStream(PyType) invocation
-  Internal method com.jetbrains.python.psi.types.PyTypeUtil.toStream(com.jetbrains.python.psi.types.PyType type) :
-  one.util.streamex.StreamEx is invoked in
-  com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.UnionCandidates.collectFromTypes(PyTypedElement,
-  PyExpression) : List. This method is marked with @org.jetbrains.annotations.ApiStatus.Internal annotation or
-  @com.intellij.openapi.util.IntellijInternalApi annotation and indicates that the method is not supposed to be used in
-  client code.
-
 - [ ] #Internal method com.jetbrains.python.codeInsight.stdlib.PyStdlibTypeProvider.isCustomEnum(PyClass,
   TypeEvalContext) invocation
   Internal method com.jetbrains.python.codeInsight.stdlib.PyStdlibTypeProvider.isCustomEnum(
@@ -79,7 +71,7 @@
 
 ## Done
 
--[x] #Internal method com.jetbrains.python.sdk.legacy.PythonSdkUtil.findPythonSdk(Module) invocation
+- [x] #Internal method com.jetbrains.python.sdk.legacy.PythonSdkUtil.findPythonSdk(Module) invocation
  Internal method com.jetbrains.python.sdk.legacy.PythonSdkUtil.findPythonSdk(com.intellij.openapi.module.Module
  module) : com.intellij.openapi.projectRoots.Sdk is invoked in
  com.github.chbndrhnns.intellijplatformplugincopy.python.PythonVersionGuard.isSatisfied(Project) : boolean. This method
@@ -109,3 +101,11 @@
   Project, Editor, TextRange) : boolean. This class is marked with @org.jetbrains.annotations.ApiStatus.Internal
   annotation or @com.intellij.openapi.util.IntellijInternalApi annotation and indicates that the class is not supposed
   to be used in client code.
+
+- [x] #Internal method com.jetbrains.python.psi.types.PyTypeUtil.toStream(PyType) invocation
+  Internal method com.jetbrains.python.psi.types.PyTypeUtil.toStream(com.jetbrains.python.psi.types.PyType type) :
+  one.util.streamex.StreamEx is invoked in
+  com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.UnionCandidates.collectFromTypes(PyTypedElement,
+  PyExpression) : List. This method is marked with @org.jetbrains.annotations.ApiStatus.Internal annotation or
+  @com.intellij.openapi.util.IntellijInternalApi annotation and indicates that the method is not supposed to be used in
+  client code.

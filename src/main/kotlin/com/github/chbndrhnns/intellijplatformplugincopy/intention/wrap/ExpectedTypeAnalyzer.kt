@@ -3,14 +3,13 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.WrapPlan
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.jetbrains.python.psi.PyExpression
 import com.jetbrains.python.psi.PyNoneLiteralExpression
 import com.jetbrains.python.psi.PyTargetExpression
 import com.jetbrains.python.psi.types.TypeEvalContext
 
-class ExpectedTypeAnalyzer(private val project: Project) {
+class ExpectedTypeAnalyzer() {
 
     // Base strategies that don't depend on context
     private val enumStrategies: List<WrapStrategy> = listOf(
