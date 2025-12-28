@@ -1,193 +1,3 @@
-[2025-12-20 20:36] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "create",
-    "ERROR": "Used missing setting and invalid AutoImportQuickFix API",
-    "ROOT CAUSE": "The new provider referenced a non-existent settings flag and called AutoImportQuickFix.addQuickFix, which is not part of the API in this SDK.",
-    "PROJECT NOTE": "In this repo, PyImportCandidateProvider integrates only via quickFix.addImport(importable,...); it cannot register arbitrary IntentionAction rewrites.",
-    "NEW INSTRUCTION": "WHEN needing reference rewrite suggestion THEN implement an IntentionAction tied to unresolved reference inspection"
-}
-
-[2025-12-20 20:37] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "create",
-    "ERROR": "Used nonexistent addQuickFix and undefined setting",
-    "ROOT CAUSE": "The code assumed AutoImportQuickFix accepts arbitrary quick fixes and referenced a non-existent settings flag.",
-    "PROJECT NOTE": "Use quickFix.addImport(importable, file, relativePath) as in RelativeImportCandidateProvider; implement reference-rewrite as a separate IntentionAction registered via plugin.xml, not through PyImportCandidateProvider.",
-    "NEW INSTRUCTION": "WHEN using PyImportCandidateProvider with AutoImportQuickFix THEN use addImport; do not add custom fixes"
-}
-
-[2025-12-20 21:41] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic error",
-    "TOOL": "AutoImportQuickFix via RelativeImportCandidateProvider",
-    "ERROR": "Added 'Second' to 'from . import src' line",
-    "ROOT CAUSE": "When same-package, the provider builds '.' as path, so AutoImportQuickFix merges a new from-import instead of rewriting usage to src.Second.",
-    "PROJECT NOTE": "In RelativeImportCandidateProvider.kt, avoid constructing QualifiedName(['','']) for same-package; instead detect existing 'from . import <module>' and pass the module element to quickFix to trigger qualified access rewriting.",
-    "NEW INSTRUCTION": "WHEN same-package target and module imported via 'from . import <module>' THEN avoid adding import; rewrite usage to '<module>.<symbol>'"
-}
-
-[2025-12-22 12:01] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "apply_patch",
-    "ERROR": "Cannot resolve extension point 'com.intellij.intentionAction'",
-    "ROOT CAUSE": "IntentionsConfigurable.getDependencies references an extension point not present in this platform SDK.",
-    "PROJECT NOTE": "In IntentionsConfigurable.getDependencies, only declare EP dependencies that exist in the target SDK; consider removing the override or guarding it to return an empty list if the EP is unavailable.",
-    "NEW INSTRUCTION": "WHEN apply_patch reports unresolved extension point id THEN replace or remove that EP dependency reference"
-}
-
-[2025-12-22 12:01] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "apply_patch",
-    "ERROR": "Cannot resolve extension point 'com.intellij.intentionAction'",
-    "ROOT CAUSE": "Code creates an EP from a raw string that is not recognized in this SDK; use the platform EP constant instead.",
-    "PROJECT NOTE": "In IntentionsConfigurable.getDependencies, return com.intellij.codeInsight.intention.IntentionActionBean.EP_NAME instead of ExtensionPointName.create(\"com.intellij.intentionAction\").",
-    "NEW INSTRUCTION": "WHEN declaring EP dependency in IntentionsConfigurable THEN use IntentionActionBean.EP_NAME constant"
-}
-
-[2025-12-22 12:02] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "apply_patch",
-    "ERROR": "Cannot resolve extension point 'com.intellij.intentionAction'",
-    "ROOT CAUSE": "getDependencies uses a raw string EP name; the validator requires a known EP_NAME constant or correct EP reference.",
-    "PROJECT NOTE": "In IntentionsConfigurable.getDependencies, return com.intellij.codeInsight.intention.IntentionActionBean.EP_NAME instead of ExtensionPointName.create(\"com.intellij.intentionAction\").",
-    "NEW INSTRUCTION": "WHEN declaring EP dependencies in Configurable THEN use EP_NAME constants instead of string literals"
-}
-
-[2025-12-22 12:03] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "apply_patch",
-    "ERROR": "Unresolved extension point 'com.intellij.intentionAction'",
-    "ROOT CAUSE": "getDependencies() references a hardcoded EP string not resolvable in this SDK.",
-    "PROJECT NOTE": "In IntentionsConfigurable.getDependencies, prefer IntentionActionBean.EP_NAME over ExtensionPointName.create(\"com.intellij.intentionAction\") or remove the override if unneeded.",
-    "NEW INSTRUCTION": "WHEN semantic error mentions unresolved 'com.intellij.intentionAction' EP THEN use IntentionActionBean.EP_NAME in getDependencies"
-}
-
-[2025-12-22 12:03] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "-",
-    "ERROR": "Cannot resolve extension point 'com.intellij.intentionAction'",
-    "ROOT CAUSE": "IntentionsConfigurable.getDependencies creates an EP by raw string instead of using the SDK’s EP_NAME constant.",
-    "PROJECT NOTE": "In IntentionsConfigurable.getDependencies, return listOf(com.intellij.codeInsight.intention.IntentionActionBean.EP_NAME) instead of ExtensionPointName.create(\"com.intellij.intentionAction\").",
-    "NEW INSTRUCTION": "WHEN declaring Configurable EP dependencies THEN use IntentionActionBean.EP_NAME instead of raw EP string"
-}
-
-[2025-12-22 14:05] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "run_test",
-    "ERROR": "Invalid file name passed to configureByText",
-    "ROOT CAUSE": "The test used myFixture.configureByText with a path 'pkg/__init__.py', which is not allowed; configureByText expects a simple file name, not a path.",
-    "PROJECT NOTE": "For files in subdirectories, create them via myFixture.addFileToProject(\"dir/file.py\", content) and then open with myFixture.configureByFile(\"dir/file.py\").",
-    "NEW INSTRUCTION": "WHEN creating fixture file under subdirectory THEN use addFileToProject and then configureByFile"
-}
-
-[2025-12-22 14:05] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "run_test",
-    "ERROR": "Invalid file name passed to configureByText",
-    "ROOT CAUSE": "Test used configureByText with a path 'pkg/__init__.py' instead of a plain filename.",
-    "PROJECT NOTE": "In IntelliJ tests, use addFileToProject for paths and then configureByFile to open it; configureByText accepts only a filename without directories.",
-    "NEW INSTRUCTION": "WHEN creating files with directories in tests THEN use addFileToProject and open via configureByFile"
-}
-
-[2025-12-22 14:05] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "run_test",
-    "ERROR": "Invalid file name passed to configureByText",
-    "ROOT CAUSE": "Used myFixture.configureByText with a path containing directories, which it doesn't accept.",
-    "PROJECT NOTE": "In IntelliJ test fixtures, use addFileToProject for paths (e.g., pkg/__init__.py) and then configureByFile to open it; configureByText expects just a filename.",
-    "NEW INSTRUCTION": "WHEN creating files under subdirectories in tests THEN use addFileToProject and configureByFile"
-}
-
-[2025-12-22 14:10] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Intention offered where it must be unavailable",
-    "ROOT CAUSE": "Wrap strategies do not filter out typing.Protocol classes, so intention remains offered.",
-    "PROJECT NOTE": "Add a Protocol check in wrap strategies (e.g., GenericCtorStrategy and UnionStrategy) or shared heuristics: detect if PyClassType's PyClass inherits from typing.Protocol and skip producing ExpectedCtor/choices for such types.",
-    "NEW INSTRUCTION": "WHEN expected constructor resolves to Protocol or its subclass THEN skip creating wrap suggestion"
-}
-
-[2025-12-22 14:20] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "run_test",
-    "ERROR": "Truncated test path argument provided",
-    "ROOT CAUSE": "The run_test call passed an incomplete, cut-off path string, causing argument parsing failure.",
-    "PROJECT NOTE": "Use the project root or a valid relative path when running tests; if unsure, omit path to run from current project root.",
-    "NEW INSTRUCTION": "WHEN run_test path looks truncated or incomplete THEN omit path or use project root"
-}
-
-[2025-12-22 14:21] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "run_test",
-    "ERROR": "Malformed test path argument",
-    "ROOT CAUSE": "The run_test call passed a truncated path string with newline/ellipsis, making it invalid.",
-    "PROJECT NOTE": "run_test usually does not require a path; prefer running by test class/pattern or provide a valid project-relative path.",
-    "NEW INSTRUCTION": "WHEN run_test path contains newline or ellipsis THEN run without path or use valid path"
-}
-
-[2025-12-22 14:35] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "run_test",
-    "ERROR": "Missing test-log.properties during test run",
-    "ROOT CAUSE": "The IntelliJ test framework expects a cached logging config file that is absent or corrupted.",
-    "PROJECT NOTE": "Run targeted tests via Gradle wrapper; if SDK caches break, refresh dependencies before retrying.",
-    "NEW INSTRUCTION": "WHEN test run reports missing test-log.properties THEN rerun Gradle tests with --refresh-dependencies"
-}
-
-[2025-12-22 14:35] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "run_test",
-    "ERROR": "Missing j.u.l LogManager config: test-log.properties",
-    "ROOT CAUSE": "The IntelliJ/PyCharm test runtime wasn’t initialized, so the required logging config file wasn’t provisioned in Gradle caches.",
-    "PROJECT NOTE": "Use the Gradle wrapper from project root or the .run/Run Tests.run.xml configuration to execute tests so the IDE platform test artifacts (including test-log.properties) are prepared.",
-    "NEW INSTRUCTION": "WHEN run_test logs missing test-log.properties THEN run Gradle cleanTest test from project root"
-}
-
-[2025-12-22 14:36] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "run_test",
-    "ERROR": "Missing LogManager config test-log.properties",
-    "ROOT CAUSE": "Tests were executed without the IntelliJ Platform test logging configuration set, causing LogManager to fail.",
-    "PROJECT NOTE": "Run tests via Gradle with test filters, e.g., ./gradlew test --tests 'com.github.chbndrhnns.intellijplatformplugincopy.actions.JumpToPytestNodeInTestTreeActionTest'.",
-    "NEW INSTRUCTION": "WHEN test run fails with missing test-log.properties THEN run Gradle tests with --tests filter"
-}
-
-[2025-12-22 14:39] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "IntentionAction registration",
-    "ERROR": "Intention description directory URL is null (missing description.html)",
-    "ROOT CAUSE": "The newly registered intention lacks the required intentionDescriptions/<ClassName>/description.html resource.",
-    "PROJECT NOTE": "Add resources at src/main/resources/intentionDescriptions/JumpToPytestNodeInTestTreeIntention/description.html (optionally before.py/after.py) to satisfy the IDE’s intention metadata requirements.",
-    "NEW INSTRUCTION": "WHEN plugin.xml registers an intentionAction THEN add intentionDescriptions/<ClassName>/description.html resource directory"
-}
-
-[2025-12-22 14:41] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "-",
-    "ERROR": "Missing intention description.html resource",
-    "ROOT CAUSE": "JumpToPytestNodeInTestTreeIntention was registered without the required description directory and files.",
-    "PROJECT NOTE": "Place description files under src/main/resources/intentionDescriptions/JumpToPytestNodeInTestTreeIntention/ (description.html, before.py.template, after.py.template as needed) and ensure plugin.xml <intentionAction> is declared.",
-    "NEW INSTRUCTION": "WHEN adding a new IntentionAction THEN create intentionDescriptions/<ClassName>/description.html (with example templates)"
-}
-
 [2025-12-22 22:36] - Updated by Junie - Error analysis
 {
     "TYPE": "test assertion",
@@ -776,4 +586,184 @@
     "ROOT CAUSE": "The IntelliJ SDK in this project does not provide setSelectionCheck; a non-existent API was used.",
     "PROJECT NOTE": "In JbPopupHost.showChooserWithGreying, rely on the renderer for '(already exported)' text and disabled color; to skip greyed items, preselect the first non-greyed item or ignore greyed choices in the chosen-callback rather than calling missing builder methods.",
     "NEW INSTRUCTION": "WHEN builder method is an unresolved reference THEN remove it and implement behavior via callbacks"
+}
+
+[2025-12-27 17:42] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "run_test",
+    "ERROR": "NoSuchMethodError for PluginSettingsState.State constructor",
+    "ROOT CAUSE": "Stale compiled classes on test classpath conflict after adding a new State field.",
+    "PROJECT NOTE": "Project contains bin/main compiled outputs; these can shadow fresh classes and cause linkage errors after changing PluginSettingsState.State.",
+    "NEW INSTRUCTION": "WHEN NoSuchMethodError mentions PluginSettingsState.State THEN run Gradle cleanTest test"
+}
+
+[2025-12-27 17:43] - Updated by Junie - Error analysis
+{
+    "TYPE": "runtime/linkage",
+    "TOOL": "run_test",
+    "ERROR": "NoSuchMethodError in PluginSettingsState.State constructor",
+    "ROOT CAUSE": "Adding a new boolean field changed PluginSettingsState.State's constructor signature, breaking callers/deserialization expecting the old signature.",
+    "PROJECT NOTE": "PluginSettingsState.State is instantiated/deserialized across the plugin; changing its primary constructor without compatibility guarantees causes NoSuchMethodError during tests.",
+    "NEW INSTRUCTION": "WHEN adding a field to PluginSettingsState.State THEN keep defaults and add no-arg factory used by all callers"
+}
+
+[2025-12-27 17:45] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Method signature mismatch and unresolved reference in new file",
+    "ROOT CAUSE": "Used wrong getCallType signature for PyTypeProviderBase and referenced PyMockType before defining it.",
+    "PROJECT NOTE": "Override fun getCallType(function: PyFunction, callSite: PyCallSiteExpression, context: TypeEvalContext): Ref<PyType?>? and wrap results with Ref.create(...); implement PyMockType before referencing it.",
+    "NEW INSTRUCTION": "WHEN overriding PyTypeProvider.getCallType THEN use PyCallSiteExpression and return Ref.create(type)"
+}
+
+[2025-12-27 17:46] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "getCallType overrides nothing; wrong signature and missing PyMockType class",
+    "ROOT CAUSE": "Used PyCallExpression and PyType return instead of PyCallSiteExpression and Ref<PyType?>?, and referenced PyMockType before creating it.",
+    "PROJECT NOTE": "In PyMockTypeProvider.kt, override fun getCallType(function: PyFunction, callSite: PyCallSiteExpression, context: TypeEvalContext): Ref<PyType?>? and return Ref.create(yourType); import com.intellij.openapi.util.Ref. Implement PyMockType in src/main/kotlin/com/github/chbndrhnns/intellijplatformplugincopy/type/PyMockType.kt before referencing it.",
+    "NEW INSTRUCTION": "WHEN getCallType override error appears THEN use PyCallSiteExpression and return Ref.create(type)"
+}
+
+[2025-12-27 17:47] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Override signature mismatch; missing PyMockType class",
+    "ROOT CAUSE": "Used an outdated getCallType signature and referenced PyMockType before implementing it.",
+    "PROJECT NOTE": "In this SDK override fun getCallType(function, callSite: PyCallSiteExpression, context): Ref<PyType?> and return Ref.create(type); implement PyMockType (or adjust usage) before referencing it.",
+    "NEW INSTRUCTION": "WHEN overriding PyTypeProviderBase.getCallType THEN use PyCallSiteExpression and return Ref<PyType?>"
+}
+
+[2025-12-27 17:48] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Wrong override signature and missing referenced type",
+    "ROOT CAUSE": "getCallType used an outdated signature and returned PyType instead of Ref<PyType>, and PyMockType was referenced before being defined.",
+    "PROJECT NOTE": "In this SDK, PyTypeProviderBase.getCallType signature is getCallType(PyFunction, PyCallSiteExpression, TypeEvalContext): Ref<PyType?>?; import com.intellij.openapi.util.Ref and wrap result with Ref.create(...).",
+    "NEW INSTRUCTION": "WHEN overriding getCallType in PyTypeProviderBase THEN use PyCallSiteExpression and return Ref<PyType?>"
+}
+
+[2025-12-27 17:49] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "create",
+    "ERROR": "Wrong getCallType signature; PyMockType unresolved",
+    "ROOT CAUSE": "Used outdated PyTypeProviderBase.getCallType signature and referenced PyMockType before implementing/importing it.",
+    "PROJECT NOTE": "In this SDK, override getCallType(function, callSite: PyCallSiteExpression, context) and return Ref<PyType?> (use Ref.create(...)); import com.intellij.openapi.util.Ref and com.jetbrains.python.psi.PyCallSiteExpression. Implement PyMockType before referencing it.",
+    "NEW INSTRUCTION": "WHEN overriding getCallType in PyTypeProviderBase THEN use PyCallSiteExpression and return Ref<PyType?>"
+}
+
+[2025-12-27 17:53] - Updated by Junie - Error analysis
+{
+    "TYPE": "compilation",
+    "TOOL": "create",
+    "ERROR": "Wrong override and unresolved type reference",
+    "ROOT CAUSE": "getCallType was implemented with an outdated signature and referenced undefined PyMockType.",
+    "PROJECT NOTE": "In this SDK, override fun getCallType(function: PyFunction, callSite: PyCallSiteExpression, context: TypeEvalContext): Ref<PyType?>? and return Ref.create(type). Import com.jetbrains.python.psi.PyCallSiteExpression and com.intellij.openapi.util.Ref. Define PyMockType.kt before use.",
+    "NEW INSTRUCTION": "WHEN overriding PyTypeProviderBase.getCallType THEN use SDK signature and return Ref.create"
+}
+
+[2025-12-27 17:57] - Updated by Junie - Error analysis
+{
+    "TYPE": "compilation",
+    "TOOL": "create",
+    "ERROR": "Wrong override signature and missing PyMockType",
+    "ROOT CAUSE": "getCallType used PyCallExpression and returned PyType instead of Ref<PyType?>, and referenced PyMockType before defining it.",
+    "PROJECT NOTE": "In this SDK, override fun getCallType(function: PyFunction, callSite: PyCallSiteExpression, context: TypeEvalContext): Ref<PyType?>? and import com.intellij.openapi.util.Ref; also ensure PyMockType is implemented before referencing.",
+    "NEW INSTRUCTION": "WHEN overriding PyTypeProviderBase.getCallType THEN use PyCallSiteExpression and return Ref<PyType?>"
+}
+
+[2025-12-27 17:57] - Updated by Junie - Error analysis
+{
+    "TYPE": "compilation",
+    "TOOL": "create",
+    "ERROR": "Wrong override signature and missing type class",
+    "ROOT CAUSE": "getCallType used PyCallExpression and returned PyType instead of SDK’s required PyCallSiteExpression and Ref<PyType?>; PyMockType class not yet implemented.",
+    "PROJECT NOTE": "In this SDK, PyTypeProviderBase.getCallType(function, callSite, context) must return Ref<PyType?> and use PyCallSiteExpression; wrap results with Ref.create. Implement PyMockType before referencing it.",
+    "NEW INSTRUCTION": "WHEN implementing PyTypeProvider.getCallType THEN use PyCallSiteExpression and return Ref.create(result)"
+}
+
+[2025-12-28 14:22] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "bash",
+    "ERROR": "Tests failed with ComparisonFailure (3 failures)",
+    "ROOT CAUSE": "Recent type resolution change caused expected vs actual output mismatches in PyMock tests.",
+    "PROJECT NOTE": "Gradle writes detailed failure reports under build/reports/tests/test/; open the HTML to inspect diffs.",
+    "NEW INSTRUCTION": "WHEN Gradle test output shows ComparisonFailure THEN rerun tests without tail to view full diffs"
+}
+
+[2025-12-28 14:24] - Updated by Junie - Error analysis
+{
+    "TYPE": "test failure",
+    "TOOL": "bash: ./gradlew test",
+    "ERROR": "JUnit ComparisonFailure: unexpected 'got Mock instead' warning",
+    "ROOT CAUSE": "Changing spec to instance with toInstance() altered PyMockType callability, triggering a type mismatch warning in tests.",
+    "PROJECT NOTE": "Edits in src/main/kotlin/.../type/PyMockTypeProvider.kt and PyMockType.kt must preserve previous callable semantics; PyMockTypeProviderFeaturesTest asserts no warning around Mock(spec=Foo).",
+    "NEW INSTRUCTION": "WHEN changing Mock spec type handling THEN run PyMockTypeProviderFeaturesTest and verify no warnings"
+}
+
+[2025-12-28 14:26] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "Gradle :test",
+    "ERROR": "ComparisonFailure in PyMockTypeProviderFeaturesTest",
+    "ROOT CAUSE": "Returning PyMockType for Mock(spec=Class) made the expression appear non-callable, triggering a callable/Mock mismatch warning.",
+    "PROJECT NOTE": "Feature tests under src/test/.../type/PyMockTypeProviderFeaturesTest.kt expect no warning highlight around Mock(spec=Foo) assignments.",
+    "NEW INSTRUCTION": "WHEN test output shows \"Expected type '(...) -> Any', got 'Mock' instead\" THEN ensure PyMockType is callable only if specType is callable"
+}
+
+[2025-12-28 14:35] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Highlighting test failed: unexpected type mismatch warning",
+    "ROOT CAUSE": "The test named 'NoWarning' still annotates mock_service with <warning>, so a warning is expected and single-test run fails when asserting no warning.",
+    "PROJECT NOTE": "In PyMockTypeProviderFeaturesTest, use <warning> tags only for warnings you intend to assert; to assert clean code, remove them and let checkHighlighting detect unexpected warnings.",
+    "NEW INSTRUCTION": "WHEN a test asserts no warning THEN remove <warning> tags around code under test"
+}
+
+[2025-12-28 14:37] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Type mismatch warning caused test failure",
+    "ROOT CAUSE": "The new test expected no warning, but PyTypeChecker still treats PyMockType as incompatible with its spec, yielding '() -> ExternalService' vs 'ExternalService'.",
+    "PROJECT NOTE": "Highlighting tests must match current behavior; until assignability is implemented, annotate the expected warning or implement PyMockType compatibility with its spec type.",
+    "NEW INSTRUCTION": "WHEN Mock(spec=T) passed to parameter typed T shows mismatch THEN implement type matching making PyMockType assignable to specType"
+}
+
+[2025-12-28 14:39] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "search_replace",
+    "ERROR": "Added interface without implementing abstract members",
+    "ROOT CAUSE": "PyMockType was changed to implement PyClassLikeType but mandatory abstract methods were not added.",
+    "PROJECT NOTE": "PyMockType.kt (src/main/kotlin/.../type/PyMockType.kt). Implementing PyClassLikeType requires many methods; avoid unless you intend to model a class-like type.",
+    "NEW INSTRUCTION": "WHEN adding interface to Kotlin class THEN add all required abstract method stubs immediately"
+}
+
+[2025-12-28 14:39] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "search_replace",
+    "ERROR": "Unimplemented abstract members after interface addition",
+    "ROOT CAUSE": "Added PyClassLikeType to PyMockType without implementing its required abstract methods, breaking compilation.",
+    "PROJECT NOTE": "Avoid extending PyClassLikeType in PyMockType unless you implement all its methods; prefer adjusting call/type compatibility instead.",
+    "NEW INSTRUCTION": "WHEN edit introduces 'does not implement abstract members' semantic errors THEN undo the edit and design a minimal alternative"
+}
+
+[2025-12-28 14:39] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "search_replace",
+    "ERROR": "Added interface caused unimplemented abstract methods compilation errors",
+    "ROOT CAUSE": "PyMockType was changed to implement PyClassLikeType without implementing its required abstract methods.",
+    "PROJECT NOTE": "Implementing PyClassLikeType in this codebase requires many methods; avoid adding it unless you also add all required implementations.",
+    "NEW INSTRUCTION": "WHEN edit adds a new interface to a Kotlin class THEN implement all required abstract methods immediately"
 }

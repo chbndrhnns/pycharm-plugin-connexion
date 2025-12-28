@@ -49,6 +49,20 @@
                          enabledByDefault="true"
                          level="ERROR"/>
 
+        <localInspection language="Python"
+                         implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyMockUnresolvedReferenceInspection"
+                         displayName="BetterPy: Unresolved Mock spec reference"
+                         groupName="Python"
+                         enabledByDefault="true"
+                         level="ERROR"/>
+
+        <localInspection language="Python"
+                         implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyMockReturnAssignmentInspection"
+                         displayName="BetterPy: Invalid return_value assignment on Mock"
+                         groupName="Python"
+                         enabledByDefault="true"
+                         level="WARNING"/>
+
         <codeInsight.lineMarkerProvider language="Python"
                                         implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.connexion.ConnexionPythonLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="JSON"
@@ -465,4 +479,10 @@
             <add-to-group group-id="EditorPopupMenu.GoTo" anchor="after" relative-to-action="FindUsages"/>
         </action>
     </actions>
+    <extensions defaultExtensionNs="Pythonid">
+        <typeProvider implementation="com.github.chbndrhnns.intellijplatformplugincopy.type.PyMockTypeProvider"
+                      order="first"/>
+        <typeCheckerExtension implementation="com.github.chbndrhnns.intellijplatformplugincopy.type.PyMockTypeCheckerExtension"/>
+    </extensions>
+
 </idea-plugin>

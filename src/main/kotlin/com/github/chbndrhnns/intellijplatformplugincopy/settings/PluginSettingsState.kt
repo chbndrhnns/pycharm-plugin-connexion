@@ -47,6 +47,7 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enableTogglePytestSkipIntention: Boolean = true,
         var enableParametrizePytestTestIntention: Boolean = true,
         var enableConvertPytestParamIntention: Boolean = true,
+        var enablePyMockTypeProvider: Boolean = true,
 
         // ---- Inspections ----
         var enablePyMissingInDunderAllInspection: Boolean = true,

@@ -1,0 +1,21 @@
+<html>
+<body>
+Reports unresolved attribute references on <code>Mock</code> objects that have a <code>spec</code>.
+<p>
+    When a <code>Mock</code> object is configured with a <code>spec</code>, it is restricted to the attributes and
+    methods present in that spec.
+    This inspection flags any attempt to access an attribute or method that does not exist in the specified class or
+    object.
+</p>
+<p>Example:</p>
+<pre><code>
+class MyClass:
+    def existing_method(self):
+        pass
+
+mock = Mock(spec=MyClass)
+mock.existing_method()  # OK
+mock.non_existent()      # Unresolved attribute reference 'non_existent' for class 'MyClass'
+</code></pre>
+</body>
+</html>

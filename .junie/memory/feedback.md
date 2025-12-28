@@ -678,3 +678,19 @@
     "NEW INSTRUCTION": "WHEN identifier matches '^__.*__$' THEN treat reference as resolved and hide intention"
 }
 
+[2025-12-28 11:22] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "mock property typing",
+    "EXPECTATION": "Attribute access on a Mock with spec should yield a Mock typed with the attribute's type, not the raw attribute type.",
+    "NEW INSTRUCTION": "WHEN resolving attribute of spec-typed Mock THEN return Mock(spec=<attribute type>)"
+}
+
+[2025-12-28 14:35] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "mock type warning",
+    "EXPECTATION": "Passing Mock(spec=ExternalService) to a parameter typed as ExternalService should not produce a type warning, and the test should assert no warning.",
+    "NEW INSTRUCTION": "WHEN adding test for Mock as argument THEN remove <warning> tags and assert clean highlighting"
+}
+

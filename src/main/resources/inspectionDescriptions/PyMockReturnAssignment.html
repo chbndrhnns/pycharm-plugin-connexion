@@ -1,0 +1,20 @@
+<html>
+<body>
+Reports invalid assignments to <code>return_value</code> on <code>Mock</code> objects when the assigned type does not
+match the expected return type of the mocked callable.
+<p>
+    When a <code>Mock</code> object is configured with a <code>spec</code> that is a callable (like a function or a
+    class),
+    this inspection checks if the value assigned to its <code>return_value</code> attribute matches the return type
+    defined in the spec.
+</p>
+<p>Example:</p>
+<pre><code>
+def get_name() -> str:
+    ...
+
+mock = Mock(spec=get_name)
+mock.return_value = 123  # Expected type 'str', got 'int' instead
+</code></pre>
+</body>
+</html>

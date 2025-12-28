@@ -1,83 +1,3 @@
-[2025-12-12 15:26] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "propose fix without editing code",
-    "MISSING STEPS": "edit code, add tests, run tests, submit",
-    "BOTTLENECK": "The agent described a patch but never applied changes or added tests.",
-    "PROJECT NOTE": "ExpectedTypeInfo.kt centralizes type extraction; modify contributor and extend existing completion tests.",
-    "NEW INSTRUCTION": "WHEN proposing code changes in answer THEN apply patch, add tests, and run targeted tests"
-}
-
-[2025-12-12 15:47] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "summarize changes",
-    "MISSING STEPS": "scan tests for conflicting expectations,confirm requirement change against existing behavior/tests",
-    "BOTTLENECK": "Requirements conflict with existing tests that expect intention inside tests.",
-    "PROJECT NOTE": "Current TogglePytestSkipIntentionTest has positive tests for function/class skip that must be removed or flipped.",
-    "NEW INSTRUCTION": "WHEN new task conflicts with existing tests THEN ask_user to confirm intended behavior"
-}
-
-[2025-12-12 18:19] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "change availability to module-only, add negative tests for functions/classes",
-    "MISSING STEPS": "implement function-level availability, implement class-level availability on class name, add availability tests per scope, align isAvailable with invoke behavior",
-    "BOTTLENECK": "Availability logic was set to module-only, contradicting scope-specific requirements.",
-    "PROJECT NOTE": "TogglePytestSkipIntention.isAvailable blocks functions/classes while invoke supports decorator toggling; tests enforce the wrong availability.",
-    "NEW INSTRUCTION": "WHEN feature has scope-specific availability rules THEN add scope tests and implement matching isAvailable"
-}
-
-[2025-12-12 18:46] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "get file structure,update status",
-    "MISSING STEPS": "-",
-    "BOTTLENECK": "Pinpointing where aliased imports were treated as exportable.",
-    "PROJECT NOTE": "There is an existing focused test suite for this inspection; extending it is straightforward.",
-    "NEW INSTRUCTION": "WHEN change targets a known file THEN open that file directly"
-}
-
-[2025-12-12 19:52] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "restate plan,excessive searching",
-    "MISSING STEPS": "implement action,implement navigator,add tests,run tests",
-    "BOTTLENECK": "Failure to integrate with TestTreeView/Run toolwindow selection APIs.",
-    "PROJECT NOTE": "Leverage AbstractCopyTestNodeAction and TestProxyExtractor patterns; add a selector for TestTreeView nodes by pytest node id.",
-    "NEW INSTRUCTION": "WHEN feature requests editor-to-test-tree navigation THEN implement editor action selecting matching TestTreeView node"
-}
-
-[2025-12-12 20:23] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "support class jump, support parametrized leaf jump, add tests, run tests",
-    "BOTTLENECK": "Node-id generation and tree matching skip classes and parametrized leaves.",
-    "PROJECT NOTE": "Extend TestTreeNodeFinder to match exact leaf using param values from decorators.",
-    "NEW INSTRUCTION": "WHEN caret is on test class or parametrize value THEN compute exact node-id and select leaf"
-}
-
-[2025-12-12 20:55] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "add tests, implement action, extract shared toggler, register action, run tests, run build",
-    "BOTTLENECK": "The plan was not executed into concrete tests or code changes.",
-    "PROJECT NOTE": "Reuse TogglePytestSkipIntention logic via a shared toggler and mirror testing patterns from TogglePytestSkipIntentionTest and PytestNodeIdGeneratorTest.",
-    "NEW INSTRUCTION": "WHEN task requests plan and tests THEN write tests and run full test suite"
-}
-
-[2025-12-12 20:55] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "explore optional inspection",
-    "MISSING STEPS": "implement intention, add resources, register intention, add tests, run tests",
-    "BOTTLENECK": "No implementation or tests were executed after planning.",
-    "PROJECT NOTE": "Follow the registration and resource patterns used by existing exception intentions.",
-    "NEW INSTRUCTION": "WHEN proposing new intention THEN implement it, add resources and tests, run full tests"
-}
-
 [2025-12-12 20:58] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -866,4 +786,94 @@
     "BOTTLENECK": "Created a new test instead of leveraging existing inspection tests.",
     "PROJECT NOTE": "There are existing tests under src/test/.../exports, e.g., PyMissingInDunderAllInspectionTest.",
     "NEW INSTRUCTION": "WHEN repository has a test for the inspection THEN extend existing test and run suite"
+}
+
+[2025-12-27 17:58] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "implement wrapper type, register extension, fix API method signature, run tests",
+    "BOTTLENECK": "Provider method signature mismatched SDK and wrapper type not implemented/registered.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN adding a PyTypeProvider THEN match SDK signatures and register extension before running tests"
+}
+
+[2025-12-27 19:13] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "design inspections, add inspections, add completion, register extensions, add tests",
+    "BOTTLENECK": "No plan for inspections/completion to enforce spec_set and return_value typing.",
+    "PROJECT NOTE": "plugin.xml shows no typeProvider/inspection/completion registrations for mocks.",
+    "NEW INSTRUCTION": "WHEN new provider, inspection, or completion is added THEN add corresponding plugin.xml registrations and behind-setting toggles immediately"
+}
+
+[2025-12-28 12:06] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "run build, run tests",
+    "BOTTLENECK": "No validation step to confirm descriptors are recognized by the build/IDE.",
+    "PROJECT NOTE": "Ensure inspection descriptor filename matches the inspection shortName (typically the class name).",
+    "NEW INSTRUCTION": "WHEN inspection registered in plugin.xml lacks descriptor THEN create descriptor HTML and run build"
+}
+
+[2025-12-28 12:13] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "edit unrelated inspection registration",
+    "MISSING STEPS": "check inspectionDescriptions, scan for all inspection shortName mismatches",
+    "BOTTLENECK": "Did not address existing plugin.xml language id errors that can hide issues.",
+    "PROJECT NOTE": "Ensure plugin.xml declares dependency on Python plugin (e.g., <depends>com.intellij.modules.python</depends>) so language id 'Python' resolves.",
+    "NEW INSTRUCTION": "WHEN inspection registration error mentions short name mismatch THEN add shortName in plugin.xml matching getShortName()"
+}
+
+[2025-12-28 14:30] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "tweak callable handling, stash baseline check",
+    "MISSING STEPS": "inspect test report, open failing test source, rerun targeted tests after edit",
+    "BOTTLENECK": "Changes were made without analyzing concrete failure diffs.",
+    "PROJECT NOTE": "Ensure spec class types are converted to instance types via PyClassType.toInstance.",
+    "NEW INSTRUCTION": "WHEN tests fail after a change THEN open test report and failing sources, then rerun targeted tests"
+}
+
+[2025-12-28 14:32] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "-",
+    "BOTTLENECK": "Used a non-existent test tool instead of running gradle via bash.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN tests need to run THEN execute ./gradlew test using bash"
+}
+
+[2025-12-28 14:33] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "add tests,run full build,verify on minimal reproduction",
+    "BOTTLENECK": "No regression test reproduced the exact caret warning scenario.",
+    "PROJECT NOTE": "Create a test that passes a Mock(spec=Type) where Type is expected to ensure no type mismatch warning.",
+    "NEW INSTRUCTION": "WHEN issue references IDE warning without failing test THEN add a minimal regression test reproducing the warning"
+}
+
+[2025-12-28 14:34] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "repeat status update",
+    "MISSING STEPS": "run full test suite, summarize results",
+    "BOTTLENECK": "Build environment noise caused ambiguous test run feedback.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN new or changed tests detected THEN run full test suite and summarize outcomes"
+}
+
+[2025-12-28 14:40] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "expand class to PyClassLikeType",
+    "MISSING STEPS": "compile project, run single test",
+    "BOTTLENECK": "Overreached by changing the type hierarchy, causing implementation explosion.",
+    "PROJECT NOTE": "Current test intentionally expects the warning; flip expectation only after true compatibility fix.",
+    "NEW INSTRUCTION": "WHEN build reports unimplemented abstract members after a change THEN undo change and apply a minimal targeted fix"
 }
