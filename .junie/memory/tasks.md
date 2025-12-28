@@ -1,23 +1,3 @@
-[2025-12-12 20:58] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "search project (duplicate),open unrelated file",
-    "MISSING STEPS": "add tests,run tests",
-    "BOTTLENECK": "No tests were actually created or executed.",
-    "PROJECT NOTE": "Reuse AbstractMethodUtils and existing inspection/quick-fix test patterns for new inspection.",
-    "NEW INSTRUCTION": "WHEN task requires creating tests THEN add test files and run all tests"
-}
-
-[2025-12-12 21:40] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "run build, add tests",
-    "BOTTLENECK": "API signature mismatch for collectActions caused compilation error before verification.",
-    "PROJECT NOTE": "Project has an existing unresolved inspection class in plugin.xml that may break builds.",
-    "NEW INSTRUCTION": "WHEN plugin.xml is edited or new Kotlin class added THEN Run Gradle compile tests and resolve any compilation errors before proceeding."
-}
-
 [2025-12-12 23:47] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -876,4 +856,24 @@
     "BOTTLENECK": "Overreached by changing the type hierarchy, causing implementation explosion.",
     "PROJECT NOTE": "Current test intentionally expects the warning; flip expectation only after true compatibility fix.",
     "NEW INSTRUCTION": "WHEN build reports unimplemented abstract members after a change THEN undo change and apply a minimal targeted fix"
+}
+
+[2025-12-28 14:51] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "run build, run tests, handle qualified names/aliases, align settings gate",
+    "BOTTLENECK": "No build/test run to validate the new inspection end-to-end.",
+    "PROJECT NOTE": "Do not gate the inspection with enablePyMockPatchReferenceContributor; use a dedicated flag or none.",
+    "NEW INSTRUCTION": "WHEN new inspection is added THEN run build and execute tests immediately"
+}
+
+[2025-12-28 15:29] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "add completion, add tests",
+    "BOTTLENECK": "No completion/variants provider for the attribute string in patch.object.",
+    "PROJECT NOTE": "Extend completion/reference to handle patch.object second argument using target type members.",
+    "NEW INSTRUCTION": "WHEN editing patch.object second argument string THEN implement completion offering target members"
 }

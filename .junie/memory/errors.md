@@ -1,3 +1,13 @@
+[2025-12-22 14:41] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "-",
+    "ERROR": "Missing intention description.html resource",
+    "ROOT CAUSE": "JumpToPytestNodeInTestTreeIntention was registered without the required description directory and files.",
+    "PROJECT NOTE": "Place description files under src/main/resources/intentionDescriptions/JumpToPytestNodeInTestTreeIntention/ (description.html, before.py.template, after.py.template as needed) and ensure plugin.xml <intentionAction> is declared.",
+    "NEW INSTRUCTION": "WHEN adding a new IntentionAction THEN create intentionDescriptions/<ClassName>/description.html (with example templates)"
+}
+
 [2025-12-22 22:36] - Updated by Junie - Error analysis
 {
     "TYPE": "test assertion",
@@ -738,32 +748,22 @@
     "NEW INSTRUCTION": "WHEN Mock(spec=T) passed to parameter typed T shows mismatch THEN implement type matching making PyMockType assignable to specType"
 }
 
-[2025-12-28 14:39] - Updated by Junie - Error analysis
+[2025-12-28 14:38] - Updated by Junie - Error analysis
 {
     "TYPE": "semantic error",
     "TOOL": "search_replace",
-    "ERROR": "Added interface without implementing abstract members",
-    "ROOT CAUSE": "PyMockType was changed to implement PyClassLikeType but mandatory abstract methods were not added.",
-    "PROJECT NOTE": "PyMockType.kt (src/main/kotlin/.../type/PyMockType.kt). Implementing PyClassLikeType requires many methods; avoid unless you intend to model a class-like type.",
-    "NEW INSTRUCTION": "WHEN adding interface to Kotlin class THEN add all required abstract method stubs immediately"
+    "ERROR": "Added PyClassLikeType without implementing abstract methods",
+    "ROOT CAUSE": "The edit made PyMockType implement PyClassLikeType but omitted mandatory overrides, causing compilation errors.",
+    "PROJECT NOTE": "PyMockType currently uses PyType and PyCallableType; avoid adding PyClassLikeType unless you implement all required methods.",
+    "NEW INSTRUCTION": "WHEN adding a new interface to a class THEN implement all required abstract methods"
 }
 
-[2025-12-28 14:39] - Updated by Junie - Error analysis
+[2025-12-28 14:51] - Updated by Junie - Error analysis
 {
-    "TYPE": "semantic error",
-    "TOOL": "search_replace",
-    "ERROR": "Unimplemented abstract members after interface addition",
-    "ROOT CAUSE": "Added PyClassLikeType to PyMockType without implementing its required abstract methods, breaking compilation.",
-    "PROJECT NOTE": "Avoid extending PyClassLikeType in PyMockType unless you implement all its methods; prefer adjusting call/type compatibility instead.",
-    "NEW INSTRUCTION": "WHEN edit introduces 'does not implement abstract members' semantic errors THEN undo the edit and design a minimal alternative"
-}
-
-[2025-12-28 14:39] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "search_replace",
-    "ERROR": "Added interface caused unimplemented abstract methods compilation errors",
-    "ROOT CAUSE": "PyMockType was changed to implement PyClassLikeType without implementing its required abstract methods.",
-    "PROJECT NOTE": "Implementing PyClassLikeType in this codebase requires many methods; avoid adding it unless you also add all required implementations.",
-    "NEW INSTRUCTION": "WHEN edit adds a new interface to a Kotlin class THEN implement all required abstract methods immediately"
+    "TYPE": "env/setup",
+    "TOOL": "plugin.xml registration",
+    "ERROR": "Cannot resolve language id 'Python' in plugin.xml",
+    "ROOT CAUSE": "Python language is unavailable because the plugin/module dependency is not declared or loaded.",
+    "PROJECT NOTE": "Declare the Python plugin dependency in src/main/resources/META-INF/plugin.xml, e.g., <depends>com.intellij.modules.python</depends> (or the correct Python plugin id for this platform).",
+    "NEW INSTRUCTION": "WHEN adding plugin.xml extensions for Python language THEN declare Python plugin/module dependency in plugin.xml"
 }

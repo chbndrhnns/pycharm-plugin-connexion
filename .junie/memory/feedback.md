@@ -694,3 +694,11 @@
     "NEW INSTRUCTION": "WHEN adding test for Mock as argument THEN remove <warning> tags and assert clean highlighting"
 }
 
+[2025-12-28 14:44] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "test expectation",
+    "EXPECTATION": "Passing Mock(spec=ExternalService) to a parameter typed ExternalService should not produce a warning; the test should assert clean highlighting.",
+    "NEW INSTRUCTION": "WHEN writing the mock-argument test THEN do not include <warning> tags on the argument"
+}
+

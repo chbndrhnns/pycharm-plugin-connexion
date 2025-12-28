@@ -32,6 +32,8 @@
                                 implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.completion.PyExpectedTypeCompletionContributor"/>
         <completion.contributor language="Python"
                                 implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.completion.PyNamedArgumentFromScopeCompletionContributor"/>
+        <completion.contributor language="Python"
+                                implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.completion.PyMockPatchObjectAttributeCompletionContributor"/>
         <psi.referenceContributor language="Python"
                                   implementation="com.github.chbndrhnns.intellijplatformplugincopy.psi.PyMockPatchReferenceContributor"/>
         <psi.referenceContributor language="Python"
@@ -62,6 +64,13 @@
                          groupName="Python"
                          enabledByDefault="true"
                          level="WARNING"/>
+
+        <localInspection language="Python"
+                         implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyMockPatchObjectAttributeInspection"
+                         displayName="BetterPy: Unresolved patch.object attribute"
+                         groupName="Python"
+                         enabledByDefault="true"
+                         level="ERROR"/>
 
         <codeInsight.lineMarkerProvider language="Python"
                                         implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.connexion.ConnexionPythonLineMarkerProvider"/>
