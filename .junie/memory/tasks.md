@@ -1,13 +1,3 @@
-[2025-12-12 23:47] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "switch to EDT before write, wrap write in invokeAndWait",
-    "BOTTLENECK": "Write actions executed off EDT violated TransactionGuard.",
-    "PROJECT NOTE": "PytestSkipToggler uses PyUtil.addDecorator which must run under EDT transaction.",
-    "NEW INSTRUCTION": "WHEN background read resolves PSI target THEN invokeAndWait on EDT, then run WriteCommandAction for PSI edits"
-}
-
 [2025-12-13 22:46] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -876,4 +866,14 @@
     "BOTTLENECK": "No completion/variants provider for the attribute string in patch.object.",
     "PROJECT NOTE": "Extend completion/reference to handle patch.object second argument using target type members.",
     "NEW INSTRUCTION": "WHEN editing patch.object second argument string THEN implement completion offering target members"
+}
+
+[2025-12-28 22:15] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "restate plan",
+    "MISSING STEPS": "add tests, run tests",
+    "BOTTLENECK": "No tests executed to validate source-root-prefixed first-segment completions.",
+    "PROJECT NOTE": "Leverage SourceRootPrefixProviderTest and MyPlatformTestCase to set source roots and assert unittest.patch completions starting with the source root.",
+    "NEW INSTRUCTION": "WHEN altering patch completion or resolution THEN add tests for source-root-prefixed first-segment completions"
 }

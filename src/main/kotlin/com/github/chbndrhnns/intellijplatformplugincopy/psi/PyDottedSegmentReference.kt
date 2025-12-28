@@ -1,7 +1,13 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.psi
 
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
+import com.intellij.codeInsight.lookup.LookupElementBuilder
+import com.intellij.openapi.roots.ProjectFileIndex
+import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.TextRange
+import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.psi.PsiElementResolveResult
+import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiPolyVariantReferenceBase
 import com.intellij.psi.ResolveResult
 import com.jetbrains.python.psi.PyStringLiteralExpression
@@ -34,17 +40,42 @@ class PyDottedSegmentReference(
 
     override fun getVariants(): Array<Any> {
         val segmentStartInPath = rangeInElement.startOffset - fullPathOffsetInElement
-        
+
         if (segmentStartInPath <= 0) {
-            // First segment or invalid - top-level module completion not supported
-            return emptyArray()
+            return topLevelVariants()
         }
-        
+
         // Check for preceding dot
         if (fullPath[segmentStartInPath - 1] != '.') return emptyArray()
         
         val prefix = fullPath.substring(0, segmentStartInPath - 1)
         val parent = PyResolveUtils.resolveDottedName(prefix, element, resolveImported)
         return PyResolveUtils.getVariants(parent)
+    }
+
+    private fun topLevelVariants(): Array<Any> {
+        val result = LinkedHashSet<Any>()
+        val project = element.project
+        val psiManager = PsiManager.getInstance(project)
+        val fileIndex = ProjectFileIndex.getInstance(project)
+        val rootManager = ProjectRootManager.getInstance(project)
+        val includeSourceRootPrefix = PluginSettingsState.instance().state.enableRestoreSourceRootPrefix
+
+        rootManager.contentSourceRoots.forEach { sourceRoot ->
+            val psiDirectory = psiManager.findDirectory(sourceRoot) ?: return@forEach
+            val contentRoot = fileIndex.getContentRootForFile(sourceRoot)
+            val prefixPath = if (includeSourceRootPrefix && contentRoot != null) {
+                VfsUtilCore.getRelativePath(sourceRoot, contentRoot, '.')
+            } else null
+
+            if (!prefixPath.isNullOrEmpty()) {
+                val firstComponent = prefixPath.substringBefore('.')
+                result.add(LookupElementBuilder.create(firstComponent).withIcon(psiDirectory.getIcon(0)))
+            } else {
+                result.addAll(PyResolveUtils.getVariants(psiDirectory))
+            }
+        }
+
+        return result.toTypedArray()
     }
 }

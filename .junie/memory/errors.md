@@ -1,23 +1,3 @@
-[2025-12-22 14:41] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "-",
-    "ERROR": "Missing intention description.html resource",
-    "ROOT CAUSE": "JumpToPytestNodeInTestTreeIntention was registered without the required description directory and files.",
-    "PROJECT NOTE": "Place description files under src/main/resources/intentionDescriptions/JumpToPytestNodeInTestTreeIntention/ (description.html, before.py.template, after.py.template as needed) and ensure plugin.xml <intentionAction> is declared.",
-    "NEW INSTRUCTION": "WHEN adding a new IntentionAction THEN create intentionDescriptions/<ClassName>/description.html (with example templates)"
-}
-
-[2025-12-22 22:36] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Caret element not found; imported symbol unresolved",
-    "ROOT CAUSE": "PyResolveUtils.findMember only checks top-level declarations in a PyFile and ignores names brought in via import statements, so 'target_module.MyImportedClass' cannot resolve.",
-    "PROJECT NOTE": "Update PyResolveUtils.findMember to also resolve symbols imported into a module (handle both 'from source import Name' and 'import source as alias', including aliasing), not just classes/functions/attributes defined in the file.",
-    "NEW INSTRUCTION": "WHEN top-level member lookup returns null in module THEN search imported names and resolve their targets"
-}
-
 [2025-12-22 22:37] - Updated by Junie - Error analysis
 {
     "TYPE": "missing context",
@@ -766,4 +746,34 @@
     "ROOT CAUSE": "Python language is unavailable because the plugin/module dependency is not declared or loaded.",
     "PROJECT NOTE": "Declare the Python plugin dependency in src/main/resources/META-INF/plugin.xml, e.g., <depends>com.intellij.modules.python</depends> (or the correct Python plugin id for this platform).",
     "NEW INSTRUCTION": "WHEN adding plugin.xml extensions for Python language THEN declare Python plugin/module dependency in plugin.xml"
+}
+
+[2025-12-28 22:09] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "apply_patch",
+    "ERROR": "Malformed patch content (truncated/ellipsis)",
+    "ROOT CAUSE": "The submitted patch included an unfinished method and an ellipsis placeholder, so the unified diff could not be parsed.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN patch text contains ellipsis or misses *** End Patch THEN submit a complete unified diff without placeholders"
+}
+
+[2025-12-28 22:10] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "apply_patch",
+    "ERROR": "Malformed patch with truncated hunk/ellipsis",
+    "ROOT CAUSE": "The provided patch snippet for the test file was incomplete and contained an ellipsis, so the patch parser could not apply it.",
+    "PROJECT NOTE": "Edits to tests under src/test/kotlin/... must be supplied as complete unified diffs; partial snippets or ellipses are not accepted by apply_patch.",
+    "NEW INSTRUCTION": "WHEN apply_patch patch shows ellipsis or incomplete hunks THEN provide a complete valid unified diff"
+}
+
+[2025-12-28 22:15] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "apply_patch",
+    "ERROR": "Malformed patch: truncated diff without End Patch marker",
+    "ROOT CAUSE": "The apply_patch request ended mid-hunk with ellipsis and lacked the *** End Patch terminator.",
+    "PROJECT NOTE": "Tests live under src/test/kotlin/...; ensure patches fully specify updated hunks for those files.",
+    "NEW INSTRUCTION": "WHEN composing apply_patch diff THEN include complete hunks and the closing *** End Patch marker"
 }

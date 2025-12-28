@@ -52,18 +52,29 @@ class PyMockPatchReferenceContributor : PsiReferenceContributor() {
         val startOffset = valueRange.startOffset
 
         val refs = mutableListOf<PsiReference>()
+
+        if (text.isEmpty()) {
+            val end = minOf(startOffset + 1, literal.textLength)
+            refs.add(PyDottedSegmentReference(literal, TextRange(startOffset, end), text, startOffset))
+            return refs
+        }
+
         var currentIndex = 0
 
         while (currentIndex < text.length) {
             val nextDot = text.indexOf('.', currentIndex)
             val end = if (nextDot == -1) text.length else nextDot
 
-            if (end > currentIndex) {
-                val range = TextRange(startOffset + currentIndex, startOffset + end)
-                refs.add(PyDottedSegmentReference(literal, range, text, startOffset))
-            }
+            val range = TextRange(startOffset + currentIndex, startOffset + end)
+            refs.add(PyDottedSegmentReference(literal, range, text, startOffset))
 
             currentIndex = end + 1
+        }
+
+        if (text.last() == '.') {
+            val edge = startOffset + text.length
+            val end = minOf(edge + 1, literal.textLength)
+            refs.add(PyDottedSegmentReference(literal, TextRange(edge, end), text, startOffset))
         }
         return refs
     }

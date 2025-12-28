@@ -1,7 +1,9 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.psi
 
+import com.intellij.psi.PsiPolyVariantReference
 import com.jetbrains.python.psi.PyClass
 import com.jetbrains.python.psi.PyFunction
+import fixtures.SettingsTestUtils.withPluginSettings
 import fixtures.TestBase
 
 class PyMockPatchReferenceTest : TestBase() {
@@ -29,7 +31,7 @@ class PyMockPatchReferenceTest : TestBase() {
         """.trimIndent()
         )
 
-        val element = myFixture.getElementAtCaret()
+        val element = myFixture.elementAtCaret
         assertInstanceOf(element, PyFunction::class.java)
         assertEquals("exists", (element as PyFunction).name)
     }
@@ -52,7 +54,7 @@ class PyMockPatchReferenceTest : TestBase() {
         """.trimIndent()
         )
 
-        val element = myFixture.getElementAtCaret()
+        val element = myFixture.elementAtCaret
         assertInstanceOf(element, PyClass::class.java)
         assertEquals("MyClass", (element as PyClass).name)
     }
@@ -113,6 +115,127 @@ class PyMockPatchReferenceTest : TestBase() {
         assertTrue(variants.contains("target_func"))
     }
 
+    fun testCompletionRespectsSourceRootPrefix() {
+        myFixture.addFileToProject("tests/__init__.py", "")
+        myFixture.addFileToProject(
+            "tests/test_.py", """
+            class Class:
+                def method(self):
+                    pass
+        """.trimIndent()
+        )
+
+        runWithSourceRoots(listOf(myFixture.findFileInTempDir("tests")!!)) {
+            val prefixFile = myFixture.addFileToProject(
+                "tests/patch_prefix.py",
+                """
+                from unittest.mock import patch
+
+                with patch(''):
+                    pass
+            """.trimIndent()
+            )
+
+            myFixture.configureFromExistingVirtualFile(prefixFile.virtualFile)
+            myFixture.editor.caretModel.moveToOffset(
+                myFixture.editor.document.text.indexOf("patch('") + "patch('".length
+            )
+
+            val prefixVariants = myFixture.completeBasic()?.map { it.lookupString } ?: emptyList()
+            assertTrue(prefixVariants.contains("tests"))
+
+            val moduleFile = myFixture.addFileToProject(
+                "tests/patch_module.py",
+                """
+                from unittest.mock import patch
+
+                with patch('tests.'):
+                    pass
+            """.trimIndent()
+            )
+
+            myFixture.configureFromExistingVirtualFile(moduleFile.virtualFile)
+            myFixture.editor.caretModel.moveToOffset(
+                myFixture.editor.document.text.indexOf("patch('") + "patch('".length + "tests.".length
+            )
+
+            val moduleVariants = myFixture.completeBasic()?.map { it.lookupString } ?: emptyList()
+            assertTrue("Module variants: $moduleVariants", moduleVariants.contains("test_"))
+
+            val symbolFile = myFixture.addFileToProject(
+                "tests/patch_symbol.py",
+                """
+                from unittest.mock import patch
+
+                with patch('tests.test_.'):
+                    pass
+            """.trimIndent()
+            )
+
+            myFixture.configureFromExistingVirtualFile(symbolFile.virtualFile)
+            myFixture.editor.caretModel.moveToOffset(
+                myFixture.editor.document.text.indexOf("patch('") + "patch('".length + "tests.test_.".length
+            )
+
+            val symbolVariants = myFixture.completeBasic()?.map { it.lookupString } ?: emptyList()
+            assertTrue("Symbol variants: $symbolVariants", symbolVariants.contains("Class"))
+        }
+    }
+
+    fun testReferenceWithoutSourceRootPrefixIsUnresolvedWhenPrefixRequired() {
+        myFixture.addFileToProject("tests/__init__.py", "")
+        myFixture.addFileToProject(
+            "tests/test_.py", """
+            class Class:
+                pass
+        """.trimIndent()
+        )
+
+        runWithSourceRoots(listOf(myFixture.findFileInTempDir("tests")!!)) {
+            myFixture.configureByText(
+                "test_unresolved_prefix_required.py",
+                """
+                from unittest.mock import patch
+
+                with patch('test_.Cla<caret>ss'):
+                    pass
+            """.trimIndent()
+            )
+
+            val ref = myFixture.file.findReferenceAt(myFixture.editor.caretModel.offset) as? PsiPolyVariantReference
+            assertNotNull(ref)
+            assertEmpty(ref!!.multiResolve(false))
+        }
+    }
+
+    fun testReferenceWithSourceRootPrefixIsUnresolvedWhenPrefixDisabled() {
+        myFixture.addFileToProject("tests/__init__.py", "")
+        myFixture.addFileToProject(
+            "tests/test_.py", """
+            class Class:
+                pass
+        """.trimIndent()
+        )
+
+        withPluginSettings({ enableRestoreSourceRootPrefix = false }) {
+            runWithSourceRoots(listOf(myFixture.findFileInTempDir("tests")!!)) {
+                myFixture.configureByText(
+                    "test_unresolved_prefix_disabled.py",
+                    """
+                    from unittest.mock import patch
+
+                    with patch('tests.test_.Cla<caret>ss'):
+                        pass
+                """.trimIndent()
+                )
+
+                val ref = myFixture.file.findReferenceAt(myFixture.editor.caretModel.offset) as? PsiPolyVariantReference
+                assertNotNull(ref)
+                assertEmpty(ref!!.multiResolve(false))
+            }
+        }
+    }
+
     fun testResolveImportedSymbol() {
         // Define the symbol that will be imported
         myFixture.addFileToProject("source_module.py", "class MyImportedClass: pass")
@@ -131,7 +254,7 @@ class PyMockPatchReferenceTest : TestBase() {
         """.trimIndent()
         )
 
-        val element = myFixture.getElementAtCaret()
+        val element = myFixture.elementAtCaret
         assertInstanceOf(element, PyClass::class.java)
         assertEquals("MyImportedClass", (element as PyClass).name)
     }
