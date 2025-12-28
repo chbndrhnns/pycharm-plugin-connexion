@@ -28,6 +28,7 @@ def test_():
 
 ## Pending Features
 
+- [ ] feat: Complete to FQN in string for mock.patch("")
 - [ ] feat: Re-use import for qualified names
 - [ ] feat: Discover if pydantic v2 is installed and show parameter object option only in this case
 - [ ] feat: If callable is expected, complete without parens
