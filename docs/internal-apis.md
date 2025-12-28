@@ -9,7 +9,17 @@
   @com.intellij.openapi.util.IntellijInternalApi annotation and indicates that the class is not supposed to be used in
   client code.
 
-- [ ] #Internal method com.jetbrains.python.psi.PyImportElement.resolve() invocation
+- [-] #Internal method com.intellij.util.SlowOperations.knownIssue(String) invocation
+  Internal method com.intellij.util.SlowOperations.knownIssue(java.lang.String ytIssueId) :
+  com.intellij.openapi.application.AccessToken is invoked in
+  com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.CustomTypeApplier.startInlineRename$lambda$6(
+  SmartPsiElementPointer, Project, Editor) : void. This method is marked with
+  @org.jetbrains.annotations.ApiStatus.Internal annotation or @com.intellij.openapi.util.IntellijInternalApi annotation
+  and indicates that the method is not supposed to be used in client code.
+
+## Done
+
+- [x] #Internal method com.jetbrains.python.psi.PyImportElement.resolve() invocation
   Internal method com.jetbrains.python.psi.PyImportElement.resolve() : com.intellij.psi.PsiElement is invoked in
   com.github.chbndrhnns.intellijplatformplugincopy.psi.PyResolveUtils.findMember(PsiElement, String, boolean) :
   PsiElement. This method is marked with @org.jetbrains.annotations.ApiStatus.Internal annotation or
@@ -22,26 +32,6 @@
   @com.intellij.openapi.util.IntellijInternalApi annotation and indicates that the method is not supposed to be used in
   client code.
 
-- [ ] #Internal method com.intellij.codeInsight.daemon.impl.IntentionMenuContributor.collectActions(Editor, PsiFile,
-  ShowIntentionsPass.IntentionsInfo, int, int) is overridden
-  Internal method com.intellij.codeInsight.daemon.impl.IntentionMenuContributor.collectActions(
-  com.intellij.openapi.editor.Editor arg0, com.intellij.psi.PsiFile arg1,
-  com.intellij.codeInsight.daemon.impl.ShowIntentionsPass.IntentionsInfo arg2, int arg3, int arg4) : void is overridden
-  in class
-  com.github.chbndrhnns.intellijplatformplugincopy.intention.suppressor.SuppressSuggestedRefactoringIntentionMenuContributor.
-  This method is marked with @org.jetbrains.annotations.ApiStatus.Internal annotation or
-  @com.intellij.openapi.util.IntellijInternalApi annotation and indicates that the method is not supposed to be used in
-  client code.
-
-- [ ] #Internal method com.intellij.util.SlowOperations.knownIssue(String) invocation
-  Internal method com.intellij.util.SlowOperations.knownIssue(java.lang.String ytIssueId) :
-  com.intellij.openapi.application.AccessToken is invoked in
-  com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.CustomTypeApplier.startInlineRename$lambda$6(
-  SmartPsiElementPointer, Project, Editor) : void. This method is marked with
-  @org.jetbrains.annotations.ApiStatus.Internal annotation or @com.intellij.openapi.util.IntellijInternalApi annotation
-  and indicates that the method is not supposed to be used in client code.
-
-## Done
 
 - [x] #Internal class com.jetbrains.python.psi.types.PyTypeUtil reference
   Internal class com.jetbrains.python.psi.types.PyTypeUtil is referenced in

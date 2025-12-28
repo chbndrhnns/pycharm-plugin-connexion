@@ -17,6 +17,7 @@ import com.jetbrains.python.psi.PyClass
 import com.jetbrains.python.psi.PyFile
 import com.jetbrains.python.psi.PyFromImportStatement
 import com.jetbrains.python.psi.PyImportStatement
+import com.jetbrains.python.psi.resolve.RatedResolveResult
 
 object PyResolveUtils {
     fun resolveDottedName(name: String, context: PsiElement, resolveImported: Boolean = true): PsiElement? {
@@ -135,7 +136,8 @@ object PyResolveUtils {
                     for (el in stmt.importElements) {
                         val visibleName = el.asName ?: el.importedQName?.lastComponent
                         if (visibleName == name) {
-                            return el.resolve()
+                            val results = el.multiResolve()
+                            return RatedResolveResult.sorted(results)[0].element
                         }
                     }
                 }
@@ -146,7 +148,8 @@ object PyResolveUtils {
                     for (el in stmt.importElements) {
                         val visibleName = el.asName ?: el.importedQName?.firstComponent
                         if (visibleName == name) {
-                            return el.resolve()
+                            val results = el.multiResolve()
+                            return RatedResolveResult.sorted(results)[0].element
                         }
                     }
                 }
