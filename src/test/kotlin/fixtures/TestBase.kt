@@ -68,6 +68,7 @@ abstract class TestBase : MyPlatformTestCase() {
                 enableToggleTypeAliasIntention = true,
                 enableExportSymbolToTargetIntention = true,
                 enablePyPackageRunConfigurationAction = true,
+                enableRenameToSelfFilter = true,
                 defaultParameterObjectBaseType = "dataclass",
             ),
         )
