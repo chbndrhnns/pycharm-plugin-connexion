@@ -92,7 +92,9 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
                 if (stmt is PyFromImportStatement) {
                     for (elt in stmt.importElements) {
                         if (elt.asName != null) {
-                            val resolved = elt.resolve()
+                            val result = elt.multiResolve()
+                            val resolved = result.firstOrNull()?.element as? PyClass
+
                             if (resolved != null && resolved.isEquivalentTo(pyClass)) {
                                 val alias = elt.visibleName
                                 if (alias != null) {
