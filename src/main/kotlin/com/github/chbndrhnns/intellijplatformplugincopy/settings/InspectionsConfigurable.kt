@@ -34,6 +34,14 @@ class InspectionsConfigurable : BoundConfigurable("Inspections"), Configurable.W
                     .bindSelected(settings::enableAbstractMethodNotImplementedInspection)
             }
             row {
+                checkBox("‘Constant should be Final’ inspection")
+                    .bindSelected(settings::enableConstantFinalInspection)
+            }
+            row {
+                checkBox("‘Shadowing standard library module’ inspection")
+                    .bindSelected(settings::enableShadowingStdlibModuleInspection)
+            }
+            row {
                 checkBox("'Unresolved reference as error' inspection")
                     .bindSelected(settings::enableUnresolvedReferenceAsErrorInspection)
             }

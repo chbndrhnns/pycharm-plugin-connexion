@@ -85,12 +85,24 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                     .bindSelected(settings::enableParametrizePytestTestIntention)
             }
             row {
+                checkBox("‘Convert pytest parameter’ intention")
+                    .bindSelected(settings::enableConvertPytestParamIntention)
+            }
+            row {
+                checkBox("‘PyMock’ type provider")
+                    .bindSelected(settings::enablePyMockTypeProvider)
+            }
+            row {
                 checkBox("‘Strip signature type annotations’ intention")
                     .bindSelected(settings::enableStripSignatureTypeAnnotationsIntention)
             }
             row {
                 checkBox("Hide ‘Suggested Refactoring: Update … to reflect signature change’ intention")
                     .bindSelected(settings::suppressSuggestedRefactoringSignatureChangeIntention)
+            }
+            row {
+                checkBox("‘Rename to self’ intention filter")
+                    .bindSelected(settings::enableRenameToSelfFilter)
             }
             row {
                 checkBox("‘Add run configuration with package name’ gutter action")

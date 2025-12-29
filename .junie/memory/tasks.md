@@ -1,23 +1,3 @@
-[2025-12-14 00:41] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "register plugin.xml, add tests, run tests",
-    "BOTTLENECK": "Listener and intention were not registered, so feature cannot be invoked or tested.",
-    "PROJECT NOTE": "Register SMTRunnerEventsListener and intentionAction in plugin.xml following existing inspection/intentions patterns.",
-    "NEW INSTRUCTION": "WHEN creating a new intention or listener THEN register in plugin.xml and add tests, then run full suite"
-}
-
-[2025-12-14 13:52] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "determine location url format,add tests,validate mapping end-to-end",
-    "BOTTLENECK": "Incorrect location URL format broke failure-to-editor mapping.",
-    "PROJECT NOTE": "Real pytest URLs look like python</Users/jo/PyCharmMiscProject/tests>://test_fail.test_; prefer SMTestProxy.getLocationUrl or PythonTestLocationProvider format.",
-    "NEW INSTRUCTION": "WHEN computing pytest location URL THEN mirror PythonTestLocationProvider format exactly"
-}
-
 [2025-12-14 16:18] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -876,4 +856,24 @@
     "BOTTLENECK": "Old contributor class and tests were not removed and tests not re-run.",
     "PROJECT NOTE": "-",
     "NEW INSTRUCTION": "WHEN replacing IntentionMenuContributor with IntentionActionFilter THEN delete old contributor class and tests"
+}
+
+[2025-12-29 10:47] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "search specific symbols",
+    "MISSING STEPS": "open settings state,inventory settings properties,cross-check bindings",
+    "BOTTLENECK": "Did not enumerate all properties from PluginSettingsState.kt before checking UI bindings.",
+    "PROJECT NOTE": "Configurables are split by category; map settings via bindSelected/bindItem usages.",
+    "NEW INSTRUCTION": "WHEN comparing settings to configurables THEN open entire state file and list all properties"
+}
+
+[2025-12-29 10:53] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "update settings dialog,wire bindings,run build,add tests",
+    "BOTTLENECK": "Toggles were identified but not added to any Configurable UI.",
+    "PROJECT NOTE": "Add bound checkboxes in IntentionsConfigurable, InspectionsConfigurable, and EditorActionsConfigurable for the listed flags.",
+    "NEW INSTRUCTION": "WHEN a settings state flag lacks a dialog toggle THEN add a bound checkbox in the relevant Configurable class"
 }

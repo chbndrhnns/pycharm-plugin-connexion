@@ -35,6 +35,10 @@ class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
                     .bindSelected(settings::enableCopyPytestNodeIdsAction)
             }
             row {
+                checkBox("‘Copy Pytest Node ID’ action (editor)")
+                    .bindSelected(settings::enableCopyPytestNodeIdFromEditorAction)
+            }
+            row {
                 checkBox("‘Copy FQNs’ action (Test Tree)")
                     .bindSelected(settings::enableCopyFQNsAction)
             }
