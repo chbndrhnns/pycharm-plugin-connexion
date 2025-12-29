@@ -1,13 +1,3 @@
-[2025-12-13 23:50] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "review patch, add project service, update plugin.xml, register extension points, register resource-bundle, implement import provider, add settings UI, run build/tests",
-    "BOTTLENECK": "plugin.xml registration and integration steps were skipped, stalling functional wiring",
-    "PROJECT NOTE": "plugin.xml shows Python language id issues; verify proper Python plugin dependencies and IDs",
-    "NEW INSTRUCTION": "WHEN adding service, action, or extension classes THEN update plugin.xml to register services, actions, extensions, and resource bundle"
-}
-
 [2025-12-14 00:41] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -876,4 +866,14 @@
     "BOTTLENECK": "No compile/test run to verify refactor correctness.",
     "PROJECT NOTE": "ProcessHighlights could use the target range offsets instead of full document for efficiency.",
     "NEW INSTRUCTION": "WHEN refactoring platform API usages THEN run build to verify compilation"
+}
+
+[2025-12-29 10:07] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "remove dead code,run tests",
+    "BOTTLENECK": "Old contributor class and tests were not removed and tests not re-run.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN replacing IntentionMenuContributor with IntentionActionFilter THEN delete old contributor class and tests"
 }

@@ -1,23 +1,3 @@
-[2025-12-22 22:37] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "getElementAtCaret could not find element at caret",
-    "ROOT CAUSE": "Imported symbols are not considered in resolution, so patch string segment didn't resolve.",
-    "PROJECT NOTE": "Update src/main/kotlin/.../psi/PyResolveUtils.kt findMember to resolve names brought in via from-import and import-as in the target module.",
-    "NEW INSTRUCTION": "WHEN resolving module member in PyResolveUtils.findMember THEN include names imported via from/import-as"
-}
-
-[2025-12-22 22:38] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Element at caret not found",
-    "ROOT CAUSE": "Reference resolution ignores imported symbols; PyResolveUtils.findMember only checks top-level declarations.",
-    "PROJECT NOTE": "In src/main/kotlin/.../psi/PyResolveUtils.kt, extend findMember to resolve names brought in via 'import' and 'from ... import ...' (and consider __all__).",
-    "NEW INSTRUCTION": "WHEN resolving module members in PyResolveUtils.findMember THEN include names imported via import statements"
-}
-
 [2025-12-22 22:38] - Updated by Junie - Error analysis
 {
     "TYPE": "test assertion",
@@ -776,4 +756,24 @@
     "ROOT CAUSE": "The patch introduced new code that triggered unresolved 'com.intellij' references in the edited file, indicating broken or mismatched imports after the edit.",
     "PROJECT NOTE": "Edits to PyResolveUtils.kt often require consistent IntelliJ and Python SDK imports; verify all added types are imported and no package/import lines were malformed.",
     "NEW INSTRUCTION": "WHEN apply_patch returns semantic unresolved imports THEN open edited file and fix or restore correct imports"
+}
+
+[2025-12-29 10:07] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "run_test",
+    "ERROR": "Missing j.u.l LogManager config file for tests",
+    "ROOT CAUSE": "The test JVM expects test-log.properties in the SDK cache path, which is absent.",
+    "PROJECT NOTE": "Configure a logging properties file for tests via Gradle (test.jvmArgs) or add a minimal test-log.properties to test resources and point to it.",
+    "NEW INSTRUCTION": "WHEN run_test logs missing j.u.l LogManager config THEN set -Djava.util.logging.config.file to a valid properties file"
+}
+
+[2025-12-29 10:07] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "search_replace",
+    "ERROR": "plugin.xml: Cannot resolve language id 'Python'",
+    "ROOT CAUSE": "plugin.xml registers Python-language EPs without declaring the Python module/plugin dependency.",
+    "PROJECT NOTE": "Add <depends>com.intellij.modules.python</depends> (or the appropriate Python plugin id) to plugin.xml before using language=\"Python\" in extensions.",
+    "NEW INSTRUCTION": "WHEN plugin.xml reports unknown 'Python' language THEN add <depends>com.intellij.modules.python</depends> to plugin.xml"
 }

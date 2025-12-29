@@ -369,9 +369,8 @@
             <category>Test</category>
         </intentionAction>
 
-        <intentionMenuContributor
-                implementation="com.github.chbndrhnns.intellijplatformplugincopy.intention.suppressor.SuppressSuggestedRefactoringIntentionMenuContributor"
-                order="last"/>
+        <daemon.intentionActionFilter
+                implementation="com.github.chbndrhnns.intellijplatformplugincopy.intention.suppressor.SuppressSuggestedRefactoringIntentionActionFilter"/>
 
         <daemon.intentionActionFilter
                 implementation="com.github.chbndrhnns.intellijplatformplugincopy.intention.suppressor.RenameToSelfFilter"/>
