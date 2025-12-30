@@ -1,13 +1,3 @@
-[2025-12-22 22:50] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Repro tests failed: inspection suggests fix in private package",
-    "ROOT CAUSE": "The inspection only checks the immediate parent package and still offers 'Make symbol public' for private packages instead of skipping or looking up to a public package.",
-    "PROJECT NOTE": "Update src/main/kotlin/com/github/chbndrhnns/intellijplatformplugincopy/exports/PyPrivateModuleImportInspection.kt to ignore private packages and, if needed, search ancestor public packages for __all__ exports (see PyUseExportedSymbolFromPackageQuickFix).",
-    "NEW INSTRUCTION": "WHEN parent package name starts with '_' THEN suppress 'Make symbol public' quick fix"
-}
-
 [2025-12-22 22:58] - Updated by Junie - Error analysis
 {
     "TYPE": "semantic error",
@@ -776,4 +766,14 @@
     "ROOT CAUSE": "FQN construction prepends the source root prefix even when the target already starts with it.",
     "PROJECT NOTE": "Adjust FQN generation (e.g., in getFQN/PyMockPatchReplaceWithFQNQuickFix) to detect existing source root prefix and avoid duplicating it; also review topLevelVariants to ensure it doesn’t reintroduce the prefix when already present.",
     "NEW INSTRUCTION": "WHEN computed FQN already starts with source root prefix THEN do not prepend prefix again"
+}
+
+[2025-12-30 15:15] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "search_replace",
+    "ERROR": "Unresolved extension points in getDependencies",
+    "ROOT CAUSE": "getDependencies lists raw EP strings not available in this SDK, causing unresolved EP errors.",
+    "PROJECT NOTE": "In settings/ImportsProjectViewConfigurable.getDependencies, avoid raw EP ids like 'Pythonid.*' or 'com.intellij.lang.psiStructureViewFactory'; remove them or use available EP_NAME constants from the SDK/Python plugin only.",
+    "NEW INSTRUCTION": "WHEN getDependencies lists unresolved EP strings THEN replace with valid EP_NAME constants or remove entries"
 }

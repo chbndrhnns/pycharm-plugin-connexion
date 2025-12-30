@@ -19,7 +19,7 @@ class MyPrivateMembersFilter : FileStructureFilter {
     }
 
     override fun getPresentation(): ActionPresentation {
-        return ActionPresentationData("Show Private Members", "Show or hide private members", AllIcons.Nodes.Private)
+        return ActionPresentationData("BetterPy: Show Private Members", "Show or hide private members", AllIcons.Nodes.Private)
     }
 
     override fun getName(): String {
@@ -27,7 +27,7 @@ class MyPrivateMembersFilter : FileStructureFilter {
     }
 
     override fun getCheckBoxText(): String {
-        return "Show private members"
+        return "BetterPy: Show private members"
     }
 
     override fun getShortcut(): Array<Shortcut> {

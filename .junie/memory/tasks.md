@@ -867,3 +867,14 @@
     "PROJECT NOTE": "Decide inclusion by the file containing the import usage (in content) rather than the declaration file.",
     "NEW INSTRUCTION": "WHEN symbol declaration is outside project content THEN suggest FQNs from in-project import usages only"
 }
+
+[2025-12-30 15:15] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "update docs",
+    "BOTTLENECK": "Only code labels were updated; docs were not reviewed for consistency.",
+    "PROJECT NOTE": "There are markdown docs/specs about structure view that may need the same prefix.",
+    "NEW INSTRUCTION": "WHEN task affects user-visible labels THEN search docs and specs and update matching text"
+}
+
