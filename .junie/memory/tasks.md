@@ -1,33 +1,3 @@
-[2025-12-16 10:10] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "open missing file,broad code search",
-    "MISSING STEPS": "instrument logging,add tests,ask user",
-    "BOTTLENECK": "No verification of which PSI element the caret selection returned.",
-    "PROJECT NOTE": "Focus on CaretSelection.findExpressionAtCaret for PyKeywordArgument; it should return the value expression when caret is on the keyword name.",
-    "NEW INSTRUCTION": "WHEN caret inside PyKeywordArgument name THEN select its value expression for analysis"
-}
-
-[2025-12-16 11:09] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "broad search, list directory, open small files twice",
-    "MISSING STEPS": "extract requirements, draft spec, cross-check tests vs code, identify inconsistencies, list edge cases, propose flexibility",
-    "BOTTLENECK": "No synthesis phase to produce the requested spec and analysis.",
-    "PROJECT NOTE": "Use test README categories to structure the spec and analysis.",
-    "NEW INSTRUCTION": "WHEN core wrap files and tests are reviewed THEN draft spec and enumerate inconsistencies"
-}
-
-[2025-12-16 11:25] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "modify code, run tests, add tests, refactor strategy order, submit",
-    "BOTTLENECK": "Execution of phase 1 fixes did not start.",
-    "PROJECT NOTE": "Begin with OuterContainerStrategy ordering fix and set literal handling in WrapApplier; ensure skipping outer wrap inside set literals.",
-    "NEW INSTRUCTION": "WHEN task requests implementing phase 1 THEN implement critical fixes and run project tests"
-}
-
 [2025-12-16 13:19] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -878,3 +848,32 @@
     "NEW INSTRUCTION": "WHEN task affects user-visible labels THEN search docs and specs and update matching text"
 }
 
+[2025-12-30 15:51] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "verify SDK APIs, declare plugin dependency, run build, register extension, use PythonPackageManager mapping",
+    "BOTTLENECK": "Unresolved Python SDK APIs prevented compilation and validation.",
+    "PROJECT NOTE": "Add Python plugin dependency in Gradle/plugin.xml and use correct packages before implementation.",
+    "NEW INSTRUCTION": "WHEN build shows unresolved Python plugin classes THEN add Python plugin dependency and fix imports"
+}
+
+[2025-12-30 16:05] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "check imports directory",
+    "MISSING STEPS": "register extension in plugin.xml, add tests, run tests",
+    "BOTTLENECK": "The new provider is not registered in plugin.xml, so it never runs.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN adding a new IDE extension class THEN register it in plugin.xml and gate by setting"
+}
+
+[2025-12-30 20:25] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "use importCandidateProvider",
+    "MISSING STEPS": "choose correct extension point, check mutability contracts, handle empty-fix removal, run plugin smoke test",
+    "BOTTLENECK": "Tried to mutate an unmodifiable candidates list via removeIf.",
+    "PROJECT NOTE": "Register a Pythonid.unresolvedReferenceQuickFixProvider and filter via iterator; remove empty fixes.",
+    "NEW INSTRUCTION": "WHEN hiding import suggestions for unresolved references THEN use unresolvedReferenceQuickFixProvider; remove AutoImportQuickFix when candidates filtered out"
+}

@@ -1,133 +1,3 @@
-[2025-12-22 22:58] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "create",
-    "ERROR": "Test references missing action id and setting symbol",
-    "ROOT CAUSE": "The test was added before defining the settings flag, action class, and plugin.xml action id.",
-    "PROJECT NOTE": "Register actions under Copy.Paste.Special in plugin.xml and use consistent action ids (e.g., MyPlugin.*). Add new toggles to PluginSettingsState.state before tests use them.",
-    "NEW INSTRUCTION": "WHEN test references unknown action id or setting THEN define setting and register action first"
-}
-
-[2025-12-22 22:59] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "create",
-    "ERROR": "Test references missing action and setting",
-    "ROOT CAUSE": "The test file used a non-existent action id/class and a settings flag not yet defined.",
-    "PROJECT NOTE": "Define new settings in PluginSettingsState, implement the action class, and register the action id in plugin.xml under Copy.Paste.Special before adding tests that reference them.",
-    "NEW INSTRUCTION": "WHEN adding a test for a new action THEN define setting, implement action, and register id first"
-}
-
-[2025-12-22 22:59] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic error",
-    "TOOL": "create",
-    "ERROR": "Test referenced undefined setting, action id, and class",
-    "ROOT CAUSE": "The test file was created before the new action, setting flag, and plugin.xml registration existed.",
-    "PROJECT NOTE": "Action IDs in this repo are registered in plugin.xml and referenced by performEditorAction; ensure the ID matches exactly.",
-    "NEW INSTRUCTION": "WHEN creating tests referencing a new action id THEN implement action and register id in plugin.xml first"
-}
-
-[2025-12-22 23:22] - Updated by Junie - Error analysis
-{
-    "TYPE": "compilation",
-    "TOOL": "Gradle :compileKotlin",
-    "ERROR": "Unresolved reference 'isTypedDict' during compile",
-    "ROOT CAUSE": "The code calls isTypedDict, which is not defined or imported in this SDK.",
-    "PROJECT NOTE": "Update src/main/kotlin/.../intention/parameterobject/PyInlineParameterObjectProcessor.kt (~line 137) to use an existing Python typing API (e.g., PyTypedDictType check or a util like PyTypingTypeChecker/PyTypedDictUtil) or implement a local helper; ensure proper imports.",
-    "NEW INSTRUCTION": "WHEN compileKotlin reports unresolved reference 'isTypedDict' THEN replace with available SDK typing check or implement helper"
-}
-
-[2025-12-22 23:45] - Updated by Junie - Error analysis
-{
-    "TYPE": "compilation",
-    "TOOL": "Gradle :compileKotlin",
-    "ERROR": "Unresolved reference 'isTypedDict' during compile",
-    "ROOT CAUSE": "A file calls isTypedDict that exists only as a private helper inside PyInlineParameterObjectProcessor, making it invisible to other files.",
-    "PROJECT NOTE": "isTypedDict is defined as private in PyInlineParameterObjectProcessor.kt (~line 350); callers like TypedDictGenerator.kt cannot access it.",
-    "NEW INSTRUCTION": "WHEN shared helper is referenced across files THEN move it to public top-level util and import"
-}
-
-[2025-12-22 23:46] - Updated by Junie - Error analysis
-{
-    "TYPE": "compilation",
-    "TOOL": "Gradle :compileKotlin",
-    "ERROR": "Unresolved reference 'isTypedDict' causes compilation failure",
-    "ROOT CAUSE": "Code references isTypedDict from another file where it is private and not imported or shared.",
-    "PROJECT NOTE": "Extract the private isTypedDict from PyInlineParameterObjectProcessor into a shared top-level util (e.g., intention/parameterobject/TypedDictUtil.kt) and import it in TypedDictGenerator.kt.",
-    "NEW INSTRUCTION": "WHEN compile error shows unresolved 'isTypedDict' THEN move helper to shared util and import"
-}
-
-[2025-12-22 23:47] - Updated by Junie - Error analysis
-{
-    "TYPE": "compilation",
-    "TOOL": "Gradle :compileKotlin (test run)",
-    "ERROR": "Unresolved reference: isTypedDict",
-    "ROOT CAUSE": "A source file references isTypedDict which exists only as a private helper in another class, so it is not visible/importable.",
-    "PROJECT NOTE": "Move isTypedDict(pyClass: PyClass) into a shared top-level util (e.g., intention/parameterobject/TypingUtils.kt) and update both PyInlineParameterObjectProcessor and TypedDictGenerator to use it.",
-    "NEW INSTRUCTION": "WHEN Kotlin reports unresolved helper reference THEN define shared top-level util or import correct symbol"
-}
-
-[2025-12-22 23:48] - Updated by Junie - Error analysis
-{
-    "TYPE": "compilation",
-    "TOOL": "Gradle :compileKotlin",
-    "ERROR": "Unresolved reference 'isTypedDict' during Kotlin compilation",
-    "ROOT CAUSE": "isTypedDict is used from another file but is declared private inside PyInlineParameterObjectProcessor, making it inaccessible.",
-    "PROJECT NOTE": "TypedDictGenerator.kt references isTypedDict; expose a shared public helper (e.g., top‑level util or PyClass extension) and import it here.",
-    "NEW INSTRUCTION": "WHEN referencing internal helper across files THEN move it to shared util and import"
-}
-
-[2025-12-22 23:58] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Result text mismatch after intention applied",
-    "ROOT CAUSE": "The test expected PEP 604 union syntax (str | None) but the fixture language level likely renders Optional[str], causing a diff.",
-    "PROJECT NOTE": "Tests here typically run with Python 3.8 language level; use typing.Optional[...] instead of PEP 604 unions in expected/initial test content.",
-    "NEW INSTRUCTION": "WHEN writing Python union types in tests THEN use Optional[...] to match language level"
-}
-
-[2025-12-22 23:59] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Expected and actual file contents did not match",
-    "ROOT CAUSE": "The test expected a positional call do(\"x\"), but the intention preserves keyword style as do(arg=\"x\").",
-    "PROJECT NOTE": "Parameter object inlining rewrites calls with keyword arguments; align test expectations to keyword-preserving rewrites.",
-    "NEW INSTRUCTION": "WHEN crafting expected result for inline call rewrite THEN preserve keyword arguments in calls"
-}
-
-[2025-12-23 00:00] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Result text mismatch after intention execution",
-    "ROOT CAUSE": "The new test's expected output didn't match the intention's actual transformation (likely call-site argument style).",
-    "PROJECT NOTE": "Inline Parameter Object keeps keyword arguments at call sites; expected output should use named arguments (e.g., do(arg=\"x\")) and match plugin formatting.",
-    "NEW INSTRUCTION": "WHEN doIntentionTest fails with FileComparisonFailedError THEN align expected text to actual call-site argument style"
-}
-
-[2025-12-23 00:01] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "FileComparisonFailedError: expected/actual code mismatch",
-    "ROOT CAUSE": "The new test’s expected code does not match the intention’s actual output formatting/argument style.",
-    "PROJECT NOTE": "Intention tests with myFixture.doIntentionTest compare full-file text; keep exact whitespace and preserve call-site argument style (e.g., keyword vs positional) per existing tests.",
-    "NEW INSTRUCTION": "WHEN adding expected result for doIntentionTest THEN mirror actual intention output formatting and call-site style"
-}
-
-[2025-12-23 10:12] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Expected 'from .sub.mod', produced 'from .mod'",
-    "ROOT CAUSE": "Import builder assumes source is a direct child of target; nested modules need full relative path.",
-    "PROJECT NOTE": "Adjust PyAllExportUtil.addOrUpdateImportForModuleSymbol to derive a dotted path from targetFile's directory to sourceModule (e.g., sub.mod) instead of only using the source module filename.",
-    "NEW INSTRUCTION": "WHEN target is ancestor of source module THEN compute dotted relative path from target to source"
-}
-
 [2025-12-23 10:12] - Updated by Junie - Error analysis
 {
     "TYPE": "test assertion",
@@ -776,4 +646,114 @@
     "ROOT CAUSE": "getDependencies lists raw EP strings not available in this SDK, causing unresolved EP errors.",
     "PROJECT NOTE": "In settings/ImportsProjectViewConfigurable.getDependencies, avoid raw EP ids like 'Pythonid.*' or 'com.intellij.lang.psiStructureViewFactory'; remove them or use available EP_NAME constants from the SDK/Python plugin only.",
     "NEW INSTRUCTION": "WHEN getDependencies lists unresolved EP strings THEN replace with valid EP_NAME constants or remove entries"
+}
+
+[2025-12-30 15:36] - Updated by Junie - Error analysis
+{
+    "TYPE": "compilation",
+    "TOOL": "create",
+    "ERROR": "Unresolved imports and invalid API usage in provider",
+    "ROOT CAUSE": "The implementation used wrong/missing SDK classes and tried to mutate AutoImportQuickFix candidates; also relied on a suspend PyProjectToml API.",
+    "PROJECT NOTE": "In this project, filter auto-imports via PyUnresolvedReferenceQuickFixProvider.addImportCandidates instead of mutating existing fixes; use com.intellij.codeInspection.LocalQuickFix and avoid suspend PyProjectToml.findFile by reading pyproject.toml via VFS/ProjectFileIndex.",
+    "NEW INSTRUCTION": "WHEN filtering auto-import candidates THEN override addImportCandidates and pre-filter before fixes exist"
+}
+
+[2025-12-30 15:38] - Updated by Junie - Error analysis
+{
+    "TYPE": "compilation",
+    "TOOL": "create",
+    "ERROR": "Unresolved references and suspend API misuse",
+    "ROOT CAUSE": "The new provider used incorrect/missing SDK classes and called a suspend function outside a coroutine (e.g., wrong LocalQuickFix import, PyPsiPackageUtil not present, PyProjectToml.findFile is suspend).",
+    "PROJECT NOTE": "Use com.intellij.codeInspection.LocalQuickFix; avoid calling PyProjectToml.findFile suspend directly; confirm available Python SDK utilities (e.g., PythonPackageManager) and that AutoImportQuickFix candidates are mutable before filtering.",
+    "NEW INSTRUCTION": "WHEN importing IntelliJ/Python SDK classes THEN grep SDK/repo to confirm package names and signatures"
+}
+
+[2025-12-30 15:39] - Updated by Junie - Error analysis
+{
+    "TYPE": "compilation",
+    "TOOL": "create",
+    "ERROR": "Unresolved SDK classes and invalid API usage",
+    "ROOT CAUSE": "The new provider used non-existent or wrong-package SDK symbols and a suspend-only PyProjectToml API, and attempted to mutate immutable AutoImportQuickFix candidates.",
+    "PROJECT NOTE": "Use com.intellij.codeInspection.LocalQuickFix (not codeInsight.intention); AutoImportQuickFix.candidates is not mutable—filter in a PyUnresolvedReferenceQuickFixProvider.addImportCandidates override; PyProjectToml.findFile is suspend in this SDK—locate pyproject.toml via ProjectFileIndex/Module roots and parse synchronously.",
+    "NEW INSTRUCTION": "WHEN compile shows unresolved IntelliJ/Python SDK symbols THEN search SDK for correct packages and adapt API usage"
+}
+
+[2025-12-30 15:40] - Updated by Junie - Error analysis
+{
+    "TYPE": "compilation",
+    "TOOL": "create",
+    "ERROR": "Used unavailable classes and suspend API signatures",
+    "ROOT CAUSE": "The implementation assumed SDK classes/methods (LocalQuickFix import, PyProjectToml API, PyPsiPackageUtil, mutable AutoImportQuickFix.candidates) that don’t exist or differ in this SDK.",
+    "PROJECT NOTE": "Use com.intellij.codeInspection.LocalQuickFix (not codeInsight.intention); verify PyUnresolvedReferenceQuickFixProvider and PyPsiPackageUtil exist via grep; PyProjectToml.findFile appears suspend—use non-suspend access (or simple TOML parse via PSI/VFS) and avoid mutating AutoImportQuickFix candidates directly.",
+    "NEW INSTRUCTION": "WHEN relying on SDK types or methods THEN grep codebase/SDK to confirm packages and signatures"
+}
+
+[2025-12-30 15:42] - Updated by Junie - Error analysis
+{
+    "TYPE": "compilation",
+    "TOOL": "create",
+    "ERROR": "Unresolved refs and wrong API for import quick-fix filtering",
+    "ROOT CAUSE": "Used incorrect classes/methods (wrong LocalQuickFix import, mutated AutoImportQuickFix.candidates, and called suspend PyProjectToml APIs) instead of the proper provider entrypoint.",
+    "PROJECT NOTE": "In this repo, filter auto-imports by overriding PyUnresolvedReferenceQuickFixProvider.addImportCandidates(reference, name, quickFix) and decide which candidates to add; do not try to mutate AutoImportQuickFix.candidates. LocalQuickFix is com.intellij.codeInspection.LocalQuickFix.",
+    "NEW INSTRUCTION": "WHEN implementing HideTransientImportProvider THEN override addImportCandidates and filter before adding candidates"
+}
+
+[2025-12-30 15:43] - Updated by Junie - Error analysis
+{
+    "TYPE": "compilation",
+    "TOOL": "create",
+    "ERROR": "Unresolved references and suspend API misuse in provider",
+    "ROOT CAUSE": "The new provider uses wrong IntelliJ/Python imports and calls suspend PyProjectToml APIs from non‑coroutine code.",
+    "PROJECT NOTE": "Import LocalQuickFix from com.intellij.codeInspection; do not call suspend PyProjectToml.findFile/parse in synchronous code.",
+    "NEW INSTRUCTION": "WHEN compiler reports unresolved IntelliJ API symbols THEN fix import packages and avoid suspend calls"
+}
+
+[2025-12-30 15:43] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "search_replace",
+    "ERROR": "Unresolved IDE SDK classes and APIs after edit",
+    "ROOT CAUSE": "Wrong package imports and use of unavailable/suspend APIs for this SDK caused unresolved symbols.",
+    "PROJECT NOTE": "Import LocalQuickFix from com.intellij.codeInspection; avoid suspend PyProjectToml.findFile and Result.getOrNull; verify exact Python plugin package names (e.g., PyUnresolvedReferenceQuickFixProvider, PyPsiPackageUtil) against this SDK.",
+    "NEW INSTRUCTION": "WHEN unresolved IDE classes appear after import THEN verify package names and replace with SDK-correct ones"
+}
+
+[2025-12-30 15:44] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "search_replace",
+    "ERROR": "Unresolved references to IDE/Python SDK classes",
+    "ROOT CAUSE": "Wrong/inexistent API imports and signatures were used (e.g., LocalQuickFix package, PyProjectToml APIs, PyPsiPackageUtil), which are not available in this SDK version.",
+    "PROJECT NOTE": "Use com.intellij.codeInspection.LocalQuickFix (not codeInsight.intention); verify Python plugin APIs present in this project before use; avoid suspend-only PyProjectToml APIs and unknown parse().getOrNull(). Prefer PythonPackageManager for package data.",
+    "NEW INSTRUCTION": "WHEN unresolved reference errors list platform classes THEN verify SDK packages and replace unavailable APIs"
+}
+
+[2025-12-30 16:05] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "search_replace",
+    "ERROR": "Unresolved Python extension points in getDependencies",
+    "ROOT CAUSE": "ImportsProjectViewConfigurable.getDependencies references EP ids not available in this SDK.",
+    "PROJECT NOTE": "Configurable.getDependencies should return known BaseExtensionPointName constants or be omitted; raw strings like 'Pythonid.*' are not resolvable here.",
+    "NEW INSTRUCTION": "WHEN getDependencies lists unknown EP ids THEN remove override or use available EP_NAME constants"
+}
+
+[2025-12-30 20:24] - Updated by Junie - Error analysis
+{
+    "TYPE": "runtime",
+    "TOOL": "HideTransientImportProvider.filterTransientCandidates",
+    "ERROR": "Attempted removeIf on unmodifiable import candidates list",
+    "ROOT CAUSE": "AutoImportQuickFix.getCandidates returns an unmodifiable list, so in-place removal fails.",
+    "PROJECT NOTE": "In imports/HideTransientImportProvider.kt (around lines 24, 35), avoid mutating fix.getCandidates(); build a filtered mutable list and update via a setter/replacement API or recreate/remove the fix when empty.",
+    "NEW INSTRUCTION": "WHEN candidates list is unmodifiable THEN build filtered list and replace candidates via API"
+}
+
+[2025-12-30 20:25] - Updated by Junie - Error analysis
+{
+    "TYPE": "runtime error",
+    "TOOL": "HideTransientImportProvider",
+    "ERROR": "Mutated an unmodifiable candidates list",
+    "ROOT CAUSE": "AutoImportQuickFix.getCandidates() returns an unmodifiable list, so removeIf throws.",
+    "PROJECT NOTE": "In PyCharm SDK, import candidate lists returned by AutoImportQuickFix are unmodifiable. Filter candidates by creating a new list and replacing the fix (if API allows) or avoid mutating and instead only add filtered candidates via PyImportCandidateProvider.",
+    "NEW INSTRUCTION": "WHEN filtering AutoImportQuickFix candidates THEN do not mutate list; create filtered list and replace fix"
 }

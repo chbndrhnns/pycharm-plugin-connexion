@@ -33,6 +33,10 @@ class ImportsProjectViewConfigurable : BoundConfigurable("Imports & Project View
                 checkBox("‘Show Private Members’ filter in Structure View")
                     .bindSelected(settings::enableStructureViewPrivateMembersFilter)
             }
+            row {
+                checkBox("Hide transient dependency imports (only show direct dependencies)")
+                    .bindSelected(settings::enableHideTransientImports)
+            }
         }
     }
 }

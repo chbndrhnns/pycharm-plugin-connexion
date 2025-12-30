@@ -390,6 +390,8 @@
                 implementation="com.github.chbndrhnns.intellijplatformplugincopy.imports.SpecificImportPathProvider"/>
         <importCandidateProvider
                 implementation="com.github.chbndrhnns.intellijplatformplugincopy.imports.RelativeImportCandidateProvider"/>
+        <importCandidateProvider
+                implementation="com.github.chbndrhnns.intellijplatformplugincopy.imports.HideTransientImportProvider"/>
     </extensions>
 
     <projectListeners>
