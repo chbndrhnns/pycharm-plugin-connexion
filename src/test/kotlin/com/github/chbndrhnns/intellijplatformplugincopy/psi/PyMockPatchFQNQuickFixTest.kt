@@ -30,7 +30,7 @@ class PyMockPatchFQNQuickFixTest : TestBase() {
         """.trimIndent()
         )
 
-        val intentions = myFixture.filterAvailableIntentions("Replace")
+        val intentions = myFixture.filterAvailableIntentions("BetterPy: Replace")
         val intention = intentions.find { it.text.contains("Replace 'MyClass' with '") && it.text.contains(".MyClass'") }
         assertNotNull("Replace quickfix should be available for 'MyClass'", intention)
         
@@ -59,7 +59,7 @@ class PyMockPatchFQNQuickFixTest : TestBase() {
         """.trimIndent()
         )
 
-        val intentions = myFixture.filterAvailableIntentions("Replace")
+        val intentions = myFixture.filterAvailableIntentions("BetterPy: Replace")
         val intention = intentions.find { it.text.contains("Replace 'my_func' with '") && it.text.contains(".my_func'") }
         assertNotNull("Replace quickfix should be available for 'my_func'", intention)
 
@@ -85,7 +85,7 @@ class PyMockPatchFQNQuickFixTest : TestBase() {
         """.trimIndent()
         )
 
-        val intentions = myFixture.filterAvailableIntentions("Replace")
+        val intentions = myFixture.filterAvailableIntentions("BetterPy: Replace")
         val intention = intentions.find { it.text.contains("Replace 'another_mod' with '") && it.text.contains("another_mod'") }
         assertNotNull("Replace quickfix should be available for 'another_mod'", intention)
 
@@ -115,7 +115,7 @@ class PyMockPatchFQNQuickFixTest : TestBase() {
             """.trimIndent()
             )
 
-            val intentions = myFixture.filterAvailableIntentions("Replace")
+            val intentions = myFixture.filterAvailableIntentions("BetterPy: Replace")
             val intention = intentions.find { it.text.contains("Replace 'MyClass' with '") }
             assertNotNull("Replace quickfix should be available", intention)
             
@@ -147,7 +147,7 @@ class PyMockPatchFQNQuickFixTest : TestBase() {
                 """.trimIndent()
                 )
 
-                val intentions = myFixture.filterAvailableIntentions("Replace")
+                val intentions = myFixture.filterAvailableIntentions("BetterPy: Replace")
                 val intention = intentions.find { it.text.contains("Replace 'MyClass' with '") }
                 assertNotNull("Replace quickfix should be available", intention)
 
@@ -178,7 +178,137 @@ class PyMockPatchFQNQuickFixTest : TestBase() {
         """.trimIndent()
         )
 
-        val intentions = myFixture.filterAvailableIntentions("Replace 'Target' with FQN...")
-        assertNotNull("Multiple candidates quickfix should be available", intentions.find { it.text == "Replace 'Target' with FQN..." })
+        val intentions = myFixture.filterAvailableIntentions("BetterPy: Replace 'Target' with FQN...")
+        assertNotNull("Multiple candidates quickfix should be available", intentions.find { it.text == "BetterPy: Replace 'Target' with FQN..." })
+    }
+
+    fun testFQNQuickFixSuggestsImportSites() {
+        // Declaration site
+        myFixture.addFileToProject("logic/service.py", "class MyService: pass")
+        
+        // Import site 1
+        myFixture.addFileToProject("app/main.py", "from logic.service import MyService")
+        
+        // Import site 2
+        myFixture.addFileToProject("app/worker.py", "from logic.service import MyService")
+
+        myFixture.configureByText(
+            "test_import_sites.py", """
+            from unittest.mock import patch
+            
+            @patch('MyServi<caret>ce')
+            def test_something(m):
+                pass
+        """.trimIndent()
+        )
+
+        // Currently it would suggest 'logic.service.MyService'
+        // We want it to suggest 'app.main.MyService' and 'app.worker.MyService' as well (or instead?)
+        // The issue says: "we need to provide the FQN to the place where the target is IMPORTED, not where it's declared."
+        
+        val intentions = myFixture.filterAvailableIntentions("BetterPy: Replace 'MyService' with")
+        
+        // If there are multiple candidates (declaration site + import sites), it should show the "with FQN..." variant.
+        val intention = intentions.find { it.text == "BetterPy: Replace 'MyService' with FQN..." }
+        assertNotNull("Replace quickfix should be available for 'MyService' with multiple candidates", intention)
+    }
+
+    fun testFQNQuickFixDoesNotDuplicateSourceRootPrefix() {
+        myFixture.addFileToProject("tests/__init__.py", "")
+        myFixture.addFileToProject(
+            "tests/test_mymock.py", """
+            class MyMyClass:
+                pass
+        """.trimIndent()
+        )
+
+        val testFile = myFixture.addFileToProject(
+            "tests/actual_test.py", """
+            from unittest.mock import patch
+            
+            @patch('MyMyCla<caret>ss')
+            def test_something(m):
+                pass
+        """.trimIndent()
+        )
+
+        // If tests is the source root, QualifiedNameFinder should return 'test_mymock'
+        // If it returns 'tests.test_mymock' AND we prepend 'tests', we get duplication.
+        
+        runWithSourceRoots(listOf(myFixture.findFileInTempDir("tests")!!)) {
+            myFixture.configureFromExistingVirtualFile(testFile.virtualFile)
+            
+            val intentions = myFixture.filterAvailableIntentions("BetterPy: Replace 'MyMyClass' with")
+            val intention = intentions.find { it.text.contains("tests.test_mymock.MyMyClass") }
+            
+            assertNotNull("Replace quickfix should be available", intention)
+            // Verify no duplication
+            assertFalse("FQN should not contain duplicated 'tests': ${intention!!.text}", 
+                intention.text.contains("tests.tests."))
+        }
+    }
+
+    fun testFQNQuickFixOnlySuggestsProjectCandidates() {
+        // Add a "project" class
+        myFixture.addFileToProject(
+            "project_module.py", """
+            class ProjectClass:
+                pass
+        """.trimIndent()
+        )
+
+        myFixture.configureByText(
+            "test_project.py", """
+            from unittest.mock import patch
+            
+            @patch('ProjectClas<caret>s')
+            def test_something(m):
+                pass
+        """.trimIndent()
+        )
+
+        val intentions = myFixture.filterAvailableIntentions("BetterPy: Replace 'ProjectClass' with")
+        assertNotEmpty(intentions)
+    }
+
+    fun testFQNQuickFixSuggestsThirdPartyUsageInProject() {
+        // We'll use 'os.path.exists' which is in the stdlib (library).
+        myFixture.addFileToProject("app/utils.py", "from os.path import exists\nusage = exists")
+        
+        myFixture.configureByText(
+            "test_third_party.py", """
+            from unittest.mock import patch
+            
+            @patch('exis<caret>ts')
+            def test_something(m):
+                pass
+        """.trimIndent()
+        )
+        
+        val intentions = myFixture.filterAvailableIntentions("BetterPy: Replace 'exists' with")
+        val intention = intentions.find { it.text.contains("app.utils.exists") }
+        assertNotNull("Should suggest project-side usage of third-party symbol", intention)
+        
+        val libraryIntention = intentions.find { it.text.contains("os.path.exists") }
+        assertNull("Should NOT suggest library-side FQN", libraryIntention)
+    }
+
+    fun testNestedSegmentUnresolvedHighlighting() {
+        myFixture.addFileToProject("logic/__init__.py", "")
+        myFixture.addFileToProject("logic/service.py", "class MyService: pass")
+        
+        myFixture.configureByText(
+            "test_nested_unresolved.py", """
+            from unittest.mock import patch
+            
+            @patch('logic.servi1ce.MyService')
+            def test_something(m):
+                pass
+        """.trimIndent()
+        )
+        
+        val highlights = myFixture.doHighlighting()
+        val unresolvedHighlight = highlights.find { it.description == "Unresolved reference 'servi1ce' in patch target" }
+        assertNotNull("Highlight should be present for unresolved nested segment 'servi1ce'", unresolvedHighlight)
     }
 }

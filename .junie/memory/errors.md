@@ -1,23 +1,3 @@
-[2025-12-22 22:49] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Inspection suggested fix for private package",
-    "ROOT CAUSE": "PyPrivateModuleImportInspection considers private packages as candidates and only checks the immediate parent, causing a quick fix to be offered for _priv.",
-    "PROJECT NOTE": "Update src/main/kotlin/com/github/chbndrhnns/intellijplatformplugincopy/exports/PyPrivateModuleImportInspection.kt to: (1) skip registering problems and quick fixes when the containing package is private (segment starts with '_'); (2) when searching __all__, walk up to the nearest public package and use its __init__.py.",
-    "NEW INSTRUCTION": "WHEN inspected symbol is inside a private package THEN do not register problem or quick fixes"
-}
-
-[2025-12-22 22:49] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Reproduction tests failed due to incorrect inspection behavior",
-    "ROOT CAUSE": "The inspection proposes making symbols public in private packages and doesn’t check the next public package for existing exports.",
-    "PROJECT NOTE": "Adjust src/main/kotlin/com/github/chbndrhnns/intellijplatformplugincopy/exports/PyPrivateModuleImportInspection.kt to skip fixes for private packages and to walk up to the nearest public package when checking __all__.",
-    "NEW INSTRUCTION": "WHEN inspected package is private THEN skip suggesting make-public and do not flag"
-}
-
 [2025-12-22 22:50] - Updated by Junie - Error analysis
 {
     "TYPE": "test assertion",
@@ -776,4 +756,24 @@
     "ROOT CAUSE": "Introduced dependency on non-existent Python plugin interface (PyReference/PyCustomReference) in this SDK, causing unresolved imports.",
     "PROJECT NOTE": "This repo’s SDK does not expose com.jetbrains.python.psi.PyReference or codeInsight.PyCustomReference; extend PsiPolyVariantReferenceBase and use inspections/quickfixes instead.",
     "NEW INSTRUCTION": "WHEN Kotlin import from com.jetbrains.python.* is unresolved THEN avoid adding it and rely on PsiReference or a custom inspection"
+}
+
+[2025-12-30 11:53] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "PyMockPatchReplaceWithFQNQuickFix",
+    "ERROR": "Source root prefix applied twice, producing duplicated 'tests.tests' in FQN",
+    "ROOT CAUSE": "FQN generation prepends the source root prefix even when the target already starts with it.",
+    "PROJECT NOTE": "Guard prefix application in getFQN (inspection quickfix) and in PyDottedSegmentReference.topLevelVariants; when enableRestoreSourceRootPrefix is on, only prepend the contentRoot→sourceRoot prefix if the first segment of the computed FQN does not already equal that prefix’s first segment.",
+    "NEW INSTRUCTION": "WHEN FQN already starts with source root prefix THEN do not prepend the prefix"
+}
+
+[2025-12-30 11:54] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic error",
+    "TOOL": "-",
+    "ERROR": "Source root prefix added twice to FQN",
+    "ROOT CAUSE": "FQN construction prepends the source root prefix even when the target already starts with it.",
+    "PROJECT NOTE": "Adjust FQN generation (e.g., in getFQN/PyMockPatchReplaceWithFQNQuickFix) to detect existing source root prefix and avoid duplicating it; also review topLevelVariants to ensure it doesn’t reintroduce the prefix when already present.",
+    "NEW INSTRUCTION": "WHEN computed FQN already starts with source root prefix THEN do not prepend prefix again"
 }

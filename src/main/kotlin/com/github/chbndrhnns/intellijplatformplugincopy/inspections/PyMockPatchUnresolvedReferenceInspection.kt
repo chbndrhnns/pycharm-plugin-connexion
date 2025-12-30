@@ -51,23 +51,94 @@ class PyMockPatchUnresolvedReferenceInspection : PyInspection() {
                 if (targetPath.isEmpty()) return
 
                 val segments = targetPath.split('.')
-                val firstSegment = segments[0]
-                val resolved = PyResolveUtils.resolveDottedName(firstSegment, targetArg)
+                var unresolvedSegment: String? = null
 
-                if (resolved == null) {
-                    val candidates = findCandidates(node.project, firstSegment)
-                    val fqns = candidates.mapNotNull { getFQN(it) }.distinct()
+                for (i in segments.indices) {
+                    val segment = segments[i]
+                    if (segment.isEmpty()) continue
+                    val pathUpToSegment = segments.subList(0, i + 1).joinToString(".")
+                    val resolved = PyResolveUtils.resolveDottedName(pathUpToSegment, targetArg)
+                    
+                    println("[DEBUG_LOG] segment=$segment, pathUpToSegment=$pathUpToSegment, resolved=$resolved")
+
+                    if (resolved == null) {
+                        unresolvedSegment = segment
+                        break
+                    }
+                }
+
+                if (unresolvedSegment != null) {
+                    val candidates = findCandidates(node.project, unresolvedSegment)
+                    val importSites = candidates.flatMap { findImportSites(it) }
+
+                    val allCandidates = if (importSites.isNotEmpty()) importSites else candidates
+                    val fqns = allCandidates.mapNotNull { getFQN(it) }.distinct()
 
                     if (fqns.isNotEmpty()) {
                         holder.registerProblem(
                             targetArg,
-                            "Unresolved reference '$firstSegment' in patch target",
-                            PyMockPatchReplaceWithFQNQuickFix(firstSegment, fqns)
+                            "Unresolved reference '$unresolvedSegment' in patch target",
+                            PyMockPatchReplaceWithFQNQuickFix(unresolvedSegment, fqns)
+                        )
+                    } else {
+                        holder.registerProblem(
+                            targetArg,
+                            "Unresolved reference '$unresolvedSegment' in patch target"
                         )
                     }
                 }
             }
         }
+    }
+
+    private fun findImportSites(element: PsiElement): List<PsiElement> {
+        val project = element.project
+        val scope = GlobalSearchScope.projectScope(project)
+        val result = mutableListOf<PsiElement>()
+
+        val name = element.let { (it as? com.intellij.psi.PsiNamedElement)?.name }
+        if (name == null) return emptyList()
+
+        com.intellij.psi.search.searches.ReferencesSearch.search(element, scope).forEach { ref ->
+            val refElement = ref.element
+            val file = refElement.containingFile as? PyFile ?: return@forEach
+
+            // If it's an import element, we definitely use it
+            val importElement = com.intellij.psi.util.PsiTreeUtil.getParentOfType(refElement, PyImportElement::class.java)
+            if (importElement != null) {
+                result.add(ImportedSymbol(file, name))
+                return@forEach
+            }
+
+            // Otherwise, check if the symbol is actually available in this file's namespace
+            // A simple check: if we can resolve the name in this file to the same element.
+            // But patching often happens on things that are imported.
+            // If it's not imported, it might be used via qualifier like `os.path.exists`.
+            // In that case, `exists` is NOT in the module namespace, but `os` is.
+            // The user wants FQNs for replacing, so if they have `@patch('exists')`
+            // and `exists` is used in `app/utils.py`, they might want `@patch('app.utils.exists')`.
+            // This only makes sense if `exists` is imported in `app/utils.py`.
+            
+            // Let's stick to import sites for now but make it more robust.
+            // If we found a reference that is NOT in an import, we could still look at the file.
+            // But if it's not imported, `app.utils.exists` won't work for patch.
+            
+            // If the reference is part of a qualified expression, maybe they want the full qualified name in that module?
+            // E.g. `app.utils.os.path.exists`.
+        }
+        return result
+    }
+
+    private class ImportedSymbol(val file: PyFile, private val symbolName: String) :
+        com.intellij.psi.impl.FakePsiElement(), PyQualifiedNameOwner {
+        override fun getParent(): PsiElement = file
+        override fun getContainingFile(): com.intellij.psi.PsiFile = file
+        override fun getQualifiedName(): String? {
+            val fileFQN = QualifiedNameFinder.findCanonicalImportPath(file, null)?.toString() ?: return null
+            return "$fileFQN.$symbolName"
+        }
+
+        override fun getName(): String = symbolName
     }
 
     private fun isPatchCall(call: PyCallExpression): Boolean {
@@ -117,13 +188,17 @@ class PyMockPatchUnresolvedReferenceInspection : PyInspection() {
             result.addAll(modules)
             // Also try searching for directory with __init__.py (package)
             val packages = FilenameIndex.getFilesByName(project, "__init__.py", scope)
-                .filter { it.parent?.name == name }
+                .filter { 
+                    it.parent?.name == name
+                }
                 .mapNotNull { it.parent }
             result.addAll(packages)
 
             // Try searching for the name as a directory directly if it's a package
             val dirs = FilenameIndex.getAllFilesByExt(project, "", scope)
-                .filter { it.isDirectory && it.name == name && it.findChild("__init__.py") != null }
+                .filter { 
+                    it.isDirectory && it.name == name && it.findChild("__init__.py") != null
+                }
             result.addAll(dirs.mapNotNull { com.intellij.psi.PsiManager.getInstance(project).findDirectory(it) })
         } catch (e: Exception) {
         }
@@ -132,6 +207,16 @@ class PyMockPatchUnresolvedReferenceInspection : PyInspection() {
     }
 
     private fun getFQN(element: PsiElement): String? {
+        val project = element.project
+        val file = when (element) {
+            is PyFile -> element.virtualFile
+            is PsiDirectory -> element.virtualFile
+            is ImportedSymbol -> element.file.virtualFile
+            else -> element.containingFile?.virtualFile
+        }
+
+        val isInContent = file != null && ProjectFileIndex.getInstance(project).isInContent(file)
+
         val includeSourceRootPrefix = PluginSettingsState.instance().state.enableRestoreSourceRootPrefix
 
         val fqn = when (element) {
@@ -143,22 +228,21 @@ class PyMockPatchUnresolvedReferenceInspection : PyInspection() {
             else -> null
         } ?: return null
 
-        if (includeSourceRootPrefix) {
-            val project = element.project
-            val file = when (element) {
-                is PyFile -> element.virtualFile
-                is PsiDirectory -> element.virtualFile
-                else -> element.containingFile?.virtualFile
-            }
-            if (file != null) {
-                val fileIndex = ProjectFileIndex.getInstance(project)
-                val sourceRoot = fileIndex.getSourceRootForFile(file)
-                val contentRoot = fileIndex.getContentRootForFile(file)
-                if (sourceRoot != null && contentRoot != null) {
-                    val prefixPath = VfsUtilCore.getRelativePath(sourceRoot, contentRoot, '.')
-                    if (!prefixPath.isNullOrEmpty()) {
-                        return "$prefixPath.$fqn"
+        if (!isInContent && element !is ImportedSymbol) {
+            return null
+        }
+
+        if (includeSourceRootPrefix && file != null) {
+            val fileIndex = ProjectFileIndex.getInstance(project)
+            val sourceRoot = fileIndex.getSourceRootForFile(file)
+            val contentRoot = fileIndex.getContentRootForFile(file)
+            if (sourceRoot != null && contentRoot != null) {
+                val prefixPath = VfsUtilCore.getRelativePath(sourceRoot, contentRoot, '.')
+                if (!prefixPath.isNullOrEmpty()) {
+                    if (fqn.startsWith("$prefixPath.") || fqn == prefixPath) {
+                        return fqn
                     }
+                    return "$prefixPath.$fqn"
                 }
             }
         }
@@ -167,16 +251,16 @@ class PyMockPatchUnresolvedReferenceInspection : PyInspection() {
     }
 
     override fun getStaticDescription(): String =
-        "Checks if the first segment of a mock.patch target resolves and provides a quickfix to use the FQN if it doesn't."
+        "Checks if all segments of a mock.patch target resolve and provides a quickfix to use the FQN if a segment doesn't."
 }
 
 class PyMockPatchReplaceWithFQNQuickFix(private val name: String, private val fqns: List<String>) : LocalQuickFix {
     override fun getName(): String {
-        return if (fqns.size == 1) "Replace '$name' with '${fqns[0]}'"
-        else "Replace '$name' with FQN..."
+        return if (fqns.size == 1) "BetterPy: Replace '$name' with '${fqns[0]}'"
+        else "BetterPy: Replace '$name' with FQN..."
     }
 
-    override fun getFamilyName(): String = "Replace with FQN"
+    override fun getFamilyName(): String = "BetterPy: Replace with FQN"
 
     override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
         val element = descriptor.psiElement as? PyStringLiteralExpression ?: return

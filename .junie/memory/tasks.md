@@ -1,53 +1,3 @@
-[2025-12-14 18:59] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "integrate with definitions search, register extension, add find usages integration, add line marker, run build, manual test",
-    "BOTTLENECK": "Protocol search is not wired into IDE actions, so results are never surfaced.",
-    "PROJECT NOTE": "Follow spec/protocol-impl.md Phase 2 and 3 to expose results via IDE.",
-    "NEW INSTRUCTION": "WHEN protocol implementation search code exists THEN modify PyDefinitionsSearch to include protocol implementations"
-}
-
-[2025-12-15 09:50] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "add psi change listener",
-    "MISSING STEPS": "handle dumb mode,add fallback,leverage existing indices",
-    "BOTTLENECK": "Scanning all classes to find members via PyClassNameIndex.",
-    "PROJECT NOTE": "Prefer existing Python indices (e.g., method/attribute name indices) before building a custom stub index.",
-    "NEW INSTRUCTION": "WHEN indexes are not ready (dumb mode) THEN fall back to current scan strategy"
-}
-
-[2025-12-15 12:29] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "-",
-    "BOTTLENECK": "Precisely constraining caret location within the function PSI for availability.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN changing intention availability by caret context THEN add negative tests for disallowed regions"
-}
-
-[2025-12-15 12:41] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "repeat plan update,broad search",
-    "MISSING STEPS": "implement generatePreview,use IntentionPreviewUtils,add preview tests,run tests",
-    "BOTTLENECK": "Preview implementation remained incomplete and ignored IntentionPreviewUtils guidance.",
-    "PROJECT NOTE": "WrapPreview.kt shows a working preview pattern that can be mirrored.",
-    "NEW INSTRUCTION": "WHEN intention needs preview THEN implement generatePreview using IntentionPreviewUtils.write and shared transform"
-}
-
-[2025-12-16 09:45] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "broad code search, open non-existent file",
-    "MISSING STEPS": "create repro, inspect function body, add tests, run tests",
-    "BOTTLENECK": "No targeted verification via function body or reproduction test.",
-    "PROJECT NOTE": "GenericCtorStrategy is implemented in TypeStrategies.kt, not its own file.",
-    "NEW INSTRUCTION": "WHEN file open fails THEN search symbol and open its declaring file"
-}
-
 [2025-12-16 10:10] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -876,4 +826,44 @@
     "BOTTLENECK": "FQN replacement logic not aligned with source root prefix setting.",
     "PROJECT NOTE": "Ensure PyMockPatchReplaceWithFQNQuickFix builds target strings honoring enableRestoreSourceRootPrefix, consistent with PyResolveUtils/PyDottedSegmentReference.",
     "NEW INSTRUCTION": "WHEN building FQN for mock.patch target THEN apply source root prefix setting"
+}
+
+[2025-12-30 11:19] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "declaration-based FQN replacement tuning,top-level variant/builtins suggestions for this feature",
+    "MISSING STEPS": "analyze import sites,prefer import-module namespace over declaration namespace,handle import aliases and re-exports,update tests for import-site replacement",
+    "BOTTLENECK": "No analysis of where the symbol is imported in the referencing module.",
+    "PROJECT NOTE": "Leverage PyImportStatement and PyFromImportStatement PSI in the containing file to map visible names to their import modules and aliases.",
+    "NEW INSTRUCTION": "WHEN collecting FQN candidates for mock.patch target THEN derive candidates from import sites in containing file"
+}
+
+[2025-12-30 11:54] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "add prefix in completion, add prefix in FQN builder",
+    "MISSING STEPS": "normalize dotted path, add duplicate-prefix test, run tests",
+    "BOTTLENECK": "No normalization to prevent double-applying source root prefix.",
+    "PROJECT NOTE": "Both PyDottedSegmentReference.topLevelVariants and FQN construction add the source root prefix, causing duplication like tests.tests....",
+    "NEW INSTRUCTION": "WHEN source root prefix already present in target string THEN skip adding prefix and return normalized single-prefixed FQN"
+}
+
+[2025-12-30 12:43] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "implement import quickfix, suppress import quickfix",
+    "MISSING STEPS": "filter candidates to project scope, add tests, validate all segments early",
+    "BOTTLENECK": "Lack of early project-scope filtering and validation strategy caused rework.",
+    "PROJECT NOTE": "Use GlobalSearchScope.projectScope and ProjectFileIndex to exclude libraries when suggesting FQNs.",
+    "NEW INSTRUCTION": "WHEN generating FQN candidates for replacements THEN restrict results to project content roots"
+}
+
+[2025-12-30 12:58] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "restrict search to project scope, strict content filtering of declarations",
+    "MISSING STEPS": "collect project import usages, prioritize usage FQNs, add tests",
+    "BOTTLENECK": "Over-restrictive scope excluded valid project usage sites of third-party symbols.",
+    "PROJECT NOTE": "Decide inclusion by the file containing the import usage (in content) rather than the declaration file.",
+    "NEW INSTRUCTION": "WHEN symbol declaration is outside project content THEN suggest FQNs from in-project import usages only"
 }
