@@ -6,10 +6,7 @@ import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.VfsUtilCore
-import com.intellij.psi.PsiElementResolveResult
-import com.intellij.psi.PsiManager
-import com.intellij.psi.PsiPolyVariantReferenceBase
-import com.intellij.psi.ResolveResult
+import com.intellij.psi.*
 import com.jetbrains.python.psi.PyStringLiteralExpression
 
 class PyDottedSegmentReference(
@@ -19,6 +16,13 @@ class PyDottedSegmentReference(
     private val fullPathOffsetInElement: Int,
     private val resolveImported: Boolean = true
 ) : PsiPolyVariantReferenceBase<PyStringLiteralExpression>(element, range) {
+
+    override fun handleElementRename(newElementName: String): PsiElement {
+        val nameWithoutExt = newElementName.removeSuffix(".py")
+        return super.handleElementRename(nameWithoutExt)
+    }
+
+    override fun isSoft(): Boolean = true
 
     override fun multiResolve(incompleteCode: Boolean): Array<ResolveResult> {
         element.stringValueTextRange

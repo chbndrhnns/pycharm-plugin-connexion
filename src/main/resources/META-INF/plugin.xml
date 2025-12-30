@@ -72,6 +72,13 @@
                          enabledByDefault="true"
                          level="ERROR"/>
 
+        <localInspection language="Python"
+                         implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyMockPatchUnresolvedReferenceInspection"
+                         displayName="BetterPy: Unresolved patch target"
+                         groupName="Python"
+                         enabledByDefault="true"
+                         level="ERROR"/>
+
         <codeInsight.lineMarkerProvider language="Python"
                                         implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.connexion.ConnexionPythonLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="JSON"

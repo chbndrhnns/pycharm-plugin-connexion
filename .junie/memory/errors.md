@@ -1,33 +1,3 @@
-[2025-12-22 22:38] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Element at caret not found; no resolved target",
-    "ROOT CAUSE": "Member resolution checks only top-level declarations in a PyFile and ignores imported symbols.",
-    "PROJECT NOTE": "In PyResolveUtils.findMember, also inspect PyImportStatement and PyFromImportStatement to resolve names brought into the module when matching a dotted segment.",
-    "NEW INSTRUCTION": "WHEN module member lookup yields no symbol THEN resolve names introduced by import and from-import statements"
-}
-
-[2025-12-22 22:45] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "run_test",
-    "ERROR": "No tests found in provided directory path",
-    "ROOT CAUSE": "run_test was pointed to src/main sources instead of a test-containing path.",
-    "PROJECT NOTE": "Tests live under src/test/kotlin/com/github/chbndrhnns/intellijplatformplugincopy; run from project root or target specific test classes with Gradle.",
-    "NEW INSTRUCTION": "WHEN run_test path points to src/main THEN run from project root or use src/test path"
-}
-
-[2025-12-22 22:47] - Updated by Junie - Error analysis
-{
-    "TYPE": "test assertion",
-    "TOOL": "run_test",
-    "ERROR": "Assertion failed: private package offered publicizing quick fix",
-    "ROOT CAUSE": "PyPrivateModuleImportInspection still proposes making symbols public for underscored (private) packages and does not ascend to the next public package.",
-    "PROJECT NOTE": "Adjust logic in src/main/kotlin/com/github/chbndrhnns/intellijplatformplugincopy/exports/PyPrivateModuleImportInspection.kt to treat packages with leading underscore as private and avoid 'Make public' there.",
-    "NEW INSTRUCTION": "WHEN target package name starts with '_' THEN do not offer 'make symbol public'"
-}
-
 [2025-12-22 22:49] - Updated by Junie - Error analysis
 {
     "TYPE": "test assertion",
@@ -776,4 +746,34 @@
     "ROOT CAUSE": "plugin.xml registers Python-language EPs without declaring the Python module/plugin dependency.",
     "PROJECT NOTE": "Add <depends>com.intellij.modules.python</depends> (or the appropriate Python plugin id) to plugin.xml before using language=\"Python\" in extensions.",
     "NEW INSTRUCTION": "WHEN plugin.xml reports unknown 'Python' language THEN add <depends>com.intellij.modules.python</depends> to plugin.xml"
+}
+
+[2025-12-29 21:42] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_project",
+    "ERROR": "Search returned >100 results; too broad query",
+    "ROOT CAUSE": "The query 'patch' is overly generic, matching many files and exceeding the tool’s result limit.",
+    "PROJECT NOTE": "Search using more specific strings like 'unittest.mock.patch(' or narrow to Kotlin sources (e.g., 'mock.patch contributor kt').",
+    "NEW INSTRUCTION": "WHEN search_project returns more than 100 results THEN refine query with fully qualified name or extra keywords"
+}
+
+[2025-12-29 21:43] - Updated by Junie - Error analysis
+{
+    "TYPE": "test assertion",
+    "TOOL": "run_test",
+    "ERROR": "Import quickfix intention not available",
+    "ROOT CAUSE": "The mock.patch string reference feature is gated by PluginSettingsState and the test did not enable it, so no reference/intention was provided.",
+    "PROJECT NOTE": "Wrap the test body in fixtures.SettingsTestUtils.withPluginSettings { enable the PyMockPatch string references flag } or set the corresponding PluginSettingsState property in setUp.",
+    "NEW INSTRUCTION": "WHEN writing tests for gated plugin features THEN enable the required PluginSettingsState flags in setUp"
+}
+
+[2025-12-29 21:51] - Updated by Junie - Error analysis
+{
+    "TYPE": "compilation",
+    "TOOL": "search_replace",
+    "ERROR": "Unresolved reference 'PyReference' in Kotlin source",
+    "ROOT CAUSE": "Introduced dependency on non-existent Python plugin interface (PyReference/PyCustomReference) in this SDK, causing unresolved imports.",
+    "PROJECT NOTE": "This repo’s SDK does not expose com.jetbrains.python.psi.PyReference or codeInsight.PyCustomReference; extend PsiPolyVariantReferenceBase and use inspections/quickfixes instead.",
+    "NEW INSTRUCTION": "WHEN Kotlin import from com.jetbrains.python.* is unresolved THEN avoid adding it and rely on PsiReference or a custom inspection"
 }

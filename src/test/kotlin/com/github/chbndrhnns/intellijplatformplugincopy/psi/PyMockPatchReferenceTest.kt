@@ -59,6 +59,39 @@ class PyMockPatchReferenceTest : TestBase() {
         assertEquals("MyClass", (element as PyClass).name)
     }
 
+    fun testRenameModule() {
+        myFixture.addFileToProject(
+            "old_module.py", """
+            class MyClass:
+                pass
+        """.trimIndent()
+        )
+
+        myFixture.configureByText(
+            "test_rename_mod.py", """
+            from unittest.mock import patch
+            
+            @patch('old_module.MyClass')
+            def test_something(mock_cls):
+                pass
+        """.trimIndent()
+        )
+
+        val moduleFile = myFixture.findFileInTempDir("old_module.py")
+        val psiFile = myFixture.psiManager.findFile(moduleFile)!!
+        myFixture.renameElement(psiFile, "new_module.py")
+        
+        myFixture.checkResult(
+            """
+            from unittest.mock import patch
+            
+            @patch('new_module.MyClass')
+            def test_something(mock_cls):
+                pass
+        """.trimIndent()
+        )
+    }
+
     fun testRename() {
         myFixture.addFileToProject(
             "RenameModule.py", """

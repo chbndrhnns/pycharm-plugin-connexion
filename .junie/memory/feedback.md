@@ -702,3 +702,11 @@
     "NEW INSTRUCTION": "WHEN writing the mock-argument test THEN do not include <warning> tags on the argument"
 }
 
+[2025-12-29 21:42] - Updated by Junie
+{
+    "TYPE": "preference",
+    "CATEGORY": "import quickfix in strings",
+    "EXPECTATION": "Show the standard 'Import this name' quick fix when the unittest.mock.patch target argument is a valid class or symbol identifier.",
+    "NEW INSTRUCTION": "WHEN in unittest.mock.patch target string with valid dotted identifier THEN offer 'Import this name' quick fix"
+}
+

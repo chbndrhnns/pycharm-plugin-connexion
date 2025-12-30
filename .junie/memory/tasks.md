@@ -1,33 +1,3 @@
-[2025-12-14 16:18] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "replace usage in assert,match by literal value,quote-normalization heuristics",
-    "MISSING STEPS": "resolve RHS reference to parameter,map parameter to decorator arg index,locate failing param set in parametrize,update decorator value with PSI,handle arbitrary tuple arity,handle pytest.param nodes",
-    "BOTTLENECK": "Decorator handling is limited to two args and string-only replacements.",
-    "PROJECT NOTE": "Support pytest.param with marks/kwargs and lists of tuples when updating.",
-    "NEW INSTRUCTION": "WHEN RHS of 'assert a == b' resolves to parametrized parameter THEN update corresponding @pytest.mark.parametrize argument value via PSI, preserving type"
-}
-
-[2025-12-14 16:52] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "parse stacktrace",
-    "MISSING STEPS": "add context menu action, restrict to failed leaves, get location, navigate to line, invoke intention, register action",
-    "BOTTLENECK": "Did not wire a context-menu action and relied on fragile stacktrace parsing.",
-    "PROJECT NOTE": "Use raw test location URL consistent with TestFailureState when matching failures.",
-    "NEW INSTRUCTION": "WHEN test tree context menu action invoked on failed leaf node THEN get selected SMTestProxy, use getLocation to navigate and run intention"
-}
-
-[2025-12-14 18:55] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "integrate with definitionsSearch",
-    "MISSING STEPS": "scan project,resolve imports,run tests,run build",
-    "BOTTLENECK": "Used unavailable PyProtocolsKt API causing compilation failure.",
-    "PROJECT NOTE": "Project already uses com.jetbrains.python APIs like PyABCUtil; prefer available, known imports.",
-    "NEW INSTRUCTION": "WHEN new code needs unfamiliar IntelliJ Python APIs THEN grep project for com.jetbrains.python usages and adapt"
-}
-
 [2025-12-14 18:59] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -876,4 +846,34 @@
     "BOTTLENECK": "Toggles were identified but not added to any Configurable UI.",
     "PROJECT NOTE": "Add bound checkboxes in IntentionsConfigurable, InspectionsConfigurable, and EditorActionsConfigurable for the listed flags.",
     "NEW INSTRUCTION": "WHEN a settings state flag lacks a dialog toggle THEN add a bound checkbox in the relevant Configurable class"
+}
+
+[2025-12-29 21:51] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "repeated re-planning, implement wrong interface",
+    "MISSING STEPS": "scan project, open relevant files, register extension, run tests",
+    "BOTTLENECK": "Uncertainty about the correct PyCharm API to trigger the import quickfix.",
+    "PROJECT NOTE": "Leverage existing PyMockPatchReferenceContributor and PyDottedSegmentReference; adjust them and register properly instead of adding a new inspection.",
+    "NEW INSTRUCTION": "WHEN adding import quickfix support THEN inspect plugin.xml and existing contributors before coding"
+}
+
+[2025-12-29 23:00] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "add import quickfix,register import inspection,add tests for import quickfix",
+    "MISSING STEPS": "design FQN replacement quickfix,compute qualified name,modify string literal,add tests for FQN replacement",
+    "BOTTLENECK": "Quickfix implemented imports instead of updating the string to a fully qualified name.",
+    "PROJECT NOTE": "Leverage PyResolveUtils and PyQualifiedNameOwner to derive FQN, then replace the literal in mock.patch.",
+    "NEW INSTRUCTION": "WHEN task requires FQN in string literal, no imports THEN implement quickfix replacing string with symbol's fully qualified name"
+}
+
+[2025-12-30 09:24] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "update quickfix, add tests, run tests",
+    "BOTTLENECK": "FQN replacement logic not aligned with source root prefix setting.",
+    "PROJECT NOTE": "Ensure PyMockPatchReplaceWithFQNQuickFix builds target strings honoring enableRestoreSourceRootPrefix, consistent with PyResolveUtils/PyDottedSegmentReference.",
+    "NEW INSTRUCTION": "WHEN building FQN for mock.patch target THEN apply source root prefix setting"
 }
