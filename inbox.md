@@ -27,6 +27,7 @@ def test_():
 
 ## Pending Features
 
+- [ ] feat: Navigate symbols via footer
 - [ ] refactor: Use `PythonDependenciesManager` if public
 - [ ] refactor: Do not use reflection to filter import suggestions
 - [ ] feat: Complete to FQN in string for mock.patch("")
@@ -68,18 +69,18 @@ def test_():
 - [ ] roots: mark as unresolved reference without
 - [ ] feat: populate union (docs/populate/populate-union.md)
 - [ ] feat: Generate dataclass, basemodel
-- [ ] feat: Create run config using package mode
 - [ ] Copy pydantic mock?
 - [ ] feat: Wrap default/default_factory after introducing custom type in dataclass/pydantic
 - [ ] feat: Convert fn to lambda
-- [ ] feat: Block list: Do not allow names from typing or collections.abc.
-- [ ] feat: Configure default base classes
 - [ ] commit: if it fails for hooks, add option keep selection of files (docs/keep-commit-selection/spec.md, stash)
 - [ ] feat: Collect symbols to check against for stdlib clashes dynamically
 - [ ] feat: Support what is tested in _testNestedConstructor_InsideDict_WrapsInnerArgument
 
 ## In Progress Tasks
 
+- [ ] feat: Block list: Do not allow names from typing or collections.abc.
+- [ ] feat: Configure default base classes
+- [ ] feat: Create run config using package mode
 - [ ] refactor: Performance (spec/performance.md)
 
 ## Completed Tasks (newest first)
