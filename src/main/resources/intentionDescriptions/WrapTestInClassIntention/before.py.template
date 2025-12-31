@@ -1,0 +1,3 @@
+def <spot>test_user_login</spot>(username, password):
+    assert username
+    assert password

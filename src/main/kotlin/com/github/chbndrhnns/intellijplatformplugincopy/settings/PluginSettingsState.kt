@@ -48,6 +48,7 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enableParametrizePytestTestIntention: Boolean = true,
         var enableConvertPytestParamIntention: Boolean = true,
         var enablePyMockTypeProvider: Boolean = true,
+        var enableWrapTestInClassIntention: Boolean = true,
 
         // ---- Inspections ----
         var enablePyMissingInDunderAllInspection: Boolean = true,

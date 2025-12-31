@@ -434,6 +434,14 @@
                 description="Inlines a parameter object back into individual parameters">
             <add-to-group group-id="RefactoringMenu" anchor="last"/>
         </action>
+
+        <action id="com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest.WrapTestInClassRefactoringAction"
+                class="com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest.WrapTestInClassRefactoringAction"
+                text="BetterPy: Wrap Test in Class..."
+                description="Wraps a module-level pytest test function inside a test class">
+            <add-to-group group-id="RefactoringMenu" anchor="last"/>
+        </action>
+
         <action id="com.github.chbndrhnns.intellijplatformplugincopy.actions.CopyBuildNumberAction"
                 class="com.github.chbndrhnns.intellijplatformplugincopy.actions.CopyBuildNumberAction"
                 text="BetterPy: Copy Build Number"
