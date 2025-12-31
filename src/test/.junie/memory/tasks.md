@@ -18,3 +18,13 @@
     "NEW INSTRUCTION": "WHEN recommending code changes without edits THEN apply_patch, add tests, and run build"
 }
 
+[2025-12-31 18:21] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "add integration test, run build, run tests",
+    "BOTTLENECK": "No early build/test feedback after registration and implementation changes.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN registering new plugin extension THEN run build and unit tests immediately"
+}
+

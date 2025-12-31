@@ -95,6 +95,8 @@
                                       implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.structureView.MyPythonStructureViewFactory"
                                       order="first"/>
 
+        <navbar implementation="com.github.chbndrhnns.intellijplatformplugincopy.navbar.PyNavBarModelExtension"/>
+
         <applicationService
                 serviceImplementation="com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState"/>
 

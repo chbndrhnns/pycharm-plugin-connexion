@@ -92,6 +92,9 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enableRelativeImportPreference: Boolean = true,
         var enableStructureViewPrivateMembersFilter: Boolean = true,
         var enableHideTransientImports: Boolean = true,
+        
+        // ---- Navigation Bar Settings ----
+        var enablePythonNavigationBar: Boolean = true,
 
         // ---- Filters & Suppressors ----
         var enableTypeAnnotationUsageFilteringRule: Boolean = true,
