@@ -27,7 +27,6 @@ def test_():
 
 ## Pending Features
 
-- [ ] feat: Navigate symbols via footer
 - [ ] refactor: Use `PythonDependenciesManager` if public
 - [ ] refactor: Do not use reflection to filter import suggestions
 - [ ] feat: Complete to FQN in string for mock.patch("")
@@ -85,4 +84,5 @@ def test_():
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Navigate symbols via footer
 - [x] feat: Typing support for Mock, MagicMock, AsyncMock
