@@ -18,3 +18,33 @@
     "NEW INSTRUCTION": "WHEN performing PSI modifications in intention or handler THEN wrap logic in WriteCommandAction"
 }
 
+[2026-01-01 10:04] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "search_replace",
+    "ERROR": "Unresolved reference 'buildMethodFromFunction'.",
+    "ROOT CAUSE": "invoke() was updated to call buildMethodFromFunction but the helper was never defined.",
+    "PROJECT NOTE": "Add a helper to convert a top-level PyFunction into a class method (prepend self, keep decorators/body) similar to buildClassWithMethod.",
+    "NEW INSTRUCTION": "WHEN semantic errors include Unresolved reference THEN define missing helper or add required import"
+}
+
+[2026-01-01 10:28] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "WrapTestInClassIntention",
+    "ERROR": "Function inserted inside method due to wrong insertion anchor",
+    "ROOT CAUSE": "The method was inserted at the caret/method body instead of the class statement list, causing nested def and bad indentation.",
+    "PROJECT NOTE": "Create the method PSI with PyElementGenerator and add it to targetClass.getStatementList() via PyClassRefactoringUtil.insertMethodInProperPlace; do not insert by editor offset.",
+    "NEW INSTRUCTION": "WHEN insertion point resolves inside a method body THEN add method to class statement list"
+}
+
+[2026-01-01 10:40] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "WrapTestInClassIntention",
+    "ERROR": "Empty method body after removing ellipsis",
+    "ROOT CAUSE": "Converting a one-line test with Ellipsis produced an empty suite without pass/ellipsis.",
+    "PROJECT NOTE": "When building the new PyFunction PSI, ensure the body contains either the original Ellipsis expression statement or a PyPassStatement to keep Python syntax valid.",
+    "NEW INSTRUCTION": "WHEN original body is Ellipsis or becomes empty THEN preserve ellipsis or insert 'pass' into method body"
+}
+

@@ -108,3 +108,23 @@
     "NEW INSTRUCTION": "WHEN request says remove item from intention menu THEN Unregister IntentionAction in plugin.xml and disable its availability checks."
 }
 
+[2026-01-01 10:26] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "run build",
+    "BOTTLENECK": "Out-of-order edits caused an unresolved reference to a yet-unimplemented helper.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN adding a call to a new helper THEN implement the helper in the same change"
+}
+
+[2026-01-01 10:47] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "reproduce bug, handle empty-body, add tests",
+    "BOTTLENECK": "Empty-body/ellipsis was not preserved during function-to-method conversion.",
+    "PROJECT NOTE": "Update buildMethodFromFunction to retain an Ellipsis or insert a pass when original body is empty or ellipsis-only.",
+    "NEW INSTRUCTION": "WHEN source function body is empty or ellipsis-only THEN generate method body with the same ellipsis or a pass"
+}
+

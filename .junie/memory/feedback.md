@@ -38,3 +38,19 @@
     "NEW INSTRUCTION": "WHEN user requests removal from intention menu THEN unregister intentionAction and register under Refactor This"
 }
 
+[2026-01-01 10:28] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "method insertion nesting",
+    "EXPECTATION": "When adding to an existing class, the new test must be a top-level method (not nested inside another method) with correct indentation and spacing.",
+    "NEW INSTRUCTION": "WHEN adding to existing class THEN addAfter last top-level statement in statementList"
+}
+
+[2026-01-01 10:39] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "empty body handling",
+    "EXPECTATION": "Preserve placeholder statements ('...' or 'pass') so transformed tests remain syntactically valid.",
+    "NEW INSTRUCTION": "WHEN converting a function to a method and body becomes empty THEN preserve '...' or insert 'pass'"
+}
+
