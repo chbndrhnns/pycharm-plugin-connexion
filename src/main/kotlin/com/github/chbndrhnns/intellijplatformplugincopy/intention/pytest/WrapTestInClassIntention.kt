@@ -5,6 +5,7 @@ import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsS
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
@@ -15,7 +16,7 @@ class WrapTestInClassIntention : IntentionAction {
 
     override fun getText(): String = PluginConstants.ACTION_PREFIX + "Wrap test in class"
     override fun getFamilyName(): String = "Wrap test in class"
-    override fun startInWriteAction(): Boolean = true
+    override fun startInWriteAction(): Boolean = false
 
     override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
         if (!PluginSettingsState.instance().state.enableWrapTestInClassIntention) return false
@@ -54,35 +55,37 @@ class WrapTestInClassIntention : IntentionAction {
             dialog.getSettings()
         }
 
-        val elementGenerator = PyElementGenerator.getInstance(project)
+        WriteCommandAction.runWriteCommandAction(project, text, null, {
+            val elementGenerator = PyElementGenerator.getInstance(project)
 
-        when (settings) {
-            is WrapTestInClassSettings.CreateNewClass -> {
-                // Build the complete class with method in one go to get proper formatting
-                val classWithMethodText = buildClassWithMethod(function, settings.className)
-                val testClass = elementGenerator.createFromText(
-                    LanguageLevel.getLatest(), PyClass::class.java, classWithMethodText
-                )
+            when (settings) {
+                is WrapTestInClassSettings.CreateNewClass -> {
+                    // Build the complete class with method in one go to get proper formatting
+                    val classWithMethodText = buildClassWithMethod(function, settings.className)
+                    val testClass = elementGenerator.createFromText(
+                        LanguageLevel.getLatest(), PyClass::class.java, classWithMethodText
+                    )
 
-                // Replace function with class in the file
-                function.replace(testClass)
+                    // Replace function with class in the file
+                    function.replace(testClass)
+                }
+
+                is WrapTestInClassSettings.AddToExistingClass -> {
+                    // Convert function to method
+                    val methodText = buildMethodFromFunction(function)
+                    val method = elementGenerator.createFromText(
+                        LanguageLevel.getLatest(), PyFunction::class.java, methodText
+                    )
+
+                    // Add method to existing class (append at the end)
+                    val statementList = settings.targetClass.statementList
+                    statementList.add(method)
+
+                    // Remove the original function
+                    function.delete()
+                }
             }
-
-            is WrapTestInClassSettings.AddToExistingClass -> {
-                // Convert function to method
-                val methodText = buildMethodFromFunction(function)
-                val method = elementGenerator.createFromText(
-                    LanguageLevel.getLatest(), PyFunction::class.java, methodText
-                )
-
-                // Add method to existing class (append at the end)
-                val statementList = settings.targetClass.statementList
-                statementList.add(method)
-
-                // Remove the original function
-                function.delete()
-            }
-        }
+        }, file)
     }
 
     override fun generatePreview(project: Project, editor: Editor, file: PsiFile): IntentionPreviewInfo {

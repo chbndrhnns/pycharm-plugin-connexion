@@ -54,3 +54,51 @@
     "NEW INSTRUCTION": "WHEN converting a function to a method and body becomes empty THEN preserve '...' or insert 'pass'"
 }
 
+[2026-01-01 10:54] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "dialog testing approach",
+    "EXPECTATION": "Do not add custom or special test logic for the dialog; use a fake/mock consistent with IntelliJ sources.",
+    "NEW INSTRUCTION": "WHEN tests need to simulate dialog choices THEN use IntelliJ-style fake dialog from intellij-community"
+}
+
+[2026-01-01 11:00] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "UI in write action",
+    "EXPECTATION": "Do not show dialogs or trigger AWT events inside a write action; run UI first, then perform PSI edits within a write command.",
+    "NEW INSTRUCTION": "WHEN showing a DialogWrapper or UI THEN show outside write action and run edits afterward"
+}
+
+[2026-01-01 11:13] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "UI in write action",
+    "EXPECTATION": "Show the dialog outside any write (or write-intent) action and only perform PSI edits within a write command after the UI completes.",
+    "NEW INSTRUCTION": "WHEN showing a dialog from intention or handler THEN show it outside write action and run edits afterward"
+}
+
+[2026-01-01 11:17] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "UI in write action",
+    "EXPECTATION": "Do not show the dialog while a write or write-intent action is running or pending; show the UI first and perform PSI edits afterward within a write command.",
+    "NEW INSTRUCTION": "WHEN showing DialogWrapper from intention or handler THEN call showAndGet outside WriteIntentReadAction using invokeLater"
+}
+
+[2026-01-01 11:21] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "UI in write action",
+    "EXPECTATION": "Do not show DialogWrapper inside a write or write-intent action; show the dialog first, then perform PSI edits within a write command.",
+    "NEW INSTRUCTION": "WHEN intention needs dialog THEN show via invokeLater, then run edits in WriteCommandAction"
+}
+
+[2026-01-01 11:41] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "UI in write action",
+    "EXPECTATION": "When invoked via 'Refactor This', the dialog must be shown outside any write or write-intent action; only PSI edits should run within a write command.",
+    "NEW INSTRUCTION": "WHEN invoked from 'Refactor This' refactoring handler THEN show dialog via invokeLater, then run edits in WriteCommandAction"
+}
+

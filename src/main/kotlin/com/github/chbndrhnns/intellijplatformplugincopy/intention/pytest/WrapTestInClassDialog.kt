@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
 import com.jetbrains.python.psi.PyClass
 import com.jetbrains.python.psi.PyFile
@@ -17,7 +18,7 @@ class WrapTestInClassDialog(
     private val classNameField = JTextField(suggestedClassName)
     private val createNewClassRadio = JRadioButton("Create new class", true)
     private val addToExistingClassRadio = JRadioButton("Add to existing class", false)
-    private val existingClassComboBox = JComboBox<String>()
+    private val existingClassComboBox = ComboBox<String>()
 
     init {
         title = "Wrap Test in Class"

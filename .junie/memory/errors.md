@@ -48,3 +48,43 @@
     "NEW INSTRUCTION": "WHEN original body is Ellipsis or becomes empty THEN preserve ellipsis or insert 'pass' into method body"
 }
 
+[2026-01-01 11:02] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "run_test",
+    "ERROR": "Headless tests fail due to interactive dialog in intention",
+    "ROOT CAUSE": "invoke() shows a Swing dialog; unit test mode cannot handle interactive UI.",
+    "PROJECT NOTE": "For IntelliJ plugin tests, gate dialogs with ApplicationManager.getApplication().isUnitTestMode and auto-select defaults.",
+    "NEW INSTRUCTION": "WHEN unit test mode detected THEN bypass dialog and use default wrap settings"
+}
+
+[2026-01-01 11:15] - Updated by Junie - Error analysis
+{
+    "TYPE": "permission",
+    "TOOL": "WrapTestInClassIntention",
+    "ERROR": "Cannot modify a read-only PSI file during write action",
+    "ROOT CAUSE": "Tests create read-only fixture files and the write command did not request write access via ReadonlyStatusHandler/FileModificationService.",
+    "PROJECT NOTE": "Before PSI edits, call FileModificationService.getInstance().preparePsiElementsForWrite(listOf(file)) or ReadonlyStatusHandler.ensureFilesWritable(file.virtualFile) in tests and IDE.",
+    "NEW INSTRUCTION": "WHEN write action targets PSI file THEN ensure file is writable using FileModificationService"
+}
+
+[2026-01-01 11:19] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "WrapTestInClassIntention.invoke",
+    "ERROR": "Dialog shown while write-intent action is pending on EDT",
+    "ROOT CAUSE": "DialogWrapper.showAndGet is invoked synchronously in invoke(), causing action updates during a pending write-intent read action on EDT.",
+    "PROJECT NOTE": "In WrapTestInClassIntention.invoke at ~line 51, schedule dialog display via ApplicationManager.getApplication().invokeLater and continue logic inside that runnable.",
+    "NEW INSTRUCTION": "WHEN needing to show a dialog from intention THEN open dialog via invokeLater and proceed inside"
+}
+
+[2026-01-01 11:42] - Updated by Junie - Error analysis
+{
+    "TYPE": "threading",
+    "TOOL": "WrapTestInClassRefactoringHandler",
+    "ERROR": "Dialog shown during write action on EDT",
+    "ROOT CAUSE": "The refactoring handler opens DialogWrapper synchronously while a write-intent action is running or pending.",
+    "PROJECT NOTE": "In WrapTestInClassRefactoringHandler.invoke, schedule dialog via ApplicationManager.getApplication().invokeLater and perform PSI edits inside WriteCommandAction.",
+    "NEW INSTRUCTION": "WHEN refactoring handler needs to show dialog THEN open via invokeLater and run edits in WriteCommandAction"
+}
+

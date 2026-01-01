@@ -128,3 +128,43 @@
     "NEW INSTRUCTION": "WHEN source function body is empty or ellipsis-only THEN generate method body with the same ellipsis or a pass"
 }
 
+[2026-01-01 11:08] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "scan project for similar patterns, run plugin tests",
+    "BOTTLENECK": "Dialog shown during write action caused AWT event violation.",
+    "PROJECT NOTE": "PSI edits must be inside WriteCommandAction as per repo conventions.",
+    "NEW INSTRUCTION": "WHEN intention shows a dialog or UI prompt THEN set startInWriteAction false and wrap PSI edits in WriteCommandAction"
+}
+
+[2026-01-01 11:16] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "prepare files for write",
+    "BOTTLENECK": "PSI edits failed due to read-only file status.",
+    "PROJECT NOTE": "Use FileModificationService.preparePsiElementsForWrite(file or elements) before PSI changes.",
+    "NEW INSTRUCTION": "WHEN starting PSI write on file THEN call FileModificationService.preparePsiElementsForWrite(file)"
+}
+
+[2026-01-01 11:19] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "submit",
+    "MISSING STEPS": "test interactive mode,scan stacktrace",
+    "BOTTLENECK": "Headless tests missed UI threading issues reproducible only in interactive mode.",
+    "PROJECT NOTE": "For IntelliJ intentions, verify dialogs and action updates occur outside any running or pending write action on EDT.",
+    "NEW INSTRUCTION": "WHEN headless tests pass for UI changes THEN test feature interactively in IDE before submit"
+}
+
+[2026-01-01 11:23] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "search symbol",
+    "MISSING STEPS": "use invokeLater for dialog, scan related handler",
+    "BOTTLENECK": "Dialog shown during write action caused AWT event violation.",
+    "PROJECT NOTE": "WrapTestInClassRefactoringHandler.invoke also shows UI; verify it avoids write actions.",
+    "NEW INSTRUCTION": "WHEN intention opens DialogWrapper THEN show via invokeLater and edit in WriteCommandAction afterward"
+}
+

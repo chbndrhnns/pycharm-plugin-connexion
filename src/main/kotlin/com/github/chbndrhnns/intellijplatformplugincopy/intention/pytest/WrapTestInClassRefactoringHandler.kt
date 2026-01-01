@@ -1,7 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest
 
 import com.intellij.openapi.actionSystem.DataContext
-import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
@@ -17,9 +16,7 @@ class WrapTestInClassRefactoringHandler : RefactoringActionHandler {
         // Reuse the existing intention logic, but wrap in write command
         val intention = WrapTestInClassIntention()
         if (intention.isAvailable(project, editor, file)) {
-            WriteCommandAction.runWriteCommandAction(project) {
-                intention.invoke(project, editor, file)
-            }
+            intention.invoke(project, editor, file)
         }
     }
 
