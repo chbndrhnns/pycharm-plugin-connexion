@@ -65,7 +65,7 @@
 
 ## In Progress Tasks
 
-- [ ] feat: Move: Warn if test exists in target class already
+- [-] feat: Move: Warn if test exists in target class already
 - [ ] feat: Block list: Do not allow names from typing or collections.abc.
 - [ ] feat: Configure default base classes
 - [ ] feat: Create run config using package mode
