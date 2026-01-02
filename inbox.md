@@ -65,7 +65,6 @@
 
 ## In Progress Tasks
 
-- [ ] fix: Do not hide import suggestions for symbols in the current own project (!)
 - [ ] feat: Move: Warn if test exists in target class already
 - [ ] feat: Block list: Do not allow names from typing or collections.abc.
 - [ ] feat: Configure default base classes
@@ -74,6 +73,7 @@
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Do not hide import suggestions for symbols in the current own project (!)
 - [x] fix: Do not offer builtins as expected type callables
 
 ```python
