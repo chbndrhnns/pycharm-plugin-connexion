@@ -230,3 +230,11 @@
     "NEW INSTRUCTION": "WHEN modifying expected-type filtering THEN run RefinedReturnCompletionTest and keep it green"
 }
 
+[2026-01-02 22:40] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "import filtering",
+    "EXPECTATION": "Do not filter out symbols defined in the current project from import suggestions.",
+    "NEW INSTRUCTION": "WHEN filtering import candidates THEN always keep symbols from the current project"
+}
+

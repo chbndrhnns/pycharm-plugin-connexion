@@ -158,3 +158,23 @@
     "NEW INSTRUCTION": "WHEN expected type candidate is a Python builtin THEN exclude it from suggestions"
 }
 
+[2026-01-02 22:42] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "run_test",
+    "ERROR": "Local project symbol missing from import suggestion under transient filter",
+    "ROOT CAUSE": "HideTransientImportProvider treats non-dependency candidates as transient and does not exempt current project modules.",
+    "PROJECT NOTE": "Adjust src/main/kotlin/.../imports/HideTransientImportProvider.kt to detect candidates from the current module/project (e.g., via ModuleUtilCore.findModuleForPsiElement or VirtualFile under project base dir) and always keep them; include both source and test roots.",
+    "NEW INSTRUCTION": "WHEN import candidate originates from current project/module THEN bypass transient filtering and keep it"
+}
+
+[2026-01-02 22:46] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Argument type mismatch in getDirectDependencies call",
+    "ROOT CAUSE": "Call site passed a Module while getDirectDependencies still expected a PsiReference.",
+    "PROJECT NOTE": "In src/main/kotlin/.../imports/HideTransientImportProvider.kt, ensure getDirectDependencies signature and all invocations use the same parameter type.",
+    "NEW INSTRUCTION": "WHEN changing method parameter types THEN update all call sites accordingly"
+}
+

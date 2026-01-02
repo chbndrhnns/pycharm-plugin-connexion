@@ -288,3 +288,13 @@
     "NEW INSTRUCTION": "WHEN test file still uses doIntentionTest THEN replace with doRefactoringActionTest using action id"
 }
 
+[2026-01-02 22:47] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "scan project, run build, run tests",
+    "BOTTLENECK": "Filtering logic allowed transient imports when packageName was null.",
+    "PROJECT NOTE": "Detect local symbols by checking candidate file under module content roots before dependency filtering.",
+    "NEW INSTRUCTION": "WHEN modifying import filtering logic THEN run build and targeted import tests immediately"
+}
+

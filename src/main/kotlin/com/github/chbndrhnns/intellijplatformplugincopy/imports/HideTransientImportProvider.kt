@@ -23,10 +23,12 @@ class HideTransientImportProvider : PyImportCandidateProvider {
         if (!PluginSettingsState.instance().state.enableHideTransientImports) {
             return
         }
-        val directDependencies = getDirectDependencies(reference) ?: return
-        val project = reference.element.project
+        val element = reference.element
+        val module = ModuleUtilCore.findModuleForPsiElement(element) ?: return
+        val directDependencies = getDirectDependencies(module) ?: return
+        val project = element.project
         val stdlibService = PythonStdlibService.getInstance(project)
-        filterTransientCandidatesReflectively(quickFix, directDependencies, stdlibService)
+        filterTransientCandidatesReflectively(quickFix, directDependencies, stdlibService, module)
     }
 
     /**
@@ -37,7 +39,8 @@ class HideTransientImportProvider : PyImportCandidateProvider {
     private fun filterTransientCandidatesReflectively(
         quickFix: AutoImportQuickFix,
         directDependencies: Set<String>,
-        stdlibService: PythonStdlibService
+        stdlibService: PythonStdlibService,
+        module: Module
     ) {
         try {
             val candidatesField = AutoImportQuickFix::class.java.getDeclaredField("myImports")
@@ -48,6 +51,10 @@ class HideTransientImportProvider : PyImportCandidateProvider {
 
             // Filter using the public API of ImportCandidateHolder
             candidates.removeIf { candidate ->
+                // Never filter local project modules
+                val importable = candidate.importable
+                if (isLocal(importable, module)) return@removeIf false
+
                 val path = candidate.path ?: return@removeIf false // Keep if no path (built-ins, etc.)
                 val topLevelModule = path.firstComponent ?: return@removeIf false
 
@@ -56,7 +63,11 @@ class HideTransientImportProvider : PyImportCandidateProvider {
                 
                 val packageName = PyPsiPackageUtil.moduleToPackageName(topLevelModule)
                 val normalizedPackageName = PyPackageName.normalizePackageName(packageName)
-                !directDependencies.contains(normalizedPackageName)
+                if (!directDependencies.contains(normalizedPackageName)) {
+                    return@removeIf true
+                }
+
+                false
             }
         } catch (e: NoSuchFieldException) {
             // Field name changed - log and fail gracefully
@@ -69,13 +80,17 @@ class HideTransientImportProvider : PyImportCandidateProvider {
         }
     }
 
+    private fun isLocal(importable: com.intellij.psi.PsiElement?, module: Module): Boolean {
+        if (importable == null) return false
+        val candidateModule = ModuleUtilCore.findModuleForPsiElement(importable)
+        return candidateModule != null && candidateModule == module
+    }
+
     /**
      * Retrieves the set of direct dependencies from pyproject.toml.
      * Returns null if pyproject.toml is not found or cannot be parsed.
      */
-    private fun getDirectDependencies(reference: PsiReference): Set<String>? {
-        val element = reference.element
-        val module = ModuleUtilCore.findModuleForPsiElement(element) ?: return null
+    private fun getDirectDependencies(module: Module): Set<String>? {
         val pyProjectFile = findPyProjectToml(module) ?: return null
         val dependencies = parseDependenciesFromToml(pyProjectFile)
         return dependencies.map { dep ->
