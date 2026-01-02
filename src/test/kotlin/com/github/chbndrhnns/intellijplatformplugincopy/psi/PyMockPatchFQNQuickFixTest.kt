@@ -293,6 +293,27 @@ class PyMockPatchFQNQuickFixTest : TestBase() {
         assertNull("Should NOT suggest library-side FQN", libraryIntention)
     }
 
+    fun testPatchTargetInNonSourceRootFolderShouldResolve() {
+        // Issue: patch("tests.test_mymock.ExternalService") shows unresolved reference
+        // when tests folder is not marked as source root - but it should still resolve
+        // Fix: PyResolveUtils.findTopLevelModule now checks content root, not just source root
+
+        // Declaration site
+        myFixture.addFileToProject("services/__init__.py", "")
+        myFixture.addFileToProject("services/external.py", "class ExternalService: pass")
+
+        // Usage site - tests folder imports ExternalService (NOT marked as source root)
+        myFixture.addFileToProject("tests/__init__.py", "")
+        val testFile = myFixture.addFileToProject(
+            "tests/test_mymock.py",
+            "from services.external import ExternalService"
+        )
+
+        // Before the fix, this returned null because only source roots were checked
+        val resolved = PyResolveUtils.resolveDottedName("tests.test_mymock.ExternalService", testFile)
+        assertNotNull("Should resolve path at content root even when not a source root", resolved)
+    }
+
     fun testNestedSegmentUnresolvedHighlighting() {
         myFixture.addFileToProject("logic/__init__.py", "")
         myFixture.addFileToProject("logic/service.py", "class MyService: pass")

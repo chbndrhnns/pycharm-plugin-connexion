@@ -150,3 +150,35 @@
     "NEW INSTRUCTION": "WHEN \"Wrap test in class\" shows in intention menu THEN remove intention extension and register refactoring action"
 }
 
+[2026-01-02 15:20] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "patch target semantics",
+    "EXPECTATION": "patch() target must resolve to the usage site module path, not the declaration site.",
+    "NEW INSTRUCTION": "WHEN adding tests for patch target resolution THEN assert resolution matches usage site path, not declaration"
+}
+
+[2026-01-02 15:25] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "non-source-root resolution",
+    "EXPECTATION": "A patch target like 'tests.test_mymock.ExternalService' should not be flagged unresolved even when 'tests' is not a marked source root.",
+    "NEW INSTRUCTION": "WHEN resolving top-level patch module in project THEN allow regular content roots, not only source roots"
+}
+
+[2026-01-02 15:30] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "regression test gap",
+    "EXPECTATION": "Add a test that would fail before the fix and pass after, proving the resolution works for non-source-root folders.",
+    "NEW INSTRUCTION": "WHEN adding a test for a bug fix THEN make it fail pre-fix and pass post-fix"
+}
+
+[2026-01-02 15:33] - Updated by Junie
+{
+    "TYPE": "preference",
+    "CATEGORY": "test scope",
+    "EXPECTATION": "Keep the test minimal and only verify that the patch target resolves.",
+    "NEW INSTRUCTION": "WHEN testing patch target resolution THEN assert reference resolves without intentions or inspections"
+}
+

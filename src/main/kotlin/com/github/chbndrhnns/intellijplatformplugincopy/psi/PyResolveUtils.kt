@@ -75,9 +75,10 @@ object PyResolveUtils {
         for (vf in virtualFiles) {
             if (!isAllowedTopLevelName(name, vf, fileIndex, includeSourceRootPrefix)) continue
 
-            // Ensure the file is directly under a source root
+            // Ensure the file is directly under a source root or content root
             val sourceRoot = fileIndex.getSourceRootForFile(vf)
-            if (sourceRoot != vf.parent) continue
+            val contentRoot = fileIndex.getContentRootForFile(vf)
+            if (sourceRoot != vf.parent && contentRoot != vf.parent) continue
             
             val file = psiManager.findFile(vf)
             if (file is PyFile) return file
@@ -88,10 +89,11 @@ object PyResolveUtils {
         for (vf in initVFiles) {
             if (!isAllowedTopLevelName(name, vf, fileIndex, includeSourceRootPrefix)) continue
             if (vf.parent?.name == name) {
-                // Ensure the package directory is directly under a source root
+                // Ensure the package directory is directly under a source root or content root
                 val pkgDir = vf.parent ?: continue
                 val sourceRoot = fileIndex.getSourceRootForFile(pkgDir)
-                if (sourceRoot != pkgDir.parent) continue
+                val contentRoot = fileIndex.getContentRootForFile(pkgDir)
+                if (sourceRoot != pkgDir.parent && contentRoot != pkgDir.parent) continue
                 
                 val psiFile = psiManager.findFile(vf) ?: continue
                 return psiFile.parent
