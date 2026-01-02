@@ -2,19 +2,6 @@
 
 ## Pending Issues
 
-- [ ] fix: Do not offer builtins as expected type callables
-
-```python
-def do(arg: str | int):
-    ...
-
-
-def test_():
-    do()
-    do("")
-
-```
-
 - [ ] refactor: Use module name in PyPackageRunLineMarkerContributor, also strip __main__, other special cases?
 - [ ] refactor: Is doing PyAllExportUtil too much string magic?
 - [ ] refactor: why do we need a different check during tests? `PyWrapHeuristics.isProtocol`
@@ -79,6 +66,7 @@ def test_():
 
 ## In Progress Tasks
 
+- [ ] fix: Do not hide import suggestions for symbols in the current own project (!)
 - [ ] feat: Move: Warn if test exists in target class already
 - [ ] feat: Block list: Do not allow names from typing or collections.abc.
 - [ ] feat: Configure default base classes
@@ -87,6 +75,20 @@ def test_():
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Do not offer builtins as expected type callables
+
+```python
+def do(arg: str | int):
+    ...
+
+
+def test_():
+    do()
+    do("")
+
+```
+
+- [x] fix: Tests for wrap in class are breaking -> moved to refactoring
 - [x] feat: Jump to attribute for patch.object() reference
 - [x] feat: Navigate symbols via footer
 - [x] feat: Typing support for Mock, MagicMock, AsyncMock
