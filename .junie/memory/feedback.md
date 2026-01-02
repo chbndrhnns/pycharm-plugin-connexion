@@ -206,3 +206,27 @@
     "NEW INSTRUCTION": "WHEN file is not a pytest test THEN do not disable import/completion providers"
 }
 
+[2026-01-02 15:52] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "relative import on move",
+    "EXPECTATION": "When moving MyClass from package __init__.py to myclass.py, use a relative import (from .myclass import MyClass) and keep exports consistent.",
+    "NEW INSTRUCTION": "WHEN moving symbol within same package THEN generate from .<module> import <name> and update __all__"
+}
+
+[2026-01-02 15:57] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "relative import on move",
+    "EXPECTATION": "When moving MyClass from __init__.py to myclass.py, the import in __init__.py must be 'from .myclass import MyClass', not an absolute path.",
+    "NEW INSTRUCTION": "WHEN moving symbol within same package THEN generate from .<module> import <name> and update __all__"
+}
+
+[2026-01-02 17:25] - Updated by Junie
+{
+    "TYPE": "negative",
+    "CATEGORY": "regression tests",
+    "EXPECTATION": "Recent change broke RefinedReturnCompletionTest; fix it without blocking intended refined-return suggestions.",
+    "NEW INSTRUCTION": "WHEN modifying expected-type filtering THEN run RefinedReturnCompletionTest and keep it green"
+}
+

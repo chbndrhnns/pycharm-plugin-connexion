@@ -248,3 +248,33 @@
     "NEW INSTRUCTION": "WHEN investigating missing import suggestions THEN search for PyImportCandidateProvider implementations first"
 }
 
+[2026-01-02 15:56] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "open spec (unrelated), repeated search_project for listeners without follow-up",
+    "MISSING STEPS": "verify API usage, run tests, implement fix, add assertion for __all__ preservation",
+    "BOTTLENECK": "Incorrect use of PyMoveModuleMembersProcessor constructor caused compile-time errors.",
+    "PROJECT NOTE": "See spec/import/move-symbol.md for correct PyMoveModuleMembersProcessor usage.",
+    "NEW INSTRUCTION": "WHEN build shows constructor/type mismatch THEN open API class and adjust call accordingly"
+}
+
+[2026-01-02 16:29] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "wire listener, add integration test",
+    "BOTTLENECK": "Listener never receives real Move refactoring events.",
+    "PROJECT NOTE": "Use RefactoringListenerProvider for Move callbacks instead of relying solely on RefactoringEventListener.",
+    "NEW INSTRUCTION": "WHEN tests do not simulate Move refactoring THEN add integration test that performs Move and verifies conversion"
+}
+
+[2026-01-02 17:19] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "inspect helper file",
+    "MISSING STEPS": "run tests, run all tests",
+    "BOTTLENECK": "No tests were executed to validate the changes.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN a reproduction test is added or logic is changed THEN run the targeted tests immediately"
+}
+

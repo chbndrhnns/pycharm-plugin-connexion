@@ -128,3 +128,33 @@
     "NEW INSTRUCTION": "WHEN adding parameters to a method call THEN update the method signature and imports"
 }
 
+[2026-01-02 15:55] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Wrong constructor arguments for PyMoveModuleMembersProcessor",
+    "ROOT CAUSE": "The test used an incorrect constructor signature, passing project and a boolean.",
+    "PROJECT NOTE": "Use PyMoveModuleMembersProcessor(arrayOf<PsiNamedElement>(symbol), destPath).run() with only elements and destination; run PSI changes in a write command.",
+    "NEW INSTRUCTION": "WHEN adding SDK constructor calls THEN verify and match the actual parameter signature"
+}
+
+[2026-01-02 17:15] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "get_file_structure",
+    "ERROR": "Cannot display structure for non-directory file",
+    "ROOT CAUSE": "get_file_structure expects a directory path but was given a single XML file.",
+    "PROJECT NOTE": "To inspect src/main/resources/META-INF/plugin.xml, view its parent directories or open the file content with get_file_preview.",
+    "NEW INSTRUCTION": "WHEN calling get_file_structure on a path THEN ensure the path is a directory"
+}
+
+[2026-01-02 17:16] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "run_test",
+    "ERROR": "Test failed: built-ins still suggested",
+    "ROOT CAUSE": "Expected-type completion contributor does not filter out Python built-in types.",
+    "PROJECT NOTE": "Implement filtering in src/main/kotlin/.../completion/PyExpectedTypeCompletionContributor.kt, method shouldSkipExpectedTypeSuggestion.",
+    "NEW INSTRUCTION": "WHEN expected type candidate is a Python builtin THEN exclude it from suggestions"
+}
+

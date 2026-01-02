@@ -318,4 +318,33 @@ class PyExpectedTypeCompletionTest : TestBase() {
             variants.any { it.startsWith("Literal[") }
         )
     }
+
+    fun testDoNotOfferBuiltinsAsExpectedTypeCallables() {
+        myFixture.configureByText(
+            "test_builtins.py", """
+            def do(arg: str | int):
+                ...
+
+            def test_():
+                do(<caret>)
+        """.trimIndent()
+        )
+
+        myFixture.completeBasic()
+        val lookupElements = myFixture.lookupElements ?: emptyArray()
+
+        val expectedTypeSuggestions = lookupElements.filter {
+            it.allLookupStrings.contains("str") || it.allLookupStrings.contains("int")
+        }.filter {
+            // Check if it's our suggestion by looking at the type text
+            val presentation = com.intellij.codeInsight.lookup.LookupElementPresentation()
+            it.renderElement(presentation)
+            presentation.typeText == "Expected type"
+        }
+
+        assertTrue(
+            "Should not contain 'str' or 'int' as 'Expected type', found: ${expectedTypeSuggestions.map { it.lookupString }}",
+            expectedTypeSuggestions.isEmpty()
+        )
+    }
 }

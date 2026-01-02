@@ -15,9 +15,8 @@ import com.jetbrains.python.psi.LanguageLevel
 import com.jetbrains.python.psi.PyElementGenerator
 import com.jetbrains.python.psi.PyExpression
 import com.jetbrains.python.psi.PyReferenceExpression
-import com.jetbrains.python.psi.types.PyType
-import com.jetbrains.python.psi.types.PyUnionType
-import com.jetbrains.python.psi.types.TypeEvalContext
+import com.jetbrains.python.psi.impl.PyBuiltinCache
+import com.jetbrains.python.psi.types.*
 
 class PyExpectedTypeCompletionContributor : CompletionContributor() {
 
@@ -59,13 +58,13 @@ class PyExpectedTypeCompletionContributor : CompletionContributor() {
                     types
                         .asSequence()
                         .filterNotNull()
-                        .filterNot { shouldSkipExpectedTypeSuggestion(it) }
+                        .filterNot { shouldSkipExpectedTypeSuggestion(it, expression) }
                         .forEach { type ->
                             val generator = PyElementGenerator.getInstance(position.project)
                             val languageLevel = LanguageLevel.forElement(position)
                             val scopeOwner = ScopeUtil.getScopeOwner(position)
 
-                            val generatedText = if (scopeOwner != null) {
+                            val generatedValue = if (scopeOwner != null) {
                                 valueGenerator.generateValue(
                                     type,
                                     typeEvalContext,
@@ -73,8 +72,10 @@ class PyExpectedTypeCompletionContributor : CompletionContributor() {
                                     generator,
                                     languageLevel,
                                     scopeOwner
-                                ).text
-                            } else "..."
+                                )
+                            } else null
+
+                            val generatedText = generatedValue?.text ?: "..."
 
                             val lookupString =
                                 if (generatedText == "..." || generatedText == "None") type.name else generatedText
@@ -91,7 +92,18 @@ class PyExpectedTypeCompletionContributor : CompletionContributor() {
         )
     }
 
-    private fun shouldSkipExpectedTypeSuggestion(type: PyType): Boolean {
+    private fun shouldSkipExpectedTypeSuggestion(type: PyType, anchor: PyExpression): Boolean {
+        if (type is PyClassType) {
+            val pyClass = type.pyClass
+            if (PyBuiltinCache.getInstance(anchor).isBuiltin(pyClass)) {
+                // Skip simple builtins like str, int, etc.
+                // But allow parameterized collections like list[MyType] because they generate useful literals.
+                if (type !is PyCollectionType || type.elementTypes.filterNotNull().isEmpty()) {
+                    return true
+                }
+            }
+        }
+
         val name = type.name ?: return true
 
         // `typing.LiteralString` (Py3.11+) and some internal literal-string types can appear as these.
