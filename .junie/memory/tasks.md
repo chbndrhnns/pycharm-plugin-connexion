@@ -278,3 +278,13 @@
     "NEW INSTRUCTION": "WHEN a reproduction test is added or logic is changed THEN run the targeted tests immediately"
 }
 
+[2026-01-02 17:51] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "run tests",
+    "MISSING STEPS": "update tests,run tests",
+    "BOTTLENECK": "Tests were not updated to call the refactoring action.",
+    "PROJECT NOTE": "Reuse pattern from IntroduceParameterObjectRefactoringActionTest to invoke actions via ActionManager.",
+    "NEW INSTRUCTION": "WHEN test file still uses doIntentionTest THEN replace with doRefactoringActionTest using action id"
+}
+

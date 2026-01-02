@@ -1,16 +1,16 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest
 
-import com.intellij.ui.UiInterceptors
-import fixtures.DialogOkInterceptor
 import fixtures.TestBase
-import fixtures.assertIntentionNotAvailable
-import fixtures.doIntentionTest
+import fixtures.doRefactoringActionTest
 
-class WrapTestInClassIntentionTest : TestBase() {
+class WrapTestInClassRefactoringTest : TestBase() {
+
+    private val actionId =
+        "com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest.WrapTestInClassRefactoringAction"
 
     // Basic wrapping scenarios
     fun testWrapSimpleTestFunction() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "test_foo.py",
             """
             def test_user_login():
@@ -21,13 +21,13 @@ class WrapTestInClassIntentionTest : TestBase() {
                 def test_user_login(self):
                     assert True
             """,
-            "BetterPy: Wrap test in class",
+            actionId,
             dialogOk = true
         )
     }
 
     fun testWrapTestFunctionWithSingleParameter() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "test_foo.py",
             """
             def test_database_connection(db_session):
@@ -38,13 +38,13 @@ class WrapTestInClassIntentionTest : TestBase() {
                 def test_database_connection(self, db_session):
                     assert db_session.is_connected()
             """,
-            "BetterPy: Wrap test in class",
+            actionId,
             dialogOk = true
         )
     }
 
     fun testWrapTestFunctionWithMultipleParameters() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "test_foo.py",
             """
             def test_add(a, b, expected):
@@ -55,13 +55,13 @@ class WrapTestInClassIntentionTest : TestBase() {
                 def test_add(self, a, b, expected):
                     assert a + b == expected
             """,
-            "BetterPy: Wrap test in class",
+            actionId,
             dialogOk = true
         )
     }
 
     fun testWrapTestFunctionWithDocstring() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "test_foo.py",
             """
             def test_something():
@@ -74,13 +74,13 @@ class WrapTestInClassIntentionTest : TestBase() {
                     '''This is a test docstring.'''
                     assert True
             """,
-            "BetterPy: Wrap test in class",
+            actionId,
             dialogOk = true
         )
     }
 
     fun testWrapTestFunctionWithMultipleStatements() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "test_foo.py",
             """
             def test_complex():
@@ -95,14 +95,14 @@ class WrapTestInClassIntentionTest : TestBase() {
                     y = 2
                     assert x + y == 3
             """,
-            "BetterPy: Wrap test in class",
+            actionId,
             dialogOk = true
         )
     }
 
     // Pytest features - decorators
     fun testWrapTestWithParametrizeDecorator() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "test_foo.py",
             """
             import pytest
@@ -120,13 +120,13 @@ class WrapTestInClassIntentionTest : TestBase() {
                 def test_increment(self, input, expected):
                     assert input + 1 == expected
             """,
-            "BetterPy: Wrap test in class",
+            actionId,
             dialogOk = true
         )
     }
 
     fun testWrapTestWithSkipDecorator() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "test_foo.py",
             """
             import pytest
@@ -144,13 +144,13 @@ class WrapTestInClassIntentionTest : TestBase() {
                 def test_future_feature(self):
                     pass
             """,
-            "BetterPy: Wrap test in class",
+            actionId,
             dialogOk = true
         )
     }
 
     fun testWrapTestWithMultipleDecorators() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "test_foo.py",
             """
             import pytest
@@ -171,43 +171,66 @@ class WrapTestInClassIntentionTest : TestBase() {
                 def test_slow_operation(self, value):
                     assert value > 0
             """,
-            "BetterPy: Wrap test in class",
+            actionId,
             dialogOk = true
         )
     }
 
     // Availability tests
     fun testNotAvailableOnNonTestFunction() {
-        myFixture.assertIntentionNotAvailable(
+        myFixture.configureByText(
             "test_foo.py",
             """
             def helper_function():
                 <caret>pass
-            """,
-            "BetterPy: Wrap test in class"
+            """
         )
+        val action = com.intellij.openapi.actionSystem.ActionManager.getInstance().getAction(actionId)
+        val dataContext = com.intellij.openapi.actionSystem.impl.SimpleDataContext.builder()
+            .add(com.intellij.openapi.actionSystem.CommonDataKeys.PROJECT, project)
+            .add(com.intellij.openapi.actionSystem.CommonDataKeys.EDITOR, myFixture.editor)
+            .add(com.intellij.openapi.actionSystem.CommonDataKeys.PSI_FILE, myFixture.file)
+            .build()
+        val event = com.intellij.testFramework.TestActionEvent.createFromDataContext("", null, dataContext)
+        action.update(event)
+        assertFalse("Action should not be enabled on non-test functions", event.presentation.isEnabled)
     }
 
     fun testNotAvailableOnTestMethodInsideClass() {
-        myFixture.assertIntentionNotAvailable(
+        myFixture.configureByText(
             "test_foo.py",
             """
             class TestSomething:
                 def test_method(self):
                     <caret>pass
-            """,
-            "BetterPy: Wrap test in class"
+            """
         )
+        val action = com.intellij.openapi.actionSystem.ActionManager.getInstance().getAction(actionId)
+        val dataContext = com.intellij.openapi.actionSystem.impl.SimpleDataContext.builder()
+            .add(com.intellij.openapi.actionSystem.CommonDataKeys.PROJECT, project)
+            .add(com.intellij.openapi.actionSystem.CommonDataKeys.EDITOR, myFixture.editor)
+            .add(com.intellij.openapi.actionSystem.CommonDataKeys.PSI_FILE, myFixture.file)
+            .build()
+        val event = com.intellij.testFramework.TestActionEvent.createFromDataContext("", null, dataContext)
+        action.update(event)
+        assertFalse("Action should not be enabled on test methods already inside a class", event.presentation.isEnabled)
     }
 
     fun testNotAvailableOnNonPythonFile() {
         myFixture.configureByText("test.txt", "test_something<caret>")
-        val intention = myFixture.availableIntentions.find { it.text == "BetterPy: Wrap test in class" }
-        assertNull("Intention should not be available in non-Python files", intention)
+        val action = com.intellij.openapi.actionSystem.ActionManager.getInstance().getAction(actionId)
+        val dataContext = com.intellij.openapi.actionSystem.impl.SimpleDataContext.builder()
+            .add(com.intellij.openapi.actionSystem.CommonDataKeys.PROJECT, project)
+            .add(com.intellij.openapi.actionSystem.CommonDataKeys.EDITOR, myFixture.editor)
+            .add(com.intellij.openapi.actionSystem.CommonDataKeys.PSI_FILE, myFixture.file)
+            .build()
+        val event = com.intellij.testFramework.TestActionEvent.createFromDataContext("", null, dataContext)
+        action.update(event)
+        assertFalse("Action should not be enabled in non-Python files", event.presentation.isEnabled)
     }
 
     fun testAvailableOnFunctionName() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "test_foo.py",
             """
             def test_<caret>something():
@@ -218,13 +241,13 @@ class WrapTestInClassIntentionTest : TestBase() {
                 def test_something(self):
                     assert True
             """,
-            "BetterPy: Wrap test in class",
+            actionId,
             dialogOk = true
         )
     }
 
     fun testAvailableOnDefKeyword() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "test_foo.py",
             """
             <caret>def test_something():
@@ -235,14 +258,14 @@ class WrapTestInClassIntentionTest : TestBase() {
                 def test_something(self):
                     assert True
             """,
-            "BetterPy: Wrap test in class",
+            actionId,
             dialogOk = true
         )
     }
 
     // Edge cases
     fun testWrapTestWithTypeHints() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "test_foo.py",
             """
             def test_typed(value: int) -> None:
@@ -253,13 +276,13 @@ class WrapTestInClassIntentionTest : TestBase() {
                 def test_typed(self, value: int) -> None:
                     assert value > 0
             """,
-            "BetterPy: Wrap test in class",
+            actionId,
             dialogOk = true
         )
     }
 
     fun testWrapTestWithDefaultParameters() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "test_foo.py",
             """
             def test_with_default(value=10):
@@ -270,13 +293,13 @@ class WrapTestInClassIntentionTest : TestBase() {
                 def test_with_default(self, value=10):
                     assert value == 10
             """,
-            "BetterPy: Wrap test in class",
+            actionId,
             dialogOk = true
         )
     }
 
     fun testWrapTestWithComplexName() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "test_foo.py",
             """
             def test_user_can_login_with_valid_credentials():
@@ -287,13 +310,13 @@ class WrapTestInClassIntentionTest : TestBase() {
                 def test_user_can_login_with_valid_credentials(self):
                     assert True
             """,
-            "BetterPy: Wrap test in class",
+            actionId,
             dialogOk = true
         )
     }
 
     fun testWrapTestWithSingleWordName() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "test_foo.py",
             """
             def test_simple():
@@ -304,13 +327,13 @@ class WrapTestInClassIntentionTest : TestBase() {
                 def test_simple(self):
                     assert True
             """,
-            "BetterPy: Wrap test in class",
+            actionId,
             dialogOk = true
         )
     }
 
     fun testWrapFunctionWithEllipsis() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "test_foo.py",
             """
             def test_b():
@@ -321,13 +344,13 @@ class WrapTestInClassIntentionTest : TestBase() {
                 def test_b(self):
                     ...
             """,
-            "BetterPy: Wrap test in class",
+            actionId,
             dialogOk = true
         )
     }
 
     fun testWrapFunctionWithPass() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "test_foo.py",
             """
             def test_b():
@@ -338,7 +361,7 @@ class WrapTestInClassIntentionTest : TestBase() {
                 def test_b(self):
                     pass
             """,
-            "BetterPy: Wrap test in class",
+            actionId,
             dialogOk = true
         )
     }
@@ -347,8 +370,7 @@ class WrapTestInClassIntentionTest : TestBase() {
     fun testAddToExistingClassDoesNotCreateNestedFunction() {
         // This test verifies the fix for the bug where adding a function to an existing class
         // would incorrectly nest it inside another method instead of adding it as a sibling
-        UiInterceptors.register(DialogOkInterceptor())
-        myFixture.configureByText(
+        myFixture.doRefactoringActionTest(
             "test_foo.py",
             """
             class TestA:
@@ -358,16 +380,21 @@ class WrapTestInClassIntentionTest : TestBase() {
             
             def test_b():
                 <caret>...
-            """.trimIndent()
+            """,
+            """
+            class TestA:
+                def test_a(self):
+                    ...
+            
+            
+            class TestB:
+                def test_b(self):
+                    ...
+            """,
+            actionId,
+            dialogOk = true
         )
 
-        // Verify the intention is available and doesn't crash
-        val intention = myFixture.findSingleIntention("BetterPy: Wrap test in class")
-        assertNotNull("Intention should be available", intention)
-
-        // Execute the intention (will create new class with dialog intercepted)
-        myFixture.launchAction(intention)
-        
         // Verify no nested functions were created
         val result = myFixture.file.text
         assertFalse("Should not contain nested 'def test_a'", result.contains("def test_b(self):\n\n        def test_a"))
@@ -380,14 +407,22 @@ class WrapTestInClassIntentionTest : TestBase() {
         val originalValue = settings.state.enableWrapTestInClassIntention
         try {
             settings.state.enableWrapTestInClassIntention = false
-            myFixture.assertIntentionNotAvailable(
+            myFixture.configureByText(
                 "test_foo.py",
                 """
                 def test_something():
                     <caret>pass
-                """,
-                "BetterPy: Wrap test in class"
+                """
             )
+            val action = com.intellij.openapi.actionSystem.ActionManager.getInstance().getAction(actionId)
+            val dataContext = com.intellij.openapi.actionSystem.impl.SimpleDataContext.builder()
+                .add(com.intellij.openapi.actionSystem.CommonDataKeys.PROJECT, project)
+                .add(com.intellij.openapi.actionSystem.CommonDataKeys.EDITOR, myFixture.editor)
+                .add(com.intellij.openapi.actionSystem.CommonDataKeys.PSI_FILE, myFixture.file)
+                .build()
+            val event = com.intellij.testFramework.TestActionEvent.createFromDataContext("", null, dataContext)
+            action.update(event)
+            assertFalse("Action should not be enabled when setting is disabled", event.presentation.isEnabled)
         } finally {
             settings.state.enableWrapTestInClassIntention = originalValue
         }

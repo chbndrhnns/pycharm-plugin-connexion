@@ -1,7 +1,11 @@
 package fixtures
 
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.actionSystem.impl.SimpleDataContext
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.testFramework.PlatformTestUtil
+import com.intellij.testFramework.TestActionEvent
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.ui.RenameDialogInterceptor
 import com.intellij.ui.UiInterceptors
@@ -47,6 +51,46 @@ fun CodeInsightTestFixture.doIntentionTest(
     if (renameTo != null) {
         PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
     }
+
+    var expected = after.trimIndent()
+    if (!expected.endsWith("\n") && file.text.endsWith("\n")) {
+        expected += "\n"
+    }
+    checkResult(expected)
+}
+
+/**
+ * Executes a refactoring action test:
+ * 1. Configures the file with [before] text.
+ * 2. Finds the action by [actionId].
+ * 3. Executes the action.
+ * 4. Checks the result against [after] text.
+ */
+fun CodeInsightTestFixture.doRefactoringActionTest(
+    filename: String,
+    before: String,
+    after: String,
+    actionId: String,
+    dialogOk: Boolean = false
+) {
+    if (dialogOk) {
+        UiInterceptors.register(DialogOkInterceptor())
+    }
+
+    configureByText(filename, before.trimIndent())
+
+    val actionManager = ActionManager.getInstance()
+    val action = actionManager.getAction(actionId)
+        ?: throw AssertionError("Action $actionId not found")
+
+    val dataContext = SimpleDataContext.builder()
+        .add(CommonDataKeys.PROJECT, project)
+        .add(CommonDataKeys.EDITOR, editor)
+        .add(CommonDataKeys.PSI_FILE, file)
+        .build()
+
+    val event = TestActionEvent.createFromDataContext("", null, dataContext)
+    action.actionPerformed(event)
 
     var expected = after.trimIndent()
     if (!expected.endsWith("\n") && file.text.endsWith("\n")) {
