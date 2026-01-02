@@ -142,3 +142,11 @@
     "NEW INSTRUCTION": "WHEN simulating dialog responses in intention tests THEN set TestDialogManager.setTestDialog and reset afterward"
 }
 
+[2026-01-02 14:49] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "intention menu placement",
+    "EXPECTATION": "The feature must not appear in Alt+Enter; it should only be available via 'Refactor This'.",
+    "NEW INSTRUCTION": "WHEN \"Wrap test in class\" shows in intention menu THEN remove intention extension and register refactoring action"
+}
+

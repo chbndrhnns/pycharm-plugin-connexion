@@ -245,10 +245,6 @@
             <category>Test</category>
         </intentionAction>
 
-        <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest.WrapTestInClassIntention</className>
-            <category>Refactorings</category>
-        </intentionAction>
 
         <intentionAction>
             <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.abstractmethod.MakeMemberAbstractInAbstractClassIntention</className>

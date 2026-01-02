@@ -188,3 +188,13 @@
     "NEW INSTRUCTION": "WHEN intention tests require confirming dialogs THEN set TestDialogManager.setTestDialog(TestDialog.OK) before launching intention"
 }
 
+[2026-01-02 14:50] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "search project",
+    "MISSING STEPS": "verify registration",
+    "BOTTLENECK": "No verification that refactor action registration exists after removal.",
+    "PROJECT NOTE": "Confirm WrapTestInClassRefactoringAction is registered under actions in plugin.xml.",
+    "NEW INSTRUCTION": "WHEN task asks to move intention to Refactor menu THEN search plugin.xml for refactor action; add registration if absent"
+}
+
