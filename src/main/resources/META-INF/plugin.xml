@@ -512,5 +512,8 @@
                       order="first"/>
         <typeCheckerExtension implementation="com.github.chbndrhnns.intellijplatformplugincopy.type.PyMockTypeCheckerExtension"/>
     </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+        <gotoDeclarationHandler implementation="com.github.chbndrhnns.intellijplatformplugincopy.navigation.PyMockPatchObjectGotoDeclarationHandler"/>
+    </extensions>
 
 </idea-plugin>

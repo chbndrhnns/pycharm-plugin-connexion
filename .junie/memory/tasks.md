@@ -198,3 +198,13 @@
     "NEW INSTRUCTION": "WHEN task asks to move intention to Refactor menu THEN search plugin.xml for refactor action; add registration if absent"
 }
 
+[2026-01-02 15:00] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "open unrelated file, list project directory, duplicate search",
+    "MISSING STEPS": "run tests, reuse existing helpers",
+    "BOTTLENECK": "No test execution to validate navigation behavior end-to-end",
+    "PROJECT NOTE": "Project already resolves patch.object attributes for completion/inspection; reuse that logic for navigation",
+    "NEW INSTRUCTION": "WHEN build succeeds locally THEN run relevant tests for the affected feature"
+}
+
