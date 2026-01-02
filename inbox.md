@@ -27,6 +27,8 @@ def test_():
 
 ## Pending Features
 
+- [ ] feat: Prefer relative imports also when using move refactoring, blocked
+  by https://youtrack.jetbrains.com/issue/PY-86616/PyMoveModuleMembersProcessor-does-not-emit-events
 - [ ] refactor: Use `PythonDependenciesManager` if public
 - [ ] refactor: Do not use reflection to filter import suggestions
 - [ ] feat: Complete to FQN in string for mock.patch("")
