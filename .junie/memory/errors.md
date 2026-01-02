@@ -178,3 +178,13 @@
     "NEW INSTRUCTION": "WHEN changing method parameter types THEN update all call sites accordingly"
 }
 
+[2026-01-02 22:54] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "WrapTestInClassIntention.generateClassName",
+    "ERROR": "Test failed: expected unique class name not generated",
+    "ROOT CAUSE": "Class name generation does not check existing classes, so no counter is appended.",
+    "PROJECT NOTE": "Update generateClassName in WrapTestInClassIntention.kt to accept PyFile and iterate TestFoo, TestFoo1, TestFoo2 until name not in file classes.",
+    "NEW INSTRUCTION": "WHEN suggested class name exists in file THEN append numeric suffix until unique"
+}
+

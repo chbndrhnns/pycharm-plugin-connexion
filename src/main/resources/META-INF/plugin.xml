@@ -104,9 +104,13 @@
                                   implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.run.PyPackageRunLineMarkerContributor"/>
 
         <notificationGroup id="BetterPy" displayType="BALLOON" isLogByDefault="true"/>
+        <notificationGroup id="BetterPy Notifications" displayType="BALLOON" isLogByDefault="true"/>
 
         <postStartupActivity
                 implementation="com.github.chbndrhnns.intellijplatformplugincopy.startup.PythonVersionStartupActivity"/>
+
+        <postStartupActivity
+                implementation="com.github.chbndrhnns.intellijplatformplugincopy.settings.IncubatingFeatureNotifier"/>
 
         <intentionAction>
             <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.WrapWithExpectedTypeIntention

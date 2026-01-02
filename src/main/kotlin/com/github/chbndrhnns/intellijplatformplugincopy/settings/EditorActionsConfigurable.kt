@@ -1,97 +1,73 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.settings
 
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.FeatureCheckboxBuilder.featureRow
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.ui.DialogPanel
-import com.intellij.ui.dsl.builder.bindSelected
-import com.intellij.ui.dsl.builder.panel
 
+/**
+ * Settings configurable for editor actions and related features.
+ * Uses [FeatureRegistry] to dynamically build the UI with maturity indicators and YouTrack links.
+ * Includes a maturity filter panel at the top to filter features by status.
+ */
 class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
-    private val settings = PluginSettingsState.instance().state
+    private val registry = FeatureRegistry.instance()
 
     override fun createPanel(): DialogPanel {
-        return panel {
-            row {
-                checkBox("‘Copy Package Content’ context menu action")
-                    .bindSelected(settings::enableCopyPackageContentAction)
-            }
-            row {
-                checkBox("‘Copy Build Number’ context menu action")
-                    .bindSelected(settings::enableCopyBuildNumberAction)
-            }
-            row {
-                checkBox("‘Introduce Parameter Object…’ action")
-                    .bindSelected(settings::enableIntroduceParameterObjectRefactoringAction)
-            }
-            row {
-                checkBox("‘Inline Parameter Object…’ action")
-                    .bindSelected(settings::enableInlineParameterObjectRefactoringAction)
-            }
-            row {
-                checkBox("‘Copy with Dependencies’ action")
-                    .bindSelected(settings::enableCopyBlockWithDependenciesAction)
-            }
-            row {
-                checkBox("‘Copy Pytest Node IDs’ action (Test Tree)")
-                    .bindSelected(settings::enableCopyPytestNodeIdsAction)
-            }
-            row {
-                checkBox("‘Copy Pytest Node ID’ action (editor)")
-                    .bindSelected(settings::enableCopyPytestNodeIdFromEditorAction)
-            }
-            row {
-                checkBox("‘Copy FQNs’ action (Test Tree)")
-                    .bindSelected(settings::enableCopyFQNsAction)
-            }
-            row {
-                checkBox("‘Copy Stacktrace’ action (Test Tree)")
-                    .bindSelected(settings::enableCopyStacktraceAction)
-            }
-            row {
-                checkBox("‘Jump to Test Tree Node’ action (editor)")
-                    .bindSelected(settings::enableJumpToPytestNodeInTestTreeAction)
-            }
-            row {
-                checkBox("‘Toggle pytest skip’ action (Test Tree)")
-                    .bindSelected(settings::enableTogglePytestSkipFromTestTreeAction)
+        return createFilterableFeaturePanel { visibleMaturities ->
+            // Copy/Clipboard Actions
+            group("Copy/Clipboard Actions") {
+                registry.getFeature("copy-package-content")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("copy-build-number")?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("copy-block-with-dependencies")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("copy-pytest-node-ids")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("copy-pytest-node-id-from-editor")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("copy-fqns")?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("copy-stacktrace")?.let { featureRow(it, visibleMaturities = visibleMaturities) }
             }
 
-            // Added: Editor/Contributor integrations
-            row {
-                checkBox("‘Return value’ completion contributor")
-                    .bindSelected(settings::enablePyReturnCompletionContributor)
+            // Refactoring Actions
+            group("Refactoring Actions") {
+                registry.getFeature("introduce-parameter-object")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("inline-parameter-object")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
             }
-            row {
-                checkBox("‘mock.patch’ reference contributor")
-                    .bindSelected(settings::enablePyMockPatchReferenceContributor)
+
+            // Pytest Actions
+            group("Pytest Actions") {
+                registry.getFeature("jump-to-pytest-node-in-test-tree")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("toggle-pytest-skip-from-test-tree")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
             }
-            row {
-                checkBox("‘filterwarnings’ reference contributor")
-                    .bindSelected(settings::enablePyFilterWarningsReferenceContributor)
+
+            // Completion & Reference Contributors
+            group("Completion & References") {
+                registry.getFeature("return-completion")?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("mock-patch-reference")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("filter-warnings-reference")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("pytest-identifier-search-everywhere")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
             }
-            row {
-                checkBox("Update ‘NewType’, ‘TypeVar’, and ‘ParamSpec’ names on change")
-                    .bindSelected(settings::enableNewTypeTypeVarParamSpecRename)
+
+            // Other Editor Features
+            group("Other Editor Features") {
+                registry.getFeature("toggle-type-alias")?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("export-symbol-to-target")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("newtype-typevar-paramspec-rename")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("type-annotation-usage-filtering")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("python-message-console-filter")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
             }
-            row {
-                checkBox("‘Type annotation’ usage filtering rule")
-                    .bindSelected(settings::enableTypeAnnotationUsageFilteringRule)
-            }
-            row {
-                checkBox("‘Python message’ console filter")
-                    .bindSelected(settings::enablePyMessageConsoleFilter)
-            }
-            row {
-                checkBox("‘Pytest identifiers’ Search Everywhere contributor")
-                    .bindSelected(settings::enablePytestIdentifierSearchEverywhereContributor)
-            }
-            row {
-                checkBox("‘Toggle type alias’ intention")
-                    .bindSelected(settings::enableToggleTypeAliasIntention)
-            }
-            row {
-                checkBox("‘Export symbol to target’ intention")
-                    .bindSelected(settings::enableExportSymbolToTargetIntention)
-            }
-        }
+        }.asDialogPanel()
     }
 }

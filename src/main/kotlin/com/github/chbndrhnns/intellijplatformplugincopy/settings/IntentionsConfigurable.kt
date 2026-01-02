@@ -1,113 +1,99 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.settings
 
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.FeatureCheckboxBuilder.featureRow
 import com.intellij.openapi.extensions.BaseExtensionPointName
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.ui.DialogPanel
-import com.intellij.ui.dsl.builder.bindSelected
-import com.intellij.ui.dsl.builder.panel
 
+/**
+ * Settings configurable for intention-related features.
+ * Uses [FeatureRegistry] to dynamically build the UI with maturity indicators and YouTrack links.
+ * Includes a maturity filter panel at the top to filter features by status.
+ */
 class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.WithEpDependencies {
-    private val settings = PluginSettingsState.instance().state
+    private val registry = FeatureRegistry.instance()
 
     override fun getDependencies(): Collection<BaseExtensionPointName<*>> {
         return emptyList()
     }
 
     override fun createPanel(): DialogPanel {
-        return panel {
-            row {
-                checkBox("‘Wrap with expected type’ intention")
-                    .bindSelected(settings::enableWrapWithExpectedTypeIntention)
+        return createFilterableFeaturePanel { visibleMaturities ->
+            // Type Wrapping/Unwrapping
+            group("Type Wrapping/Unwrapping") {
+                registry.getFeature("wrap-with-expected-type")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("wrap-items-with-expected-type")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("unwrap-to-expected-type")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("unwrap-items-to-expected-type")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("introduce-custom-type-from-stdlib")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
             }
-            row {
-                checkBox("‘Wrap items with expected type’ intention")
-                    .bindSelected(settings::enableWrapItemsWithExpectedTypeIntention)
+
+            // Parameter & Argument
+            group("Parameter & Argument") {
+                registry.getFeature("populate-arguments")?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("make-parameter-optional")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("make-parameter-mandatory")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("create-local-variable")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
             }
-            row {
-                checkBox("‘Unwrap to expected type’ intention")
-                    .bindSelected(settings::enableUnwrapToExpectedTypeIntention)
+
+            // Code Structure
+            group("Code Structure") {
+                registry.getFeature("dict-access")?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("change-visibility")?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("callable-to-protocol")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("add-exception-capture")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("wrap-exceptions-with-parentheses")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("strip-signature-type-annotations")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("toggle-type-alias")?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("newtype-typevar-paramspec-rename")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
             }
-            row {
-                checkBox("‘Unwrap items to expected type’ intention")
-                    .bindSelected(settings::enableUnwrapItemsToExpectedTypeIntention)
+
+            // Abstract Methods
+            group("Abstract Methods") {
+                registry.getFeature("implement-abstract-method-in-child-classes")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("make-member-abstract-in-abstract-class")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
             }
-            row {
-                checkBox("‘Introduce custom type from stdlib’ intention")
-                    .bindSelected(settings::enableIntroduceCustomTypeFromStdlibIntention)
+
+            // Pytest
+            group("Pytest") {
+                registry.getFeature("toggle-pytest-skip")?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("parametrize-pytest-test")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("convert-pytest-param")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("mock-type-provider")?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("wrap-test-in-class")?.let { featureRow(it, visibleMaturities = visibleMaturities) }
             }
-            row {
-                checkBox("‘Populate arguments’ intention")
-                    .bindSelected(settings::enablePopulateArgumentsIntention)
+
+            // Filters & Suppressors
+            group("Filters & Suppressors") {
+                registry.getFeature("suppress-signature-change-intention")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("rename-to-self-filter")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
             }
-            row {
-                checkBox("‘Dictionary access’ intentions")
-                    .bindSelected(settings::enableDictAccessIntention)
+
+            // Other
+            group("Other") {
+                registry.getFeature("package-run-configuration")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
             }
-            row {
-                checkBox("‘Change visibility’ intention")
-                    .bindSelected(settings::enableChangeVisibilityIntention)
-            }
-            row {
-                checkBox("‘Create local variable’ intention")
-                    .bindSelected(settings::enableCreateLocalVariableIntention)
-            }
-            row {
-                checkBox("‘Make parameter optional’ intention")
-                    .bindSelected(settings::enableMakeParameterOptionalIntention)
-            }
-            row {
-                checkBox("‘Make parameter mandatory’ intention")
-                    .bindSelected(settings::enableMakeParameterMandatoryIntention)
-            }
-            row {
-                checkBox("‘Add exception capture’ intention")
-                    .bindSelected(settings::enableAddExceptionCaptureIntention)
-            }
-            row {
-                checkBox("‘Wrap exceptions with parentheses’ intention")
-                    .bindSelected(settings::enableWrapExceptionsWithParenthesesIntention)
-            }
-            row {
-                checkBox("‘Implement abstract method in child classes’ intention")
-                    .bindSelected(settings::enableImplementAbstractMethodInChildClassesIntention)
-            }
-            row {
-                checkBox("‘Make member abstract in abstract class’ intention")
-                    .bindSelected(settings::enableMakeMemberAbstractInAbstractClassIntention)
-            }
-            row {
-                checkBox("‘Toggle pytest skip’ intention")
-                    .bindSelected(settings::enableTogglePytestSkipIntention)
-            }
-            row {
-                checkBox("‘Parametrize pytest test’ intention")
-                    .bindSelected(settings::enableParametrizePytestTestIntention)
-            }
-            row {
-                checkBox("‘Convert pytest parameter’ intention")
-                    .bindSelected(settings::enableConvertPytestParamIntention)
-            }
-            row {
-                checkBox("‘PyMock’ type provider")
-                    .bindSelected(settings::enablePyMockTypeProvider)
-            }
-            row {
-                checkBox("‘Strip signature type annotations’ intention")
-                    .bindSelected(settings::enableStripSignatureTypeAnnotationsIntention)
-            }
-            row {
-                checkBox("Hide ‘Suggested Refactoring: Update … to reflect signature change’ intention")
-                    .bindSelected(settings::suppressSuggestedRefactoringSignatureChangeIntention)
-            }
-            row {
-                checkBox("‘Rename to self’ intention filter")
-                    .bindSelected(settings::enableRenameToSelfFilter)
-            }
-            row {
-                checkBox("‘Add run configuration with package name’ gutter action")
-                    .bindSelected(settings::enablePyPackageRunConfigurationAction)
-            }
-        }
+        }.asDialogPanel()
     }
 }

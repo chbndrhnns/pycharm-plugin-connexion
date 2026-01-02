@@ -238,3 +238,19 @@
     "NEW INSTRUCTION": "WHEN filtering import candidates THEN always keep symbols from the current project"
 }
 
+[2026-01-02 23:36] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "method name collision UX",
+    "EXPECTATION": "Do not silently rename the method; allow the user to edit the method name and show a non-modal warning if the name is taken.",
+    "NEW INSTRUCTION": "WHEN adding to existing class and method name exists THEN show editable method name and non-modal taken warning"
+}
+
+[2026-01-02 23:44] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "method name collision UX",
+    "EXPECTATION": "Do not silently rename a test method when the name already exists in the target class; let the user edit the name and show a non-modal warning if the name is taken.",
+    "NEW INSTRUCTION": "WHEN adding to existing class and method name exists THEN show editable method name and non-modal taken warning"
+}
+
