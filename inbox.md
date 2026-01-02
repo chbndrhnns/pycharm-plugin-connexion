@@ -34,7 +34,6 @@
 - [ ] feat: Add field to dataclass/model in case of unexpected argument
 - [ ] feat: Suggest expected type for container types, like `vals: set[MyType] = set(<caret>)`
 - [ ] feat: pytest param: treat text as ref
-- [ ] feat: Move test inside of class
 - [ ] feat: When suggesting the expected type and it is an inner class, reference it using outer_class.inner_class
   syntax, recursively
 - [ ] feat: "Choose implementation" should search in class names, as well.
