@@ -1,5 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest
 
+import com.intellij.ui.UiInterceptors
+import fixtures.DialogOkInterceptor
 import fixtures.TestBase
 import fixtures.assertIntentionNotAvailable
 import fixtures.doIntentionTest
@@ -19,7 +21,8 @@ class WrapTestInClassIntentionTest : TestBase() {
                 def test_user_login(self):
                     assert True
             """,
-            "BetterPy: Wrap test in class"
+            "BetterPy: Wrap test in class",
+            dialogOk = true
         )
     }
 
@@ -35,7 +38,8 @@ class WrapTestInClassIntentionTest : TestBase() {
                 def test_database_connection(self, db_session):
                     assert db_session.is_connected()
             """,
-            "BetterPy: Wrap test in class"
+            "BetterPy: Wrap test in class",
+            dialogOk = true
         )
     }
 
@@ -51,7 +55,8 @@ class WrapTestInClassIntentionTest : TestBase() {
                 def test_add(self, a, b, expected):
                     assert a + b == expected
             """,
-            "BetterPy: Wrap test in class"
+            "BetterPy: Wrap test in class",
+            dialogOk = true
         )
     }
 
@@ -69,7 +74,8 @@ class WrapTestInClassIntentionTest : TestBase() {
                     '''This is a test docstring.'''
                     assert True
             """,
-            "BetterPy: Wrap test in class"
+            "BetterPy: Wrap test in class",
+            dialogOk = true
         )
     }
 
@@ -89,7 +95,8 @@ class WrapTestInClassIntentionTest : TestBase() {
                     y = 2
                     assert x + y == 3
             """,
-            "BetterPy: Wrap test in class"
+            "BetterPy: Wrap test in class",
+            dialogOk = true
         )
     }
 
@@ -113,7 +120,8 @@ class WrapTestInClassIntentionTest : TestBase() {
                 def test_increment(self, input, expected):
                     assert input + 1 == expected
             """,
-            "BetterPy: Wrap test in class"
+            "BetterPy: Wrap test in class",
+            dialogOk = true
         )
     }
 
@@ -136,7 +144,8 @@ class WrapTestInClassIntentionTest : TestBase() {
                 def test_future_feature(self):
                     pass
             """,
-            "BetterPy: Wrap test in class"
+            "BetterPy: Wrap test in class",
+            dialogOk = true
         )
     }
 
@@ -162,7 +171,8 @@ class WrapTestInClassIntentionTest : TestBase() {
                 def test_slow_operation(self, value):
                     assert value > 0
             """,
-            "BetterPy: Wrap test in class"
+            "BetterPy: Wrap test in class",
+            dialogOk = true
         )
     }
 
@@ -208,7 +218,8 @@ class WrapTestInClassIntentionTest : TestBase() {
                 def test_something(self):
                     assert True
             """,
-            "BetterPy: Wrap test in class"
+            "BetterPy: Wrap test in class",
+            dialogOk = true
         )
     }
 
@@ -224,7 +235,8 @@ class WrapTestInClassIntentionTest : TestBase() {
                 def test_something(self):
                     assert True
             """,
-            "BetterPy: Wrap test in class"
+            "BetterPy: Wrap test in class",
+            dialogOk = true
         )
     }
 
@@ -241,7 +253,8 @@ class WrapTestInClassIntentionTest : TestBase() {
                 def test_typed(self, value: int) -> None:
                     assert value > 0
             """,
-            "BetterPy: Wrap test in class"
+            "BetterPy: Wrap test in class",
+            dialogOk = true
         )
     }
 
@@ -257,7 +270,8 @@ class WrapTestInClassIntentionTest : TestBase() {
                 def test_with_default(self, value=10):
                     assert value == 10
             """,
-            "BetterPy: Wrap test in class"
+            "BetterPy: Wrap test in class",
+            dialogOk = true
         )
     }
 
@@ -273,7 +287,8 @@ class WrapTestInClassIntentionTest : TestBase() {
                 def test_user_can_login_with_valid_credentials(self):
                     assert True
             """,
-            "BetterPy: Wrap test in class"
+            "BetterPy: Wrap test in class",
+            dialogOk = true
         )
     }
 
@@ -289,7 +304,8 @@ class WrapTestInClassIntentionTest : TestBase() {
                 def test_simple(self):
                     assert True
             """,
-            "BetterPy: Wrap test in class"
+            "BetterPy: Wrap test in class",
+            dialogOk = true
         )
     }
 
@@ -305,7 +321,8 @@ class WrapTestInClassIntentionTest : TestBase() {
                 def test_b(self):
                     ...
             """,
-            "BetterPy: Wrap test in class"
+            "BetterPy: Wrap test in class",
+            dialogOk = true
         )
     }
 
@@ -321,7 +338,8 @@ class WrapTestInClassIntentionTest : TestBase() {
                 def test_b(self):
                     pass
             """,
-            "BetterPy: Wrap test in class"
+            "BetterPy: Wrap test in class",
+            dialogOk = true
         )
     }
 
@@ -329,6 +347,7 @@ class WrapTestInClassIntentionTest : TestBase() {
     fun testAddToExistingClassDoesNotCreateNestedFunction() {
         // This test verifies the fix for the bug where adding a function to an existing class
         // would incorrectly nest it inside another method instead of adding it as a sibling
+        UiInterceptors.register(DialogOkInterceptor())
         myFixture.configureByText(
             "test_foo.py",
             """
@@ -341,14 +360,12 @@ class WrapTestInClassIntentionTest : TestBase() {
                 <caret>...
             """.trimIndent()
         )
-        
-        // In headless mode, this will create a new class (default behavior)
-        // To properly test "add to existing", we'd need to mock the dialog
-        // For now, verify the intention is available and doesn't crash
+
+        // Verify the intention is available and doesn't crash
         val intention = myFixture.findSingleIntention("BetterPy: Wrap test in class")
         assertNotNull("Intention should be available", intention)
-        
-        // Execute the intention (will create new class in headless mode)
+
+        // Execute the intention (will create new class with dialog intercepted)
         myFixture.launchAction(intention)
         
         // Verify no nested functions were created

@@ -88,3 +88,33 @@
     "NEW INSTRUCTION": "WHEN refactoring handler needs to show dialog THEN open via invokeLater and run edits in WriteCommandAction"
 }
 
+[2026-01-01 11:49] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "WrapTestInClassIntention.invoke",
+    "ERROR": "showAndGet used on modeless dialog",
+    "ROOT CAUSE": "WrapTestInClassDialog is non‑modal while invoke() calls DialogWrapper.showAndGet().",
+    "PROJECT NOTE": "In WrapTestInClassDialog (src/main/.../WrapTestInClassDialog.kt), either make the dialog modal (setModal(true)) or avoid showAndGet and use show() with a result handler; in tests still bypass UI via unit test mode/TestDialogManager.",
+    "NEW INSTRUCTION": "WHEN dialog is non-modal THEN avoid showAndGet; make modal or use show with handler"
+}
+
+[2026-01-01 11:59] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Unresolved reference setTestDialogHandler",
+    "ROOT CAUSE": "The IntelliJ SDK in this project does not provide TestDialogManager.setTestDialogHandler; only setTestDialog is available.",
+    "PROJECT NOTE": "In tests, auto-accept DialogWrapper via TestDialogManager.setTestDialog(TestDialog.OK) and reset to DEFAULT in tearDown; do not use setTestDialogHandler.",
+    "NEW INSTRUCTION": "WHEN TestDialogManager.setTestDialogHandler is unavailable THEN use setTestDialog(TestDialog.OK)/DEFAULT"
+}
+
+[2026-01-02 14:41] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "search_replace",
+    "ERROR": "Unresolved reference 'ApplicationManager' after edit",
+    "ROOT CAUSE": "The import for ApplicationManager was removed while the code still referenced it.",
+    "PROJECT NOTE": "In WrapTestInClassIntention.kt, avoid headless/unit-test checks; tests should drive dialogs via TestDialogManager.setTestDialog(TestDialog.OK).",
+    "NEW INSTRUCTION": "WHEN an edit removes an import symbol THEN remove or replace all remaining references immediately"
+}
+

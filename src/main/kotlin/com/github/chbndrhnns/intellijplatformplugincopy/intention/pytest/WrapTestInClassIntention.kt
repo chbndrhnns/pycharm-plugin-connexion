@@ -4,7 +4,6 @@ import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -42,18 +41,19 @@ class WrapTestInClassIntention : IntentionAction {
         // Find existing test classes in the file
         val existingTestClasses = findTestClassesInFile(pyFile)
 
-        // Determine settings: show dialog in interactive mode, use defaults in headless mode (tests)
-        val settings = if (ApplicationManager.getApplication().isHeadlessEnvironment) {
-            // In test/headless mode, always create new class with suggested name
-            WrapTestInClassSettings.CreateNewClass(suggestedClassName)
+        // Show dialog to get user's choice
+        val dialog = WrapTestInClassDialog(project, suggestedClassName, existingTestClasses)
+        val dialogResult = if (dialog.isModal) {
+            dialog.showAndGet()
         } else {
-            // Show dialog to get user's choice
-            val dialog = WrapTestInClassDialog(project, suggestedClassName, existingTestClasses)
-            if (!dialog.showAndGet()) {
-                return // User cancelled
-            }
-            dialog.getSettings()
+            // In non-modal context (tests), show() and check exit code
+            dialog.show()
+            dialog.exitCode == com.intellij.openapi.ui.DialogWrapper.OK_EXIT_CODE
         }
+        if (!dialogResult) {
+            return // User cancelled
+        }
+        val settings = dialog.getSettings()
 
         WriteCommandAction.runWriteCommandAction(project, text, null, {
             val elementGenerator = PyElementGenerator.getInstance(project)

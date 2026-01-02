@@ -168,3 +168,23 @@
     "NEW INSTRUCTION": "WHEN intention opens DialogWrapper THEN show via invokeLater and edit in WriteCommandAction afterward"
 }
 
+[2026-01-01 12:14] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "flip dialog invocation, use unsupported dialog handler",
+    "MISSING STEPS": "scan project, verify dialog modality, run tests",
+    "BOTTLENECK": "Assumed unsupported TestDialogManager API and dialog modality, causing errors and churn.",
+    "PROJECT NOTE": "Tests already rely on fixtures; prefer TestDialogManager.setTestDialog(TestDialog.OK) pattern.",
+    "NEW INSTRUCTION": "WHEN adding DialogWrapper testing to tests THEN search_project for TestDialogManager usages and mirror pattern"
+}
+
+[2026-01-02 14:44] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "modify imports",
+    "MISSING STEPS": "scan project, update tests, run tests",
+    "BOTTLENECK": "Tests not uniformly setting dialog response cause intermittent failures.",
+    "PROJECT NOTE": "doIntentionTest now supports testDialog parameter; update all intention tests to pass TestDialog.OK where dialogs appear.",
+    "NEW INSTRUCTION": "WHEN intention tests require confirming dialogs THEN set TestDialogManager.setTestDialog(TestDialog.OK) before launching intention"
+}
+

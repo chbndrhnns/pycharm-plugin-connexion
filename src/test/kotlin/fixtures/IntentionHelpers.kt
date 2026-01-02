@@ -1,9 +1,19 @@
 package fixtures
 
+import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.testFramework.PlatformTestUtil
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.ui.RenameDialogInterceptor
 import com.intellij.ui.UiInterceptors
+
+/**
+ * A UiInterceptor that closes DialogWrapper dialogs with OK.
+ */
+class DialogOkInterceptor : UiInterceptors.UiInterceptor<DialogWrapper>(DialogWrapper::class.java) {
+    override fun doIntercept(component: DialogWrapper) {
+        component.close(DialogWrapper.OK_EXIT_CODE)
+    }
+}
 
 /**
  * Executes a standard intention test:
@@ -18,10 +28,15 @@ fun CodeInsightTestFixture.doIntentionTest(
     before: String,
     after: String,
     intentionName: String,
-    renameTo: String? = null
+    renameTo: String? = null,
+    dialogOk: Boolean = false
 ) {
     if (renameTo != null) {
         UiInterceptors.register(RenameDialogInterceptor(renameTo))
+    }
+
+    if (dialogOk) {
+        UiInterceptors.register(DialogOkInterceptor())
     }
 
     configureByText(filename, before.trimIndent())

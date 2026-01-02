@@ -102,3 +102,43 @@
     "NEW INSTRUCTION": "WHEN invoked from 'Refactor This' refactoring handler THEN show dialog via invokeLater, then run edits in WriteCommandAction"
 }
 
+[2026-01-01 11:48] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "test-specific logic removal",
+    "EXPECTATION": "Do not include test-only branches or hooks in the wrap-in-class refactoring; adopt the standard approach instead.",
+    "NEW INSTRUCTION": "WHEN production code contains test-only flags or paths THEN remove them and rely on test doubles"
+}
+
+[2026-01-01 12:11] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "test-specific logic removal",
+    "EXPECTATION": "Remove any test-only flags, hooks, or branches from the wrap-in-class refactoring and adopt the standard approach with test doubles.",
+    "NEW INSTRUCTION": "WHEN production code includes test-only branches or hooks THEN remove them and rely on test doubles"
+}
+
+[2026-01-02 14:28] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "dialog testing approach",
+    "EXPECTATION": "Use TestDialogManager.setTestDialog() to simulate dialog responses instead of checking for headless mode.",
+    "NEW INSTRUCTION": "WHEN tests must control dialog outcome THEN use TestDialogManager.setTestDialog to supply response"
+}
+
+[2026-01-02 14:38] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "dialog testing approach",
+    "EXPECTATION": "Use TestDialogManager.setTestDialog() to simulate dialog responses instead of checking headless mode.",
+    "NEW INSTRUCTION": "WHEN simulating dialog responses in tests THEN use TestDialogManager.setTestDialog without headless checks"
+}
+
+[2026-01-02 14:45] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "dialog testing approach",
+    "EXPECTATION": "Use TestDialogManager.setTestDialog() to simulate dialog responses in tests instead of UiInterceptors or headless checks.",
+    "NEW INSTRUCTION": "WHEN simulating dialog responses in intention tests THEN set TestDialogManager.setTestDialog and reset afterward"
+}
+
