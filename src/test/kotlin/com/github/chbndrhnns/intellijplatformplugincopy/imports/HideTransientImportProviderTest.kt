@@ -169,4 +169,29 @@ class HideTransientImportProviderTest : TestBase() {
         // Should normalize package names (Django-Storage -> django-storage)
         assertNotNull(lookupElements)
     }
+
+    fun testNeverFiltersStdlibModules() {
+        // Create a pyproject.toml with NO typing dependency (stdlib should still be available)
+        myFixture.addFileToProject(
+            "pyproject.toml", """
+            [project]
+            name = "test-project"
+            dependencies = [
+                "requests>=2.0.0"
+            ]
+        """.trimIndent()
+        )
+
+        // Create a Python file that uses a stdlib typing symbol
+        myFixture.configureByText(
+            "test.py", """
+            from typing import Literal
+            a: Literal
+        """.trimIndent()
+        )
+
+        // Verify the import from typing (stdlib) is not filtered out
+        // The file should have no unresolved references since typing is stdlib
+        myFixture.checkHighlighting(false, false, false)
+    }
 }

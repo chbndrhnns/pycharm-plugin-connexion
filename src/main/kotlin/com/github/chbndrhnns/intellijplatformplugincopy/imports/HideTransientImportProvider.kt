@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.imports
 
+import com.github.chbndrhnns.intellijplatformplugincopy.services.PythonStdlibService
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.module.Module
@@ -23,16 +24,20 @@ class HideTransientImportProvider : PyImportCandidateProvider {
             return
         }
         val directDependencies = getDirectDependencies(reference) ?: return
-        filterTransientCandidatesReflectively(quickFix, directDependencies)
+        val project = reference.element.project
+        val stdlibService = PythonStdlibService.getInstance(project)
+        filterTransientCandidatesReflectively(quickFix, directDependencies, stdlibService)
     }
 
     /**
      * Filters candidates to remove those from transient dependencies.
      * Uses reflection to access the internal mutable list.
+     * Never filters stdlib modules.
      */
     private fun filterTransientCandidatesReflectively(
         quickFix: AutoImportQuickFix,
-        directDependencies: Set<String>
+        directDependencies: Set<String>,
+        stdlibService: PythonStdlibService
     ) {
         try {
             val candidatesField = AutoImportQuickFix::class.java.getDeclaredField("myImports")
@@ -45,6 +50,10 @@ class HideTransientImportProvider : PyImportCandidateProvider {
             candidates.removeIf { candidate ->
                 val path = candidate.path ?: return@removeIf false // Keep if no path (built-ins, etc.)
                 val topLevelModule = path.firstComponent ?: return@removeIf false
+
+                // Never filter stdlib modules
+                if (stdlibService.isStdlibModule(topLevelModule, null)) return@removeIf false
+                
                 val packageName = PyPsiPackageUtil.moduleToPackageName(topLevelModule)
                 val normalizedPackageName = PyPackageName.normalizePackageName(packageName)
                 !directDependencies.contains(normalizedPackageName)

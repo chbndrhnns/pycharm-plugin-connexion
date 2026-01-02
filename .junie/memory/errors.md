@@ -118,3 +118,13 @@
     "NEW INSTRUCTION": "WHEN an edit removes an import symbol THEN remove or replace all remaining references immediately"
 }
 
+[2026-01-02 15:49] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Too many arguments for function after edit",
+    "ROOT CAUSE": "The call site added a stdlibService argument but the function signature was not updated.",
+    "PROJECT NOTE": "In HideTransientImportProvider.kt, ensure filterTransientCandidatesReflectively signature matches its invocation when adding stdlibService.",
+    "NEW INSTRUCTION": "WHEN adding parameters to a method call THEN update the method signature and imports"
+}
+

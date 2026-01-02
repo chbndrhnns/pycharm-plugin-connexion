@@ -218,3 +218,33 @@
     "NEW INSTRUCTION": "WHEN adding a new test case THEN run project tests via bash and fix failures"
 }
 
+[2026-01-02 15:40] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "run unrelated single test",
+    "MISSING STEPS": "run all tests, run FQN quick-fix tests",
+    "BOTTLENECK": "Insufficient validation that FQN intention still works after removals.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN removing importCandidateProvider implementations THEN run the entire test suite"
+}
+
+[2026-01-02 15:47] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "broad search, inspect unrelated reference contributor, inspect unrelated completion contributor",
+    "MISSING STEPS": "scan plugin.xml, targeted search for import provider",
+    "BOTTLENECK": "Did not consult plugin.xml to locate the import-filtering provider early.",
+    "PROJECT NOTE": "HideTransientImportProvider filters auto-imports to direct dependencies, unintentionally hiding stdlib like typing.",
+    "NEW INSTRUCTION": "WHEN debugging missing auto-import suggestions THEN scan plugin.xml for import providers first"
+}
+
+[2026-01-02 15:49] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "broad search",
+    "MISSING STEPS": "verify pytest behavior, run build",
+    "BOTTLENECK": "Identifying the correct import filtering component took extra iterations.",
+    "PROJECT NOTE": "PythonStdlibService already provides stdlib detection for modules like typing.",
+    "NEW INSTRUCTION": "WHEN investigating missing import suggestions THEN search for PyImportCandidateProvider implementations first"
+}
+

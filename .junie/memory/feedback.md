@@ -182,3 +182,27 @@
     "NEW INSTRUCTION": "WHEN testing patch target resolution THEN assert reference resolves without intentions or inspections"
 }
 
+[2026-01-02 15:38] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "pytest import suggestions",
+    "EXPECTATION": "Do not alter pytest import suggestions; remove that behavior and keep only the intention to replace a symbol with a usage-site FQN.",
+    "NEW INSTRUCTION": "WHEN feature suggests imports in pytest tests THEN disable it and keep replace-with-FQN intention"
+}
+
+[2026-01-02 15:47] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "import suggestions regression",
+    "EXPECTATION": "Standard import suggestions (e.g., typing.Literal) should still appear in regular modules.",
+    "NEW INSTRUCTION": "WHEN file is not a pytest test THEN leave import suggestion provider behavior unchanged"
+}
+
+[2026-01-02 15:48] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "import suggestions regression",
+    "EXPECTATION": "In regular modules, typing.Literal should still get a standard import suggestion from typing.",
+    "NEW INSTRUCTION": "WHEN file is not a pytest test THEN do not disable import/completion providers"
+}
+
