@@ -4,9 +4,11 @@ import com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobjec
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectTarget
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.withMockIntroduceParameterObjectDialog
 import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.ActionUiKind
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext
+import com.intellij.testFramework.TestActionEvent
 import fixtures.TestBase
 
 class IntroduceParameterObjectRefactoringActionTest : TestBase() {
@@ -242,10 +244,13 @@ class IntroduceParameterObjectRefactoringActionTest : TestBase() {
         action: AnAction,
         dataContext: com.intellij.openapi.actionSystem.DataContext
     ): com.intellij.openapi.actionSystem.AnActionEvent {
-        return com.intellij.openapi.actionSystem.AnActionEvent.createFromDataContext(
+        return TestActionEvent.createEvent(
+            action,
+            dataContext,
+            action.templatePresentation.clone(),
             "",
-            null,
-            dataContext
+            ActionUiKind.NONE,
+            null
         )
     }
 }

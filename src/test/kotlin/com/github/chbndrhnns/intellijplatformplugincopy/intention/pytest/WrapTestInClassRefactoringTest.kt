@@ -2,6 +2,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest
 
 import fixtures.TestBase
 import fixtures.doRefactoringActionTest
+import fixtures.updateRefactoringAction
 
 class WrapTestInClassRefactoringTest : TestBase() {
 
@@ -185,14 +186,7 @@ class WrapTestInClassRefactoringTest : TestBase() {
                 <caret>pass
             """
         )
-        val action = com.intellij.openapi.actionSystem.ActionManager.getInstance().getAction(actionId)
-        val dataContext = com.intellij.openapi.actionSystem.impl.SimpleDataContext.builder()
-            .add(com.intellij.openapi.actionSystem.CommonDataKeys.PROJECT, project)
-            .add(com.intellij.openapi.actionSystem.CommonDataKeys.EDITOR, myFixture.editor)
-            .add(com.intellij.openapi.actionSystem.CommonDataKeys.PSI_FILE, myFixture.file)
-            .build()
-        val event = com.intellij.testFramework.TestActionEvent.createFromDataContext("", null, dataContext)
-        action.update(event)
+        val event = myFixture.updateRefactoringAction(actionId)
         assertFalse("Action should not be enabled on non-test functions", event.presentation.isEnabled)
     }
 
@@ -205,27 +199,13 @@ class WrapTestInClassRefactoringTest : TestBase() {
                     <caret>pass
             """
         )
-        val action = com.intellij.openapi.actionSystem.ActionManager.getInstance().getAction(actionId)
-        val dataContext = com.intellij.openapi.actionSystem.impl.SimpleDataContext.builder()
-            .add(com.intellij.openapi.actionSystem.CommonDataKeys.PROJECT, project)
-            .add(com.intellij.openapi.actionSystem.CommonDataKeys.EDITOR, myFixture.editor)
-            .add(com.intellij.openapi.actionSystem.CommonDataKeys.PSI_FILE, myFixture.file)
-            .build()
-        val event = com.intellij.testFramework.TestActionEvent.createFromDataContext("", null, dataContext)
-        action.update(event)
+        val event = myFixture.updateRefactoringAction(actionId)
         assertFalse("Action should not be enabled on test methods already inside a class", event.presentation.isEnabled)
     }
 
     fun testNotAvailableOnNonPythonFile() {
         myFixture.configureByText("test.txt", "test_something<caret>")
-        val action = com.intellij.openapi.actionSystem.ActionManager.getInstance().getAction(actionId)
-        val dataContext = com.intellij.openapi.actionSystem.impl.SimpleDataContext.builder()
-            .add(com.intellij.openapi.actionSystem.CommonDataKeys.PROJECT, project)
-            .add(com.intellij.openapi.actionSystem.CommonDataKeys.EDITOR, myFixture.editor)
-            .add(com.intellij.openapi.actionSystem.CommonDataKeys.PSI_FILE, myFixture.file)
-            .build()
-        val event = com.intellij.testFramework.TestActionEvent.createFromDataContext("", null, dataContext)
-        action.update(event)
+        val event = myFixture.updateRefactoringAction(actionId)
         assertFalse("Action should not be enabled in non-Python files", event.presentation.isEnabled)
     }
 
@@ -414,14 +394,7 @@ class WrapTestInClassRefactoringTest : TestBase() {
                     <caret>pass
                 """
             )
-            val action = com.intellij.openapi.actionSystem.ActionManager.getInstance().getAction(actionId)
-            val dataContext = com.intellij.openapi.actionSystem.impl.SimpleDataContext.builder()
-                .add(com.intellij.openapi.actionSystem.CommonDataKeys.PROJECT, project)
-                .add(com.intellij.openapi.actionSystem.CommonDataKeys.EDITOR, myFixture.editor)
-                .add(com.intellij.openapi.actionSystem.CommonDataKeys.PSI_FILE, myFixture.file)
-                .build()
-            val event = com.intellij.testFramework.TestActionEvent.createFromDataContext("", null, dataContext)
-            action.update(event)
+            val event = myFixture.updateRefactoringAction(actionId)
             assertFalse("Action should not be enabled when setting is disabled", event.presentation.isEnabled)
         } finally {
             settings.state.enableWrapTestInClassIntention = originalValue

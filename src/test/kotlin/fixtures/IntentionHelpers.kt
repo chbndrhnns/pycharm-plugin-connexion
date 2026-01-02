@@ -1,6 +1,8 @@
 package fixtures
 
 import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.ActionUiKind
+import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext
 import com.intellij.openapi.ui.DialogWrapper
@@ -60,6 +62,34 @@ fun CodeInsightTestFixture.doIntentionTest(
 }
 
 /**
+ * Updates a refactoring action and returns the event.
+ */
+fun CodeInsightTestFixture.updateRefactoringAction(
+    actionId: String
+): AnActionEvent {
+    val actionManager = ActionManager.getInstance()
+    val action = actionManager.getAction(actionId)
+        ?: throw AssertionError("Action $actionId not found")
+
+    val dataContext = SimpleDataContext.builder()
+        .add(CommonDataKeys.PROJECT, project)
+        .add(CommonDataKeys.EDITOR, editor)
+        .add(CommonDataKeys.PSI_FILE, file)
+        .build()
+
+    val event = TestActionEvent.createEvent(
+        action,
+        dataContext,
+        action.templatePresentation.clone(),
+        "",
+        ActionUiKind.NONE,
+        null
+    )
+    action.update(event)
+    return event
+}
+
+/**
  * Executes a refactoring action test:
  * 1. Configures the file with [before] text.
  * 2. Finds the action by [actionId].
@@ -89,7 +119,14 @@ fun CodeInsightTestFixture.doRefactoringActionTest(
         .add(CommonDataKeys.PSI_FILE, file)
         .build()
 
-    val event = TestActionEvent.createFromDataContext("", null, dataContext)
+    val event = TestActionEvent.createEvent(
+        action,
+        dataContext,
+        action.templatePresentation.clone(),
+        "",
+        ActionUiKind.NONE,
+        null
+    )
     action.actionPerformed(event)
 
     var expected = after.trimIndent()
