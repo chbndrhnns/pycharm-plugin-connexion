@@ -7,6 +7,7 @@ import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReference
 import com.jetbrains.python.PyPsiPackageUtil
 import com.jetbrains.python.codeInsight.imports.AutoImportQuickFix
@@ -80,7 +81,7 @@ class HideTransientImportProvider : PyImportCandidateProvider {
         }
     }
 
-    private fun isLocal(importable: com.intellij.psi.PsiElement?, module: Module): Boolean {
+    private fun isLocal(importable: PsiElement?, module: Module): Boolean {
         if (importable == null) return false
         val candidateModule = ModuleUtilCore.findModuleForPsiElement(importable)
         return candidateModule != null && candidateModule == module

@@ -3,6 +3,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.completion
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.patterns.PlatformPatterns.psiElement
+import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.QualifiedName
 import com.intellij.util.ProcessingContext
@@ -93,7 +94,7 @@ class PyNamedArgumentFromScopeCompletionContributor : CompletionContributor() {
             .toList()
     }
 
-    private fun isInsideKeywordValue(position: com.intellij.psi.PsiElement, offset: Int): Boolean {
+    private fun isInsideKeywordValue(position: PsiElement, offset: Int): Boolean {
         val kwArg = PsiTreeUtil.getParentOfType(position, PyKeywordArgument::class.java) ?: return false
 
         val valueExpression = kwArg.valueExpression

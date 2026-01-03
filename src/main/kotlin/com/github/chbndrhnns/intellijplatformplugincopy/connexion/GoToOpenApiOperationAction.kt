@@ -29,7 +29,7 @@ class GoToOpenApiOperationAction : AnAction() {
             val op = operations.first()
             (op.operationIdElement as? com.intellij.pom.Navigatable)?.navigate(true)
         } else {
-            val targets = operations.mapNotNull { it.operationIdElement as? com.intellij.psi.PsiElement }
+            val targets = operations.map { it.operationIdElement }
             if (targets.isEmpty()) return
 
             val popup = JBPopupFactory.getInstance()

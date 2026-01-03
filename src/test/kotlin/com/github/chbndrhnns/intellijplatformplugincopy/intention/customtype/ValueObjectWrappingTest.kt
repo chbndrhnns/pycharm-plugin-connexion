@@ -36,8 +36,11 @@ class ValueObjectWrappingTest : TestBase() {
             rewriter.wrapExpression(expr, "ProductId", generator, frozenDataclassStrategy)
         }
 
-        val result = pyFile.text
-        assertTrue("Should use value= syntax", result.contains("ProductId(value=123)"))
+        myFixture.checkResult(
+            """
+            val = ProductId(value=123)
+            """.trimIndent()
+        )
     }
 
     fun testWrapExpression_WithPydanticValueObject_UsesValueSyntax() {
@@ -59,8 +62,11 @@ class ValueObjectWrappingTest : TestBase() {
             rewriter.wrapExpression(expr, "CustomStr", generator, pydanticStrategy)
         }
 
-        val result = pyFile.text
-        assertTrue("Should use value= syntax", result.contains("CustomStr(value=\"hello\")"))
+        myFixture.checkResult(
+            """
+            val = CustomStr(value="hello")
+            """.trimIndent()
+        )
     }
 
     fun testWrapExpression_WithSubclass_UsesSimpleSyntax() {
@@ -82,9 +88,11 @@ class ValueObjectWrappingTest : TestBase() {
             rewriter.wrapExpression(expr, "ProductId", generator, subclassStrategy)
         }
 
-        val result = pyFile.text
-        assertTrue("Should use simple syntax", result.contains("ProductId(123)"))
-        assertFalse("Should NOT use value= syntax", result.contains("value="))
+        myFixture.checkResult(
+            """
+            val = ProductId(123)
+            """.trimIndent()
+        )
     }
 
     fun testWrapExpression_WithNewType_UsesSimpleSyntax() {
@@ -106,9 +114,11 @@ class ValueObjectWrappingTest : TestBase() {
             rewriter.wrapExpression(expr, "ProductId", generator, newTypeStrategy)
         }
 
-        val result = pyFile.text
-        assertTrue("Should use simple syntax", result.contains("ProductId(456)"))
-        assertFalse("Should NOT use value= syntax", result.contains("value="))
+        myFixture.checkResult(
+            """
+            val = ProductId(456)
+            """.trimIndent()
+        )
     }
 
     fun testFrozenDataclassGenerator_RequiresValueAccess() {

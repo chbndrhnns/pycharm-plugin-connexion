@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.generator
 
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
 import com.jetbrains.python.psi.LanguageLevel
 import com.jetbrains.python.psi.PyClass
 import com.jetbrains.python.psi.PyFile
@@ -38,5 +39,5 @@ interface ParameterObjectGenerator {
      * @param file The Python file to add imports to
      * @param anchor The anchor element for import placement
      */
-    fun addRequiredImports(file: PyFile, anchor: com.intellij.psi.PsiElement)
+    fun addRequiredImports(file: PyFile, anchor: PsiElement)
 }

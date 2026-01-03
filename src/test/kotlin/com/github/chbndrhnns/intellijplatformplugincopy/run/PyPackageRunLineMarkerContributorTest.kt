@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.run
 
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
+import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.PyTokenTypes
 import fixtures.TestBase
@@ -17,7 +18,7 @@ class PyPackageRunLineMarkerContributorTest : TestBase() {
         )
         myFixture.configureFromExistingVirtualFile(file.virtualFile)
 
-        val ifKeyword = PsiTreeUtil.findChildrenOfType(myFixture.file, com.intellij.psi.PsiElement::class.java)
+        val ifKeyword = PsiTreeUtil.findChildrenOfType(myFixture.file, PsiElement::class.java)
             .find { it.node.elementType == PyTokenTypes.IF_KEYWORD }!!
 
         val contributor = PyPackageRunLineMarkerContributor()
@@ -38,7 +39,7 @@ class PyPackageRunLineMarkerContributorTest : TestBase() {
         )
         myFixture.configureFromExistingVirtualFile(file.virtualFile)
 
-        val ifKeyword = PsiTreeUtil.findChildrenOfType(myFixture.file, com.intellij.psi.PsiElement::class.java)
+        val ifKeyword = PsiTreeUtil.findChildrenOfType(myFixture.file, PsiElement::class.java)
             .find { it.node.elementType == PyTokenTypes.IF_KEYWORD }!!
 
         val contributor = PyPackageRunLineMarkerContributor()
@@ -57,7 +58,7 @@ class PyPackageRunLineMarkerContributorTest : TestBase() {
         )
         myFixture.configureFromExistingVirtualFile(file.virtualFile)
 
-        val ifKeyword = PsiTreeUtil.findChildrenOfType(myFixture.file, com.intellij.psi.PsiElement::class.java)
+        val ifKeyword = PsiTreeUtil.findChildrenOfType(myFixture.file, PsiElement::class.java)
             .find { it.node.elementType == PyTokenTypes.IF_KEYWORD }!!
 
         val contributor = PyPackageRunLineMarkerContributor()
