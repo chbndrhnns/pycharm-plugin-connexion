@@ -1,6 +1,5 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
-import UsageRewriter
 import com.intellij.codeInsight.intention.preview.IntentionPreviewUtils
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.readAction
@@ -8,6 +7,7 @@ import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.platform.ide.progress.runWithModalProgressBlocking
+import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.SmartPsiElementPointer
 import com.intellij.psi.search.GlobalSearchScope
@@ -32,7 +32,7 @@ import com.jetbrains.python.psi.types.TypeEvalContext
 class CustomTypeApplier(
     private val naming: NameSuggester = NameSuggester(),
     private val insertionPointFinder: InsertionPointFinder = InsertionPointFinder(),
-    private val generator: CustomTypeGenerator = CustomTypeGenerator(),
+    private val legacyGenerator: CustomTypeGenerator = CustomTypeGenerator(),
     private val rewriter: UsageRewriter = UsageRewriter(),
     private val imports: ImportManager = ImportManager(),
     private val pytestHandler: PytestParametrizeHandler = PytestParametrizeHandler(),
@@ -80,13 +80,16 @@ class CustomTypeApplier(
         // --- PHASE 2: Execution (Write Action) ---
 
         val executionBlock = executionBlock@{
+            // Get the appropriate generator strategy based on the plan's type kind
+            val generatorStrategy = getGeneratorStrategy(plan.typeKind)
+
             // If the builtin comes from a subscripted container annotation like
             // ``dict[str, list[int]]``, carry over the full annotation text –
             // including its generic arguments – into the base part of the
             // generated class. This keeps container type parameters intact on the
             // new custom container class instead of downgrading it to a plain
             // ``dict`` / ``list`` / ``set``.
-            val builtinForClass = generator.determineBaseClassText(builtinName, plan.annotationRef)
+            val builtinForClass = generatorStrategy.determineBaseTypeText(builtinName, plan.annotationRef)
 
             val baseTypeName = naming.suggestTypeName(builtinName, plan.preferredClassName)
 
@@ -95,12 +98,22 @@ class CustomTypeApplier(
             // Decide which file should host the newly introduced custom type.
             val targetFileForNewClass = insertionPointFinder.chooseFile(plan.field, plan.expression, pyFile)
 
-            // Generate the new class definition in the chosen module.
+            // Generate the new type definition in the chosen module.
             val newTypeName = naming.ensureUnique(targetFileForNewClass, baseTypeName)
-            val newClass = generator.insertClass(
-                targetFileForNewClass,
-                generator.createClass(project, newTypeName, builtinForClass),
-            )
+            val typeDefinition = generatorStrategy.createTypeDefinition(project, newTypeName, builtinForClass)
+            val insertedElement = generatorStrategy.insertTypeDefinition(targetFileForNewClass, typeDefinition)
+
+            // Extract the named element for import management and rename support.
+            // For subclass: the PyClass itself
+            // For NewType: the target expression (left side of assignment)
+            val namedElement: PsiNamedElement? = when (insertedElement) {
+                is PyClass -> insertedElement
+                is PyAssignmentStatement -> insertedElement.targets.firstOrNull() as? PsiNamedElement
+                else -> null
+            }
+
+            // Add any required imports for this type kind (e.g., NewType from typing)
+            generatorStrategy.addRequiredImports(targetFileForNewClass)
 
             // When the custom type is introduced in a different module than the
             // current file (e.g. dataclass declaration vs usage site), make sure
@@ -108,8 +121,8 @@ class CustomTypeApplier(
             // correctly and no circular import is introduced.
             if (targetFileForNewClass != pyFile) {
                 val anchorElement = plan.expression ?: plan.annotationRef
-                if (anchorElement != null) {
-                    imports.ensureImportedIfNeeded(pyFile, anchorElement, newClass)
+                if (anchorElement != null && namedElement != null) {
+                    imports.ensureImportedIfNeeded(pyFile, anchorElement, namedElement)
                 }
             }
 
@@ -134,7 +147,7 @@ class CustomTypeApplier(
                     // a default of ``None``, the RHS has type ``None`` so it will
                     // not be wrapped.
                     if (shouldWrapAssignedExpression(assignedExpr, builtinName)) {
-                        rewriter.wrapExpression(assignedExpr, newTypeName, pyGenerator)
+                        rewriter.wrapExpression(assignedExpr, newTypeName, pyGenerator, generatorStrategy)
                     }
                 } else {
                     // Non-assignment annotations (parameters, returns, dataclass
@@ -151,7 +164,7 @@ class CustomTypeApplier(
 
                 // Wrap call site usages (using found pointers from Phase 1)
                 if (usagesToWrap.isNotEmpty()) {
-                    rewriter.wrapUsages(usagesToWrap, newTypeName, pyGenerator)
+                    rewriter.wrapUsages(usagesToWrap, newTypeName, pyGenerator, generatorStrategy)
                 }
             } else {
                 // Handle bare parameters (no annotation) - add annotation and wrap decorator values
@@ -197,7 +210,7 @@ class CustomTypeApplier(
 
                 // Only wrap the expression itself if we didn't wrap decorator values
                 if (!wrappedDecorator) {
-                    rewriter.wrapExpression(originalExpr, newTypeName, pyGenerator)
+                    rewriter.wrapExpression(originalExpr, newTypeName, pyGenerator, generatorStrategy)
                 }
             }
 
@@ -215,12 +228,21 @@ class CustomTypeApplier(
                 // enhancements; for now we only guarantee intra-file wrapping,
                 // while the custom type itself lives with the dataclass
                 // declaration.
-                rewriter.wrapDataclassConstructorUsages(pyFile, field, newTypeName, pyGenerator)
+                rewriter.wrapDataclassConstructorUsages(pyFile, field, newTypeName, pyGenerator, generatorStrategy)
 
                 // Project-wide update: find all references to the dataclass across
                 // the project and wrap constructor arguments at those call sites.
-                if (!isPreview) {
-                    wrapDataclassConstructorUsagesProjectWide(project, field, newTypeName, newClass, pyGenerator)
+                // Only applicable for class-based types (subclass), not NewType.
+                val insertedClass = insertedElement as? PyClass
+                if (!isPreview && insertedClass != null) {
+                    wrapDataclassConstructorUsagesProjectWide(
+                        project,
+                        field,
+                        newTypeName,
+                        insertedClass,
+                        pyGenerator,
+                        generatorStrategy
+                    )
                 }
             }
 
@@ -232,8 +254,10 @@ class CustomTypeApplier(
             // the rename infrastructure adjust it (which may, for example,
             // normalise it to ``Productid``). Inline rename remains available for
             // generic names like ``CustomInt``.
-            if (!isPreview && targetFileForNewClass == pyFile && plan.preferredClassName == null) {
-                startInlineRename(project, editor, newClass, pyFile)
+            // Note: Inline rename is only supported for PyClass (subclass types).
+            val classForRename = insertedElement as? PyClass
+            if (!isPreview && targetFileForNewClass == pyFile && plan.preferredClassName == null && classForRename != null) {
+                startInlineRename(project, editor, classForRename, pyFile)
             }
         }
 
@@ -274,6 +298,7 @@ class CustomTypeApplier(
         wrapperTypeName: String,
         introducedClass: PyClass,
         generator: PyElementGenerator,
+        generatorStrategy: CustomTypeGeneratorStrategy,
     ) {
         val pyClass = PsiTreeUtil.getParentOfType(field, PyClass::class.java) ?: return
         val searchScope = GlobalSearchScope.projectScope(project)
@@ -284,7 +309,7 @@ class CustomTypeApplier(
             .distinct()
             .forEach { refFile ->
                 // Update all constructor usages in that file.
-                rewriter.wrapDataclassConstructorUsages(refFile, field, wrapperTypeName, generator)
+                rewriter.wrapDataclassConstructorUsages(refFile, field, wrapperTypeName, generator, generatorStrategy)
 
                 // Ensure the new type is imported where needed.
                 val anchor = PsiTreeUtil.findChildOfType(refFile, PyTypedElement::class.java)

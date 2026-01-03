@@ -29,4 +29,11 @@ data class CustomTypePlan(
      */
     val targetElement: PsiElement? = null,
     val sourceFile: PyFile,
+    /**
+     * The kind of custom type to generate (subclass, NewType, frozen dataclass, etc.).
+     *
+     * Defaults to [CustomTypeKind.SUBCLASS] for backward compatibility with existing
+     * behavior.
+     */
+    val typeKind: CustomTypeKind = CustomTypeKind.DEFAULT,
 )

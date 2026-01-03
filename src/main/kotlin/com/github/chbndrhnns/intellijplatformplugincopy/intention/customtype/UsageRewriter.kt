@@ -1,5 +1,7 @@
 // Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 
+package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
+
 import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.SmartPsiElementPointer
 import com.intellij.psi.search.GlobalSearchScope
@@ -54,6 +56,27 @@ class UsageRewriter {
         val wrapped = generator.createExpressionFromText(
             LanguageLevel.getLatest(),
             "$newTypeName($exprText)",
+        )
+        PyReplaceExpressionUtil.replaceExpression(expr, wrapped)
+    }
+
+    /**
+     * Wrap [expr] using the [generatorStrategy]'s wrapping syntax.
+     *
+     * For value objects (frozen dataclass, Pydantic), this uses `TypeName(value=expr)`.
+     * For subclass/NewType, this uses `TypeName(expr)`.
+     */
+    fun wrapExpression(
+        expr: PyExpression,
+        newTypeName: String,
+        generator: PyElementGenerator,
+        generatorStrategy: CustomTypeGeneratorStrategy
+    ) {
+        val exprText = expr.text
+        val wrappedText = generatorStrategy.wrapExpressionText(newTypeName, exprText)
+        val wrapped = generator.createExpressionFromText(
+            LanguageLevel.getLatest(),
+            wrappedText,
         )
         PyReplaceExpressionUtil.replaceExpression(expr, wrapped)
     }
@@ -262,6 +285,22 @@ class UsageRewriter {
     }
 
     /**
+     * PHASE 2: Modify the found usages using the generator strategy's wrapping syntax.
+     * Must run in Write Action.
+     */
+    fun wrapUsages(
+        usages: List<SmartPsiElementPointer<PyExpression>>,
+        wrapperTypeName: String,
+        generator: PyElementGenerator,
+        generatorStrategy: CustomTypeGeneratorStrategy
+    ) {
+        for (ptr in usages) {
+            val element = ptr.element ?: continue
+            wrapArgumentExpressionIfNeeded(element, wrapperTypeName, generator, generatorStrategy)
+        }
+    }
+
+    /**
      * Synchronise the dataclass field's annotation with the newly introduced type.
      */
     fun syncDataclassFieldAnnotation(
@@ -294,6 +333,30 @@ class UsageRewriter {
         wrapperTypeName: String,
         generator: PyElementGenerator,
     ) {
+        wrapDataclassConstructorUsagesInternal(file, field, wrapperTypeName, generator, null)
+    }
+
+    /**
+     * Wrap all constructor usages of the given dataclass/Pydantic [field] with the
+     * provided wrapper type within a single [file], using the generator strategy's wrapping syntax.
+     */
+    fun wrapDataclassConstructorUsages(
+        file: PyFile,
+        field: PyTargetExpression,
+        wrapperTypeName: String,
+        generator: PyElementGenerator,
+        generatorStrategy: CustomTypeGeneratorStrategy
+    ) {
+        wrapDataclassConstructorUsagesInternal(file, field, wrapperTypeName, generator, generatorStrategy)
+    }
+
+    private fun wrapDataclassConstructorUsagesInternal(
+        file: PyFile,
+        field: PyTargetExpression,
+        wrapperTypeName: String,
+        generator: PyElementGenerator,
+        generatorStrategy: CustomTypeGeneratorStrategy?
+    ) {
         val pyClass = PsiTreeUtil.getParentOfType(field, PyClass::class.java) ?: return
         val fieldName = field.name ?: return
 
@@ -322,7 +385,11 @@ class UsageRewriter {
                         }
 
                         if (realArg != null) {
-                            wrapArgumentExpressionIfNeeded(realArg, wrapperTypeName, generator)
+                            if (generatorStrategy != null) {
+                                wrapArgumentExpressionIfNeeded(realArg, wrapperTypeName, generator, generatorStrategy)
+                            } else {
+                                wrapArgumentExpressionIfNeeded(realArg, wrapperTypeName, generator)
+                            }
                             handled = true
                         }
                     }
@@ -335,7 +402,11 @@ class UsageRewriter {
                     if (arg is PyKeywordArgument && arg.keyword == fieldName) {
                         val valueExpr = arg.valueExpression
                         if (valueExpr != null) {
-                            wrapArgumentExpressionIfNeeded(valueExpr, wrapperTypeName, generator)
+                            if (generatorStrategy != null) {
+                                wrapArgumentExpressionIfNeeded(valueExpr, wrapperTypeName, generator, generatorStrategy)
+                            } else {
+                                wrapArgumentExpressionIfNeeded(valueExpr, wrapperTypeName, generator)
+                            }
                         }
                     }
                 }
@@ -357,6 +428,32 @@ class UsageRewriter {
         val wrapped = generator.createExpressionFromText(
             LanguageLevel.getLatest(),
             "$wrapperTypeName(${expr.text})",
+        )
+        PyReplaceExpressionUtil.replaceExpression(expr, wrapped)
+    }
+
+    /**
+     * Wrap an argument expression using the generator strategy's wrapping syntax.
+     *
+     * For value objects (frozen dataclass, Pydantic), this uses `TypeName(value=expr)`.
+     * For subclass/NewType, this uses `TypeName(expr)`.
+     */
+    private fun wrapArgumentExpressionIfNeeded(
+        expr: PyExpression,
+        wrapperTypeName: String,
+        generator: PyElementGenerator,
+        generatorStrategy: CustomTypeGeneratorStrategy
+    ) {
+        val existingCall = expr as? PyCallExpression
+        if (existingCall != null) {
+            val calleeText = existingCall.callee?.text
+            if (calleeText == wrapperTypeName) return
+        }
+
+        val wrappedText = generatorStrategy.wrapExpressionText(wrapperTypeName, expr.text)
+        val wrapped = generator.createExpressionFromText(
+            LanguageLevel.getLatest(),
+            wrappedText,
         )
         PyReplaceExpressionUtil.replaceExpression(expr, wrapped)
     }
