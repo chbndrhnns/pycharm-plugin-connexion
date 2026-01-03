@@ -254,3 +254,27 @@
     "NEW INSTRUCTION": "WHEN adding to existing class and method name exists THEN show editable method name and non-modal taken warning"
 }
 
+[2026-01-03 22:19] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "nested classes case",
+    "EXPECTATION": "Investigate and fix the navigation bar behavior specifically when Python classes are nested.",
+    "NEW INSTRUCTION": "WHEN issue mentions nested classes THEN add a test with an inner class and verify filtering"
+}
+
+[2026-01-03 22:38] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "navigation bar roots",
+    "EXPECTATION": "Navigation bar should not show unexpected or empty root nodes; roots should be correct (project/file/class).",
+    "NEW INSTRUCTION": "WHEN navigation bar shows strange root nodes THEN review getPresentableText and acceptParentFromModel to avoid null roots"
+}
+
+[2026-01-03 23:11] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "code duplication",
+    "EXPECTATION": "Reduce repetitive similar checks by extracting common logic into reusable helpers.",
+    "NEW INSTRUCTION": "WHEN the same condition appears in multiple places THEN extract a helper and reuse it"
+}
+

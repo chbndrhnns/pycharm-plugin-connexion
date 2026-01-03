@@ -188,3 +188,23 @@
     "NEW INSTRUCTION": "WHEN suggested class name exists in file THEN append numeric suffix until unique"
 }
 
+[2026-01-03 22:12] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "run_test",
+    "ERROR": "Build failed: immutable workspace modified",
+    "ROOT CAUSE": "Gradle cache for the IDE distribution was corrupted or externally modified.",
+    "PROJECT NOTE": "The Gradle IntelliJ plugin downloads IDE archives under ~/.gradle/caches/.../transforms; if initializeIntellijPlatformPlugin fails with immutable workspace modified, delete the affected transforms entry and rerun with --refresh-dependencies.",
+    "NEW INSTRUCTION": "WHEN Gradle reports immutable workspace modified THEN delete Gradle transforms cache and rerun with --refresh-dependencies"
+}
+
+[2026-01-03 22:21] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "run_test",
+    "ERROR": "Missing j.u.l LogManager config file",
+    "ROOT CAUSE": "The IntelliJ test runner expects test-log.properties in the IDE cache but it is absent.",
+    "PROJECT NOTE": "The file should be under ~/.gradle/caches/.../transforms/.../test-log.properties for the IDE distribution used by the Gradle IntelliJ plugin; refreshing dependencies restores it.",
+    "NEW INSTRUCTION": "WHEN LogManager config file path is missing THEN rerun Gradle with --refresh-dependencies"
+}
+

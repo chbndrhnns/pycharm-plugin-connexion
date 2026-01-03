@@ -308,3 +308,43 @@
     "NEW INSTRUCTION": "WHEN tests require dialog input THEN inject dialog settings or extend interceptor to set choices"
 }
 
+[2026-01-03 22:16] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "run tests via unsupported tool,repeat build without input changes",
+    "MISSING STEPS": "ask user for clarification,inspect base class,scan project/spec,validate correct filtering mechanism",
+    "BOTTLENECK": "Misunderstood that presentable text is not the visibility filter hook.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN changing NavBar visibility behavior THEN inspect base class visibility/filter hooks first"
+}
+
+[2026-01-03 22:23] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "ask user",
+    "BOTTLENECK": "No failing test reproduces the nested classes issue.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN no failing test reproduces reported UI behavior THEN ask user for precise reproduction"
+}
+
+[2026-01-03 22:40] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "add test for directory roots, review acceptParentFromModel behavior",
+    "BOTTLENECK": "Non-Python parents are being accepted, producing duplicate root directory nodes.",
+    "PROJECT NOTE": "acceptParentFromModel() returns true unconditionally and adjustElement may return directories, letting folder roots into the model.",
+    "NEW INSTRUCTION": "WHEN parent element is not within a PyFile or PyClass THEN return false from acceptParentFromModel"
+}
+
+[2026-01-03 23:12] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "add helpers, run tests",
+    "BOTTLENECK": "Helper functions were used before being implemented.",
+    "PROJECT NOTE": "Implement Kotlin extension helpers as private top-level functions in the same file.",
+    "NEW INSTRUCTION": "WHEN replacing duplicated checks with helper calls THEN create helper functions, update all usages, and run tests"
+}
+
