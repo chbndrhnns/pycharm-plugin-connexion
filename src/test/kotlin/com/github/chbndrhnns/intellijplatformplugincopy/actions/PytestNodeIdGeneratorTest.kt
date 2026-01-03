@@ -244,6 +244,54 @@ class PytestNodeIdGeneratorTest : TestBase() {
         assertEquals("tests/test_.py::TestParent::TestChild::TestGrandChild::test_method", record!!.nodeid)
     }
 
+    /**
+     * Tests that parametrized test names with parentheses format are converted to square brackets.
+     * 
+     * Expected: tests/test_.py::TestParent::TestChild::TestGrandChild::test_[1]
+     * Bug produces: tests/test_.py::TestParent::TestChild::TestGrandChild::test_::(1)
+     */
+    fun testParametrizedNestedClassWithParenthesesFormat() {
+        val file = myFixture.addFileToProject(
+            "tests/test_.py",
+            """
+            class TestParent:
+                class TestChild:
+                    class TestGrandChild:
+                        def test_(self):
+                            assert 1 == 2
+            """.trimIndent()
+        )
+
+        myFixture.configureFromExistingVirtualFile(file.virtualFile)
+        val method = myFixture.findElementByText("test_", PyFunction::class.java)
+
+        // Simulate pytest tree with parametrized test using parentheses format
+        // root -> tests (dir) -> test_ (module) -> TestParent -> TestChild -> TestGrandChild -> test_(1)
+        val locationUrl = "python<${file.virtualFile.path}>://tests.test_.TestParent"
+
+        val rootProxy = FakeSMTestProxy("Root", true, null, null)
+        val dirProxy = FakeSMTestProxy("tests", true, null, null)
+        val moduleProxy = FakeSMTestProxy("test_", true, null, null)
+        val parentProxy = FakeSMTestProxy("TestParent", true, null, null)
+        val childProxy = FakeSMTestProxy("TestChild", true, null, null)
+        val grandChildProxy = FakeSMTestProxy("TestGrandChild", true, null, null)
+        // Proxy name uses parentheses format (1) instead of square brackets [1]
+        val methodProxy = FakeSMTestProxy("test_(1)", false, method, locationUrl)
+
+        // Set up parent chain
+        rootProxy.addChild(dirProxy)
+        dirProxy.addChild(moduleProxy)
+        moduleProxy.addChild(parentProxy)
+        parentProxy.addChild(childProxy)
+        childProxy.addChild(grandChildProxy)
+        grandChildProxy.addChild(methodProxy)
+
+        val record = PytestNodeIdGenerator.parseProxy(methodProxy, project)
+
+        // Should convert (1) to [1] in the node ID
+        assertEquals("tests/test_.py::TestParent::TestChild::TestGrandChild::test_[1]", record!!.nodeid)
+    }
+
     private class FakeSMTestProxy(
         name: String,
         isSuite: Boolean,

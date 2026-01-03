@@ -38,9 +38,17 @@ class CopyFQNAction : AbstractCopyTestNodeAction("\n") {
     }
 
     private fun stripParameters(fqn: String): String {
+        // Handle square bracket format: test_[param]
         if (fqn.endsWith("]")) {
             val index = fqn.lastIndexOf('[')
             if (index != -1) {
+                return fqn.substring(0, index)
+            }
+        }
+        // Handle parentheses format: test_(param)
+        if (fqn.endsWith(")")) {
+            val index = fqn.lastIndexOf('(')
+            if (index > 0) {
                 return fqn.substring(0, index)
             }
         }
