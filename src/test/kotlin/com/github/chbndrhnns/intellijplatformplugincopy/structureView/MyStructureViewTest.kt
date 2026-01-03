@@ -80,7 +80,7 @@ class MyStructureViewTest : TestBase() {
             )
 
             // 2. Get the builder
-            val builder = LanguageStructureViewBuilder.INSTANCE.getStructureViewBuilder(file)
+            val builder = LanguageStructureViewBuilder.getInstance().getStructureViewBuilder(file)
             assertNotNull(builder)
             assertTrue(builder is TreeBasedStructureViewBuilder)
             val treeBuilder = builder as TreeBasedStructureViewBuilder
