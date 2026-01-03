@@ -27,8 +27,8 @@ class IntroduceCustomTypeRefactoringHandler : RefactoringActionHandler {
             basePlan
         } else {
             val suggestedName = naming.suggestTypeName(basePlan.builtinName, basePlan.preferredClassName)
-            // Show dialog to let user choose type kind and confirm/edit class name
-            val dialog = IntroduceCustomTypeDialog(project, suggestedName, basePlan.builtinName)
+            val uniqueName = naming.ensureUnique(pyFile, suggestedName)
+            val dialog = IntroduceCustomTypeDialog(project, uniqueName, basePlan.builtinName)
 
             if (!dialog.showAndGet()) {
                 return // User cancelled
