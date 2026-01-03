@@ -348,3 +348,13 @@
     "NEW INSTRUCTION": "WHEN replacing duplicated checks with helper calls THEN create helper functions, update all usages, and run tests"
 }
 
+[2026-01-03 23:23] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "register inspection, add inspection description, enable inspection in tests, run tests",
+    "BOTTLENECK": "Inspection lacked required description and was not registered",
+    "PROJECT NOTE": "Place description at resources/inspectionDescriptions/<ShortName>.html and add to plugin.xml",
+    "NEW INSTRUCTION": "WHEN adding a new inspection class THEN add description and register it in plugin.xml"
+}
+

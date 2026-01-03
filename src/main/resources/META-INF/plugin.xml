@@ -360,6 +360,16 @@
                 level="ERROR"
                 implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyUnresolvedReferenceAsErrorInspection"/>
 
+        <localInspection
+                language="Python"
+                shortName="PyStrictSourceRootImportInspection"
+                displayName="BetterPy: Strict source root prefix"
+                groupPath="Python"
+                groupName="Python"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.imports.PyStrictSourceRootImportInspection"/>
+
         <renamePsiElementProcessor
                 implementation="com.github.chbndrhnns.intellijplatformplugincopy.refactoring.PyShadowingStdlibRenameProcessor"
                 order="first"/>

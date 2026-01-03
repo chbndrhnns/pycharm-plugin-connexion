@@ -278,3 +278,11 @@
     "NEW INSTRUCTION": "WHEN the same condition appears in multiple places THEN extract a helper and reuse it"
 }
 
+[2026-01-03 23:37] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "toggle removal",
+    "EXPECTATION": "Do not gate the strict source root behavior behind a setting; make it always on.",
+    "NEW INSTRUCTION": "WHEN code checks enableStrictSourceRootPrefix THEN remove the setting and apply behavior unconditionally"
+}
+

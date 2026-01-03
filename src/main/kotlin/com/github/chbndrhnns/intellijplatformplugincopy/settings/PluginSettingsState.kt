@@ -412,6 +412,7 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         )
         var enableRestoreSourceRootPrefix: Boolean = true,
 
+
         @Feature(
             id = "relative-import-preference",
             displayName = "Relative import preference",

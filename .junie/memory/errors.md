@@ -208,3 +208,23 @@
     "NEW INSTRUCTION": "WHEN LogManager config file path is missing THEN rerun Gradle with --refresh-dependencies"
 }
 
+[2026-01-03 23:18] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "search_replace",
+    "ERROR": "Cannot resolve specified extension points in getDependencies",
+    "ROOT CAUSE": "ImportsProjectViewConfigurable references Python EPs without declaring the Python plugin dependency and EP IDs may be incorrect.",
+    "PROJECT NOTE": "In settings/ImportsProjectViewConfigurable.getDependencies, use valid EP IDs (e.g., com.jetbrains.python.canonicalPathProvider, com.jetbrains.python.importCandidateProvider) and ensure plugin.xml declares <depends>Pythonid</depends> so these EPs are available.",
+    "NEW INSTRUCTION": "WHEN semantic errors flag unknown extension points in settings THEN verify EP IDs and declare Pythonid dependency"
+}
+
+[2026-01-03 23:22] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "create",
+    "ERROR": "Inspection does not have a description",
+    "ROOT CAUSE": "The new inspection lacks a required description resource or static description.",
+    "PROJECT NOTE": "Add src/main/resources/inspectionDescriptions/PyStrictSourceRootImportInspection.html (ShortName.html) or override getStaticDescription() in the inspection.",
+    "NEW INSTRUCTION": "WHEN creating a new Inspection subclass THEN add inspectionDescriptions/<ShortName>.html description file"
+}
+
