@@ -62,7 +62,6 @@
 
 ## In Progress Tasks
 
-- [ ] feat: Add strict version of source roots and mark as unresolved references if missing
 - [ ] feat: highlight failed line in pytest test, spec/pytest/highlight-failed-line.md
 - [ ] feat: Inline parameter object should ask to remove/other invocations
 - [ ] feat: search everywhere: search for partial matches in test names
@@ -72,6 +71,7 @@
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Add strict version of source roots and mark as unresolved references if missing + quickfix
 - [x] fix: Navigate symbols in file should hide dunder methods
 - [x] fix: Make actual outcome available via intention for failed test
 - [x] feat: introduce custom type as newtype, as well, or other custom constructs
