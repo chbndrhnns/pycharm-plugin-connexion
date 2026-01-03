@@ -1,13 +1,15 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import fixtures.TestBase
-import fixtures.assertIntentionNotAvailable
-import fixtures.doIntentionTest
+import fixtures.assertRefactoringActionNotAvailable
+import fixtures.doRefactoringActionTest
 
 class DataclassTest : TestBase() {
 
+    private val actionId = "com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.IntroduceCustomTypeRefactoringAction"
+
     fun testField_WrapsKeywordArgumentUsages() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             import dataclasses
@@ -39,12 +41,12 @@ class DataclassTest : TestBase() {
                 D(product_id=ProductId(123))
                 D(product_id=ProductId(456))
             """,
-            "BetterPy: Introduce custom type from int"
+            actionId
         )
     }
 
     fun testField_WrapsPositionalArgumentUsages() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             import dataclasses
@@ -78,12 +80,12 @@ class DataclassTest : TestBase() {
                 D(ProductId(123), "x")
                 D(ProductId(456), other="y")
             """,
-            "BetterPy: Introduce custom type from int"
+            actionId
         )
     }
 
     fun testCall_IntroduceFromKeywordValue_UpdatesFieldAndAllUsages() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             import dataclasses
@@ -115,12 +117,12 @@ class DataclassTest : TestBase() {
                 D(product_id=ProductId(123))
                 D(product_id=ProductId(456))
             """,
-            "BetterPy: Introduce custom type from int"
+            actionId
         )
     }
 
     fun testCall_IntroduceFromPositionalValue_UpdatesFieldAndUsages() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             import dataclasses
@@ -154,12 +156,12 @@ class DataclassTest : TestBase() {
                     D(ProductId(123), "a")
                     D(ProductId(456), "b")
             """,
-            "BetterPy: Introduce custom type from int"
+            actionId
         )
     }
 
     fun testCall_DoesNotOfferCustomTypeIfAlreadyCustom() {
-        myFixture.assertIntentionNotAvailable(
+        myFixture.assertRefactoringActionNotAvailable(
             "a.py",
             """
             import dataclasses
@@ -177,12 +179,12 @@ class DataclassTest : TestBase() {
             def do():
                 D(product_id=12<caret>3)
             """,
-            "BetterPy: Introduce custom type from int"
+            actionId
         )
     }
 
     fun testField_WithSnakeCaseName_UsesFieldNameForClass() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             import dataclasses
@@ -204,12 +206,12 @@ class DataclassTest : TestBase() {
             class D:
                 product_id: ProductId
             """,
-            "BetterPy: Introduce custom type from int"
+            actionId
         )
     }
 
     fun testField_ListOfStr_UsesPluralFieldNameForClass() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             import dataclasses
@@ -231,12 +233,12 @@ class DataclassTest : TestBase() {
             class FileUpload:
                 files: Files
             """,
-            "BetterPy: Introduce custom type from list"
+            actionId
         )
     }
 
     fun testField_UnionWithNone_DefaultNoneIsNotWrapped() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             import dataclasses
@@ -258,7 +260,7 @@ class DataclassTest : TestBase() {
             class C:
                 val: Customint | None = None
             """,
-            "BetterPy: Introduce custom type from int",
+            actionId,
             renameTo = "Customint"
         )
     }

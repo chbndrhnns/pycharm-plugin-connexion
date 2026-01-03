@@ -1,5 +1,10 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.ActionUiKind
+import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.actionSystem.impl.SimpleDataContext
+import com.intellij.testFramework.TestActionEvent
 import fixtures.HeavyTestBase
 
 /**
@@ -11,6 +16,30 @@ import fixtures.HeavyTestBase
  * implementation still exercises cross-file behaviour within a single module.
  */
 class HeavyTest : HeavyTestBase() {
+
+    private val actionId = "com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.IntroduceCustomTypeRefactoringAction"
+
+    private fun performRefactoringAction() {
+        val actionManager = ActionManager.getInstance()
+        val action = actionManager.getAction(actionId)
+            ?: throw AssertionError("Action $actionId not found")
+
+        val dataContext = SimpleDataContext.builder()
+            .add(CommonDataKeys.PROJECT, myFixture.project)
+            .add(CommonDataKeys.EDITOR, myFixture.editor)
+            .add(CommonDataKeys.PSI_FILE, myFixture.file)
+            .build()
+
+        val event = TestActionEvent.createEvent(
+            action,
+            dataContext,
+            action.templatePresentation.clone(),
+            "",
+            ActionUiKind.NONE,
+            null
+        )
+        action.actionPerformed(event)
+    }
 
     fun testDataclassCrossModule_CreateTypeAtUsageSite_AddsImportAtUsageSite() {
         myFixture.configureByText("mod/__init__.py", "")
@@ -39,8 +68,7 @@ class HeavyTest : HeavyTestBase() {
 
         configureTempDirAsContentAndSourceRoot()
         waitForSmartModeAndHighlight()
-        val intention = myFixture.findSingleIntention("BetterPy: Introduce custom type from int")
-        myFixture.launchAction(intention)
+        performRefactoringAction()
 
         myFixture.openFileInEditor(usagePsi1.virtualFile)
         myFixture.doHighlighting()
@@ -83,8 +111,7 @@ class HeavyTest : HeavyTestBase() {
 
         configureTempDirAsContentAndSourceRoot()
         waitForSmartModeAndHighlight()
-        val intention = myFixture.findSingleIntention("BetterPy: Introduce custom type from int")
-        myFixture.launchAction(intention)
+        performRefactoringAction()
 
         myFixture.openFileInEditor(usagePsi2.virtualFile)
         myFixture.doHighlighting()
@@ -126,8 +153,7 @@ class HeavyTest : HeavyTestBase() {
 
         configureTempDirAsContentAndSourceRoot()
         waitForSmartModeAndHighlight()
-        val intention = myFixture.findSingleIntention("BetterPy: Introduce custom type from int")
-        myFixture.launchAction(intention)
+        performRefactoringAction()
 
         myFixture.checkResult(
             "model.py",

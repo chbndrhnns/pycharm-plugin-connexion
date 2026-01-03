@@ -137,12 +137,6 @@
         </intentionAction>
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.IntroduceCustomTypeFromStdlibIntention
-            </className>
-            <category>Custom types</category>
-        </intentionAction>
-
-        <intentionAction>
             <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.populate.PopulateArgumentsIntention
             </className>
             <category>Arguments</category>
@@ -444,6 +438,13 @@
                 class="com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest.WrapTestInClassRefactoringAction"
                 text="BetterPy: Wrap Test in Class..."
                 description="Wraps a module-level pytest test function inside a test class">
+            <add-to-group group-id="RefactoringMenu" anchor="last"/>
+        </action>
+
+        <action id="com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.IntroduceCustomTypeRefactoringAction"
+                class="com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.IntroduceCustomTypeRefactoringAction"
+                text="BetterPy: Introduce Custom Type..."
+                description="Introduces a custom type from a stdlib type annotation">
             <add-to-group group-id="RefactoringMenu" anchor="last"/>
         </action>
 

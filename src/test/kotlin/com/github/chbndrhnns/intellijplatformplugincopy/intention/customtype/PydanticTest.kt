@@ -1,11 +1,14 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import fixtures.TestBase
-import fixtures.doIntentionTest
+import fixtures.doRefactoringActionTest
 
 class PydanticTest : TestBase() {
+
+    private val actionId = "com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.IntroduceCustomTypeRefactoringAction"
+
     fun testCall_IntroduceFromKeywordValue_UpdatesFieldAndUsages() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             from pydantic import BaseModel
@@ -35,7 +38,7 @@ class PydanticTest : TestBase() {
                 D(product_id=ProductId(123))
                 D(product_id=ProductId(456))
             """,
-            "BetterPy: Introduce custom type from int"
+            actionId
         )
     }
 }

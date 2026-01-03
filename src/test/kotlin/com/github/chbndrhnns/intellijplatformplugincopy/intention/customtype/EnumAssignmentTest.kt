@@ -1,12 +1,14 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import fixtures.TestBase
-import fixtures.assertIntentionNotAvailable
+import fixtures.assertRefactoringActionNotAvailable
 
 class EnumAssignmentTest : TestBase() {
 
+    private val actionId = "com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.IntroduceCustomTypeRefactoringAction"
+
     fun testEnumAssignment_DoNotOfferCustomType() {
-        myFixture.assertIntentionNotAvailable(
+        myFixture.assertRefactoringActionNotAvailable(
             "a.py",
             """
             from enum import Enum
@@ -15,7 +17,7 @@ class EnumAssignmentTest : TestBase() {
                 RED = "r<caret>ed"
                 GREEN = "green"
             """,
-            "BetterPy: Introduce custom type from str"
+            actionId
         )
     }
 }

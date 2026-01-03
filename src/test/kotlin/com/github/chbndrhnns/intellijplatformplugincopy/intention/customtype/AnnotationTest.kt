@@ -1,12 +1,14 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import fixtures.TestBase
-import fixtures.doIntentionTest
+import fixtures.doRefactoringActionTest
 
 class AnnotationTest : TestBase() {
 
+    private val actionId = "com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.IntroduceCustomTypeRefactoringAction"
+
     fun testAnnotatedAssignment_UnionType_UpdatesOnlyMatchingPart() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             val: int | str | None = <caret>2
@@ -18,13 +20,13 @@ class AnnotationTest : TestBase() {
             
             val: Customint | str | None = Customint(2)
             """,
-            "BetterPy: Introduce custom type from int",
+            actionId,
             renameTo = "Customint"
         )
     }
 
     fun testAnnotatedParameter_UnionType_UpdatesOnlyMatchingPart() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             class CustomWrapper: ...
@@ -50,13 +52,13 @@ class AnnotationTest : TestBase() {
             
             f(Customstr("abc"))
             """,
-            "BetterPy: Introduce custom type from str",
+            actionId,
             renameTo = "Customstr"
         )
     }
 
     fun testAnnotatedAssignment_UnionType_String_UpdatesOnlyMatchingPart() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             val: int | str | None = <caret>"hello"
@@ -68,7 +70,7 @@ class AnnotationTest : TestBase() {
             
             val: int | Customstr | None = Customstr("hello")
             """,
-            "BetterPy: Introduce custom type from str",
+            actionId,
             renameTo = "Customstr"
         )
     }

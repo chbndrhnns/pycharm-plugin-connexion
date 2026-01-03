@@ -1,13 +1,15 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import fixtures.TestBase
-import fixtures.assertIntentionNotAvailable
-import fixtures.doIntentionTest
+import fixtures.assertRefactoringActionNotAvailable
+import fixtures.doRefactoringActionTest
 
 class ForwardRefTest : TestBase() {
 
+    private val actionId = "com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.IntroduceCustomTypeRefactoringAction"
+
     fun testAssignment_UnionInString_UpdatesTextInsideString() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             val: "int | str | None" = <caret>2
@@ -19,13 +21,13 @@ class ForwardRefTest : TestBase() {
             
             val: "Customint | str | None" = Customint(2)
             """,
-            "BetterPy: Introduce custom type from int",
+            actionId,
             renameTo = "Customint"
         )
     }
 
     fun testParameter_UnionInString_UpdatesTextInsideString() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             def do(val: "int | str | None" = <caret>2):
@@ -39,13 +41,13 @@ class ForwardRefTest : TestBase() {
             def do(val: "Customint | str | None" = Customint(2)):
                 pass
             """,
-            "BetterPy: Introduce custom type from int",
+            actionId,
             renameTo = "Customint"
         )
     }
 
     fun testAssignment_MixedReferencesAndStrings_UpdatesStringPart() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             # This is valid python if types are defined
@@ -59,18 +61,18 @@ class ForwardRefTest : TestBase() {
             # This is valid python if types are defined
             val: str | "Customint" = Customint(2)
             """,
-            "BetterPy: Introduce custom type from int",
+            actionId,
             renameTo = "Customint"
         )
     }
 
     fun testNotOffered_InForwardRefAnnotationString() {
-        myFixture.assertIntentionNotAvailable(
+        myFixture.assertRefactoringActionNotAvailable(
             "a.py",
             """
             val: "in<caret>t | str | None" = 2
             """,
-            "Introduce custom type"
+            actionId
         )
     }
 }

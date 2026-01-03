@@ -47,14 +47,6 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         )
         var enableUnwrapItemsToExpectedTypeIntention: Boolean = true,
 
-        @Feature(
-            id = "introduce-custom-type-from-stdlib",
-            displayName = "Introduce custom type from stdlib",
-            description = "Creates a custom type alias or wrapper for a stdlib type",
-            category = FeatureCategory.TYPE_WRAPPING
-        )
-        var enableIntroduceCustomTypeFromStdlibIntention: Boolean = true,
-
         // ---- Type Bucket Priority Settings ----
         /** When true, always prefer OWN (project) types over STDLIB types in union wrapping. */
         var preferOwnTypesInUnionWrapping: Boolean = true,
@@ -332,6 +324,14 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
             category = FeatureCategory.ACTIONS
         )
         var enableInlineParameterObjectRefactoringAction: Boolean = true,
+
+        @Feature(
+            id = "introduce-custom-type",
+            displayName = "Introduce custom type",
+            description = "Creates a custom type from a stdlib type annotation",
+            category = FeatureCategory.ACTIONS
+        )
+        var enableIntroduceCustomTypeRefactoringAction: Boolean = true,
 
         // ---- Parameter Object Settings ----
         /** Default base type for parameter objects (dataclass, NamedTuple, TypedDict, pydantic.BaseModel) */

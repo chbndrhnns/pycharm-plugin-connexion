@@ -1,13 +1,15 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import fixtures.TestBase
-import fixtures.assertIntentionNotAvailable
-import fixtures.doIntentionTest
+import fixtures.assertRefactoringActionNotAvailable
+import fixtures.doRefactoringActionTest
 
 class LiteralsTest : TestBase() {
 
+    private val actionId = "com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.IntroduceCustomTypeRefactoringAction"
+
     fun testString_NoAnnotation_WrapsWithCustomStr() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             def expect_str(s) -> None:
@@ -25,13 +27,13 @@ class LiteralsTest : TestBase() {
 
             expect_str(Customstr("abc"))
             """,
-            "BetterPy: Introduce custom type from str",
+            actionId,
             renameTo = "Customstr"
         )
     }
 
     fun testString_Annotation_UpdatesAnnotationAfterWrap() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             def expect_str(s: str) -> None:
@@ -49,13 +51,13 @@ class LiteralsTest : TestBase() {
 
             expect_str(Customstr("abc"))
             """,
-            "BetterPy: Introduce custom type from str",
+            actionId,
             renameTo = "Customstr"
         )
     }
 
     fun testStringAssignment_NoAnnotation_WrapsWithCustomStr() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             val = "s<caret>tr"
@@ -67,13 +69,13 @@ class LiteralsTest : TestBase() {
 
             val = Customstr("str")
             """,
-            "BetterPy: Introduce custom type from str",
+            actionId,
             renameTo = "Customstr"
         )
     }
 
     fun testFloatAssignment_UsesFloatAndWrapsValue() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             val = 4567.<caret>6
@@ -85,13 +87,13 @@ class LiteralsTest : TestBase() {
             
             val = Customfloat(4567.6)
             """,
-            "BetterPy: Introduce custom type from float",
+            actionId,
             renameTo = "Customfloat"
         )
     }
 
     fun testIntAssignment_WithSnakeCaseName_UsesTargetNameForClass() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             product_id = 12<caret>34
@@ -103,12 +105,12 @@ class LiteralsTest : TestBase() {
 
             product_id = ProductId(1234)
             """,
-            "BetterPy: Introduce custom type from int"
+            actionId
         )
     }
 
     fun testKeywordArgument_WithSnakeCaseName_UsesKeywordForClass() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             def do(my_arg) -> None:
@@ -128,12 +130,12 @@ class LiteralsTest : TestBase() {
             def test_():
                 do(my_arg=MyArg(1234))
             """.trimIndent(),
-            "BetterPy: Introduce custom type from int"
+            actionId
         )
     }
 
     fun testDictValue_WhenExpectedTypeIsAlreadyCustom_DoesNotOfferIntention() {
-        myFixture.assertIntentionNotAvailable(
+        myFixture.assertRefactoringActionNotAvailable(
             "a.py",
             """
             class CustomInt(int):
@@ -142,12 +144,12 @@ class LiteralsTest : TestBase() {
 
             val: dict[str, CustomInt] = {"a": <caret>1, "b": 2, "c": 3}
             """,
-            "BetterPy: Introduce custom type from int"
+            actionId
         )
     }
 
     fun testDictKey_WhenExpectedTypeIsAlreadyCustom_DoesNotOfferIntention() {
-        myFixture.assertIntentionNotAvailable(
+        myFixture.assertRefactoringActionNotAvailable(
             "a.py",
             """
             class CustomStr(str):
@@ -156,12 +158,12 @@ class LiteralsTest : TestBase() {
 
             val: dict[CustomStr, int] = {<caret>"a": 1, "b": 2}
             """,
-            "BetterPy: Introduce custom type from str"
+            actionId
         )
     }
 
     fun testParameterDefaultValue_WithSnakeCaseName_UsesParameterNameForClass() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             def extract_saved_reels(self, output_dir: str = "saved_ree<caret>ls"):
@@ -175,12 +177,12 @@ class LiteralsTest : TestBase() {
             def extract_saved_reels(self, output_dir: OutputDir = OutputDir("saved_reels")):
                 pass
             """,
-            "BetterPy: Introduce custom type from str"
+            actionId
         )
     }
 
     fun testModuleDocstring_DoesNotOfferCustomTypeIntention() {
-        myFixture.assertIntentionNotAvailable(
+        myFixture.assertRefactoringActionNotAvailable(
             "a.py",
             """
             \"\"\"Module doc<caret>string\"\"\"
@@ -188,12 +190,12 @@ class LiteralsTest : TestBase() {
             def f(x: int) -> None:
                 ...
             """,
-            "BetterPy: Introduce custom type from int"
+            actionId
         )
     }
 
     fun testFunctionDocstring_DoesNotOfferCustomTypeIntention() {
-        myFixture.assertIntentionNotAvailable(
+        myFixture.assertRefactoringActionNotAvailable(
             "a.py",
             """
             def f(x: int) -> None:
@@ -201,12 +203,12 @@ class LiteralsTest : TestBase() {
 
                 return x
             """,
-            "BetterPy: Introduce custom type from int"
+            actionId
         )
     }
 
     fun testClassDocstring_DoesNotOfferCustomTypeIntention() {
-        myFixture.configureByText(
+        myFixture.assertRefactoringActionNotAvailable(
             "a.py",
             """
             class C:
@@ -214,17 +216,13 @@ class LiteralsTest : TestBase() {
 
                 def __init__(self, x: int) -> None:
                     self.x = x
-            """.trimIndent()
+            """,
+            actionId
         )
-
-        myFixture.doHighlighting()
-
-        val intentions = myFixture.filterAvailableIntentions("BetterPy: Introduce custom type from int")
-        assertEmpty("Should not offer custom type introduction on class docstring", intentions)
     }
 
     fun testClassDocstring_NotFirstStatement_DoesNotOfferCustomTypeIntention() {
-        myFixture.assertIntentionNotAvailable(
+        myFixture.assertRefactoringActionNotAvailable(
             "a.py",
             """
             class EnumWithList: pass
@@ -233,7 +231,7 @@ class LiteralsTest : TestBase() {
                 __slots__ = ()
                 ""<caret>"Some documentation""${'"'}
             """,
-            "BetterPy: Introduce custom type from str"
+            actionId
         )
     }
 }

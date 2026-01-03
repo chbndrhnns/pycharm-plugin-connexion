@@ -1,12 +1,14 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import fixtures.TestBase
-import fixtures.doIntentionTest
+import fixtures.doRefactoringActionTest
 
 class DictionaryKeyTest : TestBase() {
 
+    private val actionId = "com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.IntroduceCustomTypeRefactoringAction"
+
     fun testDictKeyAccess_UpdatesAnnotation() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             d: dict[str, int] = {}
@@ -20,7 +22,7 @@ class DictionaryKeyTest : TestBase() {
             d: dict[Customstr, int] = {}
             val = d[Customstr("abc")]
             """,
-            "BetterPy: Introduce custom type from str",
+            actionId,
             renameTo = "Customstr"
         )
     }

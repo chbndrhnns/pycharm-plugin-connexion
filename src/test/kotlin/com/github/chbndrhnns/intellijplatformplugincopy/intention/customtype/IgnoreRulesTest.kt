@@ -1,39 +1,41 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import fixtures.TestBase
-import fixtures.assertIntentionAvailable
-import fixtures.assertIntentionNotAvailable
+import fixtures.assertRefactoringActionAvailable
+import fixtures.assertRefactoringActionNotAvailable
 
 class IgnoreRulesTest : TestBase() {
 
+    private val actionId = "com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.IntroduceCustomTypeRefactoringAction"
+
     fun testIntentionNotOfferedInsideDunderAllValues() {
-        myFixture.assertIntentionNotAvailable(
+        myFixture.assertRefactoringActionNotAvailable(
             "a.py",
             """
             __all__ = ["i<caret>nt"]
             """,
-            "Introduce custom type"
+            actionId
         )
     }
 
     fun testIntentionNotOfferedForIgnoredSymbolNames() {
-        myFixture.assertIntentionNotAvailable(
+        myFixture.assertRefactoringActionNotAvailable(
             "a.py",
             """
             __version__: int = 1<caret>23
             """,
-            "Introduce custom type"
+            actionId
         )
     }
 
     fun testIntentionStillOfferedForRegularSymbol() {
-        myFixture.assertIntentionAvailable(
+        myFixture.assertRefactoringActionAvailable(
             "a.py",
             """
             def f():
                 value: int = 1<caret>23
             """,
-            "BetterPy: Introduce custom type"
+            actionId
         )
     }
 }

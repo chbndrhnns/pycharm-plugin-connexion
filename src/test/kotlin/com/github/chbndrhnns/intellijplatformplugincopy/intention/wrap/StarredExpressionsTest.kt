@@ -1,5 +1,10 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap
 
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.actionSystem.DataContext
+import com.intellij.openapi.actionSystem.impl.SimpleDataContext
 import fixtures.TestBase
 import fixtures.assertIntentionNotAvailable
 
@@ -57,15 +62,30 @@ class StarredExpressionsTest : TestBase() {
     }
 
     fun testIntroduceCustomType_UnavailableOnStarredExpression() {
-        myFixture.assertIntentionNotAvailable(
+        myFixture.configureByText(
             "a.py",
             """
             def f(x): pass
             val = [1]
             f(*<caret>list(val))
-            """,
-            "BetterPy: Introduce custom type from list"
+            """.trimIndent()
         )
+
+        myFixture.doHighlighting()
+        val action = ActionManager.getInstance().getAction(
+            "com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.IntroduceCustomTypeRefactoringAction"
+        )
+        assertNotNull("Action should be registered", action)
+
+        val dataContext: DataContext = SimpleDataContext.builder()
+            .add(CommonDataKeys.PROJECT, project)
+            .add(CommonDataKeys.EDITOR, myFixture.editor)
+            .add(CommonDataKeys.PSI_FILE, myFixture.file)
+            .build()
+        val event = AnActionEvent.createFromDataContext("", null, dataContext)
+        action.update(event)
+
+        assertFalse("Action should be disabled on starred expression", event.presentation.isEnabled)
     }
 
     fun testWrapItems_UnavailableOnStarredExpression() {

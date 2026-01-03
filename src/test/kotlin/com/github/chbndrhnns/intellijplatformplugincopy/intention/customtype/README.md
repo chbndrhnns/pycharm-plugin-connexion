@@ -1,6 +1,6 @@
-# Custom Type intention tests
+# Custom Type refactoring tests
 
-All tests in this package cover `IntroduceCustomTypeFromStdlibIntention`.
+All tests in this package cover `IntroduceCustomTypeRefactoringAction`.
 
 **Core behavior**
 

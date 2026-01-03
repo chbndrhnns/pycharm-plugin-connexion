@@ -1,12 +1,14 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import fixtures.TestBase
-import fixtures.assertIntentionAvailable
+import fixtures.assertRefactoringActionAvailable
 
 class IpAddressTest : TestBase() {
 
+    private val actionId = "com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.IntroduceCustomTypeRefactoringAction"
+
     fun testIPv4Address_IntentionAvailable() {
-        myFixture.assertIntentionAvailable(
+        myFixture.assertRefactoringActionAvailable(
             "a.py",
             """
             import ipaddress
@@ -14,12 +16,12 @@ class IpAddressTest : TestBase() {
             def f(ip: ipaddress.IPv4A<caret>ddress):
                 pass
             """,
-            "BetterPy: Introduce custom type from IPv4Address"
+            actionId
         )
     }
 
     fun testIPv4Network_IntentionAvailable() {
-        myFixture.assertIntentionAvailable(
+        myFixture.assertRefactoringActionAvailable(
             "a.py",
             """
             import ipaddress
@@ -27,12 +29,12 @@ class IpAddressTest : TestBase() {
             def f(net: ipaddress.IPv4N<caret>etwork):
                 pass
             """,
-            "BetterPy: Introduce custom type from IPv4Network"
+            actionId
         )
     }
 
     fun testPath_IntentionAvailable() {
-        myFixture.assertIntentionAvailable(
+        myFixture.assertRefactoringActionAvailable(
             "a.py",
             """
             from pathlib import Path
@@ -40,7 +42,7 @@ class IpAddressTest : TestBase() {
             def f(p: Pa<caret>th):
                 pass
             """,
-            "BetterPy: Introduce custom type from Path"
+            actionId
         )
     }
 }

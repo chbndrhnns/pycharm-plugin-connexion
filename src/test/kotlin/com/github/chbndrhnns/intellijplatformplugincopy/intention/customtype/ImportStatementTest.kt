@@ -1,37 +1,39 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import fixtures.TestBase
-import fixtures.assertIntentionNotAvailable
+import fixtures.assertRefactoringActionNotAvailable
 
 class ImportStatementTest : TestBase() {
 
+    private val actionId = "com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.IntroduceCustomTypeRefactoringAction"
+
     fun testIntentionNotOfferedOnImportStatement() {
-        myFixture.assertIntentionNotAvailable(
+        myFixture.assertRefactoringActionNotAvailable(
             "a.py",
             """
             import <caret>typing
             """,
-            "Introduce custom type"
+            actionId
         )
     }
 
     fun testIntentionNotOfferedOnFromImportStatement() {
-        myFixture.assertIntentionNotAvailable(
+        myFixture.assertRefactoringActionNotAvailable(
             "a.py",
             """
             from typing import <caret>List
             """,
-            "Introduce custom type"
+            actionId
         )
     }
 
     fun testIntentionNotOfferedOnImportedConstant() {
-        myFixture.assertIntentionNotAvailable(
+        myFixture.assertRefactoringActionNotAvailable(
             "a.py",
             """
             from typing import <caret>final
             """,
-            "Introduce custom type"
+            actionId
         )
     }
 }

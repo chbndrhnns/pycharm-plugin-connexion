@@ -1,6 +1,0 @@
-<intentionAction>
-    <category>Custom types</category>
-    <descriptionDirectoryName>IntroduceCustomTypeFromStdlibIntention</descriptionDirectoryName>
-    <instance>com.github.chbndrhnns.intellijplatformplugincopy.intention.IntroduceCustomTypeFromStdlibIntention
-    </instance>
-</intentionAction>

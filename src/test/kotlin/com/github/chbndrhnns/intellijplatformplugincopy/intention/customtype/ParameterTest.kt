@@ -1,12 +1,14 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import fixtures.TestBase
-import fixtures.doIntentionTest
+import fixtures.doRefactoringActionTest
 
 class ParameterTest : TestBase() {
 
+    private val actionId = "com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.IntroduceCustomTypeRefactoringAction"
+
     fun testParameterDefaultValue_UnionType_UpdatesAnnotationAndWrapsValue() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             def do(val: int | str | None = <caret>"2"): 
@@ -20,13 +22,13 @@ class ParameterTest : TestBase() {
             def do(val: int | Customstr | None = Customstr("2")): 
                 pass
             """,
-            "BetterPy: Introduce custom type from str",
+            actionId,
             renameTo = "Customstr"
         )
     }
 
     fun testParameterDefaultValue_SimpleType_UpdatesAnnotationAndWrapsValue() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             def do(val: int = <caret>1): 
@@ -40,13 +42,13 @@ class ParameterTest : TestBase() {
             def do(val: Customint = Customint(1)): 
                 pass
             """,
-            "BetterPy: Introduce custom type from int",
+            actionId,
             renameTo = "Customint"
         )
     }
 
     fun testParameterAnnotationUpdatedWhenCustomTypeIntroducedOnArgument() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             class C:
@@ -68,13 +70,13 @@ class ParameterTest : TestBase() {
                 def other(self):
                     self.do(Customstr("abc"))
             """,
-            "BetterPy: Introduce custom type from str",
+            actionId,
             renameTo = "Customstr"
         )
     }
 
     fun testParameterAnnotationUpdateWrapsCallSites() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             class C:
@@ -94,7 +96,7 @@ class ParameterTest : TestBase() {
                 def other(self):
                     self.do(Customstr(str("abc")))
             """,
-            "BetterPy: Introduce custom type from str",
+            actionId,
             renameTo = "Customstr"
         )
     }

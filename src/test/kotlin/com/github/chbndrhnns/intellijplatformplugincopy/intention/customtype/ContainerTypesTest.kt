@@ -1,46 +1,48 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import fixtures.TestBase
-import fixtures.assertIntentionAvailable
-import fixtures.doIntentionTest
+import fixtures.assertRefactoringActionAvailable
+import fixtures.doRefactoringActionTest
 
 class ContainerTypesTest : TestBase() {
 
+    private val actionId = "com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.IntroduceCustomTypeRefactoringAction"
+
     fun testList_IntentionAvailable() {
-        myFixture.assertIntentionAvailable(
+        myFixture.assertRefactoringActionAvailable(
             "a.py",
             """
             def f(x: li<caret>st[int]):
                 pass
             """,
-            "BetterPy: Introduce custom type from list"
+            actionId
         )
     }
 
     fun testSet_IntentionAvailable() {
-        myFixture.assertIntentionAvailable(
+        myFixture.assertRefactoringActionAvailable(
             "a.py",
             """
             def f(x: s<caret>et[int]):
                 pass
             """,
-            "BetterPy: Introduce custom type from set"
+            actionId
         )
     }
 
     fun testDict_IntentionAvailable() {
-        myFixture.assertIntentionAvailable(
+        myFixture.assertRefactoringActionAvailable(
             "a.py",
             """
             def f(x: di<caret>ct[str, int]):
                 pass
             """,
-            "BetterPy: Introduce custom type from dict"
+            actionId
         )
     }
 
     fun testDict_GeneratesGenericCustomTypeAndKeepsArguments() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             def do(arg: di<caret>ct[str, list[int]]) -> None:
@@ -54,13 +56,13 @@ class ContainerTypesTest : TestBase() {
             def do(arg: Customdict) -> None:
                 ...
             """,
-            "BetterPy: Introduce custom type from dict",
+            actionId,
             renameTo = "Customdict"
         )
     }
 
     fun testList_GeneratesCustomType() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             def f(x: li<caret>st[int]):
@@ -74,13 +76,13 @@ class ContainerTypesTest : TestBase() {
                 def f(x: Customlist):
                     pass
             """,
-            "BetterPy: Introduce custom type from list",
+            actionId,
             renameTo = "Customlist"
         )
     }
 
     fun testDict_AnnotatedAssignment_WrapsValueAndKeepsArguments() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             def do():
@@ -102,7 +104,7 @@ class ContainerTypesTest : TestBase() {
                     "c": 3,
                 })
             """,
-            "BetterPy: Introduce custom type from dict",
+            actionId,
             renameTo = "Customdict"
 
         )

@@ -1,12 +1,14 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import fixtures.TestBase
-import fixtures.assertIntentionAvailable
+import fixtures.assertRefactoringActionAvailable
 
 class StdLibTypesTest : TestBase() {
 
+    private val actionId = "com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.IntroduceCustomTypeRefactoringAction"
+
     fun testDatetime_IntentionAvailable() {
-        myFixture.assertIntentionAvailable(
+        myFixture.assertRefactoringActionAvailable(
             "a.py",
             """
             import datetime
@@ -14,12 +16,12 @@ class StdLibTypesTest : TestBase() {
             def f(d: datetime.date<caret>time):
                 pass
             """,
-            "BetterPy: Introduce custom type from datetime"
+            actionId
         )
     }
 
     fun testDate_IntentionAvailable() {
-        myFixture.assertIntentionAvailable(
+        myFixture.assertRefactoringActionAvailable(
             "a.py",
             """
             import datetime
@@ -27,12 +29,12 @@ class StdLibTypesTest : TestBase() {
             def f(d: datetime.da<caret>te):
                 pass
             """,
-            "BetterPy: Introduce custom type from date"
+            actionId
         )
     }
 
     fun testUUID_IntentionAvailable() {
-        myFixture.assertIntentionAvailable(
+        myFixture.assertRefactoringActionAvailable(
             "a.py",
             """
             import uuid
@@ -40,7 +42,7 @@ class StdLibTypesTest : TestBase() {
             def f(id: uuid.U<caret>UID):
                 pass
             """,
-            "BetterPy: Introduce custom type from UUID"
+            actionId
         )
     }
 }

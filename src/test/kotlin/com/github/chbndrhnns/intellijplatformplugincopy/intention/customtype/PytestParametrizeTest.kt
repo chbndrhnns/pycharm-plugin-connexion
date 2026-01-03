@@ -1,11 +1,40 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.ActionUiKind
+import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.actionSystem.impl.SimpleDataContext
 import com.intellij.testFramework.PlatformTestUtil
+import com.intellij.testFramework.TestActionEvent
 import com.intellij.ui.RenameDialogInterceptor
 import com.intellij.ui.UiInterceptors
 import fixtures.TestBase
 
 class PytestParametrizeTest : TestBase() {
+
+    private val actionId = "com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.IntroduceCustomTypeRefactoringAction"
+
+    private fun performRefactoringAction() {
+        val actionManager = ActionManager.getInstance()
+        val action = actionManager.getAction(actionId)
+            ?: throw AssertionError("Action $actionId not found")
+
+        val dataContext = SimpleDataContext.builder()
+            .add(CommonDataKeys.PROJECT, project)
+            .add(CommonDataKeys.EDITOR, myFixture.editor)
+            .add(CommonDataKeys.PSI_FILE, myFixture.file)
+            .build()
+
+        val event = TestActionEvent.createEvent(
+            action,
+            dataContext,
+            action.templatePresentation.clone(),
+            "",
+            ActionUiKind.NONE,
+            null
+        )
+        action.actionPerformed(event)
+    }
 
     fun testParametrizeDecorator_WrapsListItems() {
         UiInterceptors.register(RenameDialogInterceptor("Arg"))
@@ -22,10 +51,7 @@ class PytestParametrizeTest : TestBase() {
             """.trimIndent()
         )
         myFixture.doHighlighting()
-        val intention =
-            myFixture.availableIntentions.find { it.text.startsWith("BetterPy: Introduce custom type from int") }
-                ?: throw AssertionError("Intention not found")
-        myFixture.launchAction(intention)
+        performRefactoringAction()
 
         PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
 
@@ -58,10 +84,7 @@ class PytestParametrizeTest : TestBase() {
             """.trimIndent()
         )
         myFixture.doHighlighting()
-        val intention =
-            myFixture.availableIntentions.find { it.text.startsWith("BetterPy: Introduce custom type from int") }
-                ?: throw AssertionError("Intention not found")
-        myFixture.launchAction(intention)
+        performRefactoringAction()
 
         PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
 

@@ -1,12 +1,14 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import fixtures.TestBase
-import fixtures.doIntentionTest
+import fixtures.doRefactoringActionTest
 
 class ReturnAnnotationTest : TestBase() {
 
+    private val actionId = "com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.IntroduceCustomTypeRefactoringAction"
+
     fun testReturnAnnotation_UnionType_UpdatesOnlyMatchingPart_WhenInvokedFromReturnExpression_Int() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             def get() -> int | str | None:
@@ -20,13 +22,13 @@ class ReturnAnnotationTest : TestBase() {
             def get() -> Customint | str | None:
                 return Customint(123)
             """,
-            "BetterPy: Introduce custom type from int",
+            actionId,
             renameTo = "Customint"
         )
     }
 
     fun testReturnAnnotation_UnionType_UpdatesOnlyMatchingPart_WhenInvokedFromReturnExpression_Str() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             def get() -> int | str | None:
@@ -40,7 +42,7 @@ class ReturnAnnotationTest : TestBase() {
             def get() -> int | Customstr | None:
                 return Customstr("hello")
             """,
-            "BetterPy: Introduce custom type from str",
+            actionId,
             renameTo = "Customstr"
         )
     }

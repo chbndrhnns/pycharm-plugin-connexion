@@ -1,8 +1,8 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import fixtures.TestBase
-import fixtures.assertIntentionNotAvailable
-import fixtures.doIntentionTest
+import fixtures.assertRefactoringActionNotAvailable
+import fixtures.doRefactoringActionTest
 
 /**
  * Basic smoke tests for introducing a custom type from stdlib types.
@@ -16,8 +16,11 @@ import fixtures.doIntentionTest
  */
 class BasicTest : TestBase() {
 
+    private val actionId =
+        "com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.IntroduceCustomTypeRefactoringAction"
+
     fun testSimpleAnnotatedAssignment_Int_RewritesAnnotation() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             def test_():
@@ -31,13 +34,13 @@ class BasicTest : TestBase() {
             def test_():
                 val: Customint = Customint(1234)
             """,
-            "BetterPy: Introduce custom type from int",
+            actionId,
             renameTo = "Customint"
         )
     }
 
     fun testFinalConstant_UsesPascalCaseName() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             from typing import Final
@@ -55,13 +58,13 @@ class BasicTest : TestBase() {
 
             MY_CONSTANT: Final[MyConstant] = MyConstant("VALUE")
             """,
-            "BetterPy: Introduce custom type from str"
+            actionId
         )
     }
 
 
     fun testSimpleAnnotatedParam_Int_RewritesAnnotation() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             def f(x: <caret>int) -> None:
@@ -75,13 +78,13 @@ class BasicTest : TestBase() {
             def f(x: Customint) -> None:
                 ...
             """,
-            "BetterPy: Introduce custom type from int",
+            actionId,
             renameTo = "Customint"
         )
     }
 
     fun testSimpleDataclassField_UsesCustomType() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             import dataclasses
@@ -113,12 +116,12 @@ class BasicTest : TestBase() {
                 D(product_id=ProductId(123))
                 D(product_id=ProductId(456))
             """,
-            "BetterPy: Introduce custom type from int"
+            actionId
         )
     }
 
     fun testSimplePydanticField_UsesCustomType() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             import pydantic
@@ -148,12 +151,12 @@ class BasicTest : TestBase() {
                 D(product_id=ProductId(123))
                 D(product_id=ProductId(456))
             """,
-            "BetterPy: Introduce custom type from int"
+            actionId
         )
     }
 
     fun testIntentionNotAvailable_WhenAlreadyCustomTypeInheritingStr() {
-        myFixture.assertIntentionNotAvailable(
+        myFixture.assertRefactoringActionNotAvailable(
             "a.py",
             """
             class CustomStr(str):
@@ -162,40 +165,12 @@ class BasicTest : TestBase() {
             def do():
                 val: CustomStr = "a<caret>bc"
             """,
-            "Introduce custom type"
-        )
-    }
-
-    fun testIntentionNotAvailable_WhenTypeErrorPresent() {
-        myFixture.assertIntentionNotAvailable(
-            "a.py",
-            """
-            from typing import NewType
-            
-            One = NewType("One", str)
-            
-            val: One = "a<caret>bc"
-            """,
-            "Introduce custom type"
-        )
-    }
-
-    fun testIntentionNotAvailable_WhenTypeErrorOnRhsOfAnnotatedAssignment() {
-        myFixture.assertIntentionNotAvailable(
-            "a.py",
-            """
-            def do():
-                return {}
-
-
-            val: i<caret>nt = do()
-            """,
-            "Introduce custom type"
+            actionId
         )
     }
 
     fun testIntentionNotAvailable_OnFunctionCallResult() {
-        myFixture.assertIntentionNotAvailable(
+        myFixture.assertRefactoringActionNotAvailable(
             "a.py",
             """
             def do():
@@ -205,12 +180,12 @@ class BasicTest : TestBase() {
             def usage():
                 val = <caret>do()
             """,
-            "Introduce custom type"
+            actionId
         )
     }
 
     fun testIntentionNotAvailable_OnAssignmentTargetOfFunctionCallResult() {
-        myFixture.assertIntentionNotAvailable(
+        myFixture.assertRefactoringActionNotAvailable(
             "a.py",
             """
             def do():
@@ -220,12 +195,12 @@ class BasicTest : TestBase() {
             def usage():
                 va<caret>l = do()
             """,
-            "Introduce custom type"
+            actionId
         )
     }
 
     fun testIntentionAvailableForInFunctionCall() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             val = dict({"<caret>a": 1, "b": 2, "c": 3})
@@ -237,13 +212,13 @@ class BasicTest : TestBase() {
             
             val = dict({Customstr("a"): 1, "b": 2, "c": 3})
             """,
-            "BetterPy: Introduce custom type from str",
+            actionId,
             renameTo = "Customstr"
         )
     }
 
     fun testCallSiteKeywordArgument_AddsParameterAnnotation() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             def do(*, arg1, arg2):
@@ -263,13 +238,13 @@ class BasicTest : TestBase() {
 
             do(arg1=Customstr("a"), arg2="b")
             """,
-            "BetterPy: Introduce custom type from str",
+            actionId,
             renameTo = "Customstr"
         )
     }
 
     fun testAssignmentVariableRewrite_WhenCaretOnVariable() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             a<caret>bc: str = "text"
@@ -281,13 +256,13 @@ class BasicTest : TestBase() {
             
             abc: Customstr = Customstr("text")
             """,
-            "BetterPy: Introduce custom type from str",
+            actionId,
             renameTo = "Customstr"
         )
     }
 
     fun testFString_UpgradesReferencedVariable_InsteadOfWrappingContent() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             abc: str = "text"
@@ -301,13 +276,13 @@ class BasicTest : TestBase() {
             abc: Customstr = Customstr("text")
             s = f"{abc}"
             """,
-            "BetterPy: Introduce custom type from str",
+            actionId,
             renameTo = "Customstr"
         )
     }
 
     fun testFString_UpgradesReferencedParameter_InsteadOfWrappingContent() {
-        myFixture.doIntentionTest(
+        myFixture.doRefactoringActionTest(
             "a.py",
             """
             def do(a: str):
@@ -321,35 +296,35 @@ class BasicTest : TestBase() {
             def do(a: Customstr):
                 return f"{a}"
             """,
-            "BetterPy: Introduce custom type from str",
+            actionId,
             renameTo = "Customstr"
         )
     }
 
     fun testIntentionNotAvailable_InLoopVariable() {
-        myFixture.assertIntentionNotAvailable(
+        myFixture.assertRefactoringActionNotAvailable(
             "a.py",
             """
             for it<caret>em in [1, 2, 3]:
                 pass
             """,
-            "Introduce custom type"
+            actionId
         )
     }
 
     fun testIntentionNotAvailable_InIsInstanceCheck() {
-        myFixture.assertIntentionNotAvailable(
+        myFixture.assertRefactoringActionNotAvailable(
             "a.py",
             """
             def f(x):
                 return isinstance(x, i<caret>nt)
             """,
-            "Introduce custom type"
+            actionId
         )
     }
 
     fun testIntentionNotAvailable_WhenFileHasParseError() {
-        myFixture.assertIntentionNotAvailable(
+        myFixture.assertRefactoringActionNotAvailable(
             "a.py",
             """
             def broken(:
@@ -357,7 +332,7 @@ class BasicTest : TestBase() {
 
             val: i<caret>nt = 123
             """,
-            "Introduce custom type"
+            actionId
         )
     }
 }

@@ -101,8 +101,13 @@ fun CodeInsightTestFixture.doRefactoringActionTest(
     before: String,
     after: String,
     actionId: String,
+    renameTo: String? = null,
     dialogOk: Boolean = false
 ) {
+    if (renameTo != null) {
+        UiInterceptors.register(RenameDialogInterceptor(renameTo))
+    }
+
     if (dialogOk) {
         UiInterceptors.register(DialogOkInterceptor())
     }
@@ -128,6 +133,10 @@ fun CodeInsightTestFixture.doRefactoringActionTest(
         null
     )
     action.actionPerformed(event)
+
+    if (renameTo != null) {
+        PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
+    }
 
     var expected = after.trimIndent()
     if (!expected.endsWith("\n") && file.text.endsWith("\n")) {
@@ -165,5 +174,77 @@ fun CodeInsightTestFixture.assertIntentionAvailable(
     val intention = availableIntentions.find { it.text.startsWith(intentionName) }
     if (intention == null) {
         throw AssertionError("Intention '$intentionName' should be available")
+    }
+}
+
+/**
+ * Asserts that a refactoring action is NOT available (disabled).
+ */
+fun CodeInsightTestFixture.assertRefactoringActionNotAvailable(
+    filename: String,
+    text: String,
+    actionId: String
+) {
+    configureByText(filename, text.trimIndent())
+    doHighlighting()
+
+    val actionManager = ActionManager.getInstance()
+    val action = actionManager.getAction(actionId)
+        ?: throw AssertionError("Action $actionId not found")
+
+    val dataContext = SimpleDataContext.builder()
+        .add(CommonDataKeys.PROJECT, project)
+        .add(CommonDataKeys.EDITOR, editor)
+        .add(CommonDataKeys.PSI_FILE, file)
+        .build()
+
+    val event = TestActionEvent.createEvent(
+        action,
+        dataContext,
+        action.templatePresentation.clone(),
+        "",
+        ActionUiKind.NONE,
+        null
+    )
+    action.update(event)
+
+    if (event.presentation.isEnabled) {
+        throw AssertionError("Action '$actionId' should NOT be available")
+    }
+}
+
+/**
+ * Asserts that a refactoring action IS available (enabled).
+ */
+fun CodeInsightTestFixture.assertRefactoringActionAvailable(
+    filename: String,
+    text: String,
+    actionId: String
+) {
+    configureByText(filename, text.trimIndent())
+    doHighlighting()
+
+    val actionManager = ActionManager.getInstance()
+    val action = actionManager.getAction(actionId)
+        ?: throw AssertionError("Action $actionId not found")
+
+    val dataContext = SimpleDataContext.builder()
+        .add(CommonDataKeys.PROJECT, project)
+        .add(CommonDataKeys.EDITOR, editor)
+        .add(CommonDataKeys.PSI_FILE, file)
+        .build()
+
+    val event = TestActionEvent.createEvent(
+        action,
+        dataContext,
+        action.templatePresentation.clone(),
+        "",
+        ActionUiKind.NONE,
+        null
+    )
+    action.update(event)
+
+    if (!event.presentation.isEnabled) {
+        throw AssertionError("Action '$actionId' should be available")
     }
 }

@@ -1,12 +1,17 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.actionSystem.DataContext
+import com.intellij.openapi.actionSystem.impl.SimpleDataContext
 import fixtures.SettingsTestUtils.withPluginSettings
 import fixtures.TestBase
 
 class SettingsToggleTest : TestBase() {
 
-    fun testIntentionHiddenWhenDisabled() {
-        withPluginSettings({ enableIntroduceCustomTypeFromStdlibIntention = false }) {
+    fun testRefactoringActionDisabledWhenSettingOff() {
+        withPluginSettings({ enableIntroduceCustomTypeRefactoringAction = false }) {
             myFixture.configureByText(
                 "a.py",
                 """
@@ -16,14 +21,25 @@ class SettingsToggleTest : TestBase() {
             )
 
             myFixture.doHighlighting()
-            val intentions = myFixture.availableIntentions
-            val hasIntention = intentions.any { it.text.startsWith("Introduce custom type") }
-            assertFalse("Intention should be hidden when disabled in settings", hasIntention)
+            val action = ActionManager.getInstance().getAction(
+                "com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.IntroduceCustomTypeRefactoringAction"
+            )
+            assertNotNull("Action should be registered", action)
+
+            val dataContext: DataContext = SimpleDataContext.builder()
+                .add(CommonDataKeys.PROJECT, project)
+                .add(CommonDataKeys.EDITOR, myFixture.editor)
+                .add(CommonDataKeys.PSI_FILE, myFixture.file)
+                .build()
+            val event = AnActionEvent.createFromDataContext("", null, dataContext)
+            action.update(event)
+
+            assertFalse("Action should be disabled when setting is off", event.presentation.isEnabled)
         }
     }
 
-    fun testIntentionVisibleWhenEnabled() {
-        withPluginSettings({ enableIntroduceCustomTypeFromStdlibIntention = true }) {
+    fun testRefactoringActionEnabledWhenSettingOn() {
+        withPluginSettings({ enableIntroduceCustomTypeRefactoringAction = true }) {
             myFixture.configureByText(
                 "a.py",
                 """
@@ -33,9 +49,20 @@ class SettingsToggleTest : TestBase() {
             )
 
             myFixture.doHighlighting()
-            val intentions = myFixture.availableIntentions
-            val hasIntention = intentions.any { it.text.startsWith("BetterPy: Introduce custom type") }
-            assertTrue("Intention should be visible when enabled in settings", hasIntention)
+            val action = ActionManager.getInstance().getAction(
+                "com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.IntroduceCustomTypeRefactoringAction"
+            )
+            assertNotNull("Action should be registered", action)
+
+            val dataContext: DataContext = SimpleDataContext.builder()
+                .add(CommonDataKeys.PROJECT, project)
+                .add(CommonDataKeys.EDITOR, myFixture.editor)
+                .add(CommonDataKeys.PSI_FILE, myFixture.file)
+                .build()
+            val event = AnActionEvent.createFromDataContext("", null, dataContext)
+            action.update(event)
+
+            assertTrue("Action should be enabled when setting is on", event.presentation.isEnabled)
         }
     }
 }

@@ -1,13 +1,15 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import fixtures.TestBase
-import fixtures.assertIntentionAvailable
-import fixtures.assertIntentionNotAvailable
+import fixtures.assertRefactoringActionAvailable
+import fixtures.assertRefactoringActionNotAvailable
 
 class LibraryTest : TestBase() {
 
+    private val actionId = "com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.IntroduceCustomTypeRefactoringAction"
+
     fun testIntentionNotAvailable_WhenArgumentToJsonDump() {
-        myFixture.assertIntentionNotAvailable(
+        myFixture.assertRefactoringActionNotAvailable(
             "a.py",
             """
             import json
@@ -15,23 +17,23 @@ class LibraryTest : TestBase() {
             def do(f):
                 json.dump({}, f, indent=<caret>2)
             """,
-            "Introduce custom type"
+            actionId
         )
     }
 
     fun testIntentionNotAvailable_WhenArgumentToBuiltinPrint() {
-        myFixture.assertIntentionNotAvailable(
+        myFixture.assertRefactoringActionNotAvailable(
             "a.py",
             """
             def do():
                 print("hello", end=<caret>"\n")
             """,
-            "Introduce custom type"
+            actionId
         )
     }
 
     fun testIntentionAvailable_WhenArgumentToUserFunction() {
-        myFixture.assertIntentionAvailable(
+        myFixture.assertRefactoringActionAvailable(
             "a.py",
             """
             def my_func(x: int):
@@ -40,12 +42,12 @@ class LibraryTest : TestBase() {
             def do():
                 my_func(x=<caret>2)
             """,
-            "BetterPy: Introduce custom type"
+            actionId
         )
     }
 
     fun testIntentionAvailable_WhenInDictPassedToLibrary() {
-        myFixture.assertIntentionAvailable(
+        myFixture.assertRefactoringActionAvailable(
             "a.py",
             """
             import json
@@ -53,7 +55,7 @@ class LibraryTest : TestBase() {
             def do(f):
                 json.dump({"key": <caret>123}, f)
             """,
-            "BetterPy: Introduce custom type"
+            actionId
         )
     }
 }

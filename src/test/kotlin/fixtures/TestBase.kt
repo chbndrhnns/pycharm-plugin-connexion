@@ -15,7 +15,7 @@ abstract class TestBase : MyPlatformTestCase() {
                 enableWrapItemsWithExpectedTypeIntention = true,
                 enableUnwrapToExpectedTypeIntention = true,
                 enableUnwrapItemsToExpectedTypeIntention = true,
-                enableIntroduceCustomTypeFromStdlibIntention = true,
+                enableIntroduceCustomTypeRefactoringAction = true,
                 enablePopulateArgumentsIntention = true,
                 enablePyMissingInDunderAllInspection = true,
                 enableCopyPackageContentAction = true,
