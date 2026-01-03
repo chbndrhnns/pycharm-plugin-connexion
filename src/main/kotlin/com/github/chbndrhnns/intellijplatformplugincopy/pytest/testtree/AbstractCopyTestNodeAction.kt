@@ -21,8 +21,24 @@ abstract class AbstractCopyTestNodeAction(
 
     override fun update(e: AnActionEvent) {
         val view = e.getData(PlatformDataKeys.CONTEXT_COMPONENT) as? TestTreeView
-        e.presentation.isEnabledAndVisible = view != null
+        if (view == null) {
+            e.presentation.isEnabledAndVisible = false
+            return
+        }
+        e.presentation.isEnabledAndVisible = true
+
+        // Update text based on whether exactly one leaf node is selected
+        val selectionPaths = view.selectionPaths
+        val isSingleLeafSelected = selectionPaths?.size == 1 &&
+                (selectionPaths[0].lastPathComponent as? DefaultMutableTreeNode)?.let { node ->
+                    TestProxyExtractor.getTestProxy(node)?.isLeaf == true
+                } == true
+
+        e.presentation.text = if (isSingleLeafSelected) getSingularText() else getPluralText()
     }
+
+    protected abstract fun getSingularText(): String
+    protected abstract fun getPluralText(): String
 
     override fun actionPerformed(e: AnActionEvent) {
         val view = e.getData(PlatformDataKeys.CONTEXT_COMPONENT) as? TestTreeView ?: return

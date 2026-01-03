@@ -60,4 +60,8 @@ class CopyStacktraceAction : AbstractCopyTestNodeAction("\n\n") {
         }
         return null
     }
+
+    override fun getSingularText(): String = "BetterPy: Copy Stacktrace"
+
+    override fun getPluralText(): String = "BetterPy: Copy Stacktraces"
 }

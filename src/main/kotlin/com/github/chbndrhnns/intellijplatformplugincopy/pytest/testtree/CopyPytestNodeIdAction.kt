@@ -23,4 +23,8 @@ class CopyPytestNodeIdAction : AbstractCopyTestNodeAction("\n") {
     override fun processResult(result: List<String>): List<String> {
         return result.sorted()
     }
+
+    override fun getSingularText(): String = "BetterPy: Copy Pytest Node ID"
+
+    override fun getPluralText(): String = "BetterPy: Copy Pytest Node IDs"
 }

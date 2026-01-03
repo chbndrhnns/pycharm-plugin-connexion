@@ -46,4 +46,8 @@ class CopyFQNAction : AbstractCopyTestNodeAction("\n") {
         }
         return fqn
     }
+
+    override fun getSingularText(): String = "BetterPy: Copy FQN"
+
+    override fun getPluralText(): String = "BetterPy: Copy FQNs"
 }
