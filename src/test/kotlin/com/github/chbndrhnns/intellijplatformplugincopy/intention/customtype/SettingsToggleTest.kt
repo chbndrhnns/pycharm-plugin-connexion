@@ -1,10 +1,10 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype
 
 import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.ActionUiKind
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext
+import com.intellij.testFramework.TestActionEvent
 import fixtures.SettingsTestUtils.withPluginSettings
 import fixtures.TestBase
 
@@ -26,12 +26,19 @@ class SettingsToggleTest : TestBase() {
             )
             assertNotNull("Action should be registered", action)
 
-            val dataContext: DataContext = SimpleDataContext.builder()
+            val dataContext = SimpleDataContext.builder()
                 .add(CommonDataKeys.PROJECT, project)
                 .add(CommonDataKeys.EDITOR, myFixture.editor)
                 .add(CommonDataKeys.PSI_FILE, myFixture.file)
                 .build()
-            val event = AnActionEvent.createFromDataContext("", null, dataContext)
+            val event = TestActionEvent.createEvent(
+                action,
+                dataContext,
+                action.templatePresentation.clone(),
+                "",
+                ActionUiKind.NONE,
+                null
+            )
             action.update(event)
 
             assertFalse("Action should be disabled when setting is off", event.presentation.isEnabled)
@@ -54,12 +61,19 @@ class SettingsToggleTest : TestBase() {
             )
             assertNotNull("Action should be registered", action)
 
-            val dataContext: DataContext = SimpleDataContext.builder()
+            val dataContext = SimpleDataContext.builder()
                 .add(CommonDataKeys.PROJECT, project)
                 .add(CommonDataKeys.EDITOR, myFixture.editor)
                 .add(CommonDataKeys.PSI_FILE, myFixture.file)
                 .build()
-            val event = AnActionEvent.createFromDataContext("", null, dataContext)
+            val event = TestActionEvent.createEvent(
+                action,
+                dataContext,
+                action.templatePresentation.clone(),
+                "",
+                ActionUiKind.NONE,
+                null
+            )
             action.update(event)
 
             assertTrue("Action should be enabled when setting is on", event.presentation.isEnabled)
