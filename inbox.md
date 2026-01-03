@@ -62,6 +62,8 @@
 
 ## In Progress Tasks
 
+- [ ] fix: Navigate symbols in file should hide dunder methods
+- [ ] feat: Add strict version of source roots and mark as unresolved references if missing
 - [ ] feat: highlight failed line in pytest test, spec/pytest/highlight-failed-line.md
 - [ ] feat: Inline parameter object should ask to remove/other invocations
 - [ ] feat: search everywhere: search for partial matches in test names
