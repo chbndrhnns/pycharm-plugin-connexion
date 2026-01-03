@@ -1,6 +1,5 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome
 
-import com.intellij.openapi.roots.ProjectRootManager
 import fixtures.TestBase
 
 class UseActualOutcomeAvailabilityTest : TestBase() {
@@ -12,10 +11,12 @@ class UseActualOutcomeAvailabilityTest : TestBase() {
 
     private fun setDiffData(qName: String, expected: String, actual: String) {
         val file = myFixture.file
-        val root = ProjectRootManager.getInstance(project).fileIndex.getSourceRootForFile(file.virtualFile)
-            ?: ProjectRootManager.getInstance(project).fileIndex.getContentRootForFile(file.virtualFile)
-        val path = root?.path ?: ""
-        val key = "python<$path>://$qName"
+        // SMTestProxy.locationUrl uses the parent directory path in angle brackets
+        // and prefixes the qName with the parent directory name (module name)
+        val parentDir = file.virtualFile.parent
+        val parentDirPath = parentDir.path
+        val parentDirName = parentDir.name
+        val key = "python<$parentDirPath>://$parentDirName.$qName"
         TestOutcomeDiffService.getInstance(project).put(key, OutcomeDiff(expected, actual))
     }
 
@@ -50,5 +51,19 @@ class UseActualOutcomeAvailabilityTest : TestBase() {
             "Intention should not be available for binary expressions that are not equality comparisons",
             intention
         )
+    }
+
+    fun `test intention is available on assert statement without diff data`() {
+        myFixture.configureByText(
+            "test_no_diff.py",
+            """
+            def test_no_diff():
+                ass<caret>ert 1 == 2
+            """.trimIndent(),
+        )
+
+        // No diff data set - intention should still be available
+        val intention = myFixture.getAvailableIntention("BetterPy: Use actual test outcome")
+        assertNotNull("Intention should be available on assert with == even without diff data", intention)
     }
 }

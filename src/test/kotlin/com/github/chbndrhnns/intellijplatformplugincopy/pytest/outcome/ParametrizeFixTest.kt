@@ -1,6 +1,5 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome
 
-import com.intellij.openapi.roots.ProjectRootManager
 import fixtures.TestBase
 
 class ParametrizeFixTest : TestBase() {
@@ -12,43 +11,13 @@ class ParametrizeFixTest : TestBase() {
 
     private fun setDiffData(qName: String, expected: String, actual: String) {
         val file = myFixture.file
-        val root = ProjectRootManager.getInstance(project).fileIndex.getSourceRootForFile(file.virtualFile)
-            ?: ProjectRootManager.getInstance(project).fileIndex.getContentRootForFile(file.virtualFile)
-
-        val prefixes = listOfNotNull(
-            root?.path?.let { "python<$it>://" },
-            "python:"
-        )
-
-        // qName input is like "test_list_args.test_foo[param]"
-        // We need to support cases where the function qname is detected as "test_foo" or "test_list_args.test_foo"
-        // If the key is "python:...//test_list_args.test_foo[param]"
-        // And the calculated base is "python:...//test_foo"
-        // It won't match.
-        // So we should add keys that match the shorter qname too.
-
-        val variants = mutableListOf<String>()
-        variants.add(qName)
-
-        // specific hack for this test structure: remove module prefix if present
-        if (qName.contains(".")) {
-            // e.g. test_list_args.test_foo[param] -> test_foo[param]
-            // But be careful about split.
-            // We want to remove the file name part.
-            val parts = qName.split(".")
-            if (parts.size >= 2) {
-                // heuristic: take last part (func name + params)
-                variants.add(parts.last())
-            }
-        }
-
-        val state = TestOutcomeDiffService.getInstance(project)
-        for (prefix in prefixes) {
-            for (variant in variants) {
-                val key = "$prefix$variant"
-                state.put(key, OutcomeDiff(expected, actual))
-            }
-        }
+        // SMTestProxy.locationUrl uses the parent directory path in angle brackets
+        // and prefixes the qName with the parent directory name (module name)
+        val parentDir = file.virtualFile.parent
+        val parentDirPath = parentDir.path
+        val parentDirName = parentDir.name
+        val key = "python<$parentDirPath>://$parentDirName.$qName"
+        TestOutcomeDiffService.getInstance(project).put(key, OutcomeDiff(expected, actual))
     }
 
     fun `test parametrize with list of argnames`() {

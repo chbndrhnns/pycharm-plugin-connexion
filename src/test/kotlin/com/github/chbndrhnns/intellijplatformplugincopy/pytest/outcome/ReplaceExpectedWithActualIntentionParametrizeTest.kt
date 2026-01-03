@@ -1,6 +1,5 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome
 
-import com.intellij.openapi.roots.ProjectRootManager
 import fixtures.TestBase
 
 class ReplaceExpectedWithActualIntentionParametrizeTest : TestBase() {
@@ -12,19 +11,23 @@ class ReplaceExpectedWithActualIntentionParametrizeTest : TestBase() {
 
     private fun setDiffData(qName: String, expected: String, actual: String) {
         val file = myFixture.file
-        val root = ProjectRootManager.getInstance(project).fileIndex.getSourceRootForFile(file.virtualFile)
-            ?: ProjectRootManager.getInstance(project).fileIndex.getContentRootForFile(file.virtualFile)
-        val path = root?.path ?: ""
-        val key = "python<$path>://$qName"
+        // SMTestProxy.locationUrl uses the parent directory path in angle brackets
+        // and prefixes the qName with the parent directory name (module name)
+        val parentDir = file.virtualFile.parent
+        val parentDirPath = parentDir.path
+        val parentDirName = parentDir.name
+        val key = "python<$parentDirPath>://$parentDirName.$qName"
         TestOutcomeDiffService.getInstance(project).put(key, OutcomeDiff(expected, actual))
     }
 
     private fun buildKey(qName: String): String {
         val file = myFixture.file
-        val root = ProjectRootManager.getInstance(project).fileIndex.getSourceRootForFile(file.virtualFile)
-            ?: ProjectRootManager.getInstance(project).fileIndex.getContentRootForFile(file.virtualFile)
-        val path = root?.path ?: ""
-        return "python<$path>://$qName"
+        // SMTestProxy.locationUrl uses the parent directory path in angle brackets
+        // and prefixes the qName with the parent directory name (module name)
+        val parentDir = file.virtualFile.parent
+        val parentDirPath = parentDir.path
+        val parentDirName = parentDir.name
+        return "python<$parentDirPath>://$parentDirName.$qName"
     }
 
     fun `test intention supports parametrized test failure`() {

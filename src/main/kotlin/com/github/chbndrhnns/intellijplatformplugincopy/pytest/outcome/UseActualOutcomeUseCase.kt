@@ -28,8 +28,7 @@ class UseActualOutcomeUseCase(
         val name = pyFunction.name ?: return false
         if (!name.startsWith("test_")) return false
 
-        val locationUrl = PytestLocationUrlFactory.fromPyFunction(pyFunction) ?: return false
-        return diffService.hasAnyForBaseLocationUrl(locationUrl)
+        return true
     }
 
     fun invoke(project: Project, editor: Editor, file: PsiFile, explicitTestKey: String?) {

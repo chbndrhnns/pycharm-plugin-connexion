@@ -5,7 +5,7 @@ import com.intellij.openapi.project.Project
 import java.util.concurrent.ConcurrentHashMap
 
 @Service(Service.Level.PROJECT)
-class TestOutcomeDiffService(private val project: Project) {
+class TestOutcomeDiffService() {
 
     private val diffs = ConcurrentHashMap<String, OutcomeDiff>()
 
@@ -34,18 +34,11 @@ class TestOutcomeDiffService(private val project: Project) {
         val exact = diffs[baseLocationUrl]
         if (exact != null) return Pair(exact, baseLocationUrl)
 
-        val matchedKey = diffs.keys.asSequence()
-            .filter { it.startsWith(baseLocationUrl) }
-            .firstOrNull()
+        val matchedKey = diffs.keys.firstOrNull { it.startsWith(baseLocationUrl) }
             ?: return null
 
         val data = diffs[matchedKey] ?: return null
         return Pair(data, matchedKey)
-    }
-
-    fun hasAnyForBaseLocationUrl(baseLocationUrl: String): Boolean {
-        if (diffs.containsKey(baseLocationUrl)) return true
-        return diffs.keys.asSequence().any { it.startsWith(baseLocationUrl) }
     }
 
     companion object {
