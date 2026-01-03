@@ -3,7 +3,9 @@ package com.github.chbndrhnns.intellijplatformplugincopy.testing
 import com.github.chbndrhnns.intellijplatformplugincopy.searcheverywhere.PytestIdentifierResolver
 import com.intellij.execution.filters.Filter
 import com.intellij.execution.filters.HyperlinkInfo
+import com.intellij.openapi.application.readAction
 import com.intellij.openapi.project.Project
+import com.intellij.platform.ide.progress.runWithModalProgressBlocking
 import com.intellij.pom.Navigatable
 import java.util.regex.Pattern
 
@@ -85,7 +87,11 @@ class PytestConsoleFilter(private val project: Project) : Filter {
         override fun navigate(project: Project) {
             val resolver = PytestIdentifierResolver(project)
             val fullPattern = "$filePath::$nodeId"
-            val element = resolver.resolve(fullPattern)
+            val element = runWithModalProgressBlocking(project, "") {
+                readAction {
+                    resolver.resolve(fullPattern)
+                }
+            }
             (element as? Navigatable)?.navigate(true)
         }
     }
