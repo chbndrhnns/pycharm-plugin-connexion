@@ -14,21 +14,20 @@
 
 ## Pending Features
 
+- [ ] feat: Narrow down search for Go to implementation by containing class name, PY-82520
+- [ ] feat: Limit go to usages search in current (sub) directories, PY-56862
 - [ ] feat: Prefer relative imports also when using move refactoring, blocked
   by https://youtrack.jetbrains.com/issue/PY-86616/PyMoveModuleMembersProcessor-does-not-emit-events
 - [ ] refactor: Use `PythonDependenciesManager` if public
 - [ ] refactor: Do not use reflection to filter import suggestions
-- [ ] feat: Complete to FQN in string for mock.patch("")
 - [ ] feat: Re-use import for qualified names
 - [ ] feat: Discover if pydantic v2 is installed and show parameter object option only in this case
 - [ ] feat: If callable is expected, complete without parens
-- [ ] feat: Inline parameter object should ask to remove/other invocations
 - [ ] feat: Transform between lambda, function, partial
 - [ ] feat: Import should reuse existing module import (domain.ABC, domain.DEFG)
 - [ ] feat: Render quick doc for pydantic/dataclass, showing inherited members, as well
 - [ ] feat: In case of unexpected type, offer cast to the expected type
 - [S] feat: Turn dict into dataclass/pydantic model (spec/upgrade-dict.md)
-- [ ] feat: introduce custom type as newtype, as well, or other custom constructs
 - [ ] feat: Change visibility: make private (we only have two options and one is always true)
 - [ ] feat: Convert parametrized test to multiple unparametrized tests
 - [ ] feat: Add field to dataclass/model in case of unexpected argument
@@ -47,7 +46,6 @@
 - [ ] feat: Move to inner class
 - [ ] feat: Move symbol to any of the currently imported packages/modules, change references
 - [ ] feat: Inspect duplicates in __all__
-- [ ] feat: search everywhere: search for partial matches in test names
 - [ ] feat: copy element with dependencies should generate a preview about the direct copy (not including dependencies)
 - [ ] When populating arguments, highlight the target function (area) when the popup appears
 - [ ] feat: quick fix to remove unresolved import from __all__
@@ -55,7 +53,6 @@
 - [ ] roots: adopt when moving files
 - [ ] roots: mark as unresolved reference without
 - [ ] feat: populate union (docs/populate/populate-union.md)
-- [ ] feat: Generate dataclass, basemodel
 - [ ] Copy pydantic mock?
 - [ ] feat: Wrap default/default_factory after introducing custom type in dataclass/pydantic
 - [ ] feat: Convert fn to lambda
@@ -65,14 +62,18 @@
 
 ## In Progress Tasks
 
+- [ ] feat: Inline parameter object should ask to remove/other invocations
+- [ ] feat: search everywhere: search for partial matches in test names
 - [-] feat: Move: Warn if test exists in target class already
 - [ ] feat: Block list: Do not allow names from typing or collections.abc.
-- [ ] feat: Configure default base classes
-- [ ] feat: Create run config using package mode
 - [ ] refactor: Performance (spec/performance.md)
 
 ## Completed Tasks (newest first)
 
+- [x] feat: introduce custom type as newtype, as well, or other custom constructs
+- [x] feat: Complete to FQN in string for mock.patch("")
+- [x] feat: Create run config using package mode
+- [x] feat: Generate dataclass, basemodel
 - [x] fix: Do not hide import suggestions for symbols in the current own project (!)
 - [x] fix: Do not offer builtins as expected type callables
 
