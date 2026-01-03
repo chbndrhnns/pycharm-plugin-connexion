@@ -70,6 +70,7 @@
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Make actual outcome available via intention for failed test
 - [x] feat: introduce custom type as newtype, as well, or other custom constructs
 - [x] feat: Complete to FQN in string for mock.patch("")
 - [x] feat: Create run config using package mode
