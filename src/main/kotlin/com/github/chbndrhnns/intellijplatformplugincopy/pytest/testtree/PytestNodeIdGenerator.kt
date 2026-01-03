@@ -26,12 +26,22 @@ object PytestNodeIdGenerator {
         val locationUrl = proxy.locationUrl ?: return null
         val metainfo = proxy.metainfo
 
+        // Build path from proxy parent chain - this gives us the full nested class hierarchy
+        // even when locationUrl only contains the top-level class
+        val proxyPath = buildProxyPath(proxy)
+
         // Fast path: many proxies can resolve their PSI location directly without re-parsing the URL.
         // This is both cheaper and avoids file-index work on EDT.
         val directElement = proxy.getLocation(project, GlobalSearchScope.projectScope(project))?.psiElement
         if (directElement != null) {
             val file = directElement.containingFile?.virtualFile ?: return null
-            val nodeid = calculateNodeId(directElement, file, project, metainfo, pathFqn = null)
+            // Use proxy path to get the full nested class hierarchy if available,
+            // otherwise fall back to PSI-based calculation
+            val nodeid = if (proxyPath.isNotEmpty()) {
+                calculateNodeIdFromProxyPath(proxyPath, file, project, metainfo)
+            } else {
+                calculateNodeId(directElement, file, project, metainfo, pathFqn = null)
+            }
             return PytestTestRecord(
                 nodeid = nodeid,
                 psiElement = directElement,
@@ -62,8 +72,13 @@ object PytestNodeIdGenerator {
         val element = locations.firstOrNull()?.psiElement
         val file = element?.containingFile?.virtualFile ?: return null
 
-        // 3. Calculate Node ID (Pass pathFqn)
-        val nodeid = calculateNodeId(element, file, project, metainfo, pathFqn)
+        // 3. Calculate Node ID using proxy path (more reliable for nested classes),
+        // fall back to pathFqn-based calculation when proxy path is empty
+        val nodeid = if (proxyPath.isNotEmpty()) {
+            calculateNodeIdFromProxyPath(proxyPath, file, project, metainfo)
+        } else {
+            calculateNodeId(element, file, project, metainfo, pathFqn)
+        }
 
         return PytestTestRecord(
             nodeid = nodeid,
@@ -269,5 +284,98 @@ object PytestNodeIdGenerator {
         val contentRoot = ProjectFileIndex.getInstance(project).getContentRootForFile(file)
         val rel = contentRoot?.let { root -> VfsUtilCore.getRelativePath(file, root) }
         return rel ?: file.path
+    }
+
+    /**
+     * Builds the test path by traversing the SMTestProxy parent chain.
+     * This gives us the full nested class hierarchy (e.g., ["TestParent", "TestChild", "TestGrandChild", "test_"])
+     * even when locationUrl only contains the top-level class.
+     *
+     * The proxy tree structure is: root -> file -> class -> nested class -> ... -> method
+     * We collect names until we hit a node that looks like a file (contains ".py").
+     */
+    private fun buildProxyPath(proxy: SMTestProxy): List<String> {
+        val parts = mutableListOf<String>()
+        var current: SMTestProxy? = proxy
+
+        while (current != null) {
+            val name = current.name
+            // Stop when we hit the file node (name contains .py) or root
+            if (name.endsWith(".py") || current.parent == null) {
+                break
+            }
+            parts.add(0, name)
+            current = current.parent
+        }
+
+        return parts
+    }
+
+    /**
+     * Calculates the node ID using the proxy path (from parent chain traversal).
+     * This is more reliable than using locationUrl for nested classes.
+     */
+    private fun calculateNodeIdFromProxyPath(
+        proxyPath: List<String>,
+        file: VirtualFile,
+        project: Project,
+        metainfo: String?
+    ): String {
+        val relativePath = projectRelativePath(file, project)
+
+        if (proxyPath.isEmpty()) {
+            return relativePath
+        }
+
+        // Extract path components from the file's relative path (e.g., "tests/test_.py" -> ["tests", "test_"])
+        // These are directory/module names that should NOT be included in the node ID suffix
+        val filePathComponents = relativePath
+            .removeSuffix(".py")
+            .split("/")
+
+        // Remove directory/module names from the BEGINNING of the proxy path only.
+        // We can't use a simple filter because a method might have the same name as a module
+        // (e.g., method "test_" in file "test_.py"). We need to strip the prefix, not filter all occurrences.
+        val filteredParts = stripPrefixComponents(proxyPath, filePathComponents).toMutableList()
+
+        if (filteredParts.isEmpty()) {
+            return relativePath
+        }
+
+        // Replace the leaf name with metainfo if available (to handle [params])
+        if (filteredParts.isNotEmpty() && !metainfo.isNullOrEmpty()) {
+            val leafName = filteredParts.last()
+            // Only replace if metainfo starts with the leaf name (e.g., test_foo[param] starts with test_foo)
+            if (metainfo.startsWith(leafName)) {
+                filteredParts[filteredParts.lastIndex] = metainfo
+            }
+        }
+
+        return "$relativePath::${filteredParts.joinToString("::")}"
+    }
+
+    /**
+     * Strips file path components from the beginning of the proxy path.
+     * This handles the case where the proxy tree includes directory/module nodes
+     * (e.g., ["tests", "test_", "TestClass", "test_method"]) and we need to remove
+     * the prefix that matches the file path (["tests", "test_"]) to get ["TestClass", "test_method"].
+     * 
+     * Unlike a simple filter, this preserves later occurrences of the same name
+     * (e.g., a method named "test_" won't be removed just because the module is also "test_").
+     */
+    private fun stripPrefixComponents(proxyPath: List<String>, filePathComponents: List<String>): List<String> {
+        var startIndex = 0
+
+        // Find how many components at the start of proxyPath match filePathComponents
+        for (i in proxyPath.indices) {
+            if (proxyPath[i] in filePathComponents) {
+                startIndex = i + 1
+            } else {
+                // Stop at the first non-matching component (class/method names start here)
+                break
+            }
+        }
+
+        return proxyPath.subList(startIndex, proxyPath.size)
     }
 }

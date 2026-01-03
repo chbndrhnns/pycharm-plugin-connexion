@@ -97,6 +97,153 @@ class PytestNodeIdGeneratorTest : TestBase() {
         assertEquals("test_param.py::test_jump[2]", nodeId)
     }
 
+    /**
+     * Tests the scenario where we have 3-level nested classes and the proxy parent chain
+     * contains the full hierarchy. This simulates the real test tree structure:
+     * root -> file -> TestParent -> TestChild -> TestGrandChild -> test_
+     *
+     * The locationUrl may only contain the top-level class, but the proxy parent chain
+     * should give us the full nested class hierarchy.
+     */
+    fun testThreeLevelNestedClassWithProxyParentChain() {
+        myFixture.configureByText(
+            "test_nested_deep.py",
+            """
+            class TestParent:
+                class TestChild:
+                    class TestGrandChild:
+                        def test_(self):
+                            assert 1 == 2
+            """.trimIndent()
+        )
+
+        val method = myFixture.findElementByText("test_", PyFunction::class.java)
+        val path = myFixture.file.virtualFile.path
+
+        // Simulate the real test tree structure with proxy parent chain
+        // The locationUrl only has the top-level class (simulating the bug scenario)
+        val locationUrl = "python<$path>://test_nested_deep.TestParent"
+
+        // Build the proxy parent chain: root -> file -> TestParent -> TestChild -> TestGrandChild -> test_
+        val rootProxy = FakeSMTestProxy("Root", true, null, null)
+        val fileProxy = FakeSMTestProxy("test_nested_deep.py", true, null, null)
+        val parentProxy = FakeSMTestProxy("TestParent", true, null, null)
+        val childProxy = FakeSMTestProxy("TestChild", true, null, null)
+        val grandChildProxy = FakeSMTestProxy("TestGrandChild", true, null, null)
+        val methodProxy = FakeSMTestProxy("test_", false, method, locationUrl)
+
+        // Set up parent chain
+        rootProxy.addChild(fileProxy)
+        fileProxy.addChild(parentProxy)
+        parentProxy.addChild(childProxy)
+        childProxy.addChild(grandChildProxy)
+        grandChildProxy.addChild(methodProxy)
+
+        val record = PytestNodeIdGenerator.parseProxy(methodProxy, project)
+
+        // Should get the full nested class hierarchy from the proxy parent chain
+        assertEquals("test_nested_deep.py::TestParent::TestChild::TestGrandChild::test_", record!!.nodeid)
+    }
+
+    /**
+     * Tests the bug where a method named "test_" in a file named "test_.py" gets cut off.
+     * The filtering logic incorrectly removes the method name because it matches the module name.
+     * 
+     * Expected: tests/test_.py::TestParent::TestChild::TestGrandChild::test_
+     * Bug produces: tests/test_.py::TestParent::TestChild::TestGrandChild (missing ::test_)
+     */
+    fun testMethodNameMatchesModuleName() {
+        val file = myFixture.addFileToProject(
+            "tests/test_.py",
+            """
+            class TestParent:
+                class TestChild:
+                    class TestGrandChild:
+                        def test_(self):
+                            assert 1 == 2
+            """.trimIndent()
+        )
+
+        myFixture.configureFromExistingVirtualFile(file.virtualFile)
+        val method = myFixture.findElementByText("test_", PyFunction::class.java)
+
+        // Simulate the REAL pytest tree structure with directory nodes
+        // root -> tests (dir) -> test_ (module without .py) -> TestParent -> TestChild -> TestGrandChild -> test_
+        val locationUrl = "python<${file.virtualFile.path}>://tests.test_.TestParent"
+
+        val rootProxy = FakeSMTestProxy("Root", true, null, null)
+        val dirProxy = FakeSMTestProxy("tests", true, null, null)  // Directory node
+        val moduleProxy = FakeSMTestProxy("test_", true, null, null)  // Module node (no .py)
+        val parentProxy = FakeSMTestProxy("TestParent", true, null, null)
+        val childProxy = FakeSMTestProxy("TestChild", true, null, null)
+        val grandChildProxy = FakeSMTestProxy("TestGrandChild", true, null, null)
+        val methodProxy = FakeSMTestProxy("test_", false, method, locationUrl)  // Method has same name as module!
+
+        // Set up parent chain
+        rootProxy.addChild(dirProxy)
+        dirProxy.addChild(moduleProxy)
+        moduleProxy.addChild(parentProxy)
+        parentProxy.addChild(childProxy)
+        childProxy.addChild(grandChildProxy)
+        grandChildProxy.addChild(methodProxy)
+
+        val record = PytestNodeIdGenerator.parseProxy(methodProxy, project)
+
+        // Should get: tests/test_.py::TestParent::TestChild::TestGrandChild::test_
+        // NOT: tests/test_.py::TestParent::TestChild::TestGrandChild (missing the method!)
+        assertEquals("tests/test_.py::TestParent::TestChild::TestGrandChild::test_", record!!.nodeid)
+    }
+
+    /**
+     * Tests the real pytest tree structure which includes directory nodes.
+     * Real structure: root -> tests (dir) -> test_ (module name without .py) -> TestParent -> ...
+     * 
+     * This reproduces the bug where we get duplicated paths like:
+     * tests/test_.py::tests::test_::TestParent::TestChild::TestGrandChild::test_method
+     */
+    fun testNestedClassWithDirectoryNodesInProxyChain() {
+        val file = myFixture.addFileToProject(
+            "tests/test_.py",
+            """
+            class TestParent:
+                class TestChild:
+                    class TestGrandChild:
+                        def test_method(self):
+                            assert 1 == 2
+            """.trimIndent()
+        )
+
+        // Configure the fixture to use this file so findElementByText works
+        myFixture.configureFromExistingVirtualFile(file.virtualFile)
+        val method = myFixture.findElementByText("test_method", PyFunction::class.java)
+
+        // Simulate the REAL pytest tree structure with directory nodes
+        // root -> tests (dir) -> test_ (module without .py) -> TestParent -> TestChild -> TestGrandChild -> test_method
+        val locationUrl = "python<${file.virtualFile.path}>://tests.test_.TestParent"
+
+        val rootProxy = FakeSMTestProxy("Root", true, null, null)
+        val dirProxy = FakeSMTestProxy("tests", true, null, null)  // Directory node
+        val moduleProxy = FakeSMTestProxy("test_", true, null, null)  // Module node (no .py)
+        val parentProxy = FakeSMTestProxy("TestParent", true, null, null)
+        val childProxy = FakeSMTestProxy("TestChild", true, null, null)
+        val grandChildProxy = FakeSMTestProxy("TestGrandChild", true, null, null)
+        val methodProxy = FakeSMTestProxy("test_method", false, method, locationUrl)
+
+        // Set up parent chain
+        rootProxy.addChild(dirProxy)
+        dirProxy.addChild(moduleProxy)
+        moduleProxy.addChild(parentProxy)
+        parentProxy.addChild(childProxy)
+        childProxy.addChild(grandChildProxy)
+        grandChildProxy.addChild(methodProxy)
+
+        val record = PytestNodeIdGenerator.parseProxy(methodProxy, project)
+
+        // Should get: tests/test_.py::TestParent::TestChild::TestGrandChild::test_method
+        // NOT: tests/test_.py::tests::test_::TestParent::TestChild::TestGrandChild::test_method
+        assertEquals("tests/test_.py::TestParent::TestChild::TestGrandChild::test_method", record!!.nodeid)
+    }
+
     private class FakeSMTestProxy(
         name: String,
         isSuite: Boolean,
