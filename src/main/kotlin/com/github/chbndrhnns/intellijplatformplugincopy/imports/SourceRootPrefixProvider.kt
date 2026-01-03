@@ -22,21 +22,21 @@ class SourceRootPrefixProvider : PyCanonicalPathProvider {
         val project = symbol?.project ?: return null
 
         val fileIndex = ProjectFileIndex.getInstance(project)
-        val sourceRoot = fileIndex.getSourceRootForFile(virtualFile) ?: return null
+        val root = fileIndex.getSourceRootForFile(virtualFile) ?: return null
         val contentRoot = fileIndex.getContentRootForFile(virtualFile) ?: return null
 
         // specific optimization: if roots are same, no prefix needed
-        if (sourceRoot == contentRoot) {
+        if (root == contentRoot) {
             return null
         }
 
         // Ensure we are in a nested structure
-        if (!VfsUtilCore.isAncestor(contentRoot, sourceRoot, true)) {
+        if (!VfsUtilCore.isAncestor(contentRoot, root, true)) {
             return null
         }
 
-        // VfsUtilCore.getRelativePath returns path from ancestor (contentRoot) to file (sourceRoot)
-        val prefixPath = VfsUtilCore.getRelativePath(sourceRoot, contentRoot)
+        // VfsUtilCore.getRelativePath returns path from ancestor (contentRoot) to file (root)
+        val prefixPath = VfsUtilCore.getRelativePath(root, contentRoot)
         if (prefixPath.isNullOrEmpty()) {
             return null
         }

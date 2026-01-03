@@ -40,4 +40,37 @@ class SourceRootPrefixProviderTest : TestBase() {
         }
 
     }
+
+    fun testRestoreTestSourceRootPrefix() {
+        withPluginSettings({ enableRestoreSourceRootPrefix = true }) {
+            // 1. Create structure using helper
+            myFixture.addFileToProject("tests/mypackage/test_module.py", "def test_foo(): pass")
+            val mainPsi = myFixture.addFileToProject("tests/test_main.py", "test_foo()")
+
+            // Get the 'tests' directory (parent of test_main.py)
+            val testsDir = mainPsi.virtualFile.parent
+
+            // 2. Manage test source root lifecycle
+            runWithTestSourceRoots(listOf(testsDir)) {
+
+                // 3. Configure and Enable Inspection
+                myFixture.configureFromExistingVirtualFile(mainPsi.virtualFile)
+                myFixture.enableInspections(PyUnresolvedReferencesInspection::class.java)
+
+                // 4. Check for Fixes
+                val importFix = myFixture.availableIntentions.find {
+                    it.text.contains("tests.mypackage.test_module")
+                }
+                    ?: error("Could not find import fix with prefix 'tests'. Available: ${myFixture.availableIntentions.map { it.text }}")
+
+                myFixture.launchAction(importFix)
+                myFixture.checkResult(
+                    """
+                    from tests.mypackage.test_module import test_foo
+
+                    test_foo()""".trimIndent()
+                )
+            }
+        }
+    }
 }

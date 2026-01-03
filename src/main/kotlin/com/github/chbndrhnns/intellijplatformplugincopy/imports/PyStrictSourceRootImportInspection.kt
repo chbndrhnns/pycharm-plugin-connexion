@@ -61,13 +61,13 @@ class PyStrictSourceRootImportInspection : PyInspection() {
         
         val project = importSource.project
         val fileIndex = ProjectFileIndex.getInstance(project)
-        val sourceRoot = fileIndex.getSourceRootForFile(virtualFile) ?: return
+        val root = fileIndex.getSourceRootForFile(virtualFile) ?: return
         val contentRoot = fileIndex.getContentRootForFile(virtualFile) ?: return
 
-        if (sourceRoot == contentRoot) return
-        if (!VfsUtilCore.isAncestor(contentRoot, sourceRoot, true)) return
+        if (root == contentRoot) return
+        if (!VfsUtilCore.isAncestor(contentRoot, root, true)) return
 
-        val prefixPath = VfsUtilCore.getRelativePath(sourceRoot, contentRoot)
+        val prefixPath = VfsUtilCore.getRelativePath(root, contentRoot)
         if (prefixPath.isNullOrEmpty()) return
 
         val components = prefixPath.split('/')

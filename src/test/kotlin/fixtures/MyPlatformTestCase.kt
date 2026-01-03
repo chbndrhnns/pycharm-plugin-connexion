@@ -23,4 +23,13 @@ abstract class MyPlatformTestCase : BasePlatformTestCase() {
         }
     }
 
+    fun runWithTestSourceRoots(testSourceRoots: List<VirtualFile>, runnable: Runnable) {
+        testSourceRoots.forEach { root -> PsiTestUtil.addSourceRoot(module, root, true) }
+        try {
+            runnable.run()
+        } finally {
+            testSourceRoots.forEach { root -> PsiTestUtil.removeSourceRoot(module, root) }
+        }
+    }
+
 }

@@ -102,4 +102,64 @@ class StrictSourceRootPrefixInspectionTest : TestBase() {
             }
         }
     }
+
+    fun testImportMissingTestSourceRootPrefixIsMarkedAsUnresolved() {
+        withPluginSettings({
+            enableRestoreSourceRootPrefix = true
+        }) {
+            // tests is a test source root
+            myFixture.addFileToProject("tests/mypackage/module.py", "def foo(): pass")
+            val mainPsi = myFixture.addFileToProject("main.py", "from <caret>mypackage.module import foo\nfoo()")
+
+            val testsDir = myFixture.findFileInTempDir("tests")
+            runWithTestSourceRoots(listOf(testsDir)) {
+                myFixture.configureFromExistingVirtualFile(mainPsi.virtualFile)
+
+                // Should have a warning on 'mypackage.module'
+                val highlight = myFixture.doHighlighting().find { it.text == "mypackage.module" }
+                assertNotNull("Should find highlighting for mypackage.module", highlight)
+
+                // Check for quickfix
+                val fix = myFixture.findSingleIntention("Prepend source root prefix 'tests'")
+                myFixture.launchAction(fix)
+
+                myFixture.checkResult(
+                    """
+                    from tests.mypackage.module import foo
+                    foo()
+                    """.trimIndent()
+                )
+            }
+        }
+    }
+
+    fun testImportConftestFromTestsRoot() {
+        withPluginSettings({
+            enableRestoreSourceRootPrefix = true
+        }) {
+            // tests is a test source root
+            myFixture.addFileToProject("tests/conftest.py", "def helper(): pass")
+            // bla/test_.py is in a subdirectory of tests
+            val mainPsi = myFixture.addFileToProject("tests/bla/test_.py", "from <caret>conftest import helper")
+
+            val testsDir = myFixture.findFileInTempDir("tests")
+            runWithTestSourceRoots(listOf(testsDir)) {
+                myFixture.configureFromExistingVirtualFile(mainPsi.virtualFile)
+
+                // Should have a warning on 'conftest'
+                val highlight = myFixture.doHighlighting().find { it.text == "conftest" }
+                assertNotNull("Should find highlighting for conftest", highlight)
+
+                // Check for quickfix
+                val fix = myFixture.findSingleIntention("Prepend source root prefix 'tests'")
+                myFixture.launchAction(fix)
+
+                myFixture.checkResult(
+                    """
+                    from tests.conftest import helper
+                    """.trimIndent()
+                )
+            }
+        }
+    }
 }

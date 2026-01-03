@@ -286,3 +286,19 @@
     "NEW INSTRUCTION": "WHEN code checks enableStrictSourceRootPrefix THEN remove the setting and apply behavior unconditionally"
 }
 
+[2026-01-03 23:41] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "test sources coverage",
+    "EXPECTATION": "Apply the inspection and quick-fix to both source roots and test source roots, not only regular sources.",
+    "NEW INSTRUCTION": "WHEN determining required root for strict prefix THEN include both source and test source roots"
+}
+
+[2026-01-03 23:44] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "test sources coverage",
+    "EXPECTATION": "In a test source root, importing a top-level module like 'conftest' without the root prefix should be flagged and offer a quick-fix to prepend the test root (e.g., 'tests').",
+    "NEW INSTRUCTION": "WHEN importing top-level module from test source root without root prefix THEN register problem and offer prepend root quick-fix"
+}
+

@@ -228,3 +228,13 @@
     "NEW INSTRUCTION": "WHEN creating a new Inspection subclass THEN add inspectionDescriptions/<ShortName>.html description file"
 }
 
+[2026-01-03 23:45] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "PyStrictSourceRootImportInspection",
+    "ERROR": "No warning for 'from conftest import ...' missing test root prefix",
+    "ROOT CAUSE": "The inspection ignores modules located directly under a source/test root (e.g., conftest.py) and only handles package-qualified modules.",
+    "PROJECT NOTE": "Treat bare files at the root (like tests/conftest.py) as requiring the root prefix, yielding from tests.conftest import helper.",
+    "NEW INSTRUCTION": "WHEN import resolves to file directly under a source or test root THEN register problem and offer prepend source root quickfix"
+}
+
