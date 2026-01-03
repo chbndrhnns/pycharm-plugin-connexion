@@ -23,46 +23,40 @@ All methods accept an optional `includeHidden: Boolean = false` parameter to inc
 
 Since `FeatureDocumentationGenerator` uses `FeatureRegistry.instance()`, it requires the IntelliJ Platform application context. There are several ways to run it:
 
-### Option 1: From a Test (Recommended for Development)
+### Option 1: Gradle Task (Recommended)
 
-Create a test that generates the documentation:
+The easiest way to generate documentation is using the dedicated Gradle task:
 
-```kotlin
-package com.github.chbndrhnns.intellijplatformplugincopy.settings
-
-import fixtures.TestBase
-import java.io.File
-
-class GenerateFeatureDocsTest : TestBase() {
-
-    fun testGenerateMarkdownDocs() {
-        val markdown = FeatureDocumentationGenerator.generateMarkdown(includeHidden = false)
-        
-        // Print to console
-        println(markdown)
-        
-        // Or write to file
-        File("docs/features/feature-reference.md").writeText(markdown)
-    }
-
-    fun testGenerateJsonDocs() {
-        val json = FeatureDocumentationGenerator.generateJson(includeHidden = false)
-        File("docs/features/features.json").writeText(json)
-    }
-
-    fun testGenerateSimpleList() {
-        val list = FeatureDocumentationGenerator.generateSimpleList(includeHidden = true)
-        println(list)
-    }
-}
-```
-
-Run with:
 ```bash
-./gradlew test --tests "com.github.chbndrhnns.intellijplatformplugincopy.settings.GenerateFeatureDocsTest.testGenerateMarkdownDocs"
+./gradlew generateFeatureDocs
 ```
 
-### Option 2: From the IDE Plugin (Runtime)
+This will generate:
+
+- `docs/features/feature-reference.md` - Full markdown documentation
+- `docs/features/features.json` - Machine-readable JSON format
+
+The task runs the `GenerateFeatureDocsTest` which is excluded from the normal test suite.
+
+!!! note "Excluded from normal tests"
+The `GenerateFeatureDocsTest` is automatically excluded when running `./gradlew test`.
+It only runs when explicitly invoked via `generateFeatureDocs` or with the `-PrunDocGenTest=true` flag.
+
+### Option 2: Direct Test Invocation
+
+You can also run the test directly with the property flag:
+
+```bash
+./gradlew test --tests "*.GenerateFeatureDocsTest" -PrunDocGenTest=true
+```
+
+Or run a specific test method:
+
+```bash
+./gradlew test --tests "*.GenerateFeatureDocsTest.testGenerateMarkdownDocs" -PrunDocGenTest=true
+```
+
+### Option 3: From the IDE Plugin (Runtime)
 
 You can invoke the generator from within the running plugin, for example via an action:
 
@@ -80,7 +74,7 @@ class GenerateFeatureDocsAction : AnAction("Generate Feature Docs") {
 }
 ```
 
-### Option 3: From runIde Task
+### Option 4: From runIde Task
 
 1. Start the plugin in development mode:
    ```bash
@@ -153,11 +147,11 @@ To automatically generate and commit documentation on release:
 ```yaml
 # .github/workflows/docs.yml
 - name: Generate feature docs
-  run: ./gradlew test --tests "*.GenerateFeatureDocsTest.testGenerateMarkdownDocs"
+  run: ./gradlew generateFeatureDocs
 
 - name: Commit docs
   run: |
-    git add docs/features/feature-reference.md
+    git add docs/features/feature-reference.md docs/features/features.json
     git commit -m "docs: update feature reference" || true
 ```
 

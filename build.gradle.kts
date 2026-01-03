@@ -144,6 +144,27 @@ tasks {
     publishPlugin {
         dependsOn(patchChangelog)
     }
+
+    // Exclude documentation generation tests from normal test runs unless explicitly requested
+    test {
+        if (!project.hasProperty("runDocGenTest")) {
+            exclude("**/GenerateFeatureDocsTest.class")
+        }
+    }
+}
+
+// Custom task to generate feature documentation
+// This runs the GenerateFeatureDocsTest which requires IntelliJ Platform test infrastructure
+tasks.register<Exec>("generateFeatureDocs") {
+    description = "Generates feature documentation from @Feature annotations"
+    group = "documentation"
+
+    workingDir = projectDir
+    commandLine(
+        "./gradlew", "test",
+        "--tests", "com.github.chbndrhnns.intellijplatformplugincopy.settings.GenerateFeatureDocsTest",
+        "-PrunDocGenTest=true"
+    )
 }
 
 intellijPlatformTesting {
