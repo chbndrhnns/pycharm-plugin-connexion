@@ -62,6 +62,7 @@
 
 ## In Progress Tasks
 
+- [ ] feat: highligh failed line in pytest test, spec/pytest/highlight-failed-line.md
 - [ ] feat: Inline parameter object should ask to remove/other invocations
 - [ ] feat: search everywhere: search for partial matches in test names
 - [-] feat: Move: Warn if test exists in target class already
