@@ -14,7 +14,7 @@
 
 ## Pending Features
 
-- [ ] feat: Narrow down search for Go to implementation by containing class name, PY-82520
+- [ ] feat: Narrow down search for Go to implementation by containing class name, PY-82520, specs/go-to-impl.md
 - [ ] feat: Limit go to usages search in current (sub) directories, PY-56862
 - [ ] feat: Prefer relative imports also when using move refactoring, blocked
   by https://youtrack.jetbrains.com/issue/PY-86616/PyMoveModuleMembersProcessor-does-not-emit-events
