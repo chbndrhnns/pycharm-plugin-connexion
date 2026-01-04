@@ -438,3 +438,23 @@
     "NEW INSTRUCTION": "WHEN unresolved reference quickfix is needed THEN create LocalQuickFix and register in inspection"
 }
 
+[2026-01-04 23:09] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "re-run tests, run all tests",
+    "BOTTLENECK": "Used unsupported test tool instead of running tests via bash/Gradle.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN finishing a test or code change THEN run tests via bash Gradle task"
+}
+
+[2026-01-04 23:10] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "run all tests",
+    "BOTTLENECK": "Build/test environment cache issues slowed verification.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN reference is a standalone expression statement THEN replace statement with assignment"
+}
+

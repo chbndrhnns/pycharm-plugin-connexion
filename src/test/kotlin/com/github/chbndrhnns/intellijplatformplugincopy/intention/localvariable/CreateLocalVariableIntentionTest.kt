@@ -110,4 +110,19 @@ class CreateLocalVariableIntentionTest : TestBase() {
         val action = myFixture.availableIntentions.find { it.text == "BetterPy: Create local variable" }
         assertNull("Intention should not be available for dunder variables", action)
     }
+
+    fun testStandaloneVariable() {
+        myFixture.doIntentionTest(
+            "test_standalone.py",
+            """
+            def func():
+                <caret>MyClass
+            """,
+            """
+            def func():
+                MyClass = None
+            """,
+            "BetterPy: Create local variable"
+        )
+    }
 }

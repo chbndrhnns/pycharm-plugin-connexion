@@ -58,7 +58,11 @@ class CreateLocalVariableIntention : PyBaseIntentionAction(), PriorityAction, Ic
             "$name = None"
         )
 
-        val currentStatement = PsiTreeUtil.getParentOfType(refExpr, PyStatement::class.java)
-        currentStatement?.parent?.addBefore(assignment, currentStatement)
+        val currentStatement = PsiTreeUtil.getParentOfType(refExpr, PyStatement::class.java) ?: return
+        if (currentStatement is PyExpressionStatement && currentStatement.expression == refExpr) {
+            currentStatement.replace(assignment)
+        } else {
+            currentStatement.parent?.addBefore(assignment, currentStatement)
+        }
     }
 }
