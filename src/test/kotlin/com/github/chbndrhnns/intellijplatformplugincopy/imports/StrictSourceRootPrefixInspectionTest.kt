@@ -162,4 +162,23 @@ class StrictSourceRootPrefixInspectionTest : TestBase() {
             }
         }
     }
+
+    fun testRelativeImportDoesNotTriggerInspection() {
+        withPluginSettings({
+            enableRestoreSourceRootPrefix = true
+        }) {
+            myFixture.addFileToProject("src/mypackage/__init__.py", "")
+            myFixture.addFileToProject("src/mypackage/module.py", "def foo(): pass")
+            val subPsi = myFixture.addFileToProject("src/mypackage/sub.py", "from .module import foo")
+
+            val srcDir = myFixture.findFileInTempDir("src")
+            runWithSourceRoots(listOf(srcDir)) {
+                myFixture.configureFromExistingVirtualFile(subPsi.virtualFile)
+
+                val highlights = myFixture.doHighlighting()
+                val ourHighlight = highlights.find { it.description?.contains("missing source root prefix") == true }
+                assertNull("Relative import should not trigger 'missing source root prefix' highlighting", ourHighlight)
+            }
+        }
+    }
 }

@@ -34,6 +34,7 @@ class PyStrictSourceRootImportInspection : PyInspection() {
         return object : PyElementVisitor() {
             override fun visitPyFromImportStatement(node: PyFromImportStatement) {
                 super.visitPyFromImportStatement(node)
+                if (node.relativeLevel > 0) return
                 checkImportSource(node.importSource, holder)
             }
 
