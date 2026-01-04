@@ -378,3 +378,23 @@
     "NEW INSTRUCTION": "WHEN Kotlin reports function type mismatch after edits THEN align factory signature and update all call sites"
 }
 
+[2026-01-04 21:42] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "run_test",
+    "ERROR": "No tests found inside file path",
+    "ROOT CAUSE": "The created test file has unresolved references and does not extend the project's TestBase, so the test framework cannot discover any test methods.",
+    "PROJECT NOTE": "Use fixtures.TestBase from src/test/kotlin/fixtures/TestBase.kt; ensure imports compile and myFixture is available before running tests.",
+    "NEW INSTRUCTION": "WHEN run_test reports 'No tests found inside file path' THEN fix semantic errors and extend fixtures.TestBase"
+}
+
+[2026-01-04 23:07] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "run_test",
+    "ERROR": "Quickfix uses module filename, ignores import alias",
+    "ROOT CAUSE": "The quickfix derives the qualifier from PyFile.name and not from the imported alias, so cases like 'import domain as d' propose 'domain.MyClass' instead of 'd.MyClass'.",
+    "PROJECT NOTE": "In PyUnresolvedReferenceAsErrorInspection, collect imported modules alongside their alias from PyImportElement (use asNameIdentifier?.text) and prefer the alias when constructing QualifyReferenceQuickFix.",
+    "NEW INSTRUCTION": "WHEN import element has an alias THEN use alias as qualifier in quickfix"
+}
+

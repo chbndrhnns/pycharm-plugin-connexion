@@ -358,3 +358,19 @@
     "NEW INSTRUCTION": "WHEN adding partial search for pytest contributor THEN match segments of node ids (file::class::test)"
 }
 
+[2026-01-04 22:53] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "from/relative imports support",
+    "EXPECTATION": "The qualify-undefined quickfix must work when modules are brought in via 'from ... import ...' and relative imports (e.g., 'from . import domain').",
+    "NEW INSTRUCTION": "WHEN imported module is via from-import or relative import THEN include it as a qualifier candidate and generate correct qualifier"
+}
+
+[2026-01-04 23:06] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "absolute import qualifying",
+    "EXPECTATION": "The quickfix must work when the module is imported via an absolute import (e.g., 'import domain') so the test passes.",
+    "NEW INSTRUCTION": "WHEN unresolved reference and absolute import exists THEN offer qualify with that module"
+}
+

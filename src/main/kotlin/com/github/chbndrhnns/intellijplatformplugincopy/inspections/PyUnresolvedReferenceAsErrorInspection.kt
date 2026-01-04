@@ -4,14 +4,11 @@ import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.isD
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.populate.PyDataclassFieldExtractor
 import com.github.chbndrhnns.intellijplatformplugincopy.python.PythonVersionGuard
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
-import com.intellij.codeInspection.LocalInspectionToolSession
-import com.intellij.codeInspection.ProblemHighlightType
-import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.codeInspection.*
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElementVisitor
 import com.jetbrains.python.inspections.PyInspection
-import com.jetbrains.python.psi.PyElementVisitor
-import com.jetbrains.python.psi.PyExpression
-import com.jetbrains.python.psi.PyReferenceExpression
+import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.types.PyClassType
 import com.jetbrains.python.psi.types.TypeEvalContext
 
@@ -55,10 +52,30 @@ class PyUnresolvedReferenceAsErrorInspection : PyInspection() {
                     }
 
                     if (qualifier == null) {
+                        val quickfixes = mutableListOf<LocalQuickFix>()
+                        if (name != null) {
+                            val pyFile = node.containingFile as? PyFile
+                            if (pyFile != null) {
+                                val importedModules = findImportedModules(pyFile)
+                                for (module in importedModules) {
+                                    val attr = module.findTopLevelAttribute(name)
+                                    val clazz = module.findTopLevelClass(name)
+                                    val func = module.findTopLevelFunction(name)
+                                    if (attr != null || clazz != null || func != null) {
+                                        val moduleName = module.name.substringBeforeLast(".py")
+                                        if (moduleName != "__init__") {
+                                            quickfixes.add(QualifyReferenceQuickFix(moduleName))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
                         holder.registerProblem(
                             node,
                             "Unresolved reference '${node.name}'",
-                            ProblemHighlightType.ERROR
+                            ProblemHighlightType.ERROR,
+                            *quickfixes.toTypedArray()
                         )
                     } else {
                         if (isQualifierTypeInAllowlist(qualifier, context)) {
@@ -78,6 +95,74 @@ class PyUnresolvedReferenceAsErrorInspection : PyInspection() {
                     }
                 }
             }
+        }
+    }
+
+    private fun findImportedModules(file: PyFile): List<PyFile> {
+        val result = mutableSetOf<PyFile>()
+
+        file.importTargets.forEach { importTarget ->
+            val results = importTarget.multiResolve()
+            results.forEach { resolveResult ->
+                val resolved = resolveResult.element
+                if (resolved is PyFile) {
+                    result.add(resolved)
+                }
+            }
+        }
+
+        file.fromImports.forEach { fromImport ->
+            // from module import ...
+            val resolvedSource = fromImport.resolveImportSource()
+            if (resolvedSource is PyFile) {
+                result.add(resolvedSource)
+            } else if (resolvedSource is com.intellij.psi.PsiDirectory) {
+                // If it's a directory, it might be a package.
+                // For 'from . import domain', domain might be a file in that directory.
+                fromImport.importElements.forEach { importElement ->
+                    val name = importElement.importedQName?.lastComponent
+                    if (name != null) {
+                        val child = resolvedSource.findFile("$name.py") ?: resolvedSource.findSubdirectory(name)
+                            ?.findFile("__init__.py")
+                        if (child is PyFile) {
+                            result.add(child)
+                        }
+                    }
+                }
+            }
+
+            // from . import module
+            fromImport.importElements.forEach { importElement ->
+                // Try resolving the reference of the import element itself
+                val reference = importElement.reference
+                if (reference != null) {
+                    val resolvedElement = reference.resolve()
+                    if (resolvedElement is PyFile) {
+                        result.add(resolvedElement)
+                    } else if (reference is com.intellij.psi.PsiPolyVariantReference) {
+                        val resolveResults = reference.multiResolve(false)
+                        for (resolveResult in resolveResults) {
+                            val element = resolveResult.element
+                            if (element is PyFile) {
+                                result.add(element)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return result.toList()
+    }
+
+    class QualifyReferenceQuickFix(private val moduleName: String) : LocalQuickFix {
+        override fun getFamilyName(): String = "Qualify with '$moduleName.'"
+
+        override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
+            val element = descriptor.psiElement as? PyReferenceExpression ?: return
+            val generator = PyElementGenerator.getInstance(project)
+            val qualifiedExpression =
+                generator.createExpressionFromText(LanguageLevel.forElement(element), "$moduleName.${element.name}")
+            element.replace(qualifiedExpression)
         }
     }
 
