@@ -2,6 +2,9 @@
 
 ## Pending Issues
 
+- [ ] refactor: PyUnresolvedReferenceAsErrorInspection, lots of strings (?)
+- [ ] fix: Create local variable adds second line `MyClass`
+- [ ] fix: Do not inspect relative Imports for missing root prefix 
 - [ ] refactor: Use module name in PyPackageRunLineMarkerContributor, also strip __main__, other special cases?
 - [ ] refactor: Is doing PyAllExportUtil too much string magic?
 - [ ] refactor: why do we need a different check during tests? `PyWrapHeuristics.isProtocol`
