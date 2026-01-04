@@ -14,7 +14,6 @@
 
 ## Pending Features
 
-- [ ] feat: Narrow down search for Go to implementation by containing class name, PY-82520, specs/go-to-impl.md
 - [ ] feat: Limit go to usages search in current (sub) directories, PY-56862
 - [ ] feat: Prefer relative imports also when using move refactoring, blocked
   by https://youtrack.jetbrains.com/issue/PY-86616/PyMoveModuleMembersProcessor-does-not-emit-events
@@ -51,7 +50,6 @@
 - [ ] feat: quick fix to remove unresolved import from __all__
 - [ ] feat: Turn into type checking import
 - [ ] roots: adopt when moving files
-- [ ] roots: mark as unresolved reference without
 - [ ] feat: populate union (docs/populate/populate-union.md)
 - [ ] Copy pydantic mock?
 - [ ] feat: Wrap default/default_factory after introducing custom type in dataclass/pydantic
@@ -69,6 +67,7 @@
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Narrow down search for Go to implementation by containing class name, PY-82520, specs/go-to-impl.md
 - [x] feat: search everywhere: search for partial matches in pytest node ids
 - [N] feat: highlight failed line in pytest test, spec/pytest/highlight-failed-line.md -> Blocked, not possible
 - [x] feat: Add strict version of source roots and mark as unresolved references if missing + quickfix
