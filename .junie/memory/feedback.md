@@ -302,3 +302,35 @@
     "NEW INSTRUCTION": "WHEN importing top-level module from test source root without root prefix THEN register problem and offer prepend root quick-fix"
 }
 
+[2026-01-04 00:04] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "pytest test URL",
+    "EXPECTATION": "getTestUrl must include the package-qualified module name (e.g., 'tests.test_single_fail'), not just the bare module.",
+    "NEW INSTRUCTION": "WHEN generating PyTest test URL THEN include package-qualified module path including top-level package"
+}
+
+[2026-01-04 00:17] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "pytest test URL",
+    "EXPECTATION": "getTestUrl must use the test root in the protocol and include the package-qualified module name (e.g., 'tests.test_single_fail').",
+    "NEW INSTRUCTION": "WHEN building python<...> test URL THEN use test root path and package-qualified module name"
+}
+
+[2026-01-04 08:54] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "failed line parsing",
+    "EXPECTATION": "Compute the failing line from pytest output when TestStateStorage.failedLine is -1.",
+    "NEW INSTRUCTION": "WHEN failedLine equals -1 in TestStateStorage record THEN derive failing line using custom PyTest stacktrace parser"
+}
+
+[2026-01-04 09:01] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "failed line parsing",
+    "EXPECTATION": "Compute and store the failing line for Python/pytests instead of leaving TestStateStorage.failedLine at -1.",
+    "NEW INSTRUCTION": "WHEN python test run reports failure THEN parse pytest traceback and set failedLine from 'file:line'"
+}
+

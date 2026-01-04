@@ -2,7 +2,6 @@ package com.github.chbndrhnns.intellijplatformplugincopy.settings
 
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.FeatureCheckboxBuilder.featureRow
 import com.intellij.openapi.extensions.BaseExtensionPointName
-import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.ui.DialogPanel
@@ -16,7 +15,7 @@ class InspectionsConfigurable : BoundConfigurable("Inspections"), Configurable.W
     private val registry = FeatureRegistry.instance()
 
     override fun getDependencies(): Collection<BaseExtensionPointName<*>> {
-        return listOf(ExtensionPointName.create<Any>("com.intellij.localInspection"))
+        return emptyList()
     }
 
     override fun createPanel(): DialogPanel {
@@ -36,6 +35,8 @@ class InspectionsConfigurable : BoundConfigurable("Inspections"), Configurable.W
                 registry.getFeature("shadowing-stdlib-module-inspection")
                     ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
                 registry.getFeature("unresolved-reference-as-error-inspection")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("highlight-failed-test-line")
                     ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
             }
         }.asDialogPanel()

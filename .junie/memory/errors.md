@@ -238,3 +238,83 @@
     "NEW INSTRUCTION": "WHEN import resolves to file directly under a source or test root THEN register problem and offer prepend source root quickfix"
 }
 
+[2026-01-03 23:51] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "get_file_structure",
+    "ERROR": "File not found at given path",
+    "ROOT CAUSE": "The requested file path was incorrect; the file lives under fixtures/ not the package path.",
+    "PROJECT NOTE": "Test base classes are under src/test/kotlin/fixtures/, not under com/... package paths.",
+    "NEW INSTRUCTION": "WHEN get_file_structure reports file does not exist THEN retry using suggested candidate path"
+}
+
+[2026-01-03 23:52] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "create",
+    "ERROR": "Test references undefined PyTestFailedLineInspection",
+    "ROOT CAUSE": "The newly added test enables PyTestFailedLineInspection which does not exist yet, causing semantic errors.",
+    "PROJECT NOTE": "Inspection classes must exist under src/main and have a description in src/main/resources/inspectionDescriptions/<ShortName>.html to satisfy tests.",
+    "NEW INSTRUCTION": "WHEN adding tests that enable a new inspection THEN add a minimal inspection class and description first"
+}
+
+[2026-01-03 23:53] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "create",
+    "ERROR": "Test references undefined inspection class",
+    "ROOT CAUSE": "The test enables PyTestFailedLineInspection which has not been implemented yet.",
+    "PROJECT NOTE": "Add src/main/kotlin/.../pytest/PyTestFailedLineInspection.kt and src/main/resources/inspectionDescriptions/PyTestFailedLineInspection.html, then register in plugin.xml.",
+    "NEW INSTRUCTION": "WHEN a test enables a new inspection class THEN add minimal class and description before tests"
+}
+
+[2026-01-04 00:04] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "getTestUrl",
+    "ERROR": "Missing package in test URL qualified name",
+    "ROOT CAUSE": "The qualified name is built from the file name only, omitting the package path under the test root.",
+    "PROJECT NOTE": "PyCharm expects URLs like python<root>://qualified.name; compute qualified.name via element.getQName(project) (or a PyQualifiedNameProvider) so 'tests.' and nested packages/classes are included.",
+    "NEW INSTRUCTION": "WHEN building python test URL THEN compute FQN via element.getQName(project)"
+}
+
+[2026-01-04 00:18] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "getTestUrl",
+    "ERROR": "Used content root instead of tests source root",
+    "ROOT CAUSE": "getTestUrl uses the module content root for the URL protocol, but PyCharm expects the source/test root (e.g., tests) inside the python<...> protocol.",
+    "PROJECT NOTE": "For files under tests/, the protocol should be python</.../PyCharmMiscProject/tests>; obtain it via ProjectFileIndex.getSourceRootForFile(file) (or the test root type) and only fall back to content root if null.",
+    "NEW INSTRUCTION": "WHEN protocol root equals module content root for a test file THEN use source/test root from ProjectFileIndex.getSourceRootForFile"
+}
+
+[2026-01-04 00:21] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "getTestUrl",
+    "ERROR": "URL misses source root and full qualified name",
+    "ROOT CAUSE": "The URL uses the content root and filename-only instead of the tests source root and element-qualified name.",
+    "PROJECT NOTE": "Build URL as python<sourceRoot>://<qualified.name>; get sourceRoot via ProjectFileIndex.getSourceRootForFile(file) (fallback to content root if null) and qualified.name via element.getQName(project).",
+    "NEW INSTRUCTION": "WHEN building python test URL THEN use source root and element.getQName(project)"
+}
+
+[2026-01-04 09:02] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Unresolved reference 'copy' on TestStateStorage.Record",
+    "ROOT CAUSE": "Kotlin data-class copy() was used on a Java class that doesn't provide it.",
+    "PROJECT NOTE": "In TestFailureListener.updateFailedLine, do not call record.copy; instead construct a new TestStateStorage.Record with the original record's fields and the updated failedLine, then call writeState(url, newRecord).",
+    "NEW INSTRUCTION": "WHEN code calls record.copy on TestStateStorage.Record THEN create new Record with updated failedLine"
+}
+
+[2026-01-04 09:04] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Unresolved reference 'stackTrace' in TestFailureListener.kt",
+    "ROOT CAUSE": "Used a Kotlin-style property that doesn't exist; Java API exposes getStacktrace() (lowercase t).",
+    "PROJECT NOTE": "TestStateStorage.Record is a Java class; use explicit getters like getStacktrace() when property naming/casing differs.",
+    "NEW INSTRUCTION": "WHEN accessing TestStateStorage.Record stack trace THEN use record.getStacktrace() instead of stackTrace"
+}
+

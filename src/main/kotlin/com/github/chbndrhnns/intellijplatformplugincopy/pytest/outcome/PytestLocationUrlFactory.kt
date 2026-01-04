@@ -13,9 +13,9 @@ object PytestLocationUrlFactory {
         val parentDir = virtualFile.parent ?: return null
         val parentDirPath = parentDir.path
         val parentDirName = parentDir.name
-
-        // Prepend the parent directory name to the qualified name
-        val fullQName = "$parentDirName.$qName"
+        
+        // Prepend the parent directory name to the qualified name only if it's not already there
+        val fullQName = if (qName.startsWith("$parentDirName.")) qName else "$parentDirName.$qName"
         return "python<$parentDirPath>://$fullQName"
     }
 }

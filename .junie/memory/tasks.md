@@ -358,3 +358,23 @@
     "NEW INSTRUCTION": "WHEN adding a new inspection class THEN add description and register it in plugin.xml"
 }
 
+[2026-01-03 23:54] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "implement service, implement inspection, register in plugin.xml, run tests",
+    "BOTTLENECK": "Service/inspection not implemented or registered, so highlighting cannot occur.",
+    "PROJECT NOTE": "Use spec/pytest/highlight-failed-line.md and PytestNodeIdGenerator to derive correct test URLs via PyTestsLocator.",
+    "NEW INSTRUCTION": "WHEN a test references PyTestFailedLineInspection THEN implement and register the inspection in plugin.xml"
+}
+
+[2026-01-04 09:04] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "research console properties",
+    "MISSING STEPS": "run build, verify API usage, add tests",
+    "BOTTLENECK": "Assumed TestStateStorage.Record fields without verifying actual SDK API.",
+    "PROJECT NOTE": "TestStateStorage.Record is a Java class without copy(); use constructor and available getters.",
+    "NEW INSTRUCTION": "WHEN editing code that writes TestStateStorage records THEN run build and adapt to Record API using getters"
+}
+
