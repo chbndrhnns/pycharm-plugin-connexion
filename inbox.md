@@ -3,8 +3,6 @@
 ## Pending Issues
 
 - [ ] refactor: PyUnresolvedReferenceAsErrorInspection, lots of strings (?)
-- [ ] fix: Create local variable adds second line `MyClass`
-- [ ] fix: Do not inspect relative Imports for missing root prefix 
 - [ ] refactor: Use module name in PyPackageRunLineMarkerContributor, also strip __main__, other special cases?
 - [ ] refactor: Is doing PyAllExportUtil too much string magic?
 - [ ] refactor: why do we need a different check during tests? `PyWrapHeuristics.isProtocol`
@@ -70,6 +68,8 @@
 
 ## Completed Tasks (newest first)
 
+- [ ] fix: Create local variable adds second line `MyClass`
+- [x] fix: Do not inspect relative Imports for missing root prefix
 - [x] feat: Narrow down search for Go to implementation by containing class name, PY-82520, specs/go-to-impl.md
 - [x] feat: search everywhere: search for partial matches in pytest node ids
 - [N] feat: highlight failed line in pytest test, spec/pytest/highlight-failed-line.md -> Blocked, not possible
