@@ -103,6 +103,8 @@
         <runLineMarkerContributor language="Python"
                                   implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.run.PyPackageRunLineMarkerContributor"/>
 
+        <gotoTargetPresentationProvider implementation="com.github.chbndrhnns.intellijplatformplugincopy.navigation.PyGotoTargetPresentationProvider"/>
+
         <notificationGroup id="BetterPy" displayType="BALLOON" isLogByDefault="true"/>
         <notificationGroup id="BetterPy Notifications" displayType="BALLOON" isLogByDefault="true"/>
 

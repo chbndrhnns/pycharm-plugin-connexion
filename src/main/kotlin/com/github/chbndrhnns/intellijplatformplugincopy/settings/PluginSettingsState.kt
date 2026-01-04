@@ -446,6 +446,14 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         )
         var enablePythonNavigationBar: Boolean = true,
 
+        @Feature(
+            id = "py-goto-target-presentation",
+            displayName = "Enhanced Go to Implementation presentation",
+            description = "Prepends class name to method name in Go to Implementation popup when names are identical",
+            category = FeatureCategory.NAVIGATION
+        )
+        var enablePyGotoTargetPresentation: Boolean = true,
+
         // ---- Filters & Suppressors ----
         @Feature(
             id = "type-annotation-usage-filtering",

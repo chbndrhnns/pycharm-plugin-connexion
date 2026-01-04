@@ -70,6 +70,7 @@ abstract class TestBase : MyPlatformTestCase() {
                 enableExportSymbolToTargetIntention = true,
                 enablePyPackageRunConfigurationAction = true,
                 enableRenameToSelfFilter = true,
+                enablePyGotoTargetPresentation = true,
                 defaultParameterObjectBaseType = "dataclass",
             ),
         )
