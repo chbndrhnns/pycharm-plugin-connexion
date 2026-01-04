@@ -370,20 +370,6 @@
                 level="WARNING"
                 implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.imports.PyStrictSourceRootImportInspection"/>
 
-        <localInspection
-                language="Python"
-                shortName="PyTestFailedLineInspection"
-                displayName="BetterPy: Test failed line"
-                groupPath="Python"
-                groupName="Python"
-                enabledByDefault="true"
-                level="WARNING"
-                implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.pytest.failedline.PyTestFailedLineInspection"/>
-
-        <projectService
-                serviceInterface="com.intellij.testIntegration.TestFailedLineManager"
-                serviceImplementation="com.github.chbndrhnns.intellijplatformplugincopy.pytest.failedline.PyTestFailedLineManagerImpl"/>
-
         <renamePsiElementProcessor
                 implementation="com.github.chbndrhnns.intellijplatformplugincopy.refactoring.PyShadowingStdlibRenameProcessor"
                 order="first"/>
