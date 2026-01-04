@@ -378,3 +378,33 @@
     "NEW INSTRUCTION": "WHEN editing code that writes TestStateStorage records THEN run build and adapt to Record API using getters"
 }
 
+[2026-01-04 19:49] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "register listener,verify end-to-end run,validate test URL mapping",
+    "BOTTLENECK": "The SMTRunnerEventsListener likely isn’t registered, so updates never execute.",
+    "PROJECT NOTE": "Subscribe TestFailureListener to SMTRunnerEventsListener.TOPIC (project.messageBus) or appropriate EP.",
+    "NEW INSTRUCTION": "WHEN SMTRunner events are not received during real test runs THEN register SMTRunnerEventsListener via project message bus at project startup"
+}
+
+[2026-01-04 20:51] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "open file, run build",
+    "BOTTLENECK": "Edits were attempted without inspecting the existing contributor/resolver, leading to incomplete changes.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN planning to modify PytestIdentifierContributor THEN open and review contributor and resolver files"
+}
+
+[2026-01-04 21:03] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "implement partial name search",
+    "MISSING STEPS": "support partial node ids,add tests for partial node ids,confirm symbols contributor coverage",
+    "BOTTLENECK": "Misinterpreted requirement as partial name search instead of partial node id resolution.",
+    "PROJECT NOTE": "Resolver currently requires exact file names with .py; it won’t match node ids missing extension or directories.",
+    "NEW INSTRUCTION": "WHEN pattern contains '::' without '.py' THEN resolve using filename without extension in resolver"
+}
+

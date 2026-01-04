@@ -334,3 +334,27 @@
     "NEW INSTRUCTION": "WHEN python test run reports failure THEN parse pytest traceback and set failedLine from 'file:line'"
 }
 
+[2026-01-04 19:30] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "failedLine propagation",
+    "EXPECTATION": "After updating TestStateStorage with the new failedLine, getTestInfo should read the updated value instead of -1.",
+    "NEW INSTRUCTION": "WHEN updating failed line via listener THEN ensure locationUrl equals getTestUrl used by getTestInfo"
+}
+
+[2026-01-04 19:46] - Updated by Junie
+{
+    "TYPE": "negative",
+    "CATEGORY": "failed line still -1",
+    "EXPECTATION": "Parsing and storage must result in a non -1 failedLine, written under the exact URL key that getTestInfo later reads.",
+    "NEW INSTRUCTION": "WHEN writing failedLine to TestStateStorage THEN compute URL via PytestLocationUrlFactory matching getTestInfo"
+}
+
+[2026-01-04 21:00] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "partial match scope",
+    "EXPECTATION": "Support partial matches for pytest node ids rather than generic function/class names.",
+    "NEW INSTRUCTION": "WHEN adding partial search for pytest contributor THEN match segments of node ids (file::class::test)"
+}
+

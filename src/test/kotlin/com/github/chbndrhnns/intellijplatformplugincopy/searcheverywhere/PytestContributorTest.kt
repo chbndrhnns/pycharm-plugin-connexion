@@ -68,6 +68,45 @@ class PytestContributorTest : TestBase() {
         assertEquals("test_", (element as PyFunction).name)
     }
 
+    fun `test resolve partial node id`() {
+        myFixture.addFileToProject("tests/__init__.py", "")
+        myFixture.addFileToProject(
+            "tests/test_partial_node.py", """
+            def test_func():
+                pass
+        """.trimIndent()
+        )
+
+        val contributor = PytestIdentifierContributor(project)
+
+        // Case 1: filename without extension
+        val results1 = search(contributor, "test_partial_node::test_func")
+        assertSize(1, results1)
+        assertEquals("test_func", (results1[0].item as PyFunction).name)
+
+        // Case 2: filename with extension but no path
+        val results2 = search(contributor, "test_partial_node.py::test_func")
+        assertSize(1, results2)
+        assertEquals("test_func", (results2[0].item as PyFunction).name)
+
+        // Case 3: partial filename matching
+        val results3 = search(contributor, "partial_node::func")
+        assertSize(1, results3)
+        assertEquals("test_func", (results3[0].item as PyFunction).name)
+
+        // Case 4: skipped class name
+        myFixture.addFileToProject(
+            "tests/test_skip.py", """
+            class TestClass:
+                def test_skipped_class(self):
+                    pass
+        """.trimIndent()
+        )
+        val results4 = search(contributor, "test_skip::test_skipped_class")
+        assertSize(1, results4)
+        assertEquals("test_skipped_class", (results4[0].item as PyFunction).name)
+    }
+
     private fun search(
         contributor: WeightedSearchEverywhereContributor<PsiElement>,
         pattern: String

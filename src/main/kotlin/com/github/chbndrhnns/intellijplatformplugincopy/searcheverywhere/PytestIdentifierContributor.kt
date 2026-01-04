@@ -48,15 +48,14 @@ class PytestIdentifierContributor(private val myProject: Project) : WeightedSear
         if (!PluginSettingsState.instance().state.enablePytestIdentifierSearchEverywhereContributor) {
             return
         }
-        if (!pattern.contains("::")) {
-            return
-        }
 
         ApplicationManager.getApplication().runReadAction {
-            val resolver = PytestIdentifierResolver(myProject)
-            val element = resolver.resolve(pattern)
-            if (element != null) {
-                consumer.process(FoundItemDescriptor(element, 1000))
+            if (pattern.contains("::")) {
+                val resolver = PytestIdentifierResolver(myProject)
+                val elements = resolver.resolveAll(pattern)
+                for (element in elements) {
+                    consumer.process(FoundItemDescriptor(element, 1000))
+                }
             }
         }
     }

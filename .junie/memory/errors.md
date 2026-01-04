@@ -318,3 +318,53 @@
     "NEW INSTRUCTION": "WHEN accessing TestStateStorage.Record stack trace THEN use record.getStacktrace() instead of stackTrace"
 }
 
+[2026-01-04 19:31] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "-",
+    "ERROR": "Updated state written under mismatching storage URL",
+    "ROOT CAUSE": "TestFailureListener writes with SMTestProxy.locationUrl while manager reads with PytestLocationUrlFactory URL, which can differ.",
+    "PROJECT NOTE": "Ensure all TestStateStorage keys use python<sourceRoot>://<qualified.name> (source root via ProjectFileIndex.getSourceRootForFile, FQN via element.getQName(project)).",
+    "NEW INSTRUCTION": "WHEN persisting failedLine from SMTestProxy THEN normalize locationUrl to factory-built pytest URL before write"
+}
+
+[2026-01-04 19:32] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "TestFailureListener.onTestFailed",
+    "ERROR": "Record overwritten later with failedLine -1",
+    "ROOT CAUSE": "The default test runner writes TestStateStorage after onTestFailed, resetting failedLine to -1.",
+    "PROJECT NOTE": "Normalize storage keys to python<sourceRoot>://<qualified.name> when reading/writing TestStateStorage.",
+    "NEW INSTRUCTION": "WHEN receiving onTestFinished for a failed test THEN update failedLine in TestStateStorage using normalized URL"
+}
+
+[2026-01-04 19:34] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "TestFailureListener.onTestFailed",
+    "ERROR": "Record overwritten by default runner after onTestFailed",
+    "ROOT CAUSE": "Writing failedLine in onTestFailed is later overwritten by the SM runner which stores -1 on finish.",
+    "PROJECT NOTE": "Move failedLine write to onTestFinished for failed tests and use the normalized pytest URL (python<sourceRoot>://<qualified.name>).",
+    "NEW INSTRUCTION": "WHEN onTestFinished fires for a failed SMTestProxy THEN write failedLine using normalized pytest URL"
+}
+
+[2026-01-04 19:48] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "TestFailureListener.updateFailedLine",
+    "ERROR": "failedLine written under mismatching storage URL",
+    "ROOT CAUSE": "Listener writes using SMTestProxy.locationUrl while reader uses PytestLocationUrlFactory URL, so records don't match and -1 persists.",
+    "PROJECT NOTE": "Always normalize storage keys to python<sourceRoot>://<qualified.name> (source root via ProjectFileIndex.getSourceRootForFile, FQN via element.getQName(project)) before TestStateStorage.writeState; do not use raw SMTestProxy.locationUrl.",
+    "NEW INSTRUCTION": "WHEN writing failedLine from SMTestProxy THEN convert locationUrl to PytestLocationUrlFactory URL before write"
+}
+
+[2026-01-04 20:49] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "run_test",
+    "ERROR": "Test failed: partial match search returned 0 results",
+    "ROOT CAUSE": "PytestIdentifierContributor only handles exact identifiers with '::' and lacks partial search.",
+    "PROJECT NOTE": "In PytestIdentifierContributor.fetchWeightedElements, remove the strict '::' gating and implement name-contains matching over PyFunction/PyClass elements for pytest tests.",
+    "NEW INSTRUCTION": "WHEN search pattern lacks '::' THEN find pytest PyFunction/PyClass names containing pattern and return"
+}
+
