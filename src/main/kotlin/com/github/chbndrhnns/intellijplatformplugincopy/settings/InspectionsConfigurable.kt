@@ -20,23 +20,23 @@ class InspectionsConfigurable : BoundConfigurable("Inspections"), Configurable.W
     }
 
     override fun createPanel(): DialogPanel {
-        return createFilterableFeaturePanel { visibleMaturities ->
+        return createFilterableFeaturePanel { visibleMaturities, searchTerm ->
             // All inspections are in the INSPECTIONS category
             group("Code Quality Inspections") {
                 registry.getFeature("missing-in-dunder-all-inspection")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
                 registry.getFeature("dataclass-missing-inspection")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
                 registry.getFeature("private-module-import-inspection")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
                 registry.getFeature("abstract-method-not-implemented-inspection")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
                 registry.getFeature("constant-final-inspection")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
                 registry.getFeature("shadowing-stdlib-module-inspection")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
                 registry.getFeature("unresolved-reference-as-error-inspection")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
             }
         }.asDialogPanel()
     }

@@ -368,3 +368,13 @@
     "NEW INSTRUCTION": "WHEN search pattern lacks '::' THEN find pytest PyFunction/PyClass names containing pattern and return"
 }
 
+[2026-01-04 21:37] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Argument type mismatch after signature change",
+    "ROOT CAUSE": "The panel's contentBuilder was changed to take (maturities, searchTerm) but the factory still accepted the old function type.",
+    "PROJECT NOTE": "In settings/FilterableFeaturePanel.kt, keep createFilterableFeaturePanel's function type in sync with FilterableFeaturePanel's contentBuilder and update all Configurable call sites to pass searchTerm.",
+    "NEW INSTRUCTION": "WHEN Kotlin reports function type mismatch after edits THEN align factory signature and update all call sites"
+}
+

@@ -13,60 +13,65 @@ class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
     private val registry = FeatureRegistry.instance()
 
     override fun createPanel(): DialogPanel {
-        return createFilterableFeaturePanel { visibleMaturities ->
+        return createFilterableFeaturePanel { visibleMaturities, searchTerm ->
             // Copy/Clipboard Actions
             group("Copy/Clipboard Actions") {
                 registry.getFeature("copy-package-content")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
-                registry.getFeature("copy-build-number")?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
+                registry.getFeature("copy-build-number")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
                 registry.getFeature("copy-block-with-dependencies")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
                 registry.getFeature("copy-pytest-node-ids")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
                 registry.getFeature("copy-pytest-node-id-from-editor")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
-                registry.getFeature("copy-fqns")?.let { featureRow(it, visibleMaturities = visibleMaturities) }
-                registry.getFeature("copy-stacktrace")?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
+                registry.getFeature("copy-fqns")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
+                registry.getFeature("copy-stacktrace")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
             }
 
             // Refactoring Actions
             group("Refactoring Actions") {
                 registry.getFeature("introduce-parameter-object")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
                 registry.getFeature("inline-parameter-object")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
             }
 
             // Pytest Actions
             group("Pytest Actions") {
                 registry.getFeature("jump-to-pytest-node-in-test-tree")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
                 registry.getFeature("toggle-pytest-skip-from-test-tree")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
             }
 
             // Completion & Reference Contributors
             group("Completion & References") {
-                registry.getFeature("return-completion")?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("return-completion")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
                 registry.getFeature("mock-patch-reference")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
                 registry.getFeature("filter-warnings-reference")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
                 registry.getFeature("pytest-identifier-search-everywhere")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
             }
 
             // Other Editor Features
             group("Other Editor Features") {
-                registry.getFeature("toggle-type-alias")?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                registry.getFeature("toggle-type-alias")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
                 registry.getFeature("export-symbol-to-target")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
                 registry.getFeature("newtype-typevar-paramspec-rename")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
                 registry.getFeature("type-annotation-usage-filtering")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
                 registry.getFeature("python-message-console-filter")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities) }
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
             }
         }.asDialogPanel()
     }

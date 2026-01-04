@@ -122,11 +122,20 @@ object FeatureCheckboxBuilder {
     fun Panel.featureRow(
         feature: FeatureRegistry.FeatureInfo,
         labelOverride: String? = null,
-        visibleMaturities: Set<FeatureMaturity>? = null
+        visibleMaturities: Set<FeatureMaturity>? = null,
+        searchTerm: String = ""
     ) {
         // Skip if maturity filtering is active and this feature's maturity is not visible
         if (visibleMaturities != null && feature.maturity !in visibleMaturities) {
             return
+        }
+
+        // Skip if search term is active and doesn't match
+        if (searchTerm.isNotEmpty()) {
+            val matchesSearch = feature.displayName.contains(searchTerm, ignoreCase = true) ||
+                    feature.description.contains(searchTerm, ignoreCase = true) ||
+                    (labelOverride?.contains(searchTerm, ignoreCase = true) ?: false)
+            if (!matchesSearch) return
         }
 
         row {

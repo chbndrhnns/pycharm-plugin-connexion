@@ -15,7 +15,7 @@ import javax.swing.ScrollPaneConstants
  */
 class FilterableFeaturePanel(
     private val showHidden: Boolean = false,
-    private val contentBuilder: Panel.(visibleMaturities: Set<FeatureMaturity>) -> Unit
+    private val contentBuilder: Panel.(visibleMaturities: Set<FeatureMaturity>, searchTerm: String) -> Unit
 ) : JPanel(BorderLayout()) {
 
     private val contentPanel = JPanel(BorderLayout())
@@ -24,6 +24,7 @@ class FilterableFeaturePanel(
     } else {
         setOf(FeatureMaturity.STABLE, FeatureMaturity.INCUBATING, FeatureMaturity.DEPRECATED)
     }
+    private var currentSearchTerm: String = ""
 
     private val filterPanel = MaturityFilterPanel(
         onFilterChanged = { maturities ->
@@ -34,11 +35,27 @@ class FilterableFeaturePanel(
         initialSelection = currentMaturities
     )
 
+    private val searchField = com.intellij.ui.SearchTextField().apply {
+        addDocumentListener(object : com.intellij.ui.DocumentAdapter() {
+            override fun textChanged(e: javax.swing.event.DocumentEvent) {
+                currentSearchTerm = text.trim()
+                rebuildContent()
+            }
+        })
+    }
+
     init {
         border = JBUI.Borders.empty()
 
-        // Add filter panel at the top
-        add(filterPanel, BorderLayout.NORTH)
+        val topPanel = JPanel(BorderLayout()).apply {
+            isOpaque = false
+            add(filterPanel, BorderLayout.WEST)
+            add(searchField, BorderLayout.CENTER)
+            border = JBUI.Borders.empty(0, 0, 8, 0)
+        }
+
+        // Add top panel
+        add(topPanel, BorderLayout.NORTH)
 
         // Add scrollable content area
         val scrollPane = JBScrollPane(contentPanel).apply {
@@ -56,7 +73,7 @@ class FilterableFeaturePanel(
         contentPanel.removeAll()
 
         val newPanel = panel {
-            contentBuilder(currentMaturities)
+            contentBuilder(currentMaturities, currentSearchTerm)
         }
 
         contentPanel.add(newPanel, BorderLayout.NORTH)
@@ -89,7 +106,7 @@ class FilterableFeaturePanel(
  */
 fun createFilterableFeaturePanel(
     showHidden: Boolean = false,
-    contentBuilder: Panel.(visibleMaturities: Set<FeatureMaturity>) -> Unit
+    contentBuilder: Panel.(visibleMaturities: Set<FeatureMaturity>, searchTerm: String) -> Unit
 ): FilterableFeaturePanel {
     return FilterableFeaturePanel(showHidden, contentBuilder)
 }

@@ -418,3 +418,13 @@
     "NEW INSTRUCTION": "WHEN registering new extension in plugin.xml THEN write failing targeted test and run tests"
 }
 
+[2026-01-04 21:38] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "update all configurables, propagate filtering in builders, run build",
+    "BOTTLENECK": "Signature change to shared panel required widespread updates not performed yet.",
+    "PROJECT NOTE": "createFilterableFeaturePanel now passes searchTerm; update all usages and thread searchTerm through FeatureCheckboxBuilder helpers and group builders so groups skip non-matching items.",
+    "NEW INSTRUCTION": "WHEN modifying shared UI API used by multiple configurables THEN update all call sites and related builders, then run build"
+}
+

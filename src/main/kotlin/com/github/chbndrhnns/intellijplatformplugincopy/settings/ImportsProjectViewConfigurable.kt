@@ -6,7 +6,6 @@ import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.dsl.builder.bindSelected
-import com.intellij.ui.dsl.builder.panel
 
 class ImportsProjectViewConfigurable : BoundConfigurable("Imports & Project View"), Configurable.WithEpDependencies {
     private val settings = PluginSettingsState.instance().state
@@ -20,23 +19,39 @@ class ImportsProjectViewConfigurable : BoundConfigurable("Imports & Project View
     }
 
     override fun createPanel(): DialogPanel {
-        return panel {
-            row {
-                checkBox("‘Restore Source Root Prefix’ in imports")
-                    .bindSelected(settings::enableRestoreSourceRootPrefix)
+        return createFilterableFeaturePanel { _, searchTerm ->
+            group("Imports") {
+                row {
+                    val label = "‘Restore Source Root Prefix’ in imports"
+                    if (searchTerm.isEmpty() || label.contains(searchTerm, ignoreCase = true)) {
+                        checkBox(label)
+                            .bindSelected(settings::enableRestoreSourceRootPrefix)
+                    }
+                }
+                row {
+                    val label = "‘Prefer relative imports’ in auto-import"
+                    if (searchTerm.isEmpty() || label.contains(searchTerm, ignoreCase = true)) {
+                        checkBox(label)
+                            .bindSelected(settings::enableRelativeImportPreference)
+                    }
+                }
+                row {
+                    val label = "Hide transient dependency imports (only show direct dependencies)"
+                    if (searchTerm.isEmpty() || label.contains(searchTerm, ignoreCase = true)) {
+                        checkBox(label)
+                            .bindSelected(settings::enableHideTransientImports)
+                    }
+                }
             }
-            row {
-                checkBox("‘Prefer relative imports’ in auto-import")
-                    .bindSelected(settings::enableRelativeImportPreference)
+            group("Project View") {
+                row {
+                    val label = "‘Show Private Members’ filter in Structure View"
+                    if (searchTerm.isEmpty() || label.contains(searchTerm, ignoreCase = true)) {
+                        checkBox(label)
+                            .bindSelected(settings::enableStructureViewPrivateMembersFilter)
+                    }
+                }
             }
-            row {
-                checkBox("‘Show Private Members’ filter in Structure View")
-                    .bindSelected(settings::enableStructureViewPrivateMembersFilter)
-            }
-            row {
-                checkBox("Hide transient dependency imports (only show direct dependencies)")
-                    .bindSelected(settings::enableHideTransientImports)
-            }
-        }
+        }.asDialogPanel()
     }
 }
