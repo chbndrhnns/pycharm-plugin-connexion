@@ -15,16 +15,13 @@
 
 ## Pending Features
 
-- [ ] feat: Limit go to usages search in current (sub) directories, PY-56862
 - [ ] feat: Prefer relative imports also when using move refactoring, blocked
   by https://youtrack.jetbrains.com/issue/PY-86616/PyMoveModuleMembersProcessor-does-not-emit-events
 - [ ] refactor: Use `PythonDependenciesManager` if public
 - [ ] refactor: Do not use reflection to filter import suggestions
-- [ ] feat: Re-use import for qualified names
 - [ ] feat: Discover if pydantic v2 is installed and show parameter object option only in this case
 - [ ] feat: If callable is expected, complete without parens
 - [ ] feat: Transform between lambda, function, partial
-- [ ] feat: Import should reuse existing module import (domain.ABC, domain.DEFG)
 - [ ] feat: Render quick doc for pydantic/dataclass, showing inherited members, as well
 - [ ] feat: In case of unexpected type, offer cast to the expected type
 - [S] feat: Turn dict into dataclass/pydantic model (spec/upgrade-dict.md)
@@ -68,6 +65,7 @@
 
 ## Completed Tasks (newest first)
 
+- [N] feat: Limit go to usages search in current (sub) directories, PY-56862, seems useless to me
 - [x] fix: Create local variable adds second line `MyClass`
 - [x] fix: Do not inspect relative Imports for missing root prefix
 - [x] feat: Narrow down search for Go to implementation by containing class name, PY-82520, specs/go-to-impl.md
