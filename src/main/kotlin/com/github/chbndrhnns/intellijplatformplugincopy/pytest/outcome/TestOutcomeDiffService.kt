@@ -42,19 +42,14 @@ class TestOutcomeDiffService() {
             if (data != null) return Pair(data, prefixMatch)
         }
 
-        // Fallback: match by qualified name only (the part after ://)
-        // This handles cases where the path in angle brackets differs
-        val qNamePart = baseLocationUrl.substringAfter("://", "")
-        if (qNamePart.isNotEmpty()) {
-            val matchedKey = diffs.keys.firstOrNull { storedKey ->
-                storedKey.substringAfter("://", "") == qNamePart
-            }
-            if (matchedKey != null) {
-                val data = diffs[matchedKey]
-                if (data != null) return Pair(data, matchedKey)
-            }
-        }
+        return null
+    }
 
+    fun findWithKeys(baseLocationUrls: List<String>, explicitKey: String?): Pair<OutcomeDiff, String>? {
+        for (url in baseLocationUrls) {
+            val result = findWithKey(url, explicitKey)
+            if (result != null) return result
+        }
         return null
     }
 

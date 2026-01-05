@@ -29,8 +29,9 @@ class UseActualOutcomeUseCase(
         if (!name.startsWith("test_")) return false
 
         // Only show intention if diff data exists for this test
-        val locationUrl = PytestLocationUrlFactory.fromPyFunction(pyFunction) ?: return false
-        return diffService.findWithKey(locationUrl, explicitKey = null) != null
+        val locationUrls = PytestLocationUrlFactory.fromPyFunction(pyFunction)
+        if (locationUrls.isEmpty()) return false
+        return diffService.findWithKeys(locationUrls, explicitKey = null) != null
     }
 
     fun invoke(project: Project, editor: Editor, file: PsiFile, explicitTestKey: String?) {
@@ -44,8 +45,9 @@ class UseActualOutcomeUseCase(
 
         val pyFunction = PsiTreeUtil.getParentOfType(assertStatement, PyFunction::class.java) ?: return
 
-        val locationUrl = PytestLocationUrlFactory.fromPyFunction(pyFunction) ?: return
-        val (diff, matchedKey) = diffService.findWithKey(locationUrl, explicitTestKey) ?: return
+        val locationUrls = PytestLocationUrlFactory.fromPyFunction(pyFunction)
+        if (locationUrls.isEmpty()) return
+        val (diff, matchedKey) = diffService.findWithKeys(locationUrls, explicitTestKey) ?: return
 
         replacementEngine.apply(project, assertStatement, diff, matchedKey)
     }
