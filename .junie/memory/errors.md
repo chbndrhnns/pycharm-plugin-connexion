@@ -518,3 +518,33 @@
     "NEW INSTRUCTION": "WHEN addProjectLibrary call shows type mismatch THEN use VirtualFile vararg overload with VirtualFile arguments"
 }
 
+[2026-01-05 15:00] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "ToggleTypeAliasIntention",
+    "ERROR": "Intention unavailable; isAvailable() returned false",
+    "ROOT CAUSE": "isAvailable() does not recognize Python 3.12 PEP 695 'type' alias syntax, so it never enables.",
+    "PROJECT NOTE": "Update ToggleTypeAliasIntention.isAvailable to handle PyTypeAliasStatement (PEP 695) when LanguageLevel >= PYTHON312 in src/main/kotlin/.../intention/typealias/ToggleTypeAliasIntention.kt.",
+    "NEW INSTRUCTION": "WHEN code contains PEP 695 'type' alias and PYTHON312+ THEN enable intention by recognizing PyTypeAliasStatement"
+}
+
+[2026-01-05 15:06] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "run_test",
+    "ERROR": "PythonMockSdk cannot find testData directory",
+    "ROOT CAUSE": "PythonMockSdk.createRoots reads a non-existent testData path (likely with stray whitespace), preventing proper SDK setup and making the intention unavailable.",
+    "PROJECT NOTE": "Check fixtures.PythonTestSetup/PythonMockSdk for the testData path; remove trailing whitespace and ensure a testData directory exists at the project root.",
+    "NEW INSTRUCTION": "WHEN test logs NoSuchFileException for testData in PythonMockSdk THEN fix path and ensure testData exists"
+}
+
+[2026-01-05 15:09] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "run_test",
+    "ERROR": "Missing testData directory for PythonMockSdk",
+    "ROOT CAUSE": "PythonMockSdk.createRoots reads project-root/testData but the directory is absent/misnamed, causing NoSuchFileException.",
+    "PROJECT NOTE": "Create a testData directory at the project root (src/testData if code expects that path) or update PythonMockSdk.kt (createRoots) to point to the actual test data location used by this repo.",
+    "NEW INSTRUCTION": "WHEN logs show NoSuchFileException for project-root/testData THEN create folder or fix SDK path in PythonMockSdk"
+}
+

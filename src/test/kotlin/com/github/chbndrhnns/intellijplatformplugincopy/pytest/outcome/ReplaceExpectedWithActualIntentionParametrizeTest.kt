@@ -18,13 +18,8 @@ class ReplaceExpectedWithActualIntentionParametrizeTest : TestBase() {
     }
 
     private fun buildKey(qName: String): String {
-        val file = myFixture.file
-        // SMTestProxy.locationUrl uses the parent directory path in angle brackets
-        // and prefixes the qName with the parent directory name (module name)
-        val parentDir = file.virtualFile.parent
-        val parentDirPath = parentDir.path
-        val parentDirName = parentDir.name
-        return "python<$parentDirPath>://$parentDirName.$qName"
+        val projectBasePath = project.basePath ?: return qName
+        return "python<$projectBasePath>://$qName"
     }
 
     fun `test intention supports parametrized test failure`() {
@@ -116,6 +111,7 @@ class ReplaceExpectedWithActualIntentionParametrizeTest : TestBase() {
 
         val intention = ReplaceExpectedWithActualIntention()
         val explicitKey = buildKey("test_param.test_str[case-2]")
+
         com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project) {
             intention.invokeWithTestKey(project, myFixture.editor, myFixture.file, explicitKey)
         }

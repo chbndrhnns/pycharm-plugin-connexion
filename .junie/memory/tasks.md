@@ -478,3 +478,13 @@
     "NEW INSTRUCTION": "WHEN task affects many intentions or inspections THEN scan project and list all targets first"
 }
 
+[2026-01-05 15:20] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "re-plan, speculative analysis, read code before reproducing",
+    "MISSING STEPS": "run test for each failure, verify fix after edit, run all tests",
+    "BOTTLENECK": "Fixes were made without immediately verifying by running the specific tests.",
+    "PROJECT NOTE": "Files under SDK roots are treated as library code; avoid placing temp test files under the SDK root to keep intentions available.",
+    "NEW INSTRUCTION": "WHEN SDK root overlaps test temp directory THEN create separate sdk subdirectory and use it as root"
+}
+
