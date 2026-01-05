@@ -27,7 +27,6 @@
 - [ ] feat: Render quick doc for pydantic/dataclass, showing inherited members, as well
 - [ ] feat: In case of unexpected type, offer cast to the expected type
 - [S] feat: Turn dict into dataclass/pydantic model (spec/upgrade-dict.md)
-- [ ] feat: Change visibility: make private (we only have two options and one is always true)
 - [ ] feat: Convert parametrized test to multiple unparametrized tests
 - [ ] feat: Add field to dataclass/model in case of unexpected argument
 - [ ] feat: Suggest expected type for container types, like `vals: set[MyType] = set(<caret>)`
@@ -67,6 +66,7 @@
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Change visibility: make private (we only have two options and one is always true)
 - [x] fix: Do not offer any feature in third-party code, library
 - [N] feat: Limit go to usages search in current (sub) directories, PY-56862, seems useless to me
 - [x] fix: Create local variable adds second line `MyClass`
