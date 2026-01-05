@@ -2,7 +2,6 @@
 
 ## Pending Issues
 
-- [ ] fix: Do not offer any feature in third-party code, library
 - [ ] fix: Should also offer Wrap: `do(Path("a<caret>bc"))` (253 vs 261?)
 - [ ] refactor: PyUnresolvedReferenceAsErrorInspection, lots of strings (?)
 - [ ] refactor: Use module name in PyPackageRunLineMarkerContributor, also strip __main__, other special cases?
@@ -60,6 +59,10 @@
 
 ## In Progress Tasks
 
+- [ ] fix: Do not offer any feature in third-party code, library
+  - [ ] testAnnotationToAliasPy312
+  - [ ] testImportedSymbolResolution
+  - [ ] `test intention prefers explicit test key when multiple parametrized diffs exist`
 - [ ] feat: Inline parameter object should ask to remove/other invocations
 - [-] feat: Move: Warn if test exists in target class already
 - [ ] feat: Block list: Do not allow names from typing or collections.abc.
