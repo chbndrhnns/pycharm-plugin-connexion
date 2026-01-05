@@ -19,41 +19,45 @@ import com.jetbrains.python.psi.resolve.RatedResolveResult
 import com.jetbrains.python.psi.types.TypeEvalContext
 
 object PyResolveUtils {
-    fun resolveDottedName(name: String, context: PsiElement, resolveImported: Boolean = true): PsiElement? {
+    fun resolveDottedName(name: String, context: PsiElement, resolveImported: Boolean = true): List<PsiElement> {
         val project = context.project
         val parts = name.split(".")
-        if (parts.isEmpty()) return null
+        if (parts.isEmpty()) return emptyList()
 
         val firstPart = parts[0]
-        var current: PsiElement? = findTopLevelModule(project, firstPart)
+        var current = findTopLevelModules(project, firstPart).toMutableList()
 
         // Check builtins if not found
-        if (current == null) {
-            val builtins = findTopLevelModule(project, "builtins")
-            if (builtins != null) {
-                val member = findMember(builtins, firstPart, resolveImported)
-                if (member != null) {
-                    current = member
-                }
+        if (current.isEmpty()) {
+            val builtinsList = findTopLevelModules(project, "builtins")
+            for (builtins in builtinsList) {
+                current.addAll(findMembers(builtins, firstPart, resolveImported))
             }
         }
 
-        var result = current ?: return null
+        if (current.isEmpty()) return emptyList()
+
+        var results = current.toList()
 
         for (i in 1 until parts.size) {
             val part = parts[i]
-            val next = findMember(result, part, resolveImported) ?: return null
-            result = next
+            val nextResults = mutableListOf<PsiElement>()
+            for (res in results) {
+                nextResults.addAll(findMembers(res, part, resolveImported))
+            }
+            if (nextResults.isEmpty()) return emptyList()
+            results = nextResults.distinct()
         }
-        return result
+        return results
     }
 
-    private fun findTopLevelModule(project: Project, name: String): PsiElement? {
+    private fun findTopLevelModules(project: Project, name: String): List<PsiElement> {
         val scope = GlobalSearchScope.allScope(project)
         val psiManager = PsiManager.getInstance(project)
         val includeSourceRootPrefix = PluginSettingsState.instance().state.enableRestoreSourceRootPrefix
         val fileIndex = ProjectFileIndex.getInstance(project)
         val rootManager = ProjectRootManager.getInstance(project)
+        val results = mutableListOf<PsiElement>()
 
         rootManager.contentSourceRoots.forEach { sourceRoot ->
             val contentRoot = fileIndex.getContentRootForFile(sourceRoot) ?: return@forEach
@@ -64,7 +68,7 @@ object PyResolveUtils {
 
             val firstComponent = prefixPath.substringBefore('.')
             if (firstComponent == name) {
-                psiManager.findDirectory(sourceRoot)?.let { return it }
+                psiManager.findDirectory(sourceRoot)?.let { results.add(it) }
             }
         }
 
@@ -76,7 +80,7 @@ object PyResolveUtils {
             // If it's in the SDK or library, we allow it if it's a top-level module there
             if (fileIndex.isInLibraryClasses(vf) || !fileIndex.isInContent(vf)) {
                 val file = psiManager.findFile(vf)
-                if (file is PyFile) return file
+                if (file is PyFile) results.add(file)
             }
 
             // Ensure the file is directly under a source root or content root
@@ -84,7 +88,7 @@ object PyResolveUtils {
             val contentRoot = fileIndex.getContentRootForFile(vf)
             if (sourceRoot == vf.parent || contentRoot == vf.parent) {
                 val file = psiManager.findFile(vf)
-                if (file is PyFile) return file
+                if (file is PyFile) results.add(file)
             }
         }
 
@@ -97,7 +101,7 @@ object PyResolveUtils {
                 // If it's in the SDK or library, we allow it
                 if (fileIndex.isInLibraryClasses(vf) || !fileIndex.isInContent(vf)) {
                     val psiFile = psiManager.findFile(vf) ?: continue
-                    return psiFile.parent
+                    psiFile.parent?.let { results.add(it) }
                 }
 
                 // Ensure the package directory is directly under a source root or content root
@@ -106,11 +110,11 @@ object PyResolveUtils {
                 val contentRoot = fileIndex.getContentRootForFile(pkgDir)
                 if (sourceRoot == pkgDir.parent || contentRoot == pkgDir.parent) {
                     val psiFile = psiManager.findFile(vf) ?: continue
-                    return psiFile.parent
+                    psiFile.parent?.let { results.add(it) }
                 }
             }
         }
-        return null
+        return results.distinct()
     }
 
     private fun isAllowedTopLevelName(
@@ -132,25 +136,24 @@ object PyResolveUtils {
         }
     }
 
-    private fun findMember(element: PsiElement, name: String, resolveImported: Boolean = true): PsiElement? {
+    private fun findMembers(element: PsiElement, name: String, resolveImported: Boolean = true): List<PsiElement> {
+        val results = mutableListOf<PsiElement>()
         if (element is PsiDirectory) {
             val file = element.findFile("$name.py")
-            if (file != null) return file
+            if (file != null) results.add(file)
 
             val subdir = element.findSubdirectory(name)
-            if (subdir != null && subdir.findFile("__init__.py") != null) return subdir
+            if (subdir != null && subdir.findFile("__init__.py") != null) results.add(subdir)
 
             val init = element.findFile("__init__.py")
             if (init is PyFile) {
-                return findMember(init, name, resolveImported)
+                results.addAll(findMembers(init, name, resolveImported))
             }
         }
         if (element is PyFile) {
-            val declared = element.findTopLevelClass(name) ?: element.findTopLevelFunction(name)
-            ?: element.findTopLevelAttribute(
-                name
-            )
-            if (declared != null) return declared
+            element.findTopLevelClass(name)?.let { results.add(it) }
+            element.findTopLevelFunction(name)?.let { results.add(it) }
+            element.findTopLevelAttribute(name)?.let { results.add(it) }
 
             if (resolveImported) {
                 // Check from imports
@@ -159,10 +162,9 @@ object PyResolveUtils {
                     for (el in stmt.importElements) {
                         val visibleName = el.asName ?: el.importedQName?.lastComponent
                         if (visibleName == name) {
-                            val results = el.multiResolve()
-                            val sorted = RatedResolveResult.sorted(results)
-                            if (sorted.isNotEmpty()) {
-                                return sorted[0].element
+                            val resolveResults = el.multiResolve()
+                            for (res in RatedResolveResult.sorted(resolveResults)) {
+                                res.element?.let { results.add(it) }
                             }
                         }
                     }
@@ -174,21 +176,20 @@ object PyResolveUtils {
                     for (el in stmt.importElements) {
                         val visibleName = el.asName ?: el.importedQName?.firstComponent
                         if (visibleName == name) {
-                            val results = el.multiResolve()
-                            val sorted = RatedResolveResult.sorted(results)
-                            if (sorted.isNotEmpty()) {
-                                return sorted[0].element
+                            val resolveResults = el.multiResolve()
+                            for (res in RatedResolveResult.sorted(resolveResults)) {
+                                res.element?.let { results.add(it) }
                             }
                         }
                     }
                 }
             }
-
-            return null
         }
         if (element is PyClass) {
-            return element.findNestedClass(name, true) ?: element.findMethodByName(name, true, null)
-            ?: element.findInstanceAttribute(name, true) ?: element.findClassAttribute(name, true, null)
+            element.findNestedClass(name, true)?.let { results.add(it) }
+            element.findMethodByName(name, true, null)?.let { results.add(it) }
+            element.findInstanceAttribute(name, true)?.let { results.add(it) }
+            element.findClassAttribute(name, true, null)?.let { results.add(it) }
         }
         if (element is PyTypedElement) {
             val context = TypeEvalContext.codeAnalysis(element.project, element.containingFile)
@@ -198,11 +199,13 @@ object PyResolveUtils {
                 val members =
                     type.resolveMember(name, null, com.jetbrains.python.psi.AccessDirection.READ, resolveContext)
                 if (!members.isNullOrEmpty()) {
-                    return members[0].element
+                    for (member in members) {
+                        member.element?.let { results.add(it) }
+                    }
                 }
             }
         }
-        return null
+        return results.distinct()
     }
 
     fun getVariants(element: PsiElement?): Array<Any> {

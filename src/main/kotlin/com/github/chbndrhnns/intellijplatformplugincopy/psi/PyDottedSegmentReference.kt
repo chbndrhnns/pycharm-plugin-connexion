@@ -39,7 +39,7 @@ class PyDottedSegmentReference(
         val pathUpToSegment = fullPath.substring(0, segmentEndInPath)
         
         val resolved = PyResolveUtils.resolveDottedName(pathUpToSegment, element, resolveImported)
-        return if (resolved != null) arrayOf(PsiElementResolveResult(resolved)) else ResolveResult.EMPTY_ARRAY
+        return resolved.map { PsiElementResolveResult(it) }.toTypedArray()
     }
 
     override fun getVariants(): Array<Any> {
@@ -53,8 +53,12 @@ class PyDottedSegmentReference(
         if (fullPath[segmentStartInPath - 1] != '.') return emptyArray()
         
         val prefix = fullPath.substring(0, segmentStartInPath - 1)
-        val parent = PyResolveUtils.resolveDottedName(prefix, element, resolveImported)
-        return PyResolveUtils.getVariants(parent)
+        val parents = PyResolveUtils.resolveDottedName(prefix, element, resolveImported)
+        val variants = mutableListOf<Any>()
+        for (parent in parents) {
+            variants.addAll(PyResolveUtils.getVariants(parent))
+        }
+        return variants.distinct().toTypedArray()
     }
 
     private fun topLevelVariants(): Array<Any> {

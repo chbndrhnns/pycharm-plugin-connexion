@@ -382,3 +382,11 @@
     "NEW INSTRUCTION": "WHEN multiple qualifier candidates are found THEN show a chooser popup from a single quickfix"
 }
 
+[2026-01-05 09:11] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "multiresolve handling",
+    "EXPECTATION": "Do not pick the first resolve result; consider all candidates and only show an error if none match.",
+    "NEW INSTRUCTION": "WHEN multiple resolve candidates are found THEN iterate candidates before reporting an error"
+}
+

@@ -311,7 +311,7 @@ class PyMockPatchFQNQuickFixTest : TestBase() {
 
         // Before the fix, this returned null because only source roots were checked
         val resolved = PyResolveUtils.resolveDottedName("tests.test_mymock.ExternalService", testFile)
-        assertNotNull("Should resolve path at content root even when not a source root", resolved)
+        assertTrue("Should resolve path at content root even when not a source root", resolved.isNotEmpty())
     }
 
     fun testNestedSegmentUnresolvedHighlighting() {

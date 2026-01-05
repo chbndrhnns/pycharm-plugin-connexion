@@ -59,7 +59,7 @@ class PyMockPatchUnresolvedReferenceInspection : PyInspection() {
                     val pathUpToSegment = segments.subList(0, i + 1).joinToString(".")
                     val resolved = PyResolveUtils.resolveDottedName(pathUpToSegment, targetArg)
 
-                    if (resolved == null) {
+                    if (resolved.isEmpty()) {
                         unresolvedSegment = segment
                         break
                     }
