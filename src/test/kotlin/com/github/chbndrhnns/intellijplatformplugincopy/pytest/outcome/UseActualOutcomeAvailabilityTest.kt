@@ -10,13 +10,10 @@ class UseActualOutcomeAvailabilityTest : TestBase() {
     }
 
     private fun setDiffData(qName: String, expected: String, actual: String) {
-        val file = myFixture.file
-        // SMTestProxy.locationUrl uses the parent directory path in angle brackets
-        // and prefixes the qName with the parent directory name (module name)
-        val parentDir = file.virtualFile.parent
-        val parentDirPath = parentDir.path
-        val parentDirName = parentDir.name
-        val key = "python<$parentDirPath>://$parentDirName.$qName"
+        // SMTestProxy.locationUrl uses the project base path in angle brackets
+        // The qualified name already includes the full module path
+        val projectBasePath = project.basePath ?: return
+        val key = "python<$projectBasePath>://$qName"
         TestOutcomeDiffService.getInstance(project).put(key, OutcomeDiff(expected, actual))
     }
 
@@ -53,7 +50,7 @@ class UseActualOutcomeAvailabilityTest : TestBase() {
         )
     }
 
-    fun `test intention is available on assert statement without diff data`() {
+    fun `test intention is NOT available without diff data`() {
         myFixture.configureByText(
             "test_no_diff.py",
             """
@@ -62,8 +59,23 @@ class UseActualOutcomeAvailabilityTest : TestBase() {
             """.trimIndent(),
         )
 
-        // No diff data set - intention should still be available
+        // No diff data set - intention should NOT be available
         val intention = myFixture.getAvailableIntention("BetterPy: Use actual test outcome")
-        assertNotNull("Intention should be available on assert with == even without diff data", intention)
+        assertNull("Intention should not be available without diff data", intention)
+    }
+
+    fun `test intention is available with diff data`() {
+        myFixture.configureByText(
+            "test_with_diff.py",
+            """
+            def test_with_diff():
+                ass<caret>ert 1 == 2
+            """.trimIndent(),
+        )
+
+        setDiffData("test_with_diff.test_with_diff", "2", "1")
+
+        val intention = myFixture.getAvailableIntention("BetterPy: Use actual test outcome")
+        assertNotNull("Intention should be available when diff data exists", intention)
     }
 }

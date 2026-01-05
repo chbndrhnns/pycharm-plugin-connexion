@@ -31,14 +31,31 @@ class TestOutcomeDiffService() {
             if (exactExplicit != null) return Pair(exactExplicit, explicitKey)
         }
 
+        // Try exact match first
         val exact = diffs[baseLocationUrl]
         if (exact != null) return Pair(exact, baseLocationUrl)
 
-        val matchedKey = diffs.keys.firstOrNull { it.startsWith(baseLocationUrl) }
-            ?: return null
+        // Try prefix match (for parametrized tests)
+        val prefixMatch = diffs.keys.firstOrNull { it.startsWith(baseLocationUrl) }
+        if (prefixMatch != null) {
+            val data = diffs[prefixMatch]
+            if (data != null) return Pair(data, prefixMatch)
+        }
 
-        val data = diffs[matchedKey] ?: return null
-        return Pair(data, matchedKey)
+        // Fallback: match by qualified name only (the part after ://)
+        // This handles cases where the path in angle brackets differs
+        val qNamePart = baseLocationUrl.substringAfter("://", "")
+        if (qNamePart.isNotEmpty()) {
+            val matchedKey = diffs.keys.firstOrNull { storedKey ->
+                storedKey.substringAfter("://", "") == qNamePart
+            }
+            if (matchedKey != null) {
+                val data = diffs[matchedKey]
+                if (data != null) return Pair(data, matchedKey)
+            }
+        }
+
+        return null
     }
 
     companion object {

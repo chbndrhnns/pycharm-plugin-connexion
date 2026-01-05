@@ -10,13 +10,10 @@ class ReplaceExpectedWithActualIntentionTest : TestBase() {
     }
 
     private fun setDiffData(qName: String, expected: String, actual: String) {
-        val file = myFixture.file
-        // SMTestProxy.locationUrl uses the parent directory path in angle brackets
-        // and prefixes the qName with the parent directory name (module name)
-        val parentDir = file.virtualFile.parent
-        val parentDirPath = parentDir.path
-        val parentDirName = parentDir.name
-        val key = "python<$parentDirPath>://$parentDirName.$qName"
+        // SMTestProxy.locationUrl uses the project base path in angle brackets
+        // The qualified name already includes the full module path
+        val projectBasePath = project.basePath ?: return
+        val key = "python<$projectBasePath>://$qName"
         TestOutcomeDiffService.getInstance(project).put(key, OutcomeDiff(expected, actual))
     }
 

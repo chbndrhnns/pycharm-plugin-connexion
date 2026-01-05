@@ -390,3 +390,11 @@
     "NEW INSTRUCTION": "WHEN multiple resolve candidates are found THEN iterate candidates before reporting an error"
 }
 
+[2026-01-05 11:27] - Updated by Junie
+{
+    "TYPE": "negative",
+    "CATEGORY": "failed line update",
+    "EXPECTATION": "The failing line should update to the assertion line based on the editor/pytest outcome.",
+    "NEW INSTRUCTION": "WHEN pytest assertion fails in open editor THEN set failedLine to assertion line via PytestLocationUrlFactory"
+}
+

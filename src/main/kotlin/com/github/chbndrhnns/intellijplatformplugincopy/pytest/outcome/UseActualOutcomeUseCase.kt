@@ -28,7 +28,9 @@ class UseActualOutcomeUseCase(
         val name = pyFunction.name ?: return false
         if (!name.startsWith("test_")) return false
 
-        return true
+        // Only show intention if diff data exists for this test
+        val locationUrl = PytestLocationUrlFactory.fromPyFunction(pyFunction) ?: return false
+        return diffService.findWithKey(locationUrl, explicitKey = null) != null
     }
 
     fun invoke(project: Project, editor: Editor, file: PsiFile, explicitTestKey: String?) {
