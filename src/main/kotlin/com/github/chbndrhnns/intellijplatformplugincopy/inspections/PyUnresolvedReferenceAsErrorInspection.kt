@@ -2,9 +2,13 @@ package com.github.chbndrhnns.intellijplatformplugincopy.inspections
 
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.customtype.isDataclassClass
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.populate.PyDataclassFieldExtractor
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.JbPopupHost
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PopupHost
 import com.github.chbndrhnns.intellijplatformplugincopy.python.PythonVersionGuard
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInspection.*
+import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElementVisitor
 import com.jetbrains.python.inspections.PyInspection
@@ -57,6 +61,7 @@ class PyUnresolvedReferenceAsErrorInspection : PyInspection() {
                             val pyFile = node.containingFile as? PyFile
                             if (pyFile != null) {
                                 val importedModules = findImportedModules(pyFile)
+                                val candidates = mutableListOf<String>()
                                 for (module in importedModules) {
                                     val attr = module.findTopLevelAttribute(name)
                                     val clazz = module.findTopLevelClass(name)
@@ -64,9 +69,12 @@ class PyUnresolvedReferenceAsErrorInspection : PyInspection() {
                                     if (attr != null || clazz != null || func != null) {
                                         val moduleName = module.name.substringBeforeLast(".py")
                                         if (moduleName != "__init__") {
-                                            quickfixes.add(QualifyReferenceQuickFix(moduleName))
+                                            candidates.add(moduleName)
                                         }
                                     }
+                                }
+                                if (candidates.isNotEmpty()) {
+                                    quickfixes.add(QualifyReferenceQuickFix(candidates))
                                 }
                             }
                         }
@@ -154,14 +162,47 @@ class PyUnresolvedReferenceAsErrorInspection : PyInspection() {
         return result.toList()
     }
 
-    class QualifyReferenceQuickFix(private val moduleName: String) : LocalQuickFix {
-        override fun getFamilyName(): String = "Qualify with '$moduleName.'"
+    /**
+     * Hooks for testing the QualifyReferenceQuickFix.
+     * Allows injecting a fake PopupHost for unit tests.
+     */
+    object QualifyReferenceQuickFixHooks {
+        var popupHost: PopupHost? = null
+    }
+
+    class QualifyReferenceQuickFix(private val moduleNames: List<String>) : LocalQuickFix {
+        override fun getFamilyName(): String {
+            return if (moduleNames.size == 1) "Qualify with '${moduleNames[0]}.'"
+            else "Qualify reference..."
+        }
 
         override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
             val element = descriptor.psiElement as? PyReferenceExpression ?: return
+            val name = element.name ?: return
+
+            if (moduleNames.size == 1) {
+                applyQualification(project, element, moduleNames[0], name)
+            } else {
+                val editor = FileEditorManager.getInstance(project).selectedTextEditor ?: return
+                val popupHost = QualifyReferenceQuickFixHooks.popupHost ?: JbPopupHost()
+                popupHost.showChooser(
+                    editor = editor,
+                    title = "Qualify with",
+                    items = moduleNames,
+                    render = { "$it.$name" },
+                    onChosen = { chosenModuleName ->
+                        WriteCommandAction.runWriteCommandAction(project, familyName, null, {
+                            applyQualification(project, element, chosenModuleName, name)
+                        }, element.containingFile)
+                    }
+                )
+            }
+        }
+
+        private fun applyQualification(project: Project, element: PyReferenceExpression, moduleName: String, name: String) {
             val generator = PyElementGenerator.getInstance(project)
             val qualifiedExpression =
-                generator.createExpressionFromText(LanguageLevel.forElement(element), "$moduleName.${element.name}")
+                generator.createExpressionFromText(LanguageLevel.forElement(element), "$moduleName.$name")
             element.replace(qualifiedExpression)
         }
     }

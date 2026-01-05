@@ -374,3 +374,11 @@
     "NEW INSTRUCTION": "WHEN unresolved reference and absolute import exists THEN offer qualify with that module"
 }
 
+[2026-01-05 08:25] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "quickfix UI popup",
+    "EXPECTATION": "When multiple qualifying options exist, show a single action that opens a chooser popup instead of adding multiple items to the context menu.",
+    "NEW INSTRUCTION": "WHEN multiple qualifier candidates are found THEN show a chooser popup from a single quickfix"
+}
+

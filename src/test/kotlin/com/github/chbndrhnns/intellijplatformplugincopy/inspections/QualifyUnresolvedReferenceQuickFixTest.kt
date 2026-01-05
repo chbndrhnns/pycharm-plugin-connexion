@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.inspections
 
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
+import fixtures.FakePopupHost
 import fixtures.TestBase
 
 class QualifyUnresolvedReferenceQuickFixTest : TestBase() {
@@ -9,6 +10,11 @@ class QualifyUnresolvedReferenceQuickFixTest : TestBase() {
         super.setUp()
         PluginSettingsState.instance().state.enableUnresolvedReferenceAsErrorInspection = true
         myFixture.enableInspections(PyUnresolvedReferenceAsErrorInspection::class.java)
+    }
+
+    override fun tearDown() {
+        PyUnresolvedReferenceAsErrorInspection.QualifyReferenceQuickFixHooks.popupHost = null
+        super.tearDown()
     }
 
     fun testQualifyUnresolvedReferenceAbsoluteImport() {
@@ -137,6 +143,49 @@ class QualifyUnresolvedReferenceQuickFixTest : TestBase() {
             from .sub import domain
 
             domain.MyClass
+        """.trimIndent()
+        )
+    }
+
+    fun testQualifyUnresolvedReferenceMultipleOptions() {
+        myFixture.addFileToProject(
+            "domain1.py", """
+            class MyClass:
+                pass
+        """.trimIndent()
+        )
+        myFixture.addFileToProject(
+            "domain2.py", """
+            class MyClass:
+                pass
+        """.trimIndent()
+        )
+
+        myFixture.configureByText(
+            "usage.py", """
+            import domain1
+            import domain2
+
+            MyClass<caret>
+        """.trimIndent()
+        )
+
+        val fakePopupHost = FakePopupHost()
+        fakePopupHost.selectedIndex = 1 // domain2
+        PyUnresolvedReferenceAsErrorInspection.QualifyReferenceQuickFixHooks.popupHost = fakePopupHost
+
+        val intentionName = "Qualify reference..."
+        val intentions = myFixture.filterAvailableIntentions(intentionName)
+
+        assertNotEmpty(intentions)
+        myFixture.launchAction(intentions.first())
+
+        myFixture.checkResult(
+            """
+            import domain1
+            import domain2
+
+            domain2.MyClass
         """.trimIndent()
         )
     }
