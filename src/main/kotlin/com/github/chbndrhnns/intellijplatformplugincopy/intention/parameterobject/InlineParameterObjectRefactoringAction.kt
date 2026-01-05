@@ -20,7 +20,7 @@ class InlineParameterObjectRefactoringAction : PyBaseRefactoringAction() {
         file: PsiFile,
         context: DataContext
     ): Boolean {
-        if (!PluginSettingsState.instance().state.enableInlineParameterObjectRefactoringAction) return false
+        if (!PluginSettingsState.instance().state.enableParameterObjectRefactoring) return false
         return InlineParameterObjectTarget.isAvailable(element)
     }
 

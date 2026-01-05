@@ -548,3 +548,53 @@
     "NEW INSTRUCTION": "WHEN logs show NoSuchFileException for project-root/testData THEN create folder or fix SDK path in PythonMockSdk"
 }
 
+[2026-01-05 15:36] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_project",
+    "ERROR": "Query returned more than 100 results",
+    "ROOT CAUSE": "The search term 'parameter object' is too broad for the repository.",
+    "PROJECT NOTE": "Parameter-object code resides under src/main/kotlin/.../intention/parameterobject; search for IntroduceParameterObject or InlineParameterObject within that package.",
+    "NEW INSTRUCTION": "WHEN search_project reports more than 100 results THEN refine query with file paths or class names and retry"
+}
+
+[2026-01-05 15:39] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "bash",
+    "ERROR": "cat: illegal option -A on this system",
+    "ROOT CAUSE": "Used GNU-specific cat flag (-A) in a BSD/macOS environment where it's unsupported.",
+    "PROJECT NOTE": "Use open_entire_file for source inspection or POSIX-safe commands (cat|head|sed) without GNU-only flags.",
+    "NEW INSTRUCTION": "WHEN bash command uses GNU-only cat flags THEN replace with POSIX-safe commands or open_entire_file"
+}
+
+[2026-01-05 15:39] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "bash",
+    "ERROR": "cat: illegal option -A",
+    "ROOT CAUSE": "Used GNU-specific cat flag -A on an environment where cat doesn't support it.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN command includes 'cat -A' THEN use open_entire_file or sed -n to preview content"
+}
+
+[2026-01-05 15:40] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "bash",
+    "ERROR": "cat: illegal option -A",
+    "ROOT CAUSE": "The command used GNU-specific 'cat -A' which is unsupported by the system's cat.",
+    "PROJECT NOTE": "Use open_entire_file for viewing files or stick to POSIX-compatible bash commands.",
+    "NEW INSTRUCTION": "WHEN needing to preview a file content THEN use open_entire_file instead of cat"
+}
+
+[2026-01-05 16:07] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "run_test",
+    "ERROR": "Unresolved reference 'FeatureDefinition' in build",
+    "ROOT CAUSE": "IncubatingFeatureNotifier.kt references FeatureDefinition which is missing or renamed and not imported/defined.",
+    "PROJECT NOTE": "Check settings/IncubatingFeatureNotifier.kt around line ~92; ensure a settings.FeatureDefinition (or the correct replacement type) exists under settings/ and update imports/usages accordingly.",
+    "NEW INSTRUCTION": "WHEN compiler reports unresolved 'FeatureDefinition' THEN create/import correct type or update usages to existing API"
+}
+

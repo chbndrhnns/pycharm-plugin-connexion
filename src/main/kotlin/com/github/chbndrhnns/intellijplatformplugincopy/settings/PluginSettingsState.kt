@@ -310,20 +310,12 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
 
         // ---- Refactoring Actions ----
         @Feature(
-            id = "introduce-parameter-object",
-            displayName = "Introduce parameter object",
-            description = "Refactors multiple parameters into a single parameter object (dataclass, TypedDict, etc.)",
+            id = "parameter-object-refactoring",
+            displayName = "Parameter object refactoring",
+            description = "Enables introduce/inline parameter object refactoring actions",
             category = FeatureCategory.ACTIONS
         )
-        var enableIntroduceParameterObjectRefactoringAction: Boolean = true,
-
-        @Feature(
-            id = "inline-parameter-object",
-            displayName = "Inline parameter object",
-            description = "Inlines a parameter object back into individual parameters",
-            category = FeatureCategory.ACTIONS
-        )
-        var enableInlineParameterObjectRefactoringAction: Boolean = true,
+        var enableParameterObjectRefactoring: Boolean = true,
 
         @Feature(
             id = "introduce-custom-type",

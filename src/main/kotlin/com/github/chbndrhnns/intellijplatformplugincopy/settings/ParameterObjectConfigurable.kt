@@ -13,17 +13,11 @@ class ParameterObjectConfigurable : BoundConfigurable("Parameter Object") {
         return createFilterableFeaturePanel { _, searchTerm ->
             group("Refactoring Actions") {
                 row {
-                    val label = "Enable ‘Introduce Parameter Object’ refactoring"
+                    val label = "Enable Parameter Object refactoring"
                     if (searchTerm.isEmpty() || label.contains(searchTerm, ignoreCase = true)) {
                         checkBox(label)
-                            .bindSelected(settings::enableIntroduceParameterObjectRefactoringAction)
-                    }
-                }
-                row {
-                    val label = "Enable ‘Inline Parameter Object’ refactoring"
-                    if (searchTerm.isEmpty() || label.contains(searchTerm, ignoreCase = true)) {
-                        checkBox(label)
-                            .bindSelected(settings::enableInlineParameterObjectRefactoringAction)
+                            .bindSelected(settings::enableParameterObjectRefactoring)
+                            .comment("Enables both 'Introduce Parameter Object' and 'Inline Parameter Object' actions")
                     }
                 }
             }

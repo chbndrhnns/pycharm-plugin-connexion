@@ -488,3 +488,13 @@
     "NEW INSTRUCTION": "WHEN SDK root overlaps test temp directory THEN create separate sdk subdirectory and use it as root"
 }
 
+[2026-01-05 16:08] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "scan project, run build, update registries/notifiers, update tests",
+    "BOTTLENECK": "References to old feature flags/ids were not updated across the codebase.",
+    "PROJECT NOTE": "Update IncubatingFeatureNotifier (FeatureDefinition list) to remove old introduce/inline features and add the new parameter-object-refactoring feature.",
+    "NEW INSTRUCTION": "WHEN renaming or merging feature flags THEN search project for old identifiers and update notifiers, registries, and tests"
+}
+

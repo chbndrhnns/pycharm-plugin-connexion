@@ -11,8 +11,8 @@ class PyParameterObjectSettingsTest : TestBase() {
     private val inlineActionId =
         "com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.InlineParameterObjectRefactoringAction"
 
-    fun testIntroduceParameterObjectDisabled() {
-        withPluginSettings({ enableIntroduceParameterObjectRefactoringAction = false }) {
+    fun testParameterObjectRefactoringDisabled_IntroduceNotAvailable() {
+        withPluginSettings({ enableParameterObjectRefactoring = false }) {
             myFixture.assertActionNotAvailable(
                 "a.py",
                 """
@@ -24,8 +24,8 @@ class PyParameterObjectSettingsTest : TestBase() {
         }
     }
 
-    fun testInlineParameterObjectDisabled() {
-        withPluginSettings({ enableInlineParameterObjectRefactoringAction = false }) {
+    fun testParameterObjectRefactoringDisabled_InlineNotAvailable() {
+        withPluginSettings({ enableParameterObjectRefactoring = false }) {
             myFixture.assertActionNotAvailable(
                 "a.py",
                 """
