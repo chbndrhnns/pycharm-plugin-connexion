@@ -442,7 +442,10 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
             id = "python-navigation-bar",
             displayName = "Python navigation bar",
             description = "Enables enhanced Python navigation bar with module path display",
-            category = FeatureCategory.NAVIGATION
+            category = FeatureCategory.NAVIGATION,
+            youtrackIssues = [
+                "PY-53757",
+            ]
         )
         var enablePythonNavigationBar: Boolean = true,
 
