@@ -191,7 +191,7 @@ object PyResolveUtils {
             element.findInstanceAttribute(name, true)?.let { results.add(it) }
             element.findClassAttribute(name, true, null)?.let { results.add(it) }
         }
-        if (element is PyTypedElement) {
+        if (element is PyTypedElement && (resolveImported || element !is PyFile)) {
             val context = TypeEvalContext.codeAnalysis(element.project, element.containingFile)
             val type = context.getType(element)
             if (type != null) {
