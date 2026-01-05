@@ -2,13 +2,7 @@
 
 ## Pending Issues
 
-- [ ] fix: Wrap should pick the right scope (where the mismatch is
-
-```
-# should wrap Path, not "abc"
-val: str = Path("ab<caret>c")
-```
-
+- [ ] fix: Should also offer Wrap: `do(Path("a<caret>bc"))` (253 vs 261?)
 - [ ] refactor: PyUnresolvedReferenceAsErrorInspection, lots of strings (?)
 - [ ] refactor: Use module name in PyPackageRunLineMarkerContributor, also strip __main__, other special cases?
 - [ ] refactor: Is doing PyAllExportUtil too much string magic?
