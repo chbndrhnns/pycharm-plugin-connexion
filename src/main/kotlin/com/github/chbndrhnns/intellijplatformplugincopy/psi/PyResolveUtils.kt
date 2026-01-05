@@ -13,11 +13,10 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.PsiTreeUtil
-import com.jetbrains.python.psi.PyClass
-import com.jetbrains.python.psi.PyFile
-import com.jetbrains.python.psi.PyFromImportStatement
-import com.jetbrains.python.psi.PyImportStatement
+import com.jetbrains.python.psi.*
+import com.jetbrains.python.psi.resolve.PyResolveContext
 import com.jetbrains.python.psi.resolve.RatedResolveResult
+import com.jetbrains.python.psi.types.TypeEvalContext
 
 object PyResolveUtils {
     fun resolveDottedName(name: String, context: PsiElement, resolveImported: Boolean = true): PsiElement? {
@@ -35,7 +34,6 @@ object PyResolveUtils {
                 val member = findMember(builtins, firstPart, resolveImported)
                 if (member != null) {
                     current = member
-                    // firstPart consumed as member of builtins
                 }
             }
         }
@@ -75,28 +73,41 @@ object PyResolveUtils {
         for (vf in virtualFiles) {
             if (!isAllowedTopLevelName(name, vf, fileIndex, includeSourceRootPrefix)) continue
 
+            // If it's in the SDK or library, we allow it if it's a top-level module there
+            if (fileIndex.isInLibraryClasses(vf) || !fileIndex.isInContent(vf)) {
+                val file = psiManager.findFile(vf)
+                if (file is PyFile) return file
+            }
+
             // Ensure the file is directly under a source root or content root
             val sourceRoot = fileIndex.getSourceRootForFile(vf)
             val contentRoot = fileIndex.getContentRootForFile(vf)
-            if (sourceRoot != vf.parent && contentRoot != vf.parent) continue
-            
-            val file = psiManager.findFile(vf)
-            if (file is PyFile) return file
+            if (sourceRoot == vf.parent || contentRoot == vf.parent) {
+                val file = psiManager.findFile(vf)
+                if (file is PyFile) return file
+            }
         }
 
         // Try package (directory with __init__.py)
         val initVFiles = FilenameIndex.getVirtualFilesByName("__init__.py", scope)
         for (vf in initVFiles) {
             if (!isAllowedTopLevelName(name, vf, fileIndex, includeSourceRootPrefix)) continue
+
             if (vf.parent?.name == name) {
+                // If it's in the SDK or library, we allow it
+                if (fileIndex.isInLibraryClasses(vf) || !fileIndex.isInContent(vf)) {
+                    val psiFile = psiManager.findFile(vf) ?: continue
+                    return psiFile.parent
+                }
+
                 // Ensure the package directory is directly under a source root or content root
                 val pkgDir = vf.parent ?: continue
                 val sourceRoot = fileIndex.getSourceRootForFile(pkgDir)
                 val contentRoot = fileIndex.getContentRootForFile(pkgDir)
-                if (sourceRoot != pkgDir.parent && contentRoot != pkgDir.parent) continue
-                
-                val psiFile = psiManager.findFile(vf) ?: continue
-                return psiFile.parent
+                if (sourceRoot == pkgDir.parent || contentRoot == pkgDir.parent) {
+                    val psiFile = psiManager.findFile(vf) ?: continue
+                    return psiFile.parent
+                }
             }
         }
         return null
@@ -149,7 +160,10 @@ object PyResolveUtils {
                         val visibleName = el.asName ?: el.importedQName?.lastComponent
                         if (visibleName == name) {
                             val results = el.multiResolve()
-                            return RatedResolveResult.sorted(results)[0].element
+                            val sorted = RatedResolveResult.sorted(results)
+                            if (sorted.isNotEmpty()) {
+                                return sorted[0].element
+                            }
                         }
                     }
                 }
@@ -161,7 +175,10 @@ object PyResolveUtils {
                         val visibleName = el.asName ?: el.importedQName?.firstComponent
                         if (visibleName == name) {
                             val results = el.multiResolve()
-                            return RatedResolveResult.sorted(results)[0].element
+                            val sorted = RatedResolveResult.sorted(results)
+                            if (sorted.isNotEmpty()) {
+                                return sorted[0].element
+                            }
                         }
                     }
                 }
@@ -172,6 +189,18 @@ object PyResolveUtils {
         if (element is PyClass) {
             return element.findNestedClass(name, true) ?: element.findMethodByName(name, true, null)
             ?: element.findInstanceAttribute(name, true) ?: element.findClassAttribute(name, true, null)
+        }
+        if (element is PyTypedElement) {
+            val context = TypeEvalContext.codeAnalysis(element.project, element.containingFile)
+            val type = context.getType(element)
+            if (type != null) {
+                val resolveContext = PyResolveContext.defaultContext(context)
+                val members =
+                    type.resolveMember(name, null, com.jetbrains.python.psi.AccessDirection.READ, resolveContext)
+                if (!members.isNullOrEmpty()) {
+                    return members[0].element
+                }
+            }
         }
         return null
     }

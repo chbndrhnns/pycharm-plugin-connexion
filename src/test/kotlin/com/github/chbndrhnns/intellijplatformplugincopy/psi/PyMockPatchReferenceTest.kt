@@ -291,4 +291,51 @@ class PyMockPatchReferenceTest : TestBase() {
         assertInstanceOf(element, PyClass::class.java)
         assertEquals("MyImportedClass", (element as PyClass).name)
     }
+
+    fun testResolveAttributeOfImportedSymbol() {
+        // pathlib.py
+        myFixture.addFileToProject(
+            "pathlib.py", """
+            class Path:
+                def read_text(self): pass
+        """.trimIndent()
+        )
+
+        // mymodule.py
+        myFixture.addFileToProject(
+            "mymodule.py", """
+            from pathlib import Path
+            
+            def read():
+                return Path().read_text()
+        """.trimIndent()
+        )
+
+        // test.py
+        myFixture.configureByText(
+            "test_patch_attr.py", """
+            from unittest import mock
+            
+            # 1. Where it's used
+            mock.patch("mymodule.Path.read_te<caret>xt")
+        """.trimIndent()
+        )
+
+        val element1 = myFixture.elementAtCaret
+        assertInstanceOf(element1, PyFunction::class.java)
+        assertEquals("read_text", (element1 as PyFunction).name)
+
+        // 2. At the source
+        myFixture.configureByText(
+            "test_patch_attr_source.py", """
+            from unittest import mock
+            
+            mock.patch("pathlib.Path.read_te<caret>xt")
+        """.trimIndent()
+        )
+
+        val element2 = myFixture.elementAtCaret
+        assertInstanceOf(element2, PyFunction::class.java)
+        assertEquals("read_text", (element2 as PyFunction).name)
+    }
 }

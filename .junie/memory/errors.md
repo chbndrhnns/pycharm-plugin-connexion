@@ -418,3 +418,43 @@
     "NEW INSTRUCTION": "WHEN PyFromImportStatement.relativeLevel > 0 THEN skip prefix check and return"
 }
 
+[2026-01-05 08:51] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "get_file_structure",
+    "ERROR": "File not found at given path",
+    "ROOT CAUSE": "The requested inspection test file path does not exist in the project.",
+    "PROJECT NOTE": "No inspections test exists at src/test/.../inspections; create it under src/test/kotlin/com/github/chbndrhnns/intellijplatformplugincopy/inspections/ or open an existing test in psi.",
+    "NEW INSTRUCTION": "WHEN target file path does not exist THEN search repository or create the file before proceeding"
+}
+
+[2026-01-05 09:01] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "PyResolveUtils.findMember",
+    "ERROR": "IndexOutOfBounds on empty resolve results",
+    "ROOT CAUSE": "findMember assumes multiResolve returns at least one result and indexes [0] on empty list.",
+    "PROJECT NOTE": "In PyResolveUtils.findMember, guard both from-import and import branches: use firstOrNull()?.element after RatedResolveResult.sorted(el.multiResolve()) and return null when empty.",
+    "NEW INSTRUCTION": "WHEN multiResolve returns no results THEN return null instead of indexing the first element"
+}
+
+[2026-01-05 09:01] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "PyResolveUtils.findMember",
+    "ERROR": "Accessing first element of empty resolve results",
+    "ROOT CAUSE": "findMember assumes import multiResolve returns a result and indexes [0] on empty list.",
+    "PROJECT NOTE": "In PyResolveUtils.findMember, after el.multiResolve(), check if results.isEmpty() before sorting/indexing; return null when no targets.",
+    "NEW INSTRUCTION": "WHEN multiResolve returns empty results THEN return null instead of indexing first element"
+}
+
+[2026-01-05 09:02] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "PyResolveUtils.findMember",
+    "ERROR": "IndexOutOfBoundsException accessing first resolve result for import",
+    "ROOT CAUSE": "Code assumes el.multiResolve() returns at least one result and indexes [0] without checks.",
+    "PROJECT NOTE": "In PyResolveUtils.kt (findMember), guard both from-import and import branches: use RatedResolveResult.sorted(results).firstOrNull()?.element and return null if empty.",
+    "NEW INSTRUCTION": "WHEN multiResolve returns no results THEN return null instead of indexing the first element"
+}
+
