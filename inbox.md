@@ -2,7 +2,6 @@
 
 ## Pending Issues
 
-- [ ] feat: Unexport from `__all__` if no usages in project, otherwise show usages for confirmation
 - [ ] fix: Should also offer Wrap: `do(Path("a<caret>bc"))` (253 vs 261?)
 - [ ] refactor: PyUnresolvedReferenceAsErrorInspection, lots of strings (?)
 - [ ] refactor: Use module name in PyPackageRunLineMarkerContributor, also strip __main__, other special cases?
@@ -66,6 +65,7 @@
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Unexport from `__all__` if no usages in project, otherwise show usages for confirmation
 - [x] feat: Change visibility: make private (we only have two options and one is always true)
 - [x] fix: Do not offer any feature in third-party code, library
 - [N] feat: Limit go to usages search in current (sub) directories, PY-56862, seems useless to me
