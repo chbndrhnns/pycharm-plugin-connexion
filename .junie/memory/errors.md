@@ -598,3 +598,33 @@
     "NEW INSTRUCTION": "WHEN compiler reports unresolved 'FeatureDefinition' THEN create/import correct type or update usages to existing API"
 }
 
+[2026-01-05 17:24] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "create",
+    "ERROR": "Unresolved reference 'enableUnexportSymbolIntention' in test",
+    "ROOT CAUSE": "The test referenced a new settings flag that was not yet defined in PluginSettingsState.",
+    "PROJECT NOTE": "Feature toggles live in PluginSettingsState.State with @Feature metadata; add the boolean there before using it in tests.",
+    "NEW INSTRUCTION": "WHEN adding tests referencing new settings flag THEN define flag in PluginSettingsState.State first"
+}
+
+[2026-01-05 17:26] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "create",
+    "ERROR": "Unresolved reference enableUnexportSymbolIntention",
+    "ROOT CAUSE": "The test enabled a settings flag that was not yet defined in PluginSettingsState.",
+    "PROJECT NOTE": "Define feature flags in PluginSettingsState.State before referencing them in tests; keep plugin settings synchronized with new intentions.",
+    "NEW INSTRUCTION": "WHEN adding a test toggling a new feature flag THEN add the flag to PluginSettingsState first"
+}
+
+[2026-01-05 17:28] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "create",
+    "ERROR": "Test references undefined setting enableUnexportSymbolIntention",
+    "ROOT CAUSE": "The test was added before defining the corresponding flag in PluginSettingsState.",
+    "PROJECT NOTE": "Plugin settings flags are defined in src/main/kotlin/.../settings/PluginSettingsState.kt with @Feature metadata; add new booleans there before tests use them.",
+    "NEW INSTRUCTION": "WHEN a test enables a new settings flag THEN add the flag to PluginSettingsState first"
+}
+

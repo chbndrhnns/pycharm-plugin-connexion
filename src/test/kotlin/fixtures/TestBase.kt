@@ -67,6 +67,7 @@ abstract class TestBase : MyPlatformTestCase() {
                 enableNewTypeTypeVarParamSpecRename = true,
                 enableToggleTypeAliasIntention = true,
                 enableExportSymbolToTargetIntention = true,
+                enableUnexportSymbolIntention = true,
                 enablePyPackageRunConfigurationAction = true,
                 enableRenameToSelfFilter = true,
                 enablePyGotoTargetPresentation = true,

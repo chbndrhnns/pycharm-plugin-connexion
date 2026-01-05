@@ -398,3 +398,11 @@
     "NEW INSTRUCTION": "WHEN pytest assertion fails in open editor THEN set failedLine to assertion line via PytestLocationUrlFactory"
 }
 
+[2026-01-05 17:30] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "refactoring dialog",
+    "EXPECTATION": "Use the standard refactoring confirmation/preview dialog instead of a custom yes/no question when usages are found.",
+    "NEW INSTRUCTION": "WHEN intention finds usages requiring confirmation THEN show standard refactoring preview dialog instead of custom prompt"
+}
+

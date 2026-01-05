@@ -52,6 +52,8 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                     ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
                 registry.getFeature("change-visibility")
                     ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
+                registry.getFeature("unexport-symbol")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
                 registry.getFeature("callable-to-protocol")
                     ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
                 registry.getFeature("add-exception-capture")

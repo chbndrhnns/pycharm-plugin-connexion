@@ -395,6 +395,14 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         )
         var enableExportSymbolToTargetIntention: Boolean = true,
 
+        @Feature(
+            id = "unexport-symbol",
+            displayName = "Unexport symbol",
+            description = "Removes a symbol from __all__ and its corresponding import",
+            category = FeatureCategory.IMPORTS
+        )
+        var enableUnexportSymbolIntention: Boolean = true,
+
         // ---- Import & Structure View Settings ----
         @Feature(
             id = "restore-source-root-prefix",
@@ -403,7 +411,6 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
             category = FeatureCategory.IMPORTS
         )
         var enableRestoreSourceRootPrefix: Boolean = true,
-
 
         @Feature(
             id = "relative-import-preference",
