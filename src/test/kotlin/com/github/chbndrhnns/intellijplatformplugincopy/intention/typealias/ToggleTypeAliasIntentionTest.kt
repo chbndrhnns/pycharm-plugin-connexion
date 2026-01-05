@@ -18,8 +18,9 @@ class ToggleTypeAliasIntentionTest : TestBase() {
     }
 
     private fun setLanguageLevel(level: LanguageLevel) {
+        val sdkRoot = myFixture.tempDirFixture.findOrCreateDir("sdk")
         val sdk = PythonTestSetup.createAndRegisterSdk(
-            root = myFixture.tempDirFixture.getFile("/")!!,
+            root = sdkRoot,
             disposable = testRootDisposable,
             languageLevel = level,
             addToJdkTable = true
