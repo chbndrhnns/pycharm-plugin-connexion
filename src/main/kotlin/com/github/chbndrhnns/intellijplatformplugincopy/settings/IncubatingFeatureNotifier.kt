@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.settings
 
+import com.intellij.ide.util.PropertiesComponent
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
@@ -12,6 +13,7 @@ import com.intellij.openapi.startup.ProjectActivity
 class IncubatingFeatureNotifier : ProjectActivity {
 
     override suspend fun execute(project: Project) {
+        val properties = PropertiesComponent.getInstance()
         val registry = FeatureRegistry.instance()
 
         val enabledIncubating = registry.getEnabledIncubatingFeatures()
@@ -20,6 +22,18 @@ class IncubatingFeatureNotifier : ProjectActivity {
         if (enabledIncubating.isEmpty() && enabledDeprecated.isEmpty()) {
             return
         }
+
+        // Create a hash of currently enabled features
+        val currentFeaturesHash = calculateFeaturesHash(enabledIncubating, enabledDeprecated)
+        val lastShownHash = properties.getValue(FEATURES_HASH_KEY, "")
+
+        // Check if notification has already been shown for this set of features
+        if (currentFeaturesHash == lastShownHash) {
+            return
+        }
+
+        // Mark notification as shown for this set of features
+        properties.setValue(FEATURES_HASH_KEY, currentFeaturesHash)
 
         val notificationGroup = NotificationGroupManager.getInstance()
             .getNotificationGroup(NOTIFICATION_GROUP_ID)
@@ -74,10 +88,22 @@ class IncubatingFeatureNotifier : ProjectActivity {
         }
     }
 
+    private fun calculateFeaturesHash(
+        incubating: List<FeatureRegistry.FeatureInfo>,
+        deprecated: List<FeatureRegistry.FeatureInfo>
+    ): String {
+        val allFeatures = (incubating + deprecated)
+            .map { it.id }
+            .sorted()
+            .joinToString(",")
+        return allFeatures.hashCode().toString()
+    }
+
     companion object {
         private const val NOTIFICATION_GROUP_ID = "BetterPy Notifications"
         private const val INCUBATING_TITLE = "BetterPy: Incubating Features Enabled"
         private const val DEPRECATED_TITLE = "BetterPy: Deprecated Features Enabled"
         private const val MAX_FEATURES_TO_SHOW = 3
+        private const val FEATURES_HASH_KEY = "betterpy.incubating.features.hash"
     }
 }
