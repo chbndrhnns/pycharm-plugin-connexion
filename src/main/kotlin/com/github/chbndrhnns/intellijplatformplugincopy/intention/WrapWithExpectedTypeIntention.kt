@@ -9,6 +9,7 @@ import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.PyImportS
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.WrapApplier
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.wrap.WrapPreview
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
+import com.github.chbndrhnns.intellijplatformplugincopy.util.isOwnCode
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
@@ -47,6 +48,7 @@ class WrapWithExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
     override fun getFamilyName(): String = "Type mismatch wrapper"
 
     override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
+        if (!file.isOwnCode()) return false
         // Feature switch: hide intention entirely when disabled via settings
         if (!PluginSettingsState.instance().state.enableWrapWithExpectedTypeIntention) {
             editor.putUserData(PLAN_KEY, null)

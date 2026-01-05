@@ -80,7 +80,7 @@ class PyMockPatchReferenceTest : TestBase() {
         val moduleFile = myFixture.findFileInTempDir("old_module.py")
         val psiFile = myFixture.psiManager.findFile(moduleFile)!!
         myFixture.renameElement(psiFile, "new_module.py")
-        
+
         myFixture.checkResult(
             """
             from unittest.mock import patch
@@ -272,7 +272,7 @@ class PyMockPatchReferenceTest : TestBase() {
     fun testResolveImportedSymbol() {
         // Define the symbol that will be imported
         myFixture.addFileToProject("source_module.py", "class MyImportedClass: pass")
-        
+
         // Define the module that imports it
         myFixture.addFileToProject("target_module.py", "from source_module import MyImportedClass")
 

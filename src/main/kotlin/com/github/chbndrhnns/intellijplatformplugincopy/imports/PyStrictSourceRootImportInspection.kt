@@ -2,6 +2,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.imports
 
 import com.github.chbndrhnns.intellijplatformplugincopy.python.PythonVersionGuard
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
+import com.github.chbndrhnns.intellijplatformplugincopy.util.isOwnCode
 import com.intellij.codeInspection.LocalInspectionToolSession
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.modcommand.ModPsiUpdater
@@ -23,6 +24,7 @@ class PyStrictSourceRootImportInspection : PyInspection() {
         isOnTheFly: Boolean,
         session: LocalInspectionToolSession
     ): PsiElementVisitor {
+        if (!holder.file.isOwnCode()) return PsiElementVisitor.EMPTY_VISITOR
         if (!PythonVersionGuard.isSatisfied(holder.project)) {
             return object : PyElementVisitor() {}
         }

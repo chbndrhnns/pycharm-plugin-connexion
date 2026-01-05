@@ -1,6 +1,11 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.inspections
 
+/**
+ * Inspection that checks if the attribute string in `unittest.mock.patch.object(target, "attribute")`
+ * actually exists on the target class.
+ */
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
+import com.github.chbndrhnns.intellijplatformplugincopy.util.isOwnCode
 import com.intellij.codeInspection.LocalInspectionToolSession
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
@@ -11,10 +16,6 @@ import com.jetbrains.python.psi.PyReferenceExpression
 import com.jetbrains.python.psi.PyStringLiteralExpression
 import com.jetbrains.python.psi.types.TypeEvalContext
 
-/**
- * Inspection that checks if the attribute string in `unittest.mock.patch.object(target, "attribute")`
- * actually exists on the target class.
- */
 class PyMockPatchObjectAttributeInspection : PyInspection() {
 
     override fun getShortName(): String = "PyMockPatchObjectAttribute"
@@ -24,6 +25,7 @@ class PyMockPatchObjectAttributeInspection : PyInspection() {
         isOnTheFly: Boolean,
         session: LocalInspectionToolSession
     ): PsiElementVisitor {
+        if (!holder.file.isOwnCode()) return PsiElementVisitor.EMPTY_VISITOR
         return object : PyElementVisitor() {
             override fun visitPyCallExpression(node: PyCallExpression) {
                 super.visitPyCallExpression(node)

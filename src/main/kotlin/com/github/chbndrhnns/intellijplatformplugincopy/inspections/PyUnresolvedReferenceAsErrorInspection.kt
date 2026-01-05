@@ -6,6 +6,7 @@ import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.JbPopup
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PopupHost
 import com.github.chbndrhnns.intellijplatformplugincopy.python.PythonVersionGuard
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
+import com.github.chbndrhnns.intellijplatformplugincopy.util.isOwnCode
 import com.intellij.codeInspection.*
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -31,6 +32,7 @@ class PyUnresolvedReferenceAsErrorInspection : PyInspection() {
         isOnTheFly: Boolean,
         session: LocalInspectionToolSession
     ): PsiElementVisitor {
+        if (!holder.file.isOwnCode()) return PsiElementVisitor.EMPTY_VISITOR
         if (!PythonVersionGuard.isSatisfied(holder.project)) {
             return object : PyElementVisitor() {}
         }

@@ -3,6 +3,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.inspections
 import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.python.PythonVersionGuard
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
+import com.github.chbndrhnns.intellijplatformplugincopy.util.isOwnCode
 import com.intellij.codeInspection.LocalInspectionToolSession
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
@@ -26,6 +27,7 @@ class PyDataclassMissingInspection : PyInspection() {
         isOnTheFly: Boolean,
         session: LocalInspectionToolSession
     ): PsiElementVisitor {
+        if (!holder.file.isOwnCode()) return PsiElementVisitor.EMPTY_VISITOR
         if (!PluginSettingsState.instance().state.enableDataclassMissingInspection) {
             return object : PyElementVisitor() {}
         }

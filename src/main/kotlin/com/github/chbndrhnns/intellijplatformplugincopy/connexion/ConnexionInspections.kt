@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.connexion
 
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
+import com.github.chbndrhnns.intellijplatformplugincopy.util.isOwnCode
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
@@ -13,6 +14,7 @@ import org.jetbrains.yaml.psi.YamlPsiElementVisitor
 
 class ConnexionJsonInspection : LocalInspectionTool() {
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
+        if (!holder.file.isOwnCode()) return PsiElementVisitor.EMPTY_VISITOR
         if (!PluginSettingsState.instance().state.enableConnexionInspections) {
             return PsiElementVisitor.EMPTY_VISITOR
         }
@@ -26,6 +28,7 @@ class ConnexionJsonInspection : LocalInspectionTool() {
 
 class ConnexionYamlInspection : LocalInspectionTool() {
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
+        if (!holder.file.isOwnCode()) return PsiElementVisitor.EMPTY_VISITOR
         if (!PluginSettingsState.instance().state.enableConnexionInspections) {
             return PsiElementVisitor.EMPTY_VISITOR
         }

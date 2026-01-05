@@ -2,6 +2,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.optional
 
 import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
+import com.github.chbndrhnns.intellijplatformplugincopy.util.isOwnCode
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.PriorityAction
 import com.intellij.openapi.editor.Editor
@@ -17,6 +18,7 @@ class MakeParameterOptionalIntention : IntentionAction, PriorityAction {
     override fun getFamilyName(): String = "Make optional"
 
     override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
+        if (!file.isOwnCode()) return false
         if (!PluginSettingsState.instance().state.enableMakeParameterOptionalIntention) return false
         if (file !is PyFile) return false
 

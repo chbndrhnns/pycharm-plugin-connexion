@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention
 
 import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
+import com.github.chbndrhnns.intellijplatformplugincopy.util.isOwnCode
 import com.intellij.codeInsight.intention.PriorityAction
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
 import com.intellij.openapi.editor.Editor
@@ -19,6 +20,7 @@ class AddSelfParameterIntention : PsiElementBaseIntentionAction(), PriorityActio
     override fun startInWriteAction(): Boolean = true
 
     override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean {
+        if (!element.isOwnCode()) return false
         val function = element.parentOfType<PyFunction>() ?: return false
         if (function.containingClass == null) return false
 

@@ -4,6 +4,7 @@ import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.CtorMatch
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
+import com.github.chbndrhnns.intellijplatformplugincopy.util.isOwnCode
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
@@ -40,6 +41,7 @@ class UnwrapItemsToExpectedTypeIntention : IntentionAction, HighPriorityAction, 
     override fun startInWriteAction(): Boolean = true
 
     override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
+        if (!file.isOwnCode()) return false
         if (!PluginSettingsState.instance().state.enableUnwrapItemsToExpectedTypeIntention) {
             editor.putUserData(PLAN_KEY, null)
             return false

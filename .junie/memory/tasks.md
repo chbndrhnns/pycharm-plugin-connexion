@@ -468,3 +468,13 @@
     "NEW INSTRUCTION": "WHEN creating or modifying tests THEN run './gradlew test' via bash and review results"
 }
 
+[2026-01-05 14:29] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "speculative test run,excess test tweaking,status-only updates",
+    "MISSING STEPS": "scan project,batch modify inspections,batch modify intentions,run tests",
+    "BOTTLENECK": "Time sunk into configuring library test instead of applying guards broadly.",
+    "PROJECT NOTE": "Add early own-code guards in buildVisitor and isAvailable across all PyInspection and intention classes; consider intention/shared for a base.",
+    "NEW INSTRUCTION": "WHEN task affects many intentions or inspections THEN scan project and list all targets first"
+}
+

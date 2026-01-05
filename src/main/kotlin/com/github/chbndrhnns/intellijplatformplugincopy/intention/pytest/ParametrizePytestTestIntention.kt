@@ -2,6 +2,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest
 
 import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
+import com.github.chbndrhnns.intellijplatformplugincopy.util.isOwnCode
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
@@ -21,6 +22,7 @@ class ParametrizePytestTestIntention : IntentionAction, HighPriorityAction {
     override fun startInWriteAction(): Boolean = true
 
     override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
+        if (!file.isOwnCode()) return false
         if (!PluginSettingsState.instance().state.enableParametrizePytestTestIntention) return false
         if (file !is PyFile) return false
 

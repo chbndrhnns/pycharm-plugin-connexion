@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.visibility
 
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
+import com.github.chbndrhnns.intellijplatformplugincopy.util.isOwnCode
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
@@ -33,6 +34,7 @@ abstract class PyToggleVisibilityIntention : IntentionAction, HighPriorityAction
     override fun startInWriteAction(): Boolean = false
 
     override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
+        if (!file.isOwnCode()) return false
         if (!isSettingEnabled()) return false
         val symbol = findTargetSymbol(editor, file) ?: return false
         val name = symbol.name ?: return false

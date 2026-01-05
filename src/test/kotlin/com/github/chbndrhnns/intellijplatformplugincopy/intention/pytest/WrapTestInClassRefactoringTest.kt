@@ -377,7 +377,10 @@ class WrapTestInClassRefactoringTest : TestBase() {
 
         // Verify no nested functions were created
         val result = myFixture.file.text
-        assertFalse("Should not contain nested 'def test_a'", result.contains("def test_b(self):\n\n        def test_a"))
+        assertFalse(
+            "Should not contain nested 'def test_a'",
+            result.contains("def test_b(self):\n\n        def test_a")
+        )
         assertFalse("Should not contain nested 'def test_'", result.contains("def test_b(self):\n\n        def test_"))
     }
 

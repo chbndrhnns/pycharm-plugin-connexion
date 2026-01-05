@@ -458,3 +458,63 @@
     "NEW INSTRUCTION": "WHEN multiResolve returns no results THEN return null instead of indexing the first element"
 }
 
+[2026-01-05 14:18] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Wrong PsiTestUtil.addProjectLibrary overload used",
+    "ROOT CAUSE": "A List<VirtualFile> was passed where the API expects VirtualFile varargs or List<String> paths.",
+    "PROJECT NOTE": "In tests, call PsiTestUtil.addProjectLibrary(module, \"MyLib\", libDir) with VirtualFile varargs or use the overload that accepts String paths.",
+    "NEW INSTRUCTION": "WHEN adding project library in tests THEN pass VirtualFile varargs, not List<VirtualFile>"
+}
+
+[2026-01-05 14:19] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Wrong argument type for addProjectLibrary",
+    "ROOT CAUSE": "Used a List<VirtualFile> for PsiTestUtil.addProjectLibrary instead of the vararg VirtualFile overload or String paths overload.",
+    "PROJECT NOTE": "In tests, prefer PsiTestUtil.addProjectLibrary(module, name, virtualFile) using the vararg VirtualFile overload; do not pass List<VirtualFile>.",
+    "NEW INSTRUCTION": "WHEN editing PsiTestUtil.addProjectLibrary call THEN use vararg VirtualFile parameters, not List"
+}
+
+[2026-01-05 14:22] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Wrong arguments to PsiTestUtil.addProjectLibrary",
+    "ROOT CAUSE": "Used the overload expecting vararg VirtualFile but passed a List instead.",
+    "PROJECT NOTE": "In tests, call PsiTestUtil.addProjectLibrary(module, name, vararg roots: VirtualFile) or provide String paths for the paths-based overload; do not pass List<VirtualFile>.",
+    "NEW INSTRUCTION": "WHEN adding a project library in tests THEN use vararg VirtualFile overload, not List"
+}
+
+[2026-01-05 14:24] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Wrong argument types in addProjectLibrary call",
+    "ROOT CAUSE": "Used List<VirtualFile> for addProjectLibrary where vararg VirtualFile or List<String> is required.",
+    "PROJECT NOTE": "In tests, call PsiTestUtil.addProjectLibrary(module, name, vararg VirtualFile) or addProjectLibrary(module, name, listOf(String paths)); do not pass List<VirtualFile>.",
+    "NEW INSTRUCTION": "WHEN adding project library in tests THEN pass vararg VirtualFile or String path list"
+}
+
+[2026-01-05 14:27] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Wrong arguments for PsiTestUtil.addProjectLibrary",
+    "ROOT CAUSE": "The edit passed List<VirtualFile> where the API expects vararg VirtualFile or List<String> paths.",
+    "PROJECT NOTE": "In tests, call PsiTestUtil.addProjectLibrary(module, name, virtualFile) with VirtualFile vararg, or use addLibrary with String paths.",
+    "NEW INSTRUCTION": "WHEN editing addProjectLibrary invocation THEN pass VirtualFile varargs instead of a List"
+}
+
+[2026-01-05 14:28] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Argument type mismatch in PsiTestUtil.addProjectLibrary call",
+    "ROOT CAUSE": "Edited test passed List<VirtualFile> to addProjectLibrary, but overload expects VirtualFile varargs or List<String> paths.",
+    "PROJECT NOTE": "In tests, prefer PsiTestUtil.addProjectLibrary(module, name, vararg roots: VirtualFile) with VirtualFile arguments from tempDirFixture/findOrCreateDir.",
+    "NEW INSTRUCTION": "WHEN addProjectLibrary call shows type mismatch THEN use VirtualFile vararg overload with VirtualFile arguments"
+}
+

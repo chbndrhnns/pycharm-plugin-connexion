@@ -13,26 +13,30 @@ class JumpToPytestNodeInTestTreeActionTest : TestBase() {
     }
 
     fun testIsHiddenWhenNoActiveTestTree() {
-        myFixture.configureByText("test_file.py", """
+        myFixture.configureByText(
+            "test_file.py", """
             def test_something():
                 <caret>pass
-        """.trimIndent())
-        
+        """.trimIndent()
+        )
+
         val action = JumpToPytestNodeInTestTreeAction()
         val event = TestActionEvent.createTestEvent(action)
-        
+
         action.update(event)
-        
+
         assertFalse("Action should be hidden when no active test tree", event.presentation.isEnabledAndVisible)
     }
 
     fun testIsHiddenInNonTestContext() {
         // Even if we had a test tree (which we don't in this test environment easily), 
         // it should be hidden if we are not on a test function/class.
-        myFixture.configureByText("some_file.py", """
+        myFixture.configureByText(
+            "some_file.py", """
             def some_normal_function():
                 <caret>pass
-        """.trimIndent())
+        """.trimIndent()
+        )
 
         val action = JumpToPytestNodeInTestTreeAction()
         val event = TestActionEvent.createTestEvent(action)

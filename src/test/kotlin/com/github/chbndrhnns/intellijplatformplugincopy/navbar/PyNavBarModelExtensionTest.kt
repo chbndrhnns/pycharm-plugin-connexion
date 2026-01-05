@@ -132,8 +132,10 @@ class PyNavBarModelExtensionTest : BasePlatformTestCase() {
 
         val function = PsiTreeUtil.findChildOfType(file, PyFunction::class.java)
         assertNotNull(function)
-        assertNull("Should return null when plugin setting is disabled", 
-                   extension.getPresentableText(function))
+        assertNull(
+            "Should return null when plugin setting is disabled",
+            extension.getPresentableText(function)
+        )
     }
 
     fun testDunderMethodsAreFiltered() {

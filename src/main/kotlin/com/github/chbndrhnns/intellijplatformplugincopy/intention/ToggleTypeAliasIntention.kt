@@ -2,6 +2,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention
 
 import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
+import com.github.chbndrhnns.intellijplatformplugincopy.util.isOwnCode
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
@@ -19,6 +20,7 @@ class ToggleTypeAliasIntention : IntentionAction, HighPriorityAction, DumbAware 
     override fun getFamilyName(): String = "Toggle type alias"
 
     override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
+        if (!file.isOwnCode()) return false
         if (!PluginSettingsState.instance().state.enableToggleTypeAliasIntention) return false
         if (file !is PyFile) return false
 

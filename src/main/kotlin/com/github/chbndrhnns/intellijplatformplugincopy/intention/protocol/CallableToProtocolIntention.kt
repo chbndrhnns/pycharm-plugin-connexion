@@ -2,6 +2,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.protocol
 
 import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
+import com.github.chbndrhnns.intellijplatformplugincopy.util.isOwnCode
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
@@ -25,6 +26,7 @@ class CallableToProtocolIntention : IntentionAction, HighPriorityAction {
     override fun getFamilyName(): String = "Convert callable to Protocol"
 
     override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
+        if (!file.isOwnCode()) return false
         if (!PluginSettingsState.instance().state.enableCallableToProtocolIntention) return false
         
         val subscription = findSubscription(project, file, editor) ?: return false

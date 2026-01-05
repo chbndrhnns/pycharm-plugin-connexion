@@ -5,6 +5,7 @@ import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.CtorMat
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PyTypeIntentions
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.WrapperInfo
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
+import com.github.chbndrhnns.intellijplatformplugincopy.util.isOwnCode
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.icons.AllIcons
@@ -49,6 +50,7 @@ class UnwrapToExpectedTypeIntention : IntentionAction, HighPriorityAction, DumbA
     override fun getIcon(@Iconable.IconFlags flags: Int): Icon = AllIcons.Actions.IntentionBulb
 
     override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
+        if (!file.isOwnCode()) return false
         if (!PluginSettingsState.instance().state.enableUnwrapToExpectedTypeIntention) {
             editor.putUserData(PLAN_KEY, null)
             return false

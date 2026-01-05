@@ -2,6 +2,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.localvariable
 
 import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
+import com.github.chbndrhnns.intellijplatformplugincopy.util.isOwnCode
 import com.intellij.codeInsight.intention.PriorityAction
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.editor.Editor
@@ -33,6 +34,7 @@ class CreateLocalVariableIntention : PyBaseIntentionAction(), PriorityAction, Ic
     }
 
     override fun isAvailable(project: Project, editor: Editor, file: PsiFile): Boolean {
+        if (!file.isOwnCode()) return false
         if (!PluginSettingsState.instance().state.enableCreateLocalVariableIntention) return false
         if (file !is PyFile) return false
 

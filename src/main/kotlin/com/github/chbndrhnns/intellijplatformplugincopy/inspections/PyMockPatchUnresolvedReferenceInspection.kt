@@ -3,6 +3,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.inspections
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.JbPopupHost
 import com.github.chbndrhnns.intellijplatformplugincopy.psi.PyResolveUtils
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
+import com.github.chbndrhnns.intellijplatformplugincopy.util.isOwnCode
 import com.intellij.codeInspection.LocalInspectionToolSession
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
@@ -32,6 +33,7 @@ class PyMockPatchUnresolvedReferenceInspection : PyInspection() {
         isOnTheFly: Boolean,
         session: LocalInspectionToolSession
     ): PsiElementVisitor {
+        if (!holder.file.isOwnCode()) return PsiElementVisitor.EMPTY_VISITOR
         return object : PyElementVisitor() {
             override fun visitPyCallExpression(node: PyCallExpression) {
                 super.visitPyCallExpression(node)

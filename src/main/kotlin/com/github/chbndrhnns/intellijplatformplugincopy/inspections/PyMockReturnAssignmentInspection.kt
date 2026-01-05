@@ -2,6 +2,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.inspections
 
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.github.chbndrhnns.intellijplatformplugincopy.type.PyMockType
+import com.github.chbndrhnns.intellijplatformplugincopy.util.isOwnCode
 import com.intellij.codeInspection.LocalInspectionToolSession
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
@@ -21,6 +22,7 @@ class PyMockReturnAssignmentInspection : PyInspection() {
         isOnTheFly: Boolean,
         session: LocalInspectionToolSession
     ): PsiElementVisitor {
+        if (!holder.file.isOwnCode()) return PsiElementVisitor.EMPTY_VISITOR
         return object : PyElementVisitor() {
             override fun visitPyAssignmentStatement(node: PyAssignmentStatement) {
                 super.visitPyAssignmentStatement(node)

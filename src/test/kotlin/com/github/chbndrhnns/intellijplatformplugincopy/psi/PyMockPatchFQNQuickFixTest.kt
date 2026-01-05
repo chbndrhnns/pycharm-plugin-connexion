@@ -31,11 +31,15 @@ class PyMockPatchFQNQuickFixTest : TestBase() {
         )
 
         val intentions = myFixture.filterAvailableIntentions("BetterPy: Replace")
-        val intention = intentions.find { it.text.contains("Replace 'MyClass' with '") && it.text.contains(".MyClass'") }
+        val intention =
+            intentions.find { it.text.contains("Replace 'MyClass' with '") && it.text.contains(".MyClass'") }
         assertNotNull("Replace quickfix should be available for 'MyClass'", intention)
-        
+
         myFixture.launchAction(intention!!)
-        val stringLiteral = com.intellij.psi.util.PsiTreeUtil.getParentOfType(myFixture.file.findElementAt(myFixture.editor.caretModel.offset), com.jetbrains.python.psi.PyStringLiteralExpression::class.java)
+        val stringLiteral = com.intellij.psi.util.PsiTreeUtil.getParentOfType(
+            myFixture.file.findElementAt(myFixture.editor.caretModel.offset),
+            com.jetbrains.python.psi.PyStringLiteralExpression::class.java
+        )
         assertNotNull("String literal should be found", stringLiteral)
         val result = stringLiteral!!.stringValue
         assertTrue("FQN should contain 'my_module.MyClass', but was '$result'", result.contains("my_module.MyClass"))
@@ -60,11 +64,15 @@ class PyMockPatchFQNQuickFixTest : TestBase() {
         )
 
         val intentions = myFixture.filterAvailableIntentions("BetterPy: Replace")
-        val intention = intentions.find { it.text.contains("Replace 'my_func' with '") && it.text.contains(".my_func'") }
+        val intention =
+            intentions.find { it.text.contains("Replace 'my_func' with '") && it.text.contains(".my_func'") }
         assertNotNull("Replace quickfix should be available for 'my_func'", intention)
 
         myFixture.launchAction(intention!!)
-        val stringLiteral = com.intellij.psi.util.PsiTreeUtil.getParentOfType(myFixture.file.findElementAt(myFixture.editor.caretModel.offset), com.jetbrains.python.psi.PyStringLiteralExpression::class.java)
+        val stringLiteral = com.intellij.psi.util.PsiTreeUtil.getParentOfType(
+            myFixture.file.findElementAt(myFixture.editor.caretModel.offset),
+            com.jetbrains.python.psi.PyStringLiteralExpression::class.java
+        )
         assertNotNull("String literal should be found", stringLiteral)
         val result = stringLiteral!!.stringValue
         assertTrue("FQN should contain 'my_funcs.my_func', but was '$result'", result.contains("my_funcs.my_func"))
@@ -86,14 +94,21 @@ class PyMockPatchFQNQuickFixTest : TestBase() {
         )
 
         val intentions = myFixture.filterAvailableIntentions("BetterPy: Replace")
-        val intention = intentions.find { it.text.contains("Replace 'another_mod' with '") && it.text.contains("another_mod'") }
+        val intention =
+            intentions.find { it.text.contains("Replace 'another_mod' with '") && it.text.contains("another_mod'") }
         assertNotNull("Replace quickfix should be available for 'another_mod'", intention)
 
         myFixture.launchAction(intention!!)
-        val stringLiteral = com.intellij.psi.util.PsiTreeUtil.getParentOfType(myFixture.file.findElementAt(myFixture.editor.caretModel.offset), com.jetbrains.python.psi.PyStringLiteralExpression::class.java)
+        val stringLiteral = com.intellij.psi.util.PsiTreeUtil.getParentOfType(
+            myFixture.file.findElementAt(myFixture.editor.caretModel.offset),
+            com.jetbrains.python.psi.PyStringLiteralExpression::class.java
+        )
         assertNotNull("String literal should be found", stringLiteral)
         val result = stringLiteral!!.stringValue
-        assertTrue("FQN should contain 'pkg.another_mod.SomeClass', but was '$result'", result.contains("pkg.another_mod.SomeClass"))
+        assertTrue(
+            "FQN should contain 'pkg.another_mod.SomeClass', but was '$result'",
+            result.contains("pkg.another_mod.SomeClass")
+        )
     }
 
     fun testFQNQuickFixRespectsSourceRootPrefix() {
@@ -104,7 +119,7 @@ class PyMockPatchFQNQuickFixTest : TestBase() {
         runWithSourceRoots(listOf(myFixture.findFileInTempDir("src")!!)) {
             // By default enableRestoreSourceRootPrefix is true in TestBase? 
             // Let's check PluginSettingsState default or TestBase.setUp
-            
+
             myFixture.configureByText(
                 "test_prefix.py", """
                 from unittest.mock import patch
@@ -118,14 +133,20 @@ class PyMockPatchFQNQuickFixTest : TestBase() {
             val intentions = myFixture.filterAvailableIntentions("BetterPy: Replace")
             val intention = intentions.find { it.text.contains("Replace 'MyClass' with '") }
             assertNotNull("Replace quickfix should be available", intention)
-            
+
             myFixture.launchAction(intention!!)
-            val stringLiteral = com.intellij.psi.util.PsiTreeUtil.getParentOfType(myFixture.file.findElementAt(myFixture.editor.caretModel.offset), com.jetbrains.python.psi.PyStringLiteralExpression::class.java)
+            val stringLiteral = com.intellij.psi.util.PsiTreeUtil.getParentOfType(
+                myFixture.file.findElementAt(myFixture.editor.caretModel.offset),
+                com.jetbrains.python.psi.PyStringLiteralExpression::class.java
+            )
             val result = stringLiteral!!.stringValue
-            
+
             // If enableRestoreSourceRootPrefix is true, it should probably be 'src.pkg.mod.MyClass'
             // if we want to match how PyResolveUtils resolves it.
-            assertTrue("FQN should contain 'src.pkg.mod.MyClass', but was '$result'", result.contains("src.pkg.mod.MyClass"))
+            assertTrue(
+                "FQN should contain 'src.pkg.mod.MyClass', but was '$result'",
+                result.contains("src.pkg.mod.MyClass")
+            )
         }
     }
 
@@ -135,7 +156,8 @@ class PyMockPatchFQNQuickFixTest : TestBase() {
 
         // src is a source root
         runWithSourceRoots(listOf(myFixture.findFileInTempDir("src")!!)) {
-            com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState.instance().state.enableRestoreSourceRootPrefix = false
+            com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState.instance().state.enableRestoreSourceRootPrefix =
+                false
             try {
                 myFixture.configureByText(
                     "test_prefix_disabled.py", """
@@ -152,14 +174,24 @@ class PyMockPatchFQNQuickFixTest : TestBase() {
                 assertNotNull("Replace quickfix should be available", intention)
 
                 myFixture.launchAction(intention!!)
-                val stringLiteral = com.intellij.psi.util.PsiTreeUtil.getParentOfType(myFixture.file.findElementAt(myFixture.editor.caretModel.offset), com.jetbrains.python.psi.PyStringLiteralExpression::class.java)
+                val stringLiteral = com.intellij.psi.util.PsiTreeUtil.getParentOfType(
+                    myFixture.file.findElementAt(myFixture.editor.caretModel.offset),
+                    com.jetbrains.python.psi.PyStringLiteralExpression::class.java
+                )
                 val result = stringLiteral!!.stringValue
 
                 // If enableRestoreSourceRootPrefix is false, it should be 'pkg.mod.MyClass'
-                assertTrue("FQN should contain 'pkg.mod.MyClass', but was '$result'", result.contains("pkg.mod.MyClass"))
-                assertFalse("FQN should NOT contain 'src.pkg.mod.MyClass', but was '$result'", result.contains("src.pkg.mod.MyClass"))
+                assertTrue(
+                    "FQN should contain 'pkg.mod.MyClass', but was '$result'",
+                    result.contains("pkg.mod.MyClass")
+                )
+                assertFalse(
+                    "FQN should NOT contain 'src.pkg.mod.MyClass', but was '$result'",
+                    result.contains("src.pkg.mod.MyClass")
+                )
             } finally {
-                com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState.instance().state.enableRestoreSourceRootPrefix = true
+                com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState.instance().state.enableRestoreSourceRootPrefix =
+                    true
             }
         }
     }
@@ -179,16 +211,18 @@ class PyMockPatchFQNQuickFixTest : TestBase() {
         )
 
         val intentions = myFixture.filterAvailableIntentions("BetterPy: Replace 'Target' with FQN...")
-        assertNotNull("Multiple candidates quickfix should be available", intentions.find { it.text == "BetterPy: Replace 'Target' with FQN..." })
+        assertNotNull(
+            "Multiple candidates quickfix should be available",
+            intentions.find { it.text == "BetterPy: Replace 'Target' with FQN..." })
     }
 
     fun testFQNQuickFixSuggestsImportSites() {
         // Declaration site
         myFixture.addFileToProject("logic/service.py", "class MyService: pass")
-        
+
         // Import site 1
         myFixture.addFileToProject("app/main.py", "from logic.service import MyService")
-        
+
         // Import site 2
         myFixture.addFileToProject("app/worker.py", "from logic.service import MyService")
 
@@ -205,9 +239,9 @@ class PyMockPatchFQNQuickFixTest : TestBase() {
         // Currently it would suggest 'logic.service.MyService'
         // We want it to suggest 'app.main.MyService' and 'app.worker.MyService' as well (or instead?)
         // The issue says: "we need to provide the FQN to the place where the target is IMPORTED, not where it's declared."
-        
+
         val intentions = myFixture.filterAvailableIntentions("BetterPy: Replace 'MyService' with")
-        
+
         // If there are multiple candidates (declaration site + import sites), it should show the "with FQN..." variant.
         val intention = intentions.find { it.text == "BetterPy: Replace 'MyService' with FQN..." }
         assertNotNull("Replace quickfix should be available for 'MyService' with multiple candidates", intention)
@@ -234,17 +268,19 @@ class PyMockPatchFQNQuickFixTest : TestBase() {
 
         // If tests is the source root, QualifiedNameFinder should return 'test_mymock'
         // If it returns 'tests.test_mymock' AND we prepend 'tests', we get duplication.
-        
+
         runWithSourceRoots(listOf(myFixture.findFileInTempDir("tests")!!)) {
             myFixture.configureFromExistingVirtualFile(testFile.virtualFile)
-            
+
             val intentions = myFixture.filterAvailableIntentions("BetterPy: Replace 'MyMyClass' with")
             val intention = intentions.find { it.text.contains("tests.test_mymock.MyMyClass") }
-            
+
             assertNotNull("Replace quickfix should be available", intention)
             // Verify no duplication
-            assertFalse("FQN should not contain duplicated 'tests': ${intention!!.text}", 
-                intention.text.contains("tests.tests."))
+            assertFalse(
+                "FQN should not contain duplicated 'tests': ${intention!!.text}",
+                intention.text.contains("tests.tests.")
+            )
         }
     }
 
@@ -274,7 +310,7 @@ class PyMockPatchFQNQuickFixTest : TestBase() {
     fun testFQNQuickFixSuggestsThirdPartyUsageInProject() {
         // We'll use 'os.path.exists' which is in the stdlib (library).
         myFixture.addFileToProject("app/utils.py", "from os.path import exists\nusage = exists")
-        
+
         myFixture.configureByText(
             "test_third_party.py", """
             from unittest.mock import patch
@@ -284,11 +320,11 @@ class PyMockPatchFQNQuickFixTest : TestBase() {
                 pass
         """.trimIndent()
         )
-        
+
         val intentions = myFixture.filterAvailableIntentions("BetterPy: Replace 'exists' with")
         val intention = intentions.find { it.text.contains("app.utils.exists") }
         assertNotNull("Should suggest project-side usage of third-party symbol", intention)
-        
+
         val libraryIntention = intentions.find { it.text.contains("os.path.exists") }
         assertNull("Should NOT suggest library-side FQN", libraryIntention)
     }
@@ -317,7 +353,7 @@ class PyMockPatchFQNQuickFixTest : TestBase() {
     fun testNestedSegmentUnresolvedHighlighting() {
         myFixture.addFileToProject("logic/__init__.py", "")
         myFixture.addFileToProject("logic/service.py", "class MyService: pass")
-        
+
         myFixture.configureByText(
             "test_nested_unresolved.py", """
             from unittest.mock import patch
@@ -327,9 +363,10 @@ class PyMockPatchFQNQuickFixTest : TestBase() {
                 pass
         """.trimIndent()
         )
-        
+
         val highlights = myFixture.doHighlighting()
-        val unresolvedHighlight = highlights.find { it.description == "Unresolved reference 'servi1ce' in patch target" }
+        val unresolvedHighlight =
+            highlights.find { it.description == "Unresolved reference 'servi1ce' in patch target" }
         assertNotNull("Highlight should be present for unresolved nested segment 'servi1ce'", unresolvedHighlight)
     }
 }
