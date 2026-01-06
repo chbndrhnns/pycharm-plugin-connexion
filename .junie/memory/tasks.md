@@ -748,3 +748,13 @@
     "NEW INSTRUCTION": "WHEN introducing new setting for inspection THEN search_project for old checks and update references"
 }
 
+[2026-01-06 22:37] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "inspect unrelated utility",
+    "MISSING STEPS": "submit",
+    "BOTTLENECK": "Unnecessary exploration after all targeted tests passed",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN all targeted tests pass THEN submit the change and stop work"
+}
+

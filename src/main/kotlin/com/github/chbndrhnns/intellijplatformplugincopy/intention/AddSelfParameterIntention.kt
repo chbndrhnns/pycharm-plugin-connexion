@@ -25,7 +25,7 @@ class AddSelfParameterIntention : PsiElementBaseIntentionAction(), PriorityActio
         if (function.containingClass == null) return false
 
         val decorators = function.decoratorList?.decorators ?: emptyArray()
-        if (decorators.any { it.name == "staticmethod" }) return false
+        if (decorators.any { it.name == "staticmethod" || it.name == "classmethod" }) return false
 
         val parameters = function.parameterList.parameters
         if (parameters.isEmpty()) return true

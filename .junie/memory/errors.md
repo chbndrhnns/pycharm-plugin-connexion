@@ -1,13 +1,3 @@
-[2026-01-02 22:46] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Argument type mismatch in getDirectDependencies call",
-    "ROOT CAUSE": "Call site passed a Module while getDirectDependencies still expected a PsiReference.",
-    "PROJECT NOTE": "In src/main/kotlin/.../imports/HideTransientImportProvider.kt, ensure getDirectDependencies signature and all invocations use the same parameter type.",
-    "NEW INSTRUCTION": "WHEN changing method parameter types THEN update all call sites accordingly"
-}
-
 [2026-01-02 22:54] - Updated by Junie - Error analysis
 {
     "TYPE": "logic",
@@ -796,4 +786,14 @@
     "ROOT CAUSE": "The test edit attempted to subclass a final AnAction and override a non-existent method, introducing unresolved references.",
     "PROJECT NOTE": "Do not subclass UseActualTestOutcomeFromTreeAction in tests; instead test UseActualOutcomeUseCase directly or extract a non-final, injectable helper used by the action.",
     "NEW INSTRUCTION": "WHEN a test needs to alter action behavior THEN extract injectable helper and test the helper"
+}
+
+[2026-01-06 22:36] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "run_test",
+    "ERROR": "Intention offered for @classmethod methods",
+    "ROOT CAUSE": "AddSelfParameterIntention.isAvailable does not exclude functions decorated with @classmethod.",
+    "PROJECT NOTE": "Update src/main/kotlin/.../intention/AddSelfParameterIntention.kt isAvailable() to check the PyFunction decorator list for 'classmethod' in addition to 'staticmethod' and return false.",
+    "NEW INSTRUCTION": "WHEN method decorators include 'classmethod' THEN return false in isAvailable"
 }
