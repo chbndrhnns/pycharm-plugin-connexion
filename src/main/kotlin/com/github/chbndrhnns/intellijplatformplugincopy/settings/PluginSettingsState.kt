@@ -421,6 +421,14 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enableRestoreSourceRootPrefix: Boolean = true,
 
         @Feature(
+            id = "strict-source-root-import-inspection",
+            displayName = "Strict source root import inspection",
+            description = "Reports imports that are missing the source root prefix",
+            category = FeatureCategory.IMPORTS
+        )
+        var enableStrictSourceRootImportInspection: Boolean = true,
+
+        @Feature(
             id = "relative-import-preference",
             displayName = "Relative import preference",
             description = "Prefers relative imports over absolute imports when applicable",

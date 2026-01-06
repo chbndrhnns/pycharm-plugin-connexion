@@ -558,3 +558,11 @@
     "NEW INSTRUCTION": "WHEN deciding visibility for 'Use actual outcome' action THEN require diff present and value differs from assert"
 }
 
+[2026-01-06 22:21] - Updated by Junie
+{
+    "TYPE": "preference",
+    "CATEGORY": "settings toggle",
+    "EXPECTATION": "Provide a settings toggle for the inspection enforcing source root prefixes on imports.",
+    "NEW INSTRUCTION": "WHEN modifying strict source root import inspection THEN add settings toggle to enable or disable strict prefix inspection"
+}
+
