@@ -638,3 +638,83 @@
     "NEW INSTRUCTION": "WHEN modifying PluginSettingsState.State fields THEN preserve a zero-arg constructor and inline-initialized mutable properties"
 }
 
+[2026-01-06 11:20] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "search_replace",
+    "ERROR": "Added arg 'inlineAllOccurrences'; helper removeParameterObjectClass missing",
+    "ROOT CAUSE": "Call site was updated without changing the callee signature or adding the new helper.",
+    "PROJECT NOTE": "Update prepareCallSiteUpdates(...) signature in PyInlineParameterObjectProcessor.kt to include inlineAllOccurrences, and implement removeParameterObjectClass() to delete the parameter object class and clean up.",
+    "NEW INSTRUCTION": "WHEN adding parameters to a method call THEN update the callee signature accordingly"
+}
+
+[2026-01-06 11:21] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Call passes inlineAllOccurrences; callee lacks parameter; removeClass handler missing",
+    "ROOT CAUSE": "The call site was updated to pass inlineAllOccurrences and call removeParameterObjectClass(), but prepareCallSiteUpdates signature and the removeParameterObjectClass implementation were not added.",
+    "PROJECT NOTE": "Update prepareCallSiteUpdates to accept inlineAllOccurrences and implement removeParameterObjectClass(plan) to delete the parameter object class PSI when requested.",
+    "NEW INSTRUCTION": "WHEN adding a new argument or method call THEN update callee signature and implement method"
+}
+
+[2026-01-06 11:23] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Named parameter missing and helper method undefined",
+    "ROOT CAUSE": "Call site passed inlineAllOccurrences and used removeParameterObjectClass before updating prepareCallSiteUpdates signature and defining the helper.",
+    "PROJECT NOTE": "In PyInlineParameterObjectProcessor.kt, add inlineAllOccurrences to prepareCallSiteUpdates(...) and implement removeParameterObjectClass(plan) to delete the parameter object class PSI.",
+    "NEW INSTRUCTION": "WHEN adding named arguments to a method call THEN update callee signature and define new helpers"
+}
+
+[2026-01-06 11:25] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "prepareCallSiteUpdates lacks inlineAllOccurrences; removeParameterObjectClass undefined",
+    "ROOT CAUSE": "The call site added inlineAllOccurrences and class removal logic without updating the helper signature or implementing the removal method.",
+    "PROJECT NOTE": "Update prepareCallSiteUpdates in PyInlineParameterObjectProcessor to accept inlineAllOccurrences and filter usages; add removeParameterObjectClass to delete the parameter object class under WriteCommandAction.",
+    "NEW INSTRUCTION": "WHEN prepareCallSiteUpdates is called with inlineAllOccurrences THEN add parameter to method and adapt logic"
+}
+
+[2026-01-06 12:31] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "PyInlineParameterObjectProcessor.countUsages",
+    "ERROR": "Usage count returns 0 despite multiple parameter object usages",
+    "ROOT CAUSE": "countUsages searches references to the function and filters call sites, but the dialog should be based on usages of the parameter object (constructor calls and typed parameters), so it returns 0 when there are no calls to the selected function.",
+    "PROJECT NOTE": "Compute usages from the parameter object class: count constructor calls (FooParams(...)) and function/method parameters annotated as FooParams; for the selected function, still collect its call sites for inlining.",
+    "NEW INSTRUCTION": "WHEN determining dialog usage count THEN search parameter object class references, not function references"
+}
+
+[2026-01-06 12:35] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "PyInlineParameterObjectProcessor.countUsages",
+    "ERROR": "Counting function calls instead of parameter object usages",
+    "ROOT CAUSE": "countUsages() searches references to the selected function and tallies call sites, but the user’s scenario has multiple functions that accept the parameter object type and zero call sites, yielding 0.",
+    "PROJECT NOTE": "When caret is on a parameter annotation or the parameter object class, resolve the class and count its usages as: (a) function parameters annotated with the class and (b) constructor calls passed at call sites; only fall back to function call counting when invoked on a function.",
+    "NEW INSTRUCTION": "WHEN element indicates parameter object annotation or class THEN count functions using that class as a parameter"
+}
+
+[2026-01-06 12:39] - Updated by Junie - Error analysis
+{
+    "TYPE": "threading",
+    "TOOL": "PyInlineParameterObjectProcessor.countUsages",
+    "ERROR": "Blocking search invoked on EDT; requires background thread with progress",
+    "ROOT CAUSE": "countUsages performs reference/PSI lookups on EDT which triggers runBlocking and fails.",
+    "PROJECT NOTE": "In InlineParameterObjectRefactoringHandler.invoke, wrap usage counting in runWithModalProgressBlocking + readAction, or move that wrapping into countUsages itself.",
+    "NEW INSTRUCTION": "WHEN running ReferencesSearch or PSI scans from handler THEN use runWithModalProgressBlocking(readAction)"
+}
+
+[2026-01-06 12:42] - Updated by Junie - Error analysis
+{
+    "TYPE": "threading",
+    "TOOL": "InlineParameterObjectRefactoringHandler.invoke",
+    "ERROR": "Blocking search called on EDT",
+    "ROOT CAUSE": "countUsages triggers ReferencesSearch/findAll on EDT; background thread required.",
+    "PROJECT NOTE": "Wrap usage counting in InlineParameterObjectRefactoringHandler (and any findAll in PyInlineParameterObjectProcessor) with runWithModalProgressBlocking(project, ...) { readAction { ... } } to avoid EDT violations (e.g., PyInlineParameterObjectProcessor.kt:54, handler invoke()).",
+    "NEW INSTRUCTION": "WHEN performing PSI searches or counting usages THEN run via runWithModalProgressBlocking readAction"
+}
+

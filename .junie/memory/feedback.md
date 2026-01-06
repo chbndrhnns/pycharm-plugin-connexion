@@ -462,3 +462,43 @@
     "NEW INSTRUCTION": "WHEN caret in parameter list or its annotation THEN enable Inline Parameter Object action"
 }
 
+[2026-01-06 12:31] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "usage counting semantics",
+    "EXPECTATION": "Show the dialog when the parameter object class is used in more than one function; the count should reflect the number of functions using that class as a parameter.",
+    "NEW INSTRUCTION": "WHEN computing usage count for inline parameter object THEN count functions accepting the parameter-object type as parameter"
+}
+
+[2026-01-06 12:32] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "usage counting logic",
+    "EXPECTATION": "Count how many functions accept the parameter-object class as a parameter type; in the example, the count should be 2.",
+    "NEW INSTRUCTION": "WHEN counting usages for inline parameter object THEN count functions accepting that class as parameter"
+}
+
+[2026-01-06 12:38] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "EDT violation",
+    "EXPECTATION": "Do not run blocking searches or SDK/package checks on the EDT; compute usage count off-EDT and only show the dialog on the UI thread afterward.",
+    "NEW INSTRUCTION": "WHEN counting usages in refactoring handler THEN run in background and then show dialog on EDT"
+}
+
+[2026-01-06 12:40] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "dialog checkbox enablement",
+    "EXPECTATION": "When choosing to inline only one occurrence, the 'Remove class' checkbox should be disabled (greyed out).",
+    "NEW INSTRUCTION": "WHEN user selects \"Inline this occurrence\" THEN disable and uncheck the remove-class checkbox"
+}
+
+[2026-01-06 12:42] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "EDT violation",
+    "EXPECTATION": "Do not perform blocking usage counting or SDK/package checks on the EDT; run them off-EDT and only show the dialog afterward on the UI thread.",
+    "NEW INSTRUCTION": "WHEN counting usages or resolving SDK in handler THEN run in background and show dialog on EDT"
+}
+

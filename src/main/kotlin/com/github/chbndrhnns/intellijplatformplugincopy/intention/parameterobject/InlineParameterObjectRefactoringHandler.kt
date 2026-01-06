@@ -1,8 +1,10 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject
 
 import com.intellij.openapi.actionSystem.DataContext
+import com.intellij.openapi.application.readAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
+import com.intellij.platform.ide.progress.runWithModalProgressBlocking
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.refactoring.RefactoringActionHandler
@@ -13,7 +15,25 @@ class InlineParameterObjectRefactoringHandler : RefactoringActionHandler {
         val element = file.findElementAt(editor.caretModel.offset) ?: return
         val function = InlineParameterObjectTarget.find(element) ?: return
 
-        PyInlineParameterObjectProcessor(function, element).run()
+        // Count usages to determine if we need to show the dialog
+        val processor = PyInlineParameterObjectProcessor(function, element)
+        val usageCount = runWithModalProgressBlocking(project, "Counting usages") {
+            readAction {
+                processor.countUsages()
+            }
+        }
+
+        if (usageCount > 1) {
+            // Show dialog to get user preferences
+            val dialog = InlineParameterObjectDialog(project, usageCount)
+            if (dialog.showAndGet()) {
+                val settings = dialog.getSettings()
+                processor.run(settings)
+            }
+        } else {
+            // Single usage or no usages - use default settings (inline all, keep class)
+            processor.run(InlineParameterObjectSettings(inlineAllOccurrences = true, removeClass = false))
+        }
     }
 
     override fun invoke(project: Project, elements: Array<out PsiElement>, dataContext: DataContext?) {

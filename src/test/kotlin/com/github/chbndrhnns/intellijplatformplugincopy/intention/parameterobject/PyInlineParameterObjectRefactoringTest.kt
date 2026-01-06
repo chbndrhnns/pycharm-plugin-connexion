@@ -296,4 +296,5 @@ class PyInlineParameterObjectRefactoringTest : TestBase() {
             event.presentation.isEnabledAndVisible
         )
     }
+
 }

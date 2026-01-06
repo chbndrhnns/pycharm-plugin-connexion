@@ -29,6 +29,7 @@ class PyInlineParameterObjectProcessor(
 
     private data class Plan(
         val project: Project,
+        val function: PyFunction,
         val parameter: PyNamedParameter,
         val parameterName: String,
         val parameterObjectClass: PyClass,
@@ -42,55 +43,148 @@ class PyInlineParameterObjectProcessor(
         val newArgumentListText: String,
     )
 
-    fun run() {
+    fun countUsages(): Int {
         val project = function.project
 
-        val plan = runWithModalProgressBlocking(project, "Inline parameter object") {
+        // Find the parameter object class
+        val parameter = findInlineableParameter(function) ?: return 0
+        val parameterObjectClass = resolveParameterClass(parameter) ?: return 0
+
+        // Search for all references to the parameter object class
+        val classReferences =
+            ReferencesSearch.search(parameterObjectClass, GlobalSearchScope.projectScope(project)).findAll()
+
+        // Count unique functions that use this class as a parameter type
+        val functionsUsingClass = mutableSetOf<PyFunction>()
+        for (ref in classReferences) {
+            val element = ref.element
+
+            // Check if this reference is in a parameter annotation
+            val parameter = PsiTreeUtil.getParentOfType(element, PyNamedParameter::class.java)
+            if (parameter != null) {
+                val containingFunction = PsiTreeUtil.getParentOfType(parameter, PyFunction::class.java)
+                if (containingFunction != null) {
+                    functionsUsingClass.add(containingFunction)
+                }
+            }
+        }
+
+        return functionsUsingClass.size
+    }
+
+    fun run(
+        settings: InlineParameterObjectSettings = InlineParameterObjectSettings(
+            inlineAllOccurrences = true,
+            removeClass = true
+        )
+    ) {
+        val project = function.project
+
+        val result = runWithModalProgressBlocking(project, "Inline parameter object") {
             readAction {
                 val parameter = findInlineableParameter(function)
                     ?: return@readAction null
 
-                val parameterName = parameter.name ?: return@readAction null
                 val parameterObjectClass = resolveParameterClass(parameter) ?: return@readAction null
                 val fields = extractFields(parameterObjectClass)
                 if (fields.isEmpty()) return@readAction null
 
-                val functionUsages = ReferencesSearch.search(function, GlobalSearchScope.projectScope(project)).findAll()
-                val callSiteUpdates = prepareCallSiteUpdates(
-                    project = project,
-                    function = function,
-                    parameter = parameter,
-                    parameterName = parameterName,
-                    parameterObjectClass = parameterObjectClass,
-                    fields = fields,
-                    functionUsages = functionUsages
-                )
+                // Find all functions that use this parameter object class
+                val functionsToProcess = if (settings.inlineAllOccurrences) {
+                    findAllFunctionsUsingClass(parameterObjectClass, project)
+                } else {
+                    listOf(function)
+                }
 
-                Plan(
-                    project = project,
-                    parameter = parameter,
-                    parameterName = parameterName,
-                    parameterObjectClass = parameterObjectClass,
-                    fields = fields,
-                    functionUsages = functionUsages,
-                    callSiteUpdates = callSiteUpdates,
-                )
+                // Create a plan for each function
+                val plans = functionsToProcess.mapNotNull { targetFunction ->
+                    val targetParameter = findInlineableParameter(targetFunction) ?: return@mapNotNull null
+                    val parameterName = targetParameter.name ?: return@mapNotNull null
+
+                    val functionUsages =
+                        ReferencesSearch.search(targetFunction, GlobalSearchScope.projectScope(project)).findAll()
+                    val callSiteUpdates = prepareCallSiteUpdates(
+                        project = project,
+                        function = targetFunction,
+                        parameter = targetParameter,
+                        parameterName = parameterName,
+                        parameterObjectClass = parameterObjectClass,
+                        fields = fields,
+                        functionUsages = functionUsages,
+                        inlineAllOccurrences = true // Always inline all call sites for each function
+                    )
+
+                    Plan(
+                        project = project,
+                        function = targetFunction,
+                        parameter = targetParameter,
+                        parameterName = parameterName,
+                        parameterObjectClass = parameterObjectClass,
+                        fields = fields,
+                        functionUsages = functionUsages,
+                        callSiteUpdates = callSiteUpdates,
+                    )
+                }
+
+                // Check if the class has any remaining usages (before the write action)
+                val classUsages = if (settings.removeClass) {
+                    ReferencesSearch.search(parameterObjectClass, GlobalSearchScope.projectScope(project)).findAll()
+                } else {
+                    emptyList()
+                }
+
+                Pair(plans, classUsages)
             }
         } ?: return
 
+        val (plans, classUsages) = result
+
         WriteCommandAction.runWriteCommandAction(project, "Inline parameter object", null, Runnable {
-            replaceFunctionSignature(plan)
-            updateFunctionBody(plan)
-            applyCallSiteUpdates(plan)
-            CodeStyleManager.getInstance(project).reformat(function)
-        }, function.containingFile)
+            // Process all plans
+            for (plan in plans) {
+                replaceFunctionSignature(plan)
+                updateFunctionBody(plan)
+                applyCallSiteUpdates(plan)
+                // Reformat each function individually to avoid PSI crashes
+                if (plan.function.isValid) {
+                    CodeStyleManager.getInstance(project).reformat(plan.function)
+                }
+            }
+
+            // Remove the class if requested and no usages remain
+            if (settings.removeClass && classUsages.isEmpty()) {
+                val parameterObjectClass = plans.first().parameterObjectClass
+                if (parameterObjectClass.isValid) {
+                    parameterObjectClass.delete()
+                }
+            }
+        })
+    }
+
+    private fun findAllFunctionsUsingClass(parameterObjectClass: PyClass, project: Project): List<PyFunction> {
+        val classReferences =
+            ReferencesSearch.search(parameterObjectClass, GlobalSearchScope.projectScope(project)).findAll()
+        val functionsUsingClass = mutableSetOf<PyFunction>()
+
+        for (ref in classReferences) {
+            val element = ref.element
+            val parameter = PsiTreeUtil.getParentOfType(element, PyNamedParameter::class.java)
+            if (parameter != null) {
+                val containingFunction = PsiTreeUtil.getParentOfType(parameter, PyFunction::class.java)
+                if (containingFunction != null) {
+                    functionsUsingClass.add(containingFunction)
+                }
+            }
+        }
+
+        return functionsUsingClass.toList()
     }
 
     private fun replaceFunctionSignature(plan: Plan) {
         val generator = PyElementGenerator.getInstance(plan.project)
-        val languageLevel = LanguageLevel.forElement(function)
+        val languageLevel = LanguageLevel.forElement(plan.function)
 
-        val oldParams = function.parameterList.parameters.toList()
+        val oldParams = plan.function.parameterList.parameters.toList()
         val newParamsText = buildString {
             append("(")
             var first = true
@@ -128,7 +222,7 @@ class PyInlineParameterObjectProcessor(
             "def __inline_param_object$newParamsText:\n    pass"
         )
 
-        function.parameterList.replace(dummy.parameterList)
+        plan.function.parameterList.replace(dummy.parameterList)
     }
 
     private fun updateFunctionBody(plan: Plan) {
@@ -137,7 +231,7 @@ class PyInlineParameterObjectProcessor(
         val isTypedDict = isTypedDict(plan.parameterObjectClass)
 
         // 1. Replace attribute access: params.field -> field
-        val references = PsiTreeUtil.collectElementsOfType(function, PyReferenceExpression::class.java)
+        val references = PsiTreeUtil.collectElementsOfType(plan.function, PyReferenceExpression::class.java)
         for (ref in references) {
             if (!ref.isValid) continue
 
@@ -159,7 +253,7 @@ class PyInlineParameterObjectProcessor(
 
         // 2. Replace subscription access (TypedDict): params["field"] -> field
         if (isTypedDict) {
-            val subscriptions = PsiTreeUtil.collectElementsOfType(function, PySubscriptionExpression::class.java)
+            val subscriptions = PsiTreeUtil.collectElementsOfType(plan.function, PySubscriptionExpression::class.java)
             for (sub in subscriptions) {
                 if (!sub.isValid) continue
 
@@ -192,6 +286,7 @@ class PyInlineParameterObjectProcessor(
         parameterObjectClass: PyClass,
         fields: List<FieldInfo>,
         functionUsages: Collection<PsiReference>,
+        inlineAllOccurrences: Boolean,
     ): List<CallSiteUpdateInfo> {
         if (functionUsages.isEmpty()) return emptyList()
 
@@ -204,6 +299,12 @@ class PyInlineParameterObjectProcessor(
             val element = ref.element
             val call = PsiTreeUtil.getParentOfType(element, PyCallExpression::class.java) ?: continue
             if (call.callee != element && call.callee?.reference?.resolve() != function) continue
+
+            // If inlining only this occurrence, check if this is the invocation element
+            if (!inlineAllOccurrences) {
+                val isCurrentInvocation = PsiTreeUtil.isAncestor(call, invocationElement, false)
+                if (!isCurrentInvocation) continue
+            }
 
             val mapping = call.multiMapArguments(resolveContext).firstOrNull {
                 it.callableType?.callable == function
@@ -298,6 +399,7 @@ class PyInlineParameterObjectProcessor(
             }
         }
     }
+
 
     private fun findInlineableParameter(function: PyFunction): PyNamedParameter? {
         val context = TypeEvalContext.codeAnalysis(function.project, function.containingFile)

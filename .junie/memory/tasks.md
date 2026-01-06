@@ -568,3 +568,43 @@
     "NEW INSTRUCTION": "WHEN caret inside parameter annotation yields no availability THEN add failing test and extend inParameters checks"
 }
 
+[2026-01-06 11:27] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "branch on dialog modality",
+    "MISSING STEPS": "scan project for callers, update processor, implement class removal, run build, add tests",
+    "BOTTLENECK": "Non-backward-compatible processor changes introduced cascading compile errors.",
+    "PROJECT NOTE": "Processor.run was no-arg; prefer adding an overload to avoid breaking callers.",
+    "NEW INSTRUCTION": "WHEN changing processor API THEN add a backward-compatible overload and update internal calls"
+}
+
+[2026-01-06 12:37] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "define what 'usage' means, count parameter object class constructor usages, add tests",
+    "BOTTLENECK": "Usage counting measured function call sites, not parameter object usage.",
+    "PROJECT NOTE": "In PyInlineParameterObjectProcessor.countUsages(), search for constructor usages of the parameter object class (e.g., FooParams(...)) across the project instead of references to a single function.",
+    "NEW INSTRUCTION": "WHEN computing dialog usage count THEN count constructor usages of the parameter object class"
+}
+
+[2026-01-06 12:39] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "run background task,wrap read action",
+    "BOTTLENECK": "Usage counting runs on EDT and triggers forbidden blocking operations.",
+    "PROJECT NOTE": "Counting usages via ReferencesSearch must not execute on EDT; wrap with modal progress and readAction.",
+    "NEW INSTRUCTION": "WHEN counting usages or performing global search THEN runWithModalProgressBlocking and readAction the work"
+}
+
+[2026-01-06 12:44] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "submit solution without runtime verification,claim tests pass without reproducing UI error",
+    "MISSING STEPS": "reproduce error,run plugin to trigger dialog path,wrap searches in background read action,add UI/EDT constraint test,guard against framework checks on EDT",
+    "BOTTLENECK": "Blocking PSI/reference search executed from EDT caused forbidden-on-EDT exception.",
+    "PROJECT NOTE": "Move usage counting and any reference/resolve work off EDT using readAction with modal/background progress; ensure no framework/package checks run on EDT via providers.",
+    "NEW INSTRUCTION": "WHEN PSI search or resolve is triggered from a UI handler THEN run it in readAction with modal background progress"
+}
+
