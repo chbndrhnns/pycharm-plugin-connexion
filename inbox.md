@@ -16,6 +16,7 @@
 
 ## Pending Features
 
+- [ ] feat: Search in changed files only
 - [ ] feat: Prefer relative imports also when using move refactoring, blocked
   by https://youtrack.jetbrains.com/issue/PY-86616/PyMoveModuleMembersProcessor-does-not-emit-events
 - [ ] refactor: Use `PythonDependenciesManager` if public
