@@ -548,3 +548,23 @@
     "NEW INSTRUCTION": "WHEN test build shows Gradle cache or workspace errors THEN run clean with refresh-dependencies"
 }
 
+[2026-01-06 10:57] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "add tests, run tests, verify behavior at call sites",
+    "BOTTLENECK": "No verification via tests after modifying availability logic.",
+    "PROJECT NOTE": "Reuse IntroduceParameterObjectTarget caret-detection pattern for consistency.",
+    "NEW INSTRUCTION": "WHEN changing availability logic for intentions THEN add caret-position tests and run tests"
+}
+
+[2026-01-06 11:00] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "add failing test reproducer, expand in-parameters edge cases",
+    "BOTTLENECK": "The in-parameters predicate still misses certain PSI variants in annotations.",
+    "PROJECT NOTE": "Mirror edge-case handling between InlineParameterObjectTarget and IntroduceParameterObjectTarget to maintain parity.",
+    "NEW INSTRUCTION": "WHEN caret inside parameter annotation yields no availability THEN add failing test and extend inParameters checks"
+}
+

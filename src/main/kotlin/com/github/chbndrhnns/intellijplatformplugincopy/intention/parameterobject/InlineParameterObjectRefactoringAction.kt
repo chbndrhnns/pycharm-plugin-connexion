@@ -21,7 +21,13 @@ class InlineParameterObjectRefactoringAction : PyBaseRefactoringAction() {
         context: DataContext
     ): Boolean {
         if (!PluginSettingsState.instance().state.enableParameterObjectRefactoring) return false
-        return InlineParameterObjectTarget.isAvailable(element)
+
+        // PyBaseRefactoringAction sometimes passes the resolved element (e.g., the class definition)
+        // instead of the element at the caret (e.g., the reference to the class in the annotation).
+        // We need to use the element at the caret position for proper availability checking.
+        val elementAtCaret = file.findElementAt(editor.caretModel.offset) ?: element
+
+        return InlineParameterObjectTarget.isAvailable(elementAtCaret)
     }
 
     override fun isEnabledOnElementsOutsideEditor(elements: Array<out PsiElement>): Boolean {

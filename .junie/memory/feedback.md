@@ -438,3 +438,27 @@
     "NEW INSTRUCTION": "WHEN function already uses a parameter object THEN suppress gutter icon but keep action enabled"
 }
 
+[2026-01-06 10:55] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "availability range",
+    "EXPECTATION": "Make 'Inline Parameter Object' available not only on the argument name but anywhere in the parameter list and on its annotation.",
+    "NEW INSTRUCTION": "WHEN caret is in parameter list or its annotation THEN enable Inline Parameter Object action"
+}
+
+[2026-01-06 10:58] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "availability range",
+    "EXPECTATION": "The action should be available when the caret is on the parameter’s type annotation token (e.g., within the class name in the annotation).",
+    "NEW INSTRUCTION": "WHEN caret on parameter type annotation THEN enable Inline Parameter Object action"
+}
+
+[2026-01-06 11:00] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "availability range",
+    "EXPECTATION": "Make the Inline Parameter Object action available in the whole parameter list and on the parameter’s type annotation token.",
+    "NEW INSTRUCTION": "WHEN caret in parameter list or its annotation THEN enable Inline Parameter Object action"
+}
+
