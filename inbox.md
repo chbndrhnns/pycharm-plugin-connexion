@@ -2,6 +2,7 @@
 
 ## Pending Issues
 
+- [ ] fix: FP: We are marking directories as missing root prefix when referenced from test. 
 - [ ] fix: Should also offer Wrap: `do(Path("a<caret>bc"))` (253 vs 261?)
 - [ ] refactor: PyUnresolvedReferenceAsErrorInspection, lots of strings (?)
 - [ ] refactor: Use module name in PyPackageRunLineMarkerContributor, also strip __main__, other special cases?
@@ -16,6 +17,7 @@
 
 ## Pending Features
 
+- [ ] feat: Iterate by warning type through IDE errors
 - [ ] feat: Search in changed files only
 - [ ] feat: Prefer relative imports also when using move refactoring, blocked
   by https://youtrack.jetbrains.com/issue/PY-86616/PyMoveModuleMembersProcessor-does-not-emit-events
@@ -59,7 +61,7 @@
 
 ## In Progress Tasks
 
-- [ ] feat: Inline parameter object should ask to remove/other invocations
+- [-] feat: Inline parameter object should ask to remove/other invocations
 - [-] feat: Move: Warn if test exists in target class already
 - [ ] feat: Block list: Do not allow names from typing or collections.abc.
 - [ ] refactor: Performance (spec/performance.md)
