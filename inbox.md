@@ -61,13 +61,13 @@
 
 ## In Progress Tasks
 
-- [-] feat: Inline parameter object should ask to remove/other invocations
 - [-] feat: Move: Warn if test exists in target class already
 - [ ] feat: Block list: Do not allow names from typing or collections.abc.
 - [ ] refactor: Performance (spec/performance.md)
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Inline parameter object should ask to remove/other invocations
 - [x] feat: Unexport from `__all__` if no usages in project, otherwise show usages for confirmation
 - [x] feat: Change visibility: make private (we only have two options and one is always true)
 - [x] fix: Do not offer any feature in third-party code, library
