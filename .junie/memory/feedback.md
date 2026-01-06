@@ -502,3 +502,19 @@
     "NEW INSTRUCTION": "WHEN counting usages or resolving SDK in handler THEN run in background and show dialog on EDT"
 }
 
+[2026-01-06 13:57] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "RECORD fallback parsing",
+    "EXPECTATION": "When top_level.txt is absent, derive top-level modules by parsing RECORD entries and collecting unique first path segments, ignoring .dist-info entries.",
+    "NEW INSTRUCTION": "WHEN top_level.txt missing THEN parse RECORD, ignore *.dist-info, collect first path segments"
+}
+
+[2026-01-06 13:59] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "RECORD parsing method",
+    "EXPECTATION": "Treat RECORD entries as file paths and derive the top-level module from the first path segment, not as CSV fields.",
+    "NEW INSTRUCTION": "WHEN top_level.txt missing and parsing RECORD entries THEN use first segment before '/'"
+}
+

@@ -608,3 +608,53 @@
     "NEW INSTRUCTION": "WHEN PSI search or resolve is triggered from a UI handler THEN run it in readAction with modal background progress"
 }
 
+[2026-01-06 12:50] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "add tests, run tests, cache results",
+    "BOTTLENECK": "Assuming module name equals package name during filtering.",
+    "PROJECT NOTE": "Adjust HideTransientImportProvider to map top-level modules to packages via PyPackage.getTopLevel and cache per SDK.",
+    "NEW INSTRUCTION": "WHEN module-to-package resolution is needed THEN map via PyPackage.topLevel and cache per SDK"
+}
+
+[2026-01-06 13:05] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "handle deprecations, run build, run tests, verify caching works",
+    "BOTTLENECK": "Used deprecated PyPackageManager instead of supported top-level metadata APIs.",
+    "PROJECT NOTE": "There is an existing HideTransientImportProviderTest; run it after changes.",
+    "NEW INSTRUCTION": "WHEN semantic errors report deprecated API usage THEN choose and implement a non-deprecated alternative"
+}
+
+[2026-01-06 13:47] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "scan filesystem",
+    "MISSING STEPS": "cache mapping,add invalidation trigger,lazy build",
+    "BOTTLENECK": "Repeated filesystem scan of site-packages on every invocation.",
+    "PROJECT NOTE": "Use CachedValuesManager on the Module and invalidate via PyPackageManager.modificationTracker.",
+    "NEW INSTRUCTION": "WHEN building module-to-package mapping repeatedly THEN cache using CachedValuesManager with modificationTracker"
+}
+
+[2026-01-06 13:58] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "parse RECORD,exclude .dist-info entries,collect unique top-level names,dedupe and normalize modules,update tests",
+    "BOTTLENECK": "No fallback to RECORD when top_level.txt is missing.",
+    "PROJECT NOTE": "Enhance buildModuleToPackageMapping to derive modules from RECORD when top_level.txt is absent.",
+    "NEW INSTRUCTION": "WHEN top_level.txt absent in package metadata directory THEN Parse RECORD and map unique first paths excluding .dist-info"
+}
+
+[2026-01-06 14:01] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "add tests,clarify input format",
+    "BOTTLENECK": "Ambiguity about RECORD format led to confusion in parsing strategy.",
+    "PROJECT NOTE": "RECORD is CSV (path, hash, size); path is the first field to parse before taking the top-level directory.",
+    "NEW INSTRUCTION": "WHEN implementing RECORD parsing THEN get path before comma, then module before slash"
+}
+

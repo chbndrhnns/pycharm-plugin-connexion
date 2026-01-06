@@ -718,3 +718,53 @@
     "NEW INSTRUCTION": "WHEN performing PSI searches or counting usages THEN run via runWithModalProgressBlocking readAction"
 }
 
+[2026-01-06 12:44] - Updated by Junie - Error analysis
+{
+    "TYPE": "threading",
+    "TOOL": "PyInlineParameterObjectProcessor.removeParameterObjectClass",
+    "ERROR": "Blocking operation on EDT: PythonPackageManager.forSdk invoked",
+    "ROOT CAUSE": "A blocking search/package query ran on the Event Dispatch Thread during refactoring.",
+    "PROJECT NOTE": "Move all ReferencesSearch/Query.findAll and package/Sdk-related calls to a background read action via runWithModalProgressBlocking; keep PSI deletions in WriteCommandAction.",
+    "NEW INSTRUCTION": "WHEN blocking PSI search or package manager call on EDT THEN wrap with runWithModalProgressBlocking(project){ readAction{ ... } }"
+}
+
+[2026-01-06 12:58] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic",
+    "TOOL": "search_replace",
+    "ERROR": "Used deprecated PyPackageManager API",
+    "ROOT CAUSE": "The edit imported com.jetbrains.python.packaging.PyPackageManager which is deprecated and scheduled for removal.",
+    "PROJECT NOTE": "Use PyPackageService (e.g., PyPackageService.getInstance(project).getPackages(sdk)) instead of PyPackageManager to obtain packages and their top-level modules.",
+    "NEW INSTRUCTION": "WHEN import causes deprecation error in IDE THEN replace with the non-deprecated successor API"
+}
+
+[2026-01-06 13:00] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid api",
+    "TOOL": "search_replace",
+    "ERROR": "Deprecated API marked for removal used",
+    "ROOT CAUSE": "Code introduced com.jetbrains.python.packaging.PyPackageManager which is deprecated and flagged by semantic checks.",
+    "PROJECT NOTE": "Prefer non-deprecated Python plugin APIs; if migration path is unclear, temporarily add @Suppress(\"DEPRECATION\") near usage and track a TODO.",
+    "NEW INSTRUCTION": "WHEN semantic checker flags deprecated API marked for removal THEN replace with supported API or add @Suppress(\"DEPRECATION\")"
+}
+
+[2026-01-06 13:03] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic",
+    "TOOL": "search_replace",
+    "ERROR": "Deprecated API used: PyPackageManager marked for removal",
+    "ROOT CAUSE": "The edit introduced com.jetbrains.python.packaging.PyPackageManager, which is deprecated and flagged as an error in this project SDK.",
+    "PROJECT NOTE": "Use the newer packaging management API (e.g., com.jetbrains.python.packaging.management.PythonPackageManager.forSdk(sdk)) to list installed packages and read top-level modules.",
+    "NEW INSTRUCTION": "WHEN semantic errors flag deprecated or removed API THEN replace with supported alternative from current SDK"
+}
+
+[2026-01-06 13:03] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic",
+    "TOOL": "search_replace",
+    "ERROR": "Deprecated API used: PyPackageManager",
+    "ROOT CAUSE": "The edit introduced PyPackageManager which is deprecated and flagged by the project checker.",
+    "PROJECT NOTE": "In imports/HideTransientImportProvider.kt, use PythonPackagingService.getInstance(sdk).getPackages() to list installed packages instead of PyPackageManager.",
+    "NEW INSTRUCTION": "WHEN semantic errors mention 'deprecated and marked for removal' THEN replace PyPackageManager with PythonPackagingService.getInstance(sdk).getPackages()"
+}
+

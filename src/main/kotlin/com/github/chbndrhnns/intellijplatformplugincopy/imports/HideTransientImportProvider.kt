@@ -6,20 +6,30 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.roots.ModuleRootManager
+import com.intellij.openapi.roots.ProjectRootManager
+import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReference
+import com.intellij.psi.util.CachedValue
+import com.intellij.psi.util.CachedValueProvider
+import com.intellij.psi.util.CachedValuesManager
 import com.jetbrains.python.PyPsiPackageUtil
 import com.jetbrains.python.codeInsight.imports.AutoImportQuickFix
 import com.jetbrains.python.codeInsight.imports.ImportCandidateHolder
 import com.jetbrains.python.codeInsight.imports.PyImportCandidateProvider
 import com.jetbrains.python.packaging.PyPackageName
+import com.jetbrains.python.sdk.PythonSdkUtil
+import java.io.File
 
 /**
  * Filters auto-import suggestions to hide transient dependencies.
  * Only shows imports for packages that are direct dependencies in pyproject.toml.
  */
 class HideTransientImportProvider : PyImportCandidateProvider {
+    companion object {
+        private val MODULE_TO_PACKAGE_KEY = Key.create<CachedValue<Map<String, String>>>("MODULE_TO_PACKAGE_MAPPING")
+    }
     override fun addImportCandidates(reference: PsiReference, name: String, quickFix: AutoImportQuickFix) {
         if (!PluginSettingsState.instance().state.enableHideTransientImports) {
             return
@@ -30,6 +40,154 @@ class HideTransientImportProvider : PyImportCandidateProvider {
         val project = element.project
         val stdlibService = PythonStdlibService.getInstance(project)
         filterTransientCandidatesReflectively(quickFix, directDependencies, stdlibService, module)
+    }
+
+    /**
+     * Gets the cached module-to-package mapping, rebuilding it only when the SDK or packages change.
+     */
+    private fun getCachedModuleToPackageMapping(module: Module): Map<String, String> {
+        return CachedValuesManager.getManager(module.project).getCachedValue(
+            module,
+            MODULE_TO_PACKAGE_KEY,
+            {
+                val mapping = buildModuleToPackageMapping(module)
+
+                // Invalidate cache when project roots change (e.g., SDK or packages installed/removed)
+                CachedValueProvider.Result.create(
+                    mapping,
+                    ProjectRootManager.getInstance(module.project)
+                )
+            },
+            false
+        )
+    }
+
+    /**
+     * Extracts top-level module names from a RECORD file.
+     * Parses CSV-like entries, strips lines with .dist-info suffix before the first slash,
+     * and collects all unique elements before the first slash.
+     */
+    private fun extractModulesFromRecord(recordFile: File): Set<String> {
+        val modules = mutableSetOf<String>()
+
+        try {
+            recordFile.readLines().forEach { line ->
+                val trimmedLine = line.trim()
+                if (trimmedLine.isEmpty()) return@forEach
+
+                // Extract the file path (first CSV field before the first comma)
+                val filePath = trimmedLine.substringBefore(',')
+                if (filePath.isEmpty()) return@forEach
+
+                // Skip lines with .dist-info suffix before the first slash
+                val firstSlashIndex = filePath.indexOf('/')
+                if (firstSlashIndex > 0) {
+                    val beforeSlash = filePath.substring(0, firstSlashIndex)
+                    if (beforeSlash.endsWith(".dist-info") || beforeSlash.endsWith(".egg-info")) {
+                        return@forEach
+                    }
+
+                    // Collect the top-level directory name
+                    modules.add(beforeSlash)
+                }
+            }
+        } catch (e: Exception) {
+            Logger.getInstance(HideTransientImportProvider::class.java)
+                .debug("Failed to parse RECORD file: ${recordFile.name}", e)
+        }
+
+        return modules
+    }
+
+    /**
+     * Builds a mapping from top-level module names to package names
+     * by reading top_level.txt from .dist-info and .egg-info directories.
+     * Falls back to RECORD file if top_level.txt doesn't exist.
+     */
+    private fun buildModuleToPackageMapping(module: Module): Map<String, String> {
+        val sdk = PythonSdkUtil.findPythonSdk(module) ?: return emptyMap()
+        val sitePackagesDirs = sdk.rootProvider.getFiles(com.intellij.openapi.roots.OrderRootType.CLASSES)
+
+        val mapping = mutableMapOf<String, String>()
+
+        for (sitePackagesVFile in sitePackagesDirs) {
+            val sitePackagesDir = File(sitePackagesVFile.path)
+            if (!sitePackagesDir.exists() || !sitePackagesDir.isDirectory) continue
+
+            // Find all .dist-info and .egg-info directories
+            val metadataDirs = sitePackagesDir.listFiles { file ->
+                file.isDirectory && (file.name.endsWith(".dist-info") || file.name.endsWith(".egg-info"))
+            } ?: continue
+
+            for (metadataDir in metadataDirs) {
+                try {
+                    // Extract package name from directory name (e.g., "Pillow-9.0.0.dist-info" -> "Pillow")
+                    val dirName = metadataDir.name
+                    val packageName = when {
+                        dirName.endsWith(".dist-info") -> dirName.removeSuffix(".dist-info").substringBeforeLast('-')
+                        dirName.endsWith(".egg-info") -> dirName.removeSuffix(".egg-info").substringBeforeLast('-')
+                        else -> continue
+                    }
+                    val normalizedPackageName = PyPackageName.normalizePackageName(packageName)
+
+                    // Read top_level.txt
+                    val topLevelFile = File(metadataDir, "top_level.txt")
+                    if (topLevelFile.exists() && topLevelFile.isFile) {
+                        val topLevelModules = topLevelFile.readLines()
+                            .map { it.trim() }
+                            .filter { it.isNotEmpty() && !it.startsWith("#") }
+
+                        for (moduleName in topLevelModules) {
+                            val normalizedModule = moduleName.lowercase().replace("-", "_")
+                            mapping[normalizedModule] = normalizedPackageName
+                        }
+                    } else {
+                        // Fallback 1: Try to extract modules from RECORD file
+                        val recordFile = File(metadataDir, "RECORD")
+                        if (recordFile.exists() && recordFile.isFile) {
+                            val modulesFromRecord = extractModulesFromRecord(recordFile)
+                            for (moduleName in modulesFromRecord) {
+                                val normalizedModule = moduleName.lowercase().replace("-", "_")
+                                mapping[normalizedModule] = normalizedPackageName
+                            }
+                        } else {
+                            // Fallback 2: assume module name matches package name
+                            val normalizedModule = normalizedPackageName.replace("-", "_")
+                            mapping[normalizedModule] = normalizedPackageName
+                        }
+                    }
+                } catch (e: Exception) {
+                    // Skip this package on error
+                    Logger.getInstance(HideTransientImportProvider::class.java)
+                        .debug("Failed to process metadata directory: ${metadataDir.name}", e)
+                }
+            }
+        }
+
+        return mapping
+    }
+
+    /**
+     * Resolves the package name for a given module using multiple strategies:
+     * 1. Installed package metadata (module-to-package mapping)
+     * 2. Hardcoded mappings (PyPsiPackageUtil)
+     * 3. Simple normalization fallback
+     */
+    private fun resolvePackageName(
+        topLevelModule: String,
+        moduleToPackage: Map<String, String>
+    ): String {
+        val normalizedModule = topLevelModule.lowercase().replace("-", "_")
+
+        // Strategy 1: Use metadata from installed packages
+        moduleToPackage[normalizedModule]?.let { return it }
+
+        // Strategy 2: Use PyCharm's hardcoded mappings
+        val fromHardcoded = PyPsiPackageUtil.moduleToPackageName(topLevelModule)
+        val normalizedHardcoded = PyPackageName.normalizePackageName(fromHardcoded)
+
+        // Strategy 3: Fallback to normalized module name
+        return normalizedHardcoded
     }
 
     /**
@@ -50,6 +208,9 @@ class HideTransientImportProvider : PyImportCandidateProvider {
             @Suppress("UNCHECKED_CAST")
             val candidates = candidatesField.get(quickFix) as? MutableList<ImportCandidateHolder> ?: return
 
+            // Get cached module-to-package mapping from installed packages
+            val moduleToPackage = getCachedModuleToPackageMapping(module)
+
             // Filter using the public API of ImportCandidateHolder
             candidates.removeIf { candidate ->
                 // Never filter local project modules
@@ -61,14 +222,12 @@ class HideTransientImportProvider : PyImportCandidateProvider {
 
                 // Never filter stdlib modules
                 if (stdlibService.isStdlibModule(topLevelModule, null)) return@removeIf false
-                
-                val packageName = PyPsiPackageUtil.moduleToPackageName(topLevelModule)
-                val normalizedPackageName = PyPackageName.normalizePackageName(packageName)
-                if (!directDependencies.contains(normalizedPackageName)) {
-                    return@removeIf true
-                }
 
-                false
+                // Try to resolve package name using multiple strategies
+                val packageName = resolvePackageName(topLevelModule, moduleToPackage)
+
+                // Filter out if not in direct dependencies
+                !directDependencies.contains(packageName)
             }
         } catch (e: NoSuchFieldException) {
             // Field name changed - log and fail gracefully
