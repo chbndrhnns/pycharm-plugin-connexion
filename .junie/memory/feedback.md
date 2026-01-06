@@ -414,3 +414,27 @@
     "NEW INSTRUCTION": "WHEN generating pytest location URL THEN use content/test root path inside angle brackets"
 }
 
+[2026-01-06 10:37] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "gutter icon behavior",
+    "EXPECTATION": "Display the BetterPy gutter icon at the normal size, and clicking it should trigger the intended action.",
+    "NEW INSTRUCTION": "WHEN adding or updating gutter icon THEN use betterpy 16px icon and wire GutterIconNavigationHandler"
+}
+
+[2026-01-06 10:48] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "gutter icon click",
+    "EXPECTATION": "Clicking the BetterPy gutter icon should trigger the Introduce Parameter Object refactoring.",
+    "NEW INSTRUCTION": "WHEN user clicks parameter object gutter icon THEN invoke refactoring handler with project, editor, file"
+}
+
+[2026-01-06 10:51] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "gutter icon condition",
+    "EXPECTATION": "Hide the gutter icon when a parameter object already exists, but keep the context menu action available.",
+    "NEW INSTRUCTION": "WHEN function already uses a parameter object THEN suppress gutter icon but keep action enabled"
+}
+

@@ -528,3 +528,23 @@
     "NEW INSTRUCTION": "WHEN generating test location URLs THEN add debug logs for qname, roots, module path, URLs"
 }
 
+[2026-01-06 10:43] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "search icons in resources,search for IconLoader usages,search for custom Icons object",
+    "MISSING STEPS": "run build,fix deprecation,verify click handler behavior",
+    "BOTTLENECK": "Icon asset assumption and no build feedback prolonged iteration.",
+    "PROJECT NOTE": "Action IDs for parameter object refactorings are defined in plugin.xml; no 16x16 custom icon exists, prefer AllIcons.",
+    "NEW INSTRUCTION": "WHEN editing a line marker provider THEN run a project build to catch compile errors"
+}
+
+[2026-01-06 10:50] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "delete gradle cache,repeat clean cycles",
+    "MISSING STEPS": "-",
+    "BOTTLENECK": "Manual Gradle cache removal caused avoidable dependency resolution failures.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN test build shows Gradle cache or workspace errors THEN run clean with refresh-dependencies"
+}
+

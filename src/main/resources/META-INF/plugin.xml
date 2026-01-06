@@ -83,6 +83,8 @@
                                         implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.connexion.ConnexionPythonLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="JSON"
                                         implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.connexion.ConnexionJsonLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="Python"
+                                        implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.ParameterObjectLineMarkerProvider"/>
 
         <definitionsScopedSearch implementation="com.github.chbndrhnns.intellijplatformplugincopy.search.PyProtocolDefinitionsSearchExecutor"/>
 

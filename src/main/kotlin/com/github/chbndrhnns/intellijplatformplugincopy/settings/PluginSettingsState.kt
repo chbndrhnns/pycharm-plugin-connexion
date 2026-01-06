@@ -326,6 +326,14 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enableIntroduceCustomTypeRefactoringAction: Boolean = true,
 
         // ---- Parameter Object Settings ----
+        @Feature(
+            id = "parameter-object-gutter-icon",
+            displayName = "Parameter object gutter icon",
+            description = "Shows a gutter icon on functions that are candidates for 'Introduce Parameter Object' refactoring",
+            category = FeatureCategory.ACTIONS
+        )
+        var enableParameterObjectGutterIcon: Boolean = true,
+
         /** Default base type for parameter objects (dataclass, NamedTuple, TypedDict, pydantic.BaseModel) */
         var defaultParameterObjectBaseType: String = "dataclass",
 

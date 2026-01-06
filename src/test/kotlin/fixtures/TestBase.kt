@@ -28,6 +28,7 @@ abstract class TestBase : MyPlatformTestCase() {
                 enablePrivateModuleImportInspection = true,
                 enableCopyBuildNumberAction = true,
                 enableParameterObjectRefactoring = true,
+                enableParameterObjectGutterIcon = true,
                 enableCreateLocalVariableIntention = true,
                 enableStructureViewPrivateMembersFilter = true,
                 enableMakeParameterOptionalIntention = true,
