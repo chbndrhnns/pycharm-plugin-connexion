@@ -65,6 +65,12 @@ class PyStrictSourceRootImportInspection : PyInspection() {
         val project = importSource.project
         val fileIndex = ProjectFileIndex.getInstance(project)
         val root = fileIndex.getSourceRootForFile(virtualFile) ?: return
+
+        // Only check if importing from the SAME source root
+        val currentFile = importSource.containingFile.virtualFile ?: return
+        val currentSourceRoot = fileIndex.getSourceRootForFile(currentFile)
+        if (currentSourceRoot == null || currentSourceRoot != root) return
+
         val contentRoot = fileIndex.getContentRootForFile(virtualFile) ?: return
 
         if (root == contentRoot) return

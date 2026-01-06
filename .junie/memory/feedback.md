@@ -558,3 +558,19 @@
     "NEW INSTRUCTION": "WHEN deciding visibility for 'Use actual outcome' action THEN require diff present and value differs from assert"
 }
 
+[2026-01-06 21:22] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "inspection semantics",
+    "EXPECTATION": "Within the same source root (e.g., tests→tests), the import must include the root prefix; cross-root (tests→src) should not be flagged.",
+    "NEW INSTRUCTION": "WHEN importing from same source root THEN require root prefix and register problem if missing"
+}
+
+[2026-01-06 21:22] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "same-root prefix policy",
+    "EXPECTATION": "Within the same source root (including tests), missing root prefix should be flagged; cross-root imports from tests to src should not be flagged.",
+    "NEW INSTRUCTION": "WHEN importing from same source root as current file THEN flag missing prefix and suggest adding root-qualified import"
+}
+

@@ -12,7 +12,7 @@ class StrictSourceRootPrefixInspectionTest : TestBase() {
         myFixture.enableInspections(PyStrictSourceRootImportInspection::class.java)
     }
 
-    fun testImportMissingSourceRootPrefixIsMarkedAsUnresolved() {
+    fun testImportMissingSourceRootPrefixFromMainIsNotMarked() {
         withPluginSettings({
             enableRestoreSourceRootPrefix = true
         }) {
@@ -24,20 +24,9 @@ class StrictSourceRootPrefixInspectionTest : TestBase() {
             runWithSourceRoots(listOf(srcDir)) {
                 myFixture.configureFromExistingVirtualFile(mainPsi.virtualFile)
 
-                // Should have a warning on 'mypackage.module'
+                // Should NOT have a warning on 'mypackage.module' as main.py is not in source root
                 val highlight = myFixture.doHighlighting().find { it.text == "mypackage.module" }
-                assertNotNull("Should find highlighting for mypackage.module", highlight)
-
-                // Check for quickfix
-                val fix = myFixture.findSingleIntention("Prepend source root prefix 'src'")
-                myFixture.launchAction(fix)
-
-                myFixture.checkResult(
-                    """
-                    from src.mypackage.module import foo
-                    foo()
-                    """.trimIndent()
-                )
+                assertNull("Should NOT find highlighting for mypackage.module from main.py", highlight)
             }
         }
     }
@@ -60,7 +49,7 @@ class StrictSourceRootPrefixInspectionTest : TestBase() {
         }
     }
 
-    fun testImportStatementMissingSourceRootPrefixIsMarkedAsUnresolved() {
+    fun testImportStatementMissingSourceRootPrefixFromMainIsNotMarked() {
         withPluginSettings({
             enableRestoreSourceRootPrefix = true
         }) {
@@ -72,15 +61,9 @@ class StrictSourceRootPrefixInspectionTest : TestBase() {
             runWithSourceRoots(listOf(srcDir)) {
                 myFixture.configureFromExistingVirtualFile(mainPsi.virtualFile)
 
-                val fix = myFixture.findSingleIntention("Prepend source root prefix 'src'")
-                myFixture.launchAction(fix)
-
-                myFixture.checkResult(
-                    """
-                    import src.mypackage.module
-                    mypackage.module.foo()
-                    """.trimIndent()
-                )
+                val highlight =
+                    myFixture.doHighlighting().find { it.description?.contains("missing source root prefix") == true }
+                assertNull("Should NOT find highlighting for mypackage.module from main.py", highlight)
             }
         }
     }
@@ -103,7 +86,7 @@ class StrictSourceRootPrefixInspectionTest : TestBase() {
         }
     }
 
-    fun testImportMissingTestSourceRootPrefixIsMarkedAsUnresolved() {
+    fun testImportMissingTestSourceRootPrefixFromMainIsNotMarked() {
         withPluginSettings({
             enableRestoreSourceRootPrefix = true
         }) {
@@ -115,20 +98,9 @@ class StrictSourceRootPrefixInspectionTest : TestBase() {
             runWithTestSourceRoots(listOf(testsDir)) {
                 myFixture.configureFromExistingVirtualFile(mainPsi.virtualFile)
 
-                // Should have a warning on 'mypackage.module'
+                // Should NOT have a warning on 'mypackage.module'
                 val highlight = myFixture.doHighlighting().find { it.text == "mypackage.module" }
-                assertNotNull("Should find highlighting for mypackage.module", highlight)
-
-                // Check for quickfix
-                val fix = myFixture.findSingleIntention("Prepend source root prefix 'tests'")
-                myFixture.launchAction(fix)
-
-                myFixture.checkResult(
-                    """
-                    from tests.mypackage.module import foo
-                    foo()
-                    """.trimIndent()
-                )
+                assertNull("Should NOT find highlighting for mypackage.module from main.py", highlight)
             }
         }
     }
@@ -178,6 +150,62 @@ class StrictSourceRootPrefixInspectionTest : TestBase() {
                 val highlights = myFixture.doHighlighting()
                 val ourHighlight = highlights.find { it.description?.contains("missing source root prefix") == true }
                 assertNull("Relative import should not trigger 'missing source root prefix' highlighting", ourHighlight)
+            }
+        }
+    }
+
+    fun testImportFromSameSourceRootIsMarkedAsUnresolved() {
+        withPluginSettings({
+            enableRestoreSourceRootPrefix = true
+        }) {
+            myFixture.addFileToProject("src/mypackage/b.py", "def foo(): pass")
+            val aPsi = myFixture.addFileToProject("src/mypackage/a.py", "from <caret>mypackage.b import foo")
+
+            val srcDir = myFixture.findFileInTempDir("src")
+            runWithSourceRoots(listOf(srcDir)) {
+                myFixture.configureFromExistingVirtualFile(aPsi.virtualFile)
+
+                val highlight = myFixture.doHighlighting().find { it.text == "mypackage.b" }
+                assertNotNull("Should find highlighting for mypackage.b", highlight)
+
+                val fix = myFixture.findSingleIntention("Prepend source root prefix 'src'")
+                myFixture.launchAction(fix)
+                myFixture.checkResult(
+                    """
+                    from src.mypackage.b import foo
+                """.trimIndent()
+                )
+            }
+        }
+    }
+
+    fun testCrossRootImportDoesNotTriggerInspection() {
+        withPluginSettings({
+            enableRestoreSourceRootPrefix = true
+        }) {
+            // src/mypackage/module.py
+            myFixture.addFileToProject("src/mypackage/module.py", "def foo(): pass")
+
+            // tests/test_foo.py importing from src without prefix
+            val testPsi = myFixture.addFileToProject("tests/test_foo.py", "from mypackage.module import foo\nfoo()")
+
+            val srcDir = myFixture.findFileInTempDir("src")
+            val testsDir = myFixture.findFileInTempDir("tests")
+
+            runWithSourceRoots(listOf(srcDir)) {
+                runWithTestSourceRoots(listOf(testsDir)) {
+                    myFixture.configureFromExistingVirtualFile(testPsi.virtualFile)
+
+                    // Should NOT have a warning on 'mypackage.module' because it is a cross-root import
+                    val highlights = myFixture.doHighlighting()
+                    val ourHighlight =
+                        highlights.find { it.description?.contains("missing source root prefix") == true }
+
+                    assertNull(
+                        "Cross-root import should not trigger 'missing source root prefix' highlighting",
+                        ourHighlight
+                    )
+                }
             }
         }
     }
