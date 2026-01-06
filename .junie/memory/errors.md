@@ -628,3 +628,13 @@
     "NEW INSTRUCTION": "WHEN a test enables a new settings flag THEN add the flag to PluginSettingsState first"
 }
 
+[2026-01-05 18:58] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "run_test",
+    "ERROR": "NoSuchMethodError for PluginSettingsState.State constructor",
+    "ROOT CAUSE": "PluginSettingsState.State constructor signature changed, breaking binary compatibility with test setup/serialization.",
+    "PROJECT NOTE": "PersistentStateComponent expects a bean with a no-arg constructor and mutable properties; define State with no primary constructor (properties initialized inline) or add an explicit zero-arg secondary constructor to remain compatible.",
+    "NEW INSTRUCTION": "WHEN modifying PluginSettingsState.State fields THEN preserve a zero-arg constructor and inline-initialized mutable properties"
+}
+

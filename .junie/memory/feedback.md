@@ -406,3 +406,11 @@
     "NEW INSTRUCTION": "WHEN intention finds usages requiring confirmation THEN show standard refactoring preview dialog instead of custom prompt"
 }
 
+[2026-01-06 09:50] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "pytest URL root",
+    "EXPECTATION": "The angle-bracket part of the URL must be the module's content/test root (e.g., .../tests), not the project base path.",
+    "NEW INSTRUCTION": "WHEN generating pytest location URL THEN use content/test root path inside angle brackets"
+}
+

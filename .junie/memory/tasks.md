@@ -508,3 +508,23 @@
     "NEW INSTRUCTION": "WHEN new tests or intentions are added THEN run test suite and fix failures"
 }
 
+[2026-01-05 18:59] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "run all tests",
+    "BOTTLENECK": "Settings State constructor changed causing NoSuchMethodError in tests.",
+    "PROJECT NOTE": "Tests manually construct PluginSettingsState.State; additions to settings require updating TestBase.",
+    "NEW INSTRUCTION": "WHEN NoSuchMethodError mentions PluginSettingsState.State.<init> THEN update TestBase State initialization to match fields"
+}
+
+[2026-01-06 09:01] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "reproduce bug, run plugin, verify logs, add logging to URL factory, add logging to diff service",
+    "BOTTLENECK": "No reproduction or verification of availability after adding logs.",
+    "PROJECT NOTE": "Intention availability hinges on diff keys matching PytestLocationUrlFactory URLs; ensure consistent base path and module path.",
+    "NEW INSTRUCTION": "WHEN generating test location URLs THEN add debug logs for qname, roots, module path, URLs"
+}
+
