@@ -668,3 +668,73 @@
     "NEW INSTRUCTION": "WHEN changing location URL generation THEN assert URLs match TestOutcomeDiffService stored keys"
 }
 
+[2026-01-06 20:38] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "scan UseActualOutcomeUseCase",
+    "MISSING STEPS": "run tests, run build",
+    "BOTTLENECK": "No build/test run caught missing import and potential logic regressions.",
+    "PROJECT NOTE": "Action update must mirror UseActualOutcomeUseCase availability logic using TestOutcomeDiffService.",
+    "NEW INSTRUCTION": "WHEN modifying action visibility for test tree context menu THEN query TestOutcomeDiffService and set visible only if diff exists"
+}
+
+[2026-01-06 20:39] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "review settings,analyze source root detection",
+    "BOTTLENECK": "Did not verify how settings and source root resolution influence the inspection.",
+    "PROJECT NOTE": "StrictSourceRootPrefixInspectionTest includes the same-root FP (e.g., test importing tests/conftest.py).",
+    "NEW INSTRUCTION": "WHEN deciding on inspection behavior change THEN examine tests and source root resolution logic first"
+}
+
+[2026-01-06 20:42] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "ask user, run tests",
+    "BOTTLENECK": "Misinterpreted the desired behavior before forming the recommendation.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN examples or tests conflict with initial requirement understanding THEN ask_user to confirm expected behavior with concrete import scenarios"
+}
+
+[2026-01-06 20:52] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "validate diff differs, add tests",
+    "BOTTLENECK": "Diff existence was checked but not its relevance versus current value.",
+    "PROJECT NOTE": "Share a single predicate for availability in UseActualOutcomeUseCase and UseActualTestOutcomeFromTreeAction to avoid drift.",
+    "NEW INSTRUCTION": "WHEN enabling \"Use Actual Outcome\" only with diff data THEN also require diff differs from current value"
+}
+
+[2026-01-06 20:59] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "reproduce bug, add tests, normalize comparison, unify logic, manual verify",
+    "BOTTLENECK": "No automated coverage for tree action visibility when values are equal.",
+    "PROJECT NOTE": "Visibility logic is duplicated between UseActualOutcomeUseCase and UseActualTestOutcomeFromTreeAction; extract a shared helper.",
+    "NEW INSTRUCTION": "WHEN UI visibility depends on diff-vs-code equality THEN add tests for equal and different cases"
+}
+
+[2026-01-06 21:08] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "edit action test, mock UI tree, subclass final action",
+    "MISSING STEPS": "read TestOutcomeDiffService, implement diff-equals check, extract helper, update action update, add unit test, run tests",
+    "BOTTLENECK": "Tried to test UI layer by subclassing a final action, causing compile errors.",
+    "PROJECT NOTE": "Centralize availability logic in UseActualOutcomeUseCase and reuse in both intention and tree action.",
+    "NEW INSTRUCTION": "WHEN availability logic is needed in both intention and action THEN extract helper in UseActualOutcomeUseCase and call it"
+}
+
+[2026-01-06 21:18] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "update backlog,rerun tests after same cache error",
+    "MISSING STEPS": "search for usages,run build",
+    "BOTTLENECK": "Gradle immutable cache error blocked test execution.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN deleting a feature class or action THEN search_project to remove all references before delete"
+}
+

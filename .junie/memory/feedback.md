@@ -542,3 +542,19 @@
     "NEW INSTRUCTION": "WHEN generating pytest function location URL THEN include package-qualified module name in node id"
 }
 
+[2026-01-06 20:36] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "context menu gating",
+    "EXPECTATION": "Only show the context menu item when diff data is available from the test panel tree’s actual outcome.",
+    "NEW INSTRUCTION": "WHEN opening test panel context menu THEN show item only if selected node has diff data"
+}
+
+[2026-01-06 21:01] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "availability checks",
+    "EXPECTATION": "Show the context menu action only when a test diff is available and the actual value differs from the asserted value, matching the intention’s conditions.",
+    "NEW INSTRUCTION": "WHEN deciding visibility for 'Use actual outcome' action THEN require diff present and value differs from assert"
+}
+

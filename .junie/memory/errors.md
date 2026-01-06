@@ -1,83 +1,3 @@
-[2026-01-01 11:49] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic",
-    "TOOL": "WrapTestInClassIntention.invoke",
-    "ERROR": "showAndGet used on modeless dialog",
-    "ROOT CAUSE": "WrapTestInClassDialog is non‑modal while invoke() calls DialogWrapper.showAndGet().",
-    "PROJECT NOTE": "In WrapTestInClassDialog (src/main/.../WrapTestInClassDialog.kt), either make the dialog modal (setModal(true)) or avoid showAndGet and use show() with a result handler; in tests still bypass UI via unit test mode/TestDialogManager.",
-    "NEW INSTRUCTION": "WHEN dialog is non-modal THEN avoid showAndGet; make modal or use show with handler"
-}
-
-[2026-01-01 11:59] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Unresolved reference setTestDialogHandler",
-    "ROOT CAUSE": "The IntelliJ SDK in this project does not provide TestDialogManager.setTestDialogHandler; only setTestDialog is available.",
-    "PROJECT NOTE": "In tests, auto-accept DialogWrapper via TestDialogManager.setTestDialog(TestDialog.OK) and reset to DEFAULT in tearDown; do not use setTestDialogHandler.",
-    "NEW INSTRUCTION": "WHEN TestDialogManager.setTestDialogHandler is unavailable THEN use setTestDialog(TestDialog.OK)/DEFAULT"
-}
-
-[2026-01-02 14:41] - Updated by Junie - Error analysis
-{
-    "TYPE": "missing context",
-    "TOOL": "search_replace",
-    "ERROR": "Unresolved reference 'ApplicationManager' after edit",
-    "ROOT CAUSE": "The import for ApplicationManager was removed while the code still referenced it.",
-    "PROJECT NOTE": "In WrapTestInClassIntention.kt, avoid headless/unit-test checks; tests should drive dialogs via TestDialogManager.setTestDialog(TestDialog.OK).",
-    "NEW INSTRUCTION": "WHEN an edit removes an import symbol THEN remove or replace all remaining references immediately"
-}
-
-[2026-01-02 15:49] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Too many arguments for function after edit",
-    "ROOT CAUSE": "The call site added a stdlibService argument but the function signature was not updated.",
-    "PROJECT NOTE": "In HideTransientImportProvider.kt, ensure filterTransientCandidatesReflectively signature matches its invocation when adding stdlibService.",
-    "NEW INSTRUCTION": "WHEN adding parameters to a method call THEN update the method signature and imports"
-}
-
-[2026-01-02 15:55] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Wrong constructor arguments for PyMoveModuleMembersProcessor",
-    "ROOT CAUSE": "The test used an incorrect constructor signature, passing project and a boolean.",
-    "PROJECT NOTE": "Use PyMoveModuleMembersProcessor(arrayOf<PsiNamedElement>(symbol), destPath).run() with only elements and destination; run PSI changes in a write command.",
-    "NEW INSTRUCTION": "WHEN adding SDK constructor calls THEN verify and match the actual parameter signature"
-}
-
-[2026-01-02 17:15] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "get_file_structure",
-    "ERROR": "Cannot display structure for non-directory file",
-    "ROOT CAUSE": "get_file_structure expects a directory path but was given a single XML file.",
-    "PROJECT NOTE": "To inspect src/main/resources/META-INF/plugin.xml, view its parent directories or open the file content with get_file_preview.",
-    "NEW INSTRUCTION": "WHEN calling get_file_structure on a path THEN ensure the path is a directory"
-}
-
-[2026-01-02 17:16] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic",
-    "TOOL": "run_test",
-    "ERROR": "Test failed: built-ins still suggested",
-    "ROOT CAUSE": "Expected-type completion contributor does not filter out Python built-in types.",
-    "PROJECT NOTE": "Implement filtering in src/main/kotlin/.../completion/PyExpectedTypeCompletionContributor.kt, method shouldSkipExpectedTypeSuggestion.",
-    "NEW INSTRUCTION": "WHEN expected type candidate is a Python builtin THEN exclude it from suggestions"
-}
-
-[2026-01-02 22:42] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic",
-    "TOOL": "run_test",
-    "ERROR": "Local project symbol missing from import suggestion under transient filter",
-    "ROOT CAUSE": "HideTransientImportProvider treats non-dependency candidates as transient and does not exempt current project modules.",
-    "PROJECT NOTE": "Adjust src/main/kotlin/.../imports/HideTransientImportProvider.kt to detect candidates from the current module/project (e.g., via ModuleUtilCore.findModuleForPsiElement or VirtualFile under project base dir) and always keep them; include both source and test roots.",
-    "NEW INSTRUCTION": "WHEN import candidate originates from current project/module THEN bypass transient filtering and keep it"
-}
-
 [2026-01-02 22:46] - Updated by Junie - Error analysis
 {
     "TYPE": "invalid args",
@@ -796,4 +716,84 @@
     "ROOT CAUSE": "buildQualifiedName prepends the source root name only for files directly under the root, but pytest keys include the root name for nested paths too.",
     "PROJECT NOTE": "In PytestLocationUrlFactory.buildQualifiedName (lines ~115-127), always prepend root.name when isSourceRoot is true; e.g., finalModulePath = if (isSourceRoot) \"${root.name}.$modulePath\" else modulePath.",
     "NEW INSTRUCTION": "WHEN building qualified name for source root THEN always prepend source root directory name"
+}
+
+[2026-01-06 20:37] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "search_replace",
+    "ERROR": "Unresolved reference 'Project' after edit",
+    "ROOT CAUSE": "The edit introduced Project type usage without adding its import.",
+    "PROJECT NOTE": "Add import com.intellij.openapi.project.Project to UseActualTestOutcomeFromTreeAction.kt when referencing Project.",
+    "NEW INSTRUCTION": "WHEN adding a new type reference THEN add the corresponding import immediately"
+}
+
+[2026-01-06 20:37] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "search_replace",
+    "ERROR": "Unresolved reference 'Project' after edit",
+    "ROOT CAUSE": "The edit introduced type Project without adding its import statement.",
+    "PROJECT NOTE": "In UseActualTestOutcomeFromTreeAction.kt, import com.intellij.openapi.project.Project when referencing Project.",
+    "NEW INSTRUCTION": "WHEN semantic errors show unresolved symbol after edit THEN add the necessary import immediately"
+}
+
+[2026-01-06 20:38] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "search_replace",
+    "ERROR": "Unresolved reference 'Project'",
+    "ROOT CAUSE": "A new method introduced the Project type without adding its import.",
+    "PROJECT NOTE": "In UseActualTestOutcomeFromTreeAction.kt, import com.intellij.openapi.project.Project when referencing Project in new methods.",
+    "NEW INSTRUCTION": "WHEN added code references new classes THEN add their imports explicitly"
+}
+
+[2026-01-06 20:38] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "search_replace",
+    "ERROR": "Unresolved reference 'Project'",
+    "ROOT CAUSE": "New code referenced Project in a signature without adding its import.",
+    "PROJECT NOTE": "In UseActualTestOutcomeFromTreeAction.kt, import com.intellij.openapi.project.Project when using Project.",
+    "NEW INSTRUCTION": "WHEN introducing new IntelliJ API types in edits THEN add the required import statements"
+}
+
+[2026-01-06 20:59] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "UseActualTestOutcomeFromTreeAction.update",
+    "ERROR": "Action visible despite equal expected and actual",
+    "ROOT CAUSE": "Expected value extraction fails by misparsing SMTestProxy.locationUrl as a file path, returns null, and the code defaults to showing the action.",
+    "PROJECT NOTE": "SMTestProxy.locationUrl is python<sourceRoot>://<qualified.name>, not a filesystem path. In tree actions, obtain VirtualFile/PSI via proxy.getLocation(project, properties.scope) from TestTreeView.MODEL_DATA_KEY.",
+    "NEW INSTRUCTION": "WHEN expected value extraction returns null THEN hide if diff.expected equals diff.actual"
+}
+
+[2026-01-06 21:04] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Semantic errors: extend final class and override nonexistent method",
+    "ROOT CAUSE": "The test edit attempted to subclass a final action and override a non-existent getLocation method, introducing unresolved API references.",
+    "PROJECT NOTE": "UseActualTestOutcomeFromTreeAction is a final Kotlin class; extract location/diff checks into a helper/service and inject or call it from tests instead of subclassing the action.",
+    "NEW INSTRUCTION": "WHEN a test needs to customize action behavior THEN extract a helper interface and inject a fake"
+}
+
+[2026-01-06 21:06] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Edit introduced Kotlin semantic errors",
+    "ROOT CAUSE": "The test tried to subclass a final action and override a non-existent method while adding unresolved API references.",
+    "PROJECT NOTE": "UseActualTestOutcomeFromTreeAction is final; do not subclass it in tests. Validate availability logic through UseActualOutcomeUseCase or extract a reusable helper.",
+    "NEW INSTRUCTION": "WHEN search_replace reports semantic errors THEN undo edit and test UseActualOutcomeUseCase directly"
+}
+
+[2026-01-06 21:08] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Tried overriding methods on a final class in tests",
+    "ROOT CAUSE": "The test edit attempted to subclass a final AnAction and override a non-existent method, introducing unresolved references.",
+    "PROJECT NOTE": "Do not subclass UseActualTestOutcomeFromTreeAction in tests; instead test UseActualOutcomeUseCase directly or extract a non-final, injectable helper used by the action.",
+    "NEW INSTRUCTION": "WHEN a test needs to alter action behavior THEN extract injectable helper and test the helper"
 }
