@@ -658,3 +658,13 @@
     "NEW INSTRUCTION": "WHEN implementing RECORD parsing THEN get path before comma, then module before slash"
 }
 
+[2026-01-06 17:41] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "add debug logs",
+    "MISSING STEPS": "verify key format against TestOutcomeDiffService",
+    "BOTTLENECK": "Qualified name/URL mismatch between generator and diff store prevented matches.",
+    "PROJECT NOTE": "Diff keys use dotted module path from source root (e.g., tests.test_.test_).",
+    "NEW INSTRUCTION": "WHEN changing location URL generation THEN assert URLs match TestOutcomeDiffService stored keys"
+}
+

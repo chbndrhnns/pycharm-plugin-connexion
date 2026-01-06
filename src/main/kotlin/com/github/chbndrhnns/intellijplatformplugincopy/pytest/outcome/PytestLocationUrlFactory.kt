@@ -2,6 +2,8 @@ package com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome
 
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.roots.ProjectFileIndex
+import com.intellij.openapi.vfs.VfsUtilCore
+import com.intellij.openapi.vfs.VirtualFile
 import com.jetbrains.python.psi.PyFunction
 
 object PytestLocationUrlFactory {
@@ -19,12 +21,19 @@ object PytestLocationUrlFactory {
     fun fromPyFunction(function: PyFunction): List<String> {
         LOG.debug("PytestLocationUrlFactory.fromPyFunction: generating URLs for function")
 
-        val qName = function.qualifiedName
-        if (qName == null) {
-            LOG.debug("PytestLocationUrlFactory.fromPyFunction: qualified name is null, returning empty list")
+        val functionName = function.name
+        if (functionName == null) {
+            LOG.debug("PytestLocationUrlFactory.fromPyFunction: function name is null, returning empty list")
             return emptyList()
         }
-        LOG.debug("PytestLocationUrlFactory.fromPyFunction: qualified name = '$qName'")
+
+        // Get the function's qualified name (for backward compatibility with content/project roots)
+        val functionQName = function.qualifiedName
+        if (functionQName == null) {
+            LOG.debug("PytestLocationUrlFactory.fromPyFunction: function qualified name is null, returning empty list")
+            return emptyList()
+        }
+        LOG.debug("PytestLocationUrlFactory.fromPyFunction: function qualified name = '$functionQName'")
 
         val virtualFile = function.containingFile.virtualFile
         if (virtualFile == null) {
@@ -46,29 +55,78 @@ object PytestLocationUrlFactory {
 
         // Add source root based URL (e.g., tests directory if it's a source root)
         if (sourceRoot != null) {
+            // REFACTOR: Is this a valid case?
+            val qName = buildQualifiedName(virtualFile, sourceRoot, functionName, isSourceRoot = true)
             val url = "python<${sourceRoot.path}>://$qName"
             urls.add(url)
             LOG.debug("PytestLocationUrlFactory.fromPyFunction: added source root URL: '$url'")
         }
 
         // Add content root based URL if different from source root
+        // Use the original qualified name for backward compatibility
         if (contentRoot != null && contentRoot.path != sourceRoot?.path) {
-            val url = "python<${contentRoot.path}>://$qName"
+            val url = "python<${contentRoot.path}>://$functionQName"
             urls.add(url)
             LOG.debug("PytestLocationUrlFactory.fromPyFunction: added content root URL: '$url'")
         }
 
         // Add project root based URL if different from both source and content roots
+        // Use the original qualified name for backward compatibility
         if (projectBasePath != null &&
             projectBasePath != sourceRoot?.path &&
             projectBasePath != contentRoot?.path
         ) {
-            val url = "python<$projectBasePath>://$qName"
+            val url = "python<$projectBasePath>://$functionQName"
             urls.add(url)
             LOG.debug("PytestLocationUrlFactory.fromPyFunction: added project base path URL: '$url'")
         }
 
         LOG.debug("PytestLocationUrlFactory.fromPyFunction: returning ${urls.size} URL(s): $urls")
         return urls
+    }
+
+    /**
+     * Build a qualified name for a test function relative to a root directory.
+     * For example, if the file is at root/tests/test_foo.py and root is the source root,
+     * the qualified name for function test_bar would be "tests.test_foo.test_bar".
+     * 
+     * Special case: if the file is directly in a source root directory (e.g., tests/test_.py
+     * where tests is marked as source root), we need to include the source root directory name
+     * in the qualified name to match pytest's behavior.
+     * 
+     * @param isSourceRoot true if the root is a source root, false if it's a content/project root
+     */
+    private fun buildQualifiedName(
+        file: VirtualFile,
+        root: VirtualFile,
+        functionName: String,
+        isSourceRoot: Boolean
+    ): String {
+        val relativePath =
+            VfsUtilCore.getRelativePath(file, root) ?: // File is not under this root, just use the function name
+            return functionName
+
+        // Convert file path to Python module path
+        // e.g., "unit/test_foo.py" -> "unit.test_foo"
+        // e.g., "test_foo.py" -> "test_foo"
+        val modulePath = relativePath
+            .removeSuffix(".py")
+            .replace('/', '.')
+
+        // Special handling for source roots:
+        // Pytest always includes the source root directory name in the qualified name
+        // For example, if "tests" is a source root:
+        //   - tests/test_.py -> tests.test_
+        //   - tests/unit/test_.py -> tests.unit.test_
+        // For content/project roots, we never prepend the root name
+        val finalModulePath = if (isSourceRoot) {
+            val rootName = root.name
+            "$rootName.$modulePath"
+        } else {
+            modulePath
+        }
+
+        // Combine module path with function name
+        return "$finalModulePath.$functionName"
     }
 }

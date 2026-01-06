@@ -1,93 +1,3 @@
-[2025-12-31 21:26] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "search_replace",
-    "ERROR": "plugin.xml semantic errors: unknown language id 'Python'",
-    "ROOT CAUSE": "plugin.xml validation requires Python language dependency; unresolved without Python plugin declared.",
-    "PROJECT NOTE": "Add Python plugin dependency in plugin.xml, e.g., <depends>Pythonid</depends>, to resolve language=\"Python\" usages.",
-    "NEW INSTRUCTION": "WHEN plugin.xml validation flags unknown Python language THEN declare <depends>Pythonid</depends> in plugin.xml"
-}
-
-[2026-01-01 09:58] - Updated by Junie - Error analysis
-{
-    "TYPE": "permission",
-    "TOOL": "WrapTestInClassIntention",
-    "ERROR": "PSI changed outside WriteCommandAction/CommandProcessor",
-    "ROOT CAUSE": "Refactoring invokes PSI replace/insert without wrapping in a write command.",
-    "PROJECT NOTE": "Wrap all PSI mutations in WriteCommandAction.runWriteCommandAction(project) and commit documents before/after changes.",
-    "NEW INSTRUCTION": "WHEN performing PSI modifications in intention or handler THEN wrap logic in WriteCommandAction"
-}
-
-[2026-01-01 10:04] - Updated by Junie - Error analysis
-{
-    "TYPE": "missing context",
-    "TOOL": "search_replace",
-    "ERROR": "Unresolved reference 'buildMethodFromFunction'.",
-    "ROOT CAUSE": "invoke() was updated to call buildMethodFromFunction but the helper was never defined.",
-    "PROJECT NOTE": "Add a helper to convert a top-level PyFunction into a class method (prepend self, keep decorators/body) similar to buildClassWithMethod.",
-    "NEW INSTRUCTION": "WHEN semantic errors include Unresolved reference THEN define missing helper or add required import"
-}
-
-[2026-01-01 10:28] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic",
-    "TOOL": "WrapTestInClassIntention",
-    "ERROR": "Function inserted inside method due to wrong insertion anchor",
-    "ROOT CAUSE": "The method was inserted at the caret/method body instead of the class statement list, causing nested def and bad indentation.",
-    "PROJECT NOTE": "Create the method PSI with PyElementGenerator and add it to targetClass.getStatementList() via PyClassRefactoringUtil.insertMethodInProperPlace; do not insert by editor offset.",
-    "NEW INSTRUCTION": "WHEN insertion point resolves inside a method body THEN add method to class statement list"
-}
-
-[2026-01-01 10:40] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic",
-    "TOOL": "WrapTestInClassIntention",
-    "ERROR": "Empty method body after removing ellipsis",
-    "ROOT CAUSE": "Converting a one-line test with Ellipsis produced an empty suite without pass/ellipsis.",
-    "PROJECT NOTE": "When building the new PyFunction PSI, ensure the body contains either the original Ellipsis expression statement or a PyPassStatement to keep Python syntax valid.",
-    "NEW INSTRUCTION": "WHEN original body is Ellipsis or becomes empty THEN preserve ellipsis or insert 'pass' into method body"
-}
-
-[2026-01-01 11:02] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic",
-    "TOOL": "run_test",
-    "ERROR": "Headless tests fail due to interactive dialog in intention",
-    "ROOT CAUSE": "invoke() shows a Swing dialog; unit test mode cannot handle interactive UI.",
-    "PROJECT NOTE": "For IntelliJ plugin tests, gate dialogs with ApplicationManager.getApplication().isUnitTestMode and auto-select defaults.",
-    "NEW INSTRUCTION": "WHEN unit test mode detected THEN bypass dialog and use default wrap settings"
-}
-
-[2026-01-01 11:15] - Updated by Junie - Error analysis
-{
-    "TYPE": "permission",
-    "TOOL": "WrapTestInClassIntention",
-    "ERROR": "Cannot modify a read-only PSI file during write action",
-    "ROOT CAUSE": "Tests create read-only fixture files and the write command did not request write access via ReadonlyStatusHandler/FileModificationService.",
-    "PROJECT NOTE": "Before PSI edits, call FileModificationService.getInstance().preparePsiElementsForWrite(listOf(file)) or ReadonlyStatusHandler.ensureFilesWritable(file.virtualFile) in tests and IDE.",
-    "NEW INSTRUCTION": "WHEN write action targets PSI file THEN ensure file is writable using FileModificationService"
-}
-
-[2026-01-01 11:19] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "WrapTestInClassIntention.invoke",
-    "ERROR": "Dialog shown while write-intent action is pending on EDT",
-    "ROOT CAUSE": "DialogWrapper.showAndGet is invoked synchronously in invoke(), causing action updates during a pending write-intent read action on EDT.",
-    "PROJECT NOTE": "In WrapTestInClassIntention.invoke at ~line 51, schedule dialog display via ApplicationManager.getApplication().invokeLater and continue logic inside that runnable.",
-    "NEW INSTRUCTION": "WHEN needing to show a dialog from intention THEN open dialog via invokeLater and proceed inside"
-}
-
-[2026-01-01 11:42] - Updated by Junie - Error analysis
-{
-    "TYPE": "threading",
-    "TOOL": "WrapTestInClassRefactoringHandler",
-    "ERROR": "Dialog shown during write action on EDT",
-    "ROOT CAUSE": "The refactoring handler opens DialogWrapper synchronously while a write-intent action is running or pending.",
-    "PROJECT NOTE": "In WrapTestInClassRefactoringHandler.invoke, schedule dialog via ApplicationManager.getApplication().invokeLater and perform PSI edits inside WriteCommandAction.",
-    "NEW INSTRUCTION": "WHEN refactoring handler needs to show dialog THEN open via invokeLater and run edits in WriteCommandAction"
-}
-
 [2026-01-01 11:49] - Updated by Junie - Error analysis
 {
     "TYPE": "logic",
@@ -768,3 +678,122 @@
     "NEW INSTRUCTION": "WHEN semantic errors mention 'deprecated and marked for removal' THEN replace PyPackageManager with PythonPackagingService.getInstance(sdk).getPackages()"
 }
 
+[2026-01-06 17:25] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Argument type mismatch for runWithSourceRoots",
+    "ROOT CAUSE": "runWithSourceRoots expects a List<VirtualFile> but a String was provided.",
+    "PROJECT NOTE": "In fixtures.TestBase, obtain a VirtualFile via myFixture.tempDirFixture.findOrCreateDir(\"tests\") and call runWithSourceRoots(listOf(dir)).",
+    "NEW INSTRUCTION": "WHEN adding test source roots THEN pass List<VirtualFile> from tempDirFixture.findOrCreateDir"
+}
+
+[2026-01-06 17:25] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Argument type mismatch for runWithSourceRoots",
+    "ROOT CAUSE": "runWithSourceRoots expects List<VirtualFile> but a String literal was passed.",
+    "PROJECT NOTE": "Create a VirtualFile for the 'tests' dir (e.g., myFixture.tempDirFixture.findOrCreateDir(\"tests\")) and pass listOf(vFile) to runWithSourceRoots.",
+    "NEW INSTRUCTION": "WHEN calling runWithSourceRoots in tests THEN pass List<VirtualFile> not String"
+}
+
+[2026-01-06 17:26] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "runWithSourceRoots expects List<VirtualFile>, received String literal",
+    "ROOT CAUSE": "The test used runWithSourceRoots(\"tests\") but the helper requires VirtualFile roots, not a String.",
+    "PROJECT NOTE": "Create the test root via myFixture.tempDirFixture.findOrCreateDir(\"tests\") (or addFileToProject to create it) and call runWithSourceRoots(listOf(dirVirtualFile)).",
+    "NEW INSTRUCTION": "WHEN using runWithSourceRoots in tests THEN pass List<VirtualFile> obtained from tempDirFixture"
+}
+
+[2026-01-06 17:27] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Wrong argument type for runWithSourceRoots",
+    "ROOT CAUSE": "The test passed a String to runWithSourceRoots, which expects a List<VirtualFile>.",
+    "PROJECT NOTE": "In UseActualOutcomeAvailabilityTest, obtain a VirtualFile via myFixture.tempDirFixture.findOrCreateDir(\"tests\") (or addFileToProject and use parent) and call runWithSourceRoots(listOf(vf)).",
+    "NEW INSTRUCTION": "WHEN calling runWithSourceRoots in tests THEN pass List<VirtualFile> from tempDirFixture"
+}
+
+[2026-01-06 17:28] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Argument type mismatch for runWithSourceRoots",
+    "ROOT CAUSE": "The test helper runWithSourceRoots expects a List<VirtualFile> but a String was passed.",
+    "PROJECT NOTE": "In fixtures.TestBase, obtain a VirtualFile via myFixture.tempDirFixture.findOrCreateDir(\"tests\") and pass listOf(vf) to runWithSourceRoots.",
+    "NEW INSTRUCTION": "WHEN using runWithSourceRoots in tests THEN pass List<VirtualFile> created from tempDir"
+}
+
+[2026-01-06 17:30] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Argument type mismatch for runWithSourceRoots parameter",
+    "ROOT CAUSE": "runWithSourceRoots was called with a String instead of List<VirtualFile>.",
+    "PROJECT NOTE": "In fixtures.TestBase, runWithSourceRoots expects List<VirtualFile>; obtain the tests root via myFixture.tempDirFixture.findOrCreateDir(\"tests\") (or similar) and pass listOf(virtualFile).",
+    "NEW INSTRUCTION": "WHEN calling runWithSourceRoots THEN pass List<VirtualFile> obtained via tempDirFixture or VFS"
+}
+
+[2026-01-06 17:32] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "String passed to runWithSourceRoots; expected List<VirtualFile>",
+    "ROOT CAUSE": "The test edit used runWithSourceRoots(\"tests\") instead of a list of VirtualFiles.",
+    "PROJECT NOTE": "In tests, obtain VirtualFile roots via myFixture.tempDirFixture.getFile(\"tests\") and pass listOf(vf) to runWithSourceRoots.",
+    "NEW INSTRUCTION": "WHEN adding source roots in tests THEN pass List<VirtualFile> from tempDirFixture.getFile"
+}
+
+[2026-01-06 17:35] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "search_replace",
+    "ERROR": "Unresolved reference 'getQName' in test file",
+    "ROOT CAUSE": "The test uses the getQName extension but lacks the import for com.jetbrains.python.extensions.getQName.",
+    "PROJECT NOTE": "When using Python PSI extension methods in tests, explicitly import the extension functions just like in main sources.",
+    "NEW INSTRUCTION": "WHEN Kotlin test uses getQName extension THEN import com.jetbrains.python.extensions.getQName"
+}
+
+[2026-01-06 17:36] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "search_replace",
+    "ERROR": "Unresolved reference 'getQName' in test file",
+    "ROOT CAUSE": "The test started using the getQName extension without importing its package.",
+    "PROJECT NOTE": "Import com.jetbrains.python.extensions.getQName in tests when calling PyFile.getQName().",
+    "NEW INSTRUCTION": "WHEN adding calls to getQName extension THEN import com.jetbrains.python.extensions.getQName"
+}
+
+[2026-01-06 17:37] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "search_replace",
+    "ERROR": "Unresolved reference 'getQName'",
+    "ROOT CAUSE": "The test added calls to getQName without importing the extension function.",
+    "PROJECT NOTE": "Kotlin uses extension imports explicitly; add import com.jetbrains.python.extensions.getQName in tests that call PyFile.getQName().",
+    "NEW INSTRUCTION": "WHEN semantic errors show Unresolved reference 'getQName' THEN import com.jetbrains.python.extensions.getQName"
+}
+
+[2026-01-06 17:52] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "PytestLocationUrlFactory.fromPyFunction",
+    "ERROR": "Qualified name missing source root prefix",
+    "ROOT CAUSE": "buildQualifiedName only prepends the root name for top-level files, but pytest keys include the source root directory (e.g., 'tests.') for all files under that root.",
+    "PROJECT NOTE": "In PytestLocationUrlFactory.buildQualifiedName, for isSourceRoot=true always prefix root.name to the module path so tests/unit/test_.py becomes tests.unit.test_.<func>.",
+    "NEW INSTRUCTION": "WHEN computing qualified name under a source root THEN always prefix source root directory name"
+}
+
+[2026-01-06 17:53] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "PytestLocationUrlFactory.fromPyFunction",
+    "ERROR": "Missing source root prefix in qualified name",
+    "ROOT CAUSE": "buildQualifiedName prepends the source root name only for files directly under the root, but pytest keys include the root name for nested paths too.",
+    "PROJECT NOTE": "In PytestLocationUrlFactory.buildQualifiedName (lines ~115-127), always prepend root.name when isSourceRoot is true; e.g., finalModulePath = if (isSourceRoot) \"${root.name}.$modulePath\" else modulePath.",
+    "NEW INSTRUCTION": "WHEN building qualified name for source root THEN always prepend source root directory name"
+}

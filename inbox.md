@@ -2,6 +2,7 @@
 
 ## Pending Issues
 
+- [ ] fix: Only add actual outcome to context menu if available
 - [ ] fix: Add self parameter should not be offered for classmethods and staticmethods
 - [ ] fix: FP: We are marking directories as missing root prefix when referenced from test. 
 - [ ] fix: Should also offer Wrap: `do(Path("a<caret>bc"))` (253 vs 261?)

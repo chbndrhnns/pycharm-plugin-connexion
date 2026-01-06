@@ -518,3 +518,27 @@
     "NEW INSTRUCTION": "WHEN top_level.txt missing and parsing RECORD entries THEN use first segment before '/'"
 }
 
+[2026-01-06 17:22] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "pytest URL module qualification",
+    "EXPECTATION": "Generate pytest location URLs whose node id includes the package-qualified module name (e.g., 'tests.test_.test_'), so they match stored diff keys.",
+    "NEW INSTRUCTION": "WHEN generating pytest function location URL THEN prefix node id with package-qualified module name"
+}
+
+[2026-01-06 17:35] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "pytest URL module qualification",
+    "EXPECTATION": "Generate pytest location URLs whose node id includes the package-qualified module name (e.g., 'tests.test_.test_') so they match stored diff keys.",
+    "NEW INSTRUCTION": "WHEN generating pytest function location URL THEN include package-qualified module in node id"
+}
+
+[2026-01-06 17:52] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "pytest URL module qualification",
+    "EXPECTATION": "Location URLs must use a node id with the package-qualified module name (e.g., 'tests.test_.test_') so it matches stored diff keys.",
+    "NEW INSTRUCTION": "WHEN generating pytest function location URL THEN include package-qualified module name in node id"
+}
+
