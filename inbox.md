@@ -18,6 +18,7 @@
 
 ## Pending Features
 
+- [ ] feat: Add surround with... pytest.raises()
 - [ ] feat: Add field to dataclass/typeddict/pydantic if missing
 - [ ] feat: Iterate by warning type through IDE errors
 - [ ] feat: Search in changed files only
