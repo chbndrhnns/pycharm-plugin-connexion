@@ -29,7 +29,7 @@ class PyStrictSourceRootImportInspection : PyInspection() {
             return object : PyElementVisitor() {}
         }
         val settings = PluginSettingsState.instance().state
-        if (!settings.enableRestoreSourceRootPrefix) {
+        if (!settings.enableStrictSourceRootImportInspection) {
             return object : PyElementVisitor() {}
         }
 

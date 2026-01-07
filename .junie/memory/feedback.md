@@ -558,19 +558,35 @@
     "NEW INSTRUCTION": "WHEN deciding visibility for 'Use actual outcome' action THEN require diff present and value differs from assert"
 }
 
-[2026-01-06 21:22] - Updated by Junie
+[2026-01-06 22:21] - Updated by Junie
 {
-    "TYPE": "correction",
-    "CATEGORY": "inspection semantics",
-    "EXPECTATION": "Within the same source root (e.g., tests→tests), the import must include the root prefix; cross-root (tests→src) should not be flagged.",
-    "NEW INSTRUCTION": "WHEN importing from same source root THEN require root prefix and register problem if missing"
+    "TYPE": "preference",
+    "CATEGORY": "settings toggle",
+    "EXPECTATION": "Provide a settings toggle for the inspection enforcing source root prefixes on imports.",
+    "NEW INSTRUCTION": "WHEN modifying strict source root import inspection THEN add settings toggle to enable or disable strict prefix inspection"
 }
 
-[2026-01-06 21:22] - Updated by Junie
+[2026-01-06 22:55] - Updated by Junie
 {
     "TYPE": "correction",
-    "CATEGORY": "same-root prefix policy",
-    "EXPECTATION": "Within the same source root (including tests), missing root prefix should be flagged; cross-root imports from tests to src should not be flagged.",
-    "NEW INSTRUCTION": "WHEN importing from same source root as current file THEN flag missing prefix and suggest adding root-qualified import"
+    "CATEGORY": "gutter icon behavior",
+    "EXPECTATION": "Display the BetterPy gutter icon at the normal size, and clicking it should trigger the intended action.",
+    "NEW INSTRUCTION": "WHEN adding or updating gutter icon THEN use 16px BetterPy icon and wire navigation handler"
+}
+
+[2026-01-07 07:39] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "gutter icon behavior",
+    "EXPECTATION": "Display the BetterPy gutter icon at normal size and wire click to the intended action.",
+    "NEW INSTRUCTION": "WHEN adding or updating gutter icon THEN use BetterPy 16px icon and GutterIconNavigationHandler"
+}
+
+[2026-01-07 08:30] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "failed line source",
+    "EXPECTATION": "Use the line number from TestOutcomeDiffService.kt when updating highlight-failed-line.md.",
+    "NEW INSTRUCTION": "WHEN updating highlight-failed-line.md THEN read line number from TestOutcomeDiffService.kt"
 }
 

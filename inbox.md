@@ -3,7 +3,6 @@
 ## Pending Issues
 
 - [ ] fix: Only offer jump to test tree node if there is a jump target available, add gutter icon
-- [ ] fix: Add self parameter should not be offered for classmethods and staticmethods
 - [ ] fix: FP: We are marking directories as missing root prefix when referenced from test. 
 - [ ] fix: Should also offer Wrap: `do(Path("a<caret>bc"))` (253 vs 261?)
 - [ ] refactor: PyUnresolvedReferenceAsErrorInspection, lots of strings (?)
@@ -65,6 +64,7 @@
 
 ## In Progress Tasks
 
+- [ ] fix: Add self parameter should not be offered for classmethods and staticmethods
 - [-] feat: Move: Warn if test exists in target class already
 - [ ] feat: Block list: Do not allow names from typing or collections.abc.
 - [ ] refactor: Performance (spec/performance.md)

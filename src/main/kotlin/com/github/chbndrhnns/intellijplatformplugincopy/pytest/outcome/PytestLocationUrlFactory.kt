@@ -55,8 +55,7 @@ object PytestLocationUrlFactory {
 
         // Add source root based URL (e.g., tests directory if it's a source root)
         if (sourceRoot != null) {
-            // REFACTOR: Is this a valid case?
-            val qName = buildQualifiedName(virtualFile, sourceRoot, functionName, isSourceRoot = true)
+            val qName = buildQualifiedName(virtualFile, sourceRoot, function, isSourceRoot = true)
             val url = "python<${sourceRoot.path}>://$qName"
             urls.add(url)
             LOG.debug("PytestLocationUrlFactory.fromPyFunction: added source root URL: '$url'")
@@ -99,9 +98,10 @@ object PytestLocationUrlFactory {
     private fun buildQualifiedName(
         file: VirtualFile,
         root: VirtualFile,
-        functionName: String,
+        function: PyFunction,
         isSourceRoot: Boolean
     ): String {
+        val functionName = function.name ?: ""
         val relativePath =
             VfsUtilCore.getRelativePath(file, root) ?: // File is not under this root, just use the function name
             return functionName
@@ -127,6 +127,24 @@ object PytestLocationUrlFactory {
         }
 
         // Combine module path with function name
-        return "$finalModulePath.$functionName"
+        // Handle nested classes: Class1.Class2.method
+        val classChain = mutableListOf<String>()
+        var currentElement: com.intellij.psi.PsiElement? = function.parent
+        while (currentElement != null && currentElement !is com.jetbrains.python.psi.PyFile) {
+            if (currentElement is com.jetbrains.python.psi.PyClass) {
+                val name = currentElement.name
+                if (name != null) {
+                    classChain.add(0, name)
+                }
+            }
+            currentElement = currentElement.parent
+        }
+
+        return if (classChain.isNotEmpty()) {
+            val fullClassName = classChain.joinToString(".")
+            "$finalModulePath.$fullClassName.$functionName"
+        } else {
+            "$finalModulePath.$functionName"
+        }
     }
 }

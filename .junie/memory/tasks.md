@@ -738,3 +738,53 @@
     "NEW INSTRUCTION": "WHEN deleting a feature class or action THEN search_project to remove all references before delete"
 }
 
+[2026-01-06 22:23] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "scan project, search usages of old setting, run full test suite",
+    "BOTTLENECK": "Environment blocked running tests, masking functional verification.",
+    "PROJECT NOTE": "Settings UI appears to be driven by @Feature annotations in PluginSettingsState.",
+    "NEW INSTRUCTION": "WHEN introducing new setting for inspection THEN search_project for old checks and update references"
+}
+
+[2026-01-06 22:37] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "inspect unrelated utility",
+    "MISSING STEPS": "submit",
+    "BOTTLENECK": "Unnecessary exploration after all targeted tests passed",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN all targeted tests pass THEN submit the change and stop work"
+}
+
+[2026-01-06 22:52] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "add feature toggle",
+    "MISSING STEPS": "register plugin.xml, add tests, run build",
+    "BOTTLENECK": "Caret-dependent availability check forced risky refactor and hacky caret moves.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN introducing a new IDE extension THEN register it in plugin.xml and add tests"
+}
+
+[2026-01-07 08:34] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "search for PyTestsLocator.kt, open OutcomeReplacementEngine",
+    "MISSING STEPS": "verify API, register service, run build, add tests",
+    "BOTTLENECK": "Misunderstood TestFailedLineManager API and missed plugin.xml registration.",
+    "PROJECT NOTE": "TestFailedLineManager requires getTestInfo/getRunQuickFix/getDebugQuickFix; register serviceInterface/serviceImplementation in plugin.xml.",
+    "NEW INSTRUCTION": "WHEN implementing TestFailedLineManager THEN open interface, implement required methods, and register service in plugin.xml"
+}
+
+[2026-01-07 09:14] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "unify location URLs, handle nested classes, add tests",
+    "BOTTLENECK": "Inconsistent URL construction prevents matching OutcomeDiff for nested test classes.",
+    "PROJECT NOTE": "Prefer SMTestLocator/PyTestsLocator to construct canonical python:// URLs consistently.",
+    "NEW INSTRUCTION": "WHEN no diff found for any generated locationUrl THEN build canonical URL with PyTestsLocator including full nested class path"
+}
+

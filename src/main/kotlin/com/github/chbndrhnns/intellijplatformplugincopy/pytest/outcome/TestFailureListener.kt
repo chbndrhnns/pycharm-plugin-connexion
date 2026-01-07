@@ -3,22 +3,43 @@ package com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome
 import com.intellij.execution.testframework.sm.runner.SMTRunnerEventsListener
 import com.intellij.execution.testframework.sm.runner.SMTestProxy
 import com.intellij.execution.testframework.stacktrace.DiffHyperlink
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 
 class TestFailureListener(private val project: Project) : SMTRunnerEventsListener {
 
     override fun onTestFailed(test: SMTestProxy) {
+        LOG.debug("TestFailureListener.onTestFailed: processing test '${test.name}', locationUrl='${test.locationUrl}'")
+
         val diffHyperlink: DiffHyperlink? = test.diffViewerProvider
         if (diffHyperlink != null) {
             val actual = diffHyperlink.right
             val expected = diffHyperlink.left
+            LOG.debug("TestFailureListener.onTestFailed: found diff - expected length=${expected.length}, actual length=${actual.length}")
 
             val locationUrl = test.locationUrl
             if (locationUrl != null) {
+                val stacktrace = test.stacktrace
+                LOG.debug("TestFailureListener.onTestFailed: stacktrace available=${stacktrace != null}, length=${stacktrace?.length ?: 0}")
+
+                val failedLine = PytestStacktraceParser.parseFailedLine(stacktrace, locationUrl)
+                LOG.debug("TestFailureListener.onTestFailed: parsed failed line number: $failedLine")
+
                 val key = PytestTestKeyFactory.fromTestProxy(locationUrl, test.metainfo)
-                TestOutcomeDiffService.getInstance(project).put(key, OutcomeDiff(expected, actual))
+                val diff = OutcomeDiff(expected, actual, failedLine)
+                LOG.debug("TestFailureListener.onTestFailed: storing OutcomeDiff with key='$key', failedLine=$failedLine")
+
+                TestOutcomeDiffService.getInstance(project).put(key, diff)
+            } else {
+                LOG.debug("TestFailureListener.onTestFailed: locationUrl is null, skipping storage")
             }
+        } else {
+            LOG.debug("TestFailureListener.onTestFailed: no diffHyperlink found for test '${test.name}'")
         }
+    }
+
+    companion object {
+        private val LOG = Logger.getInstance(TestFailureListener::class.java)
     }
 
     override fun onTestStarted(test: SMTestProxy) {

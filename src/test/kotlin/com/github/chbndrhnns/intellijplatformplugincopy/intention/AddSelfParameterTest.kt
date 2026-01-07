@@ -73,4 +73,38 @@ class AddSelfParameterTest : TestBase() {
         """.trimIndent()
         )
     }
+
+    fun testNotOfferedForStaticMethod() {
+        myFixture.configureByText(
+            "a.py", """
+            class A:
+                @staticmethod
+                def foo(<caret>):
+                    pass
+        """.trimIndent()
+        )
+
+        val intentions = myFixture.availableIntentions.map { it.text }
+        assertFalse(
+            "Should not contain 'BetterPy: Add 'self' parameter' for @staticmethod",
+            intentions.contains("BetterPy: Add 'self' parameter")
+        )
+    }
+
+    fun testNotOfferedForClassMethod() {
+        myFixture.configureByText(
+            "a.py", """
+            class A:
+                @classmethod
+                def foo(<caret>):
+                    pass
+        """.trimIndent()
+        )
+
+        val intentions = myFixture.availableIntentions.map { it.text }
+        assertFalse(
+            "Should not contain 'BetterPy: Add 'self' parameter' for @classmethod",
+            intentions.contains("BetterPy: Add 'self' parameter")
+        )
+    }
 }

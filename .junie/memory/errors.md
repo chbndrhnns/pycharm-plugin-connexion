@@ -1,283 +1,3 @@
-[2026-01-02 22:46] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Argument type mismatch in getDirectDependencies call",
-    "ROOT CAUSE": "Call site passed a Module while getDirectDependencies still expected a PsiReference.",
-    "PROJECT NOTE": "In src/main/kotlin/.../imports/HideTransientImportProvider.kt, ensure getDirectDependencies signature and all invocations use the same parameter type.",
-    "NEW INSTRUCTION": "WHEN changing method parameter types THEN update all call sites accordingly"
-}
-
-[2026-01-02 22:54] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic",
-    "TOOL": "WrapTestInClassIntention.generateClassName",
-    "ERROR": "Test failed: expected unique class name not generated",
-    "ROOT CAUSE": "Class name generation does not check existing classes, so no counter is appended.",
-    "PROJECT NOTE": "Update generateClassName in WrapTestInClassIntention.kt to accept PyFile and iterate TestFoo, TestFoo1, TestFoo2 until name not in file classes.",
-    "NEW INSTRUCTION": "WHEN suggested class name exists in file THEN append numeric suffix until unique"
-}
-
-[2026-01-03 22:12] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "run_test",
-    "ERROR": "Build failed: immutable workspace modified",
-    "ROOT CAUSE": "Gradle cache for the IDE distribution was corrupted or externally modified.",
-    "PROJECT NOTE": "The Gradle IntelliJ plugin downloads IDE archives under ~/.gradle/caches/.../transforms; if initializeIntellijPlatformPlugin fails with immutable workspace modified, delete the affected transforms entry and rerun with --refresh-dependencies.",
-    "NEW INSTRUCTION": "WHEN Gradle reports immutable workspace modified THEN delete Gradle transforms cache and rerun with --refresh-dependencies"
-}
-
-[2026-01-03 22:21] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "run_test",
-    "ERROR": "Missing j.u.l LogManager config file",
-    "ROOT CAUSE": "The IntelliJ test runner expects test-log.properties in the IDE cache but it is absent.",
-    "PROJECT NOTE": "The file should be under ~/.gradle/caches/.../transforms/.../test-log.properties for the IDE distribution used by the Gradle IntelliJ plugin; refreshing dependencies restores it.",
-    "NEW INSTRUCTION": "WHEN LogManager config file path is missing THEN rerun Gradle with --refresh-dependencies"
-}
-
-[2026-01-03 23:18] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "search_replace",
-    "ERROR": "Cannot resolve specified extension points in getDependencies",
-    "ROOT CAUSE": "ImportsProjectViewConfigurable references Python EPs without declaring the Python plugin dependency and EP IDs may be incorrect.",
-    "PROJECT NOTE": "In settings/ImportsProjectViewConfigurable.getDependencies, use valid EP IDs (e.g., com.jetbrains.python.canonicalPathProvider, com.jetbrains.python.importCandidateProvider) and ensure plugin.xml declares <depends>Pythonid</depends> so these EPs are available.",
-    "NEW INSTRUCTION": "WHEN semantic errors flag unknown extension points in settings THEN verify EP IDs and declare Pythonid dependency"
-}
-
-[2026-01-03 23:22] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "create",
-    "ERROR": "Inspection does not have a description",
-    "ROOT CAUSE": "The new inspection lacks a required description resource or static description.",
-    "PROJECT NOTE": "Add src/main/resources/inspectionDescriptions/PyStrictSourceRootImportInspection.html (ShortName.html) or override getStaticDescription() in the inspection.",
-    "NEW INSTRUCTION": "WHEN creating a new Inspection subclass THEN add inspectionDescriptions/<ShortName>.html description file"
-}
-
-[2026-01-03 23:45] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic",
-    "TOOL": "PyStrictSourceRootImportInspection",
-    "ERROR": "No warning for 'from conftest import ...' missing test root prefix",
-    "ROOT CAUSE": "The inspection ignores modules located directly under a source/test root (e.g., conftest.py) and only handles package-qualified modules.",
-    "PROJECT NOTE": "Treat bare files at the root (like tests/conftest.py) as requiring the root prefix, yielding from tests.conftest import helper.",
-    "NEW INSTRUCTION": "WHEN import resolves to file directly under a source or test root THEN register problem and offer prepend source root quickfix"
-}
-
-[2026-01-03 23:51] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "get_file_structure",
-    "ERROR": "File not found at given path",
-    "ROOT CAUSE": "The requested file path was incorrect; the file lives under fixtures/ not the package path.",
-    "PROJECT NOTE": "Test base classes are under src/test/kotlin/fixtures/, not under com/... package paths.",
-    "NEW INSTRUCTION": "WHEN get_file_structure reports file does not exist THEN retry using suggested candidate path"
-}
-
-[2026-01-03 23:52] - Updated by Junie - Error analysis
-{
-    "TYPE": "missing context",
-    "TOOL": "create",
-    "ERROR": "Test references undefined PyTestFailedLineInspection",
-    "ROOT CAUSE": "The newly added test enables PyTestFailedLineInspection which does not exist yet, causing semantic errors.",
-    "PROJECT NOTE": "Inspection classes must exist under src/main and have a description in src/main/resources/inspectionDescriptions/<ShortName>.html to satisfy tests.",
-    "NEW INSTRUCTION": "WHEN adding tests that enable a new inspection THEN add a minimal inspection class and description first"
-}
-
-[2026-01-03 23:53] - Updated by Junie - Error analysis
-{
-    "TYPE": "missing context",
-    "TOOL": "create",
-    "ERROR": "Test references undefined inspection class",
-    "ROOT CAUSE": "The test enables PyTestFailedLineInspection which has not been implemented yet.",
-    "PROJECT NOTE": "Add src/main/kotlin/.../pytest/PyTestFailedLineInspection.kt and src/main/resources/inspectionDescriptions/PyTestFailedLineInspection.html, then register in plugin.xml.",
-    "NEW INSTRUCTION": "WHEN a test enables a new inspection class THEN add minimal class and description before tests"
-}
-
-[2026-01-04 00:04] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic",
-    "TOOL": "getTestUrl",
-    "ERROR": "Missing package in test URL qualified name",
-    "ROOT CAUSE": "The qualified name is built from the file name only, omitting the package path under the test root.",
-    "PROJECT NOTE": "PyCharm expects URLs like python<root>://qualified.name; compute qualified.name via element.getQName(project) (or a PyQualifiedNameProvider) so 'tests.' and nested packages/classes are included.",
-    "NEW INSTRUCTION": "WHEN building python test URL THEN compute FQN via element.getQName(project)"
-}
-
-[2026-01-04 00:18] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic",
-    "TOOL": "getTestUrl",
-    "ERROR": "Used content root instead of tests source root",
-    "ROOT CAUSE": "getTestUrl uses the module content root for the URL protocol, but PyCharm expects the source/test root (e.g., tests) inside the python<...> protocol.",
-    "PROJECT NOTE": "For files under tests/, the protocol should be python</.../PyCharmMiscProject/tests>; obtain it via ProjectFileIndex.getSourceRootForFile(file) (or the test root type) and only fall back to content root if null.",
-    "NEW INSTRUCTION": "WHEN protocol root equals module content root for a test file THEN use source/test root from ProjectFileIndex.getSourceRootForFile"
-}
-
-[2026-01-04 00:21] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic",
-    "TOOL": "getTestUrl",
-    "ERROR": "URL misses source root and full qualified name",
-    "ROOT CAUSE": "The URL uses the content root and filename-only instead of the tests source root and element-qualified name.",
-    "PROJECT NOTE": "Build URL as python<sourceRoot>://<qualified.name>; get sourceRoot via ProjectFileIndex.getSourceRootForFile(file) (fallback to content root if null) and qualified.name via element.getQName(project).",
-    "NEW INSTRUCTION": "WHEN building python test URL THEN use source root and element.getQName(project)"
-}
-
-[2026-01-04 09:02] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Unresolved reference 'copy' on TestStateStorage.Record",
-    "ROOT CAUSE": "Kotlin data-class copy() was used on a Java class that doesn't provide it.",
-    "PROJECT NOTE": "In TestFailureListener.updateFailedLine, do not call record.copy; instead construct a new TestStateStorage.Record with the original record's fields and the updated failedLine, then call writeState(url, newRecord).",
-    "NEW INSTRUCTION": "WHEN code calls record.copy on TestStateStorage.Record THEN create new Record with updated failedLine"
-}
-
-[2026-01-04 09:04] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Unresolved reference 'stackTrace' in TestFailureListener.kt",
-    "ROOT CAUSE": "Used a Kotlin-style property that doesn't exist; Java API exposes getStacktrace() (lowercase t).",
-    "PROJECT NOTE": "TestStateStorage.Record is a Java class; use explicit getters like getStacktrace() when property naming/casing differs.",
-    "NEW INSTRUCTION": "WHEN accessing TestStateStorage.Record stack trace THEN use record.getStacktrace() instead of stackTrace"
-}
-
-[2026-01-04 19:31] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic",
-    "TOOL": "-",
-    "ERROR": "Updated state written under mismatching storage URL",
-    "ROOT CAUSE": "TestFailureListener writes with SMTestProxy.locationUrl while manager reads with PytestLocationUrlFactory URL, which can differ.",
-    "PROJECT NOTE": "Ensure all TestStateStorage keys use python<sourceRoot>://<qualified.name> (source root via ProjectFileIndex.getSourceRootForFile, FQN via element.getQName(project)).",
-    "NEW INSTRUCTION": "WHEN persisting failedLine from SMTestProxy THEN normalize locationUrl to factory-built pytest URL before write"
-}
-
-[2026-01-04 19:32] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic",
-    "TOOL": "TestFailureListener.onTestFailed",
-    "ERROR": "Record overwritten later with failedLine -1",
-    "ROOT CAUSE": "The default test runner writes TestStateStorage after onTestFailed, resetting failedLine to -1.",
-    "PROJECT NOTE": "Normalize storage keys to python<sourceRoot>://<qualified.name> when reading/writing TestStateStorage.",
-    "NEW INSTRUCTION": "WHEN receiving onTestFinished for a failed test THEN update failedLine in TestStateStorage using normalized URL"
-}
-
-[2026-01-04 19:34] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic",
-    "TOOL": "TestFailureListener.onTestFailed",
-    "ERROR": "Record overwritten by default runner after onTestFailed",
-    "ROOT CAUSE": "Writing failedLine in onTestFailed is later overwritten by the SM runner which stores -1 on finish.",
-    "PROJECT NOTE": "Move failedLine write to onTestFinished for failed tests and use the normalized pytest URL (python<sourceRoot>://<qualified.name>).",
-    "NEW INSTRUCTION": "WHEN onTestFinished fires for a failed SMTestProxy THEN write failedLine using normalized pytest URL"
-}
-
-[2026-01-04 19:48] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic",
-    "TOOL": "TestFailureListener.updateFailedLine",
-    "ERROR": "failedLine written under mismatching storage URL",
-    "ROOT CAUSE": "Listener writes using SMTestProxy.locationUrl while reader uses PytestLocationUrlFactory URL, so records don't match and -1 persists.",
-    "PROJECT NOTE": "Always normalize storage keys to python<sourceRoot>://<qualified.name> (source root via ProjectFileIndex.getSourceRootForFile, FQN via element.getQName(project)) before TestStateStorage.writeState; do not use raw SMTestProxy.locationUrl.",
-    "NEW INSTRUCTION": "WHEN writing failedLine from SMTestProxy THEN convert locationUrl to PytestLocationUrlFactory URL before write"
-}
-
-[2026-01-04 20:49] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic",
-    "TOOL": "run_test",
-    "ERROR": "Test failed: partial match search returned 0 results",
-    "ROOT CAUSE": "PytestIdentifierContributor only handles exact identifiers with '::' and lacks partial search.",
-    "PROJECT NOTE": "In PytestIdentifierContributor.fetchWeightedElements, remove the strict '::' gating and implement name-contains matching over PyFunction/PyClass elements for pytest tests.",
-    "NEW INSTRUCTION": "WHEN search pattern lacks '::' THEN find pytest PyFunction/PyClass names containing pattern and return"
-}
-
-[2026-01-04 21:37] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Argument type mismatch after signature change",
-    "ROOT CAUSE": "The panel's contentBuilder was changed to take (maturities, searchTerm) but the factory still accepted the old function type.",
-    "PROJECT NOTE": "In settings/FilterableFeaturePanel.kt, keep createFilterableFeaturePanel's function type in sync with FilterableFeaturePanel's contentBuilder and update all Configurable call sites to pass searchTerm.",
-    "NEW INSTRUCTION": "WHEN Kotlin reports function type mismatch after edits THEN align factory signature and update all call sites"
-}
-
-[2026-01-04 21:42] - Updated by Junie - Error analysis
-{
-    "TYPE": "missing context",
-    "TOOL": "run_test",
-    "ERROR": "No tests found inside file path",
-    "ROOT CAUSE": "The created test file has unresolved references and does not extend the project's TestBase, so the test framework cannot discover any test methods.",
-    "PROJECT NOTE": "Use fixtures.TestBase from src/test/kotlin/fixtures/TestBase.kt; ensure imports compile and myFixture is available before running tests.",
-    "NEW INSTRUCTION": "WHEN run_test reports 'No tests found inside file path' THEN fix semantic errors and extend fixtures.TestBase"
-}
-
-[2026-01-04 23:07] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic",
-    "TOOL": "run_test",
-    "ERROR": "Quickfix uses module filename, ignores import alias",
-    "ROOT CAUSE": "The quickfix derives the qualifier from PyFile.name and not from the imported alias, so cases like 'import domain as d' propose 'domain.MyClass' instead of 'd.MyClass'.",
-    "PROJECT NOTE": "In PyUnresolvedReferenceAsErrorInspection, collect imported modules alongside their alias from PyImportElement (use asNameIdentifier?.text) and prefer the alias when constructing QualifyReferenceQuickFix.",
-    "NEW INSTRUCTION": "WHEN import element has an alias THEN use alias as qualifier in quickfix"
-}
-
-[2026-01-04 23:08] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic",
-    "TOOL": "run_test",
-    "ERROR": "Relative import still flagged as missing prefix",
-    "ROOT CAUSE": "The PyStrictSourceRootImportInspection does not skip relative from-imports during inspection.",
-    "PROJECT NOTE": "Update src/main/kotlin/.../imports/PyStrictSourceRootImportInspection.kt to detect PyFromImportStatement.relativeLevel > 0 (or isRelative) and return without registering a problem.",
-    "NEW INSTRUCTION": "WHEN inspecting PyFromImportStatement with relativeLevel > 0 THEN skip registering problems"
-}
-
-[2026-01-04 23:08] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic",
-    "TOOL": "run_test",
-    "ERROR": "Test failed: relative import flagged incorrectly",
-    "ROOT CAUSE": "The inspection checked relative from-imports for missing source root prefix.",
-    "PROJECT NOTE": "Update PyStrictSourceRootImportInspection.kt visitor to skip PyFromImportStatement with node.relativeLevel > 0.",
-    "NEW INSTRUCTION": "WHEN PyFromImportStatement.relativeLevel > 0 THEN skip prefix check and return"
-}
-
-[2026-01-05 08:51] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "get_file_structure",
-    "ERROR": "File not found at given path",
-    "ROOT CAUSE": "The requested inspection test file path does not exist in the project.",
-    "PROJECT NOTE": "No inspections test exists at src/test/.../inspections; create it under src/test/kotlin/com/github/chbndrhnns/intellijplatformplugincopy/inspections/ or open an existing test in psi.",
-    "NEW INSTRUCTION": "WHEN target file path does not exist THEN search repository or create the file before proceeding"
-}
-
-[2026-01-05 09:01] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic",
-    "TOOL": "PyResolveUtils.findMember",
-    "ERROR": "IndexOutOfBounds on empty resolve results",
-    "ROOT CAUSE": "findMember assumes multiResolve returns at least one result and indexes [0] on empty list.",
-    "PROJECT NOTE": "In PyResolveUtils.findMember, guard both from-import and import branches: use firstOrNull()?.element after RatedResolveResult.sorted(el.multiResolve()) and return null when empty.",
-    "NEW INSTRUCTION": "WHEN multiResolve returns no results THEN return null instead of indexing the first element"
-}
-
-[2026-01-05 09:01] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic",
-    "TOOL": "PyResolveUtils.findMember",
-    "ERROR": "Accessing first element of empty resolve results",
-    "ROOT CAUSE": "findMember assumes import multiResolve returns a result and indexes [0] on empty list.",
-    "PROJECT NOTE": "In PyResolveUtils.findMember, after el.multiResolve(), check if results.isEmpty() before sorting/indexing; return null when no targets.",
-    "NEW INSTRUCTION": "WHEN multiResolve returns empty results THEN return null instead of indexing first element"
-}
-
 [2026-01-05 09:02] - Updated by Junie - Error analysis
 {
     "TYPE": "logic",
@@ -796,4 +516,264 @@
     "ROOT CAUSE": "The test edit attempted to subclass a final AnAction and override a non-existent method, introducing unresolved references.",
     "PROJECT NOTE": "Do not subclass UseActualTestOutcomeFromTreeAction in tests; instead test UseActualOutcomeUseCase directly or extract a non-final, injectable helper used by the action.",
     "NEW INSTRUCTION": "WHEN a test needs to alter action behavior THEN extract injectable helper and test the helper"
+}
+
+[2026-01-06 22:36] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "run_test",
+    "ERROR": "Intention offered for @classmethod methods",
+    "ROOT CAUSE": "AddSelfParameterIntention.isAvailable does not exclude functions decorated with @classmethod.",
+    "PROJECT NOTE": "Update src/main/kotlin/.../intention/AddSelfParameterIntention.kt isAvailable() to check the PyFunction decorator list for 'classmethod' in addition to 'staticmethod' and return false.",
+    "NEW INSTRUCTION": "WHEN method decorators include 'classmethod' THEN return false in isAvailable"
+}
+
+[2026-01-06 22:43] - Updated by Junie - Error analysis
+{
+    "TYPE": "tool failure",
+    "TOOL": "get_file_structure",
+    "ERROR": "Cannot display plugin.xml structure; unsupported file type or parsing failed",
+    "ROOT CAUSE": "The file-structure tool cannot parse large or non-code XML files like plugin.xml.",
+    "PROJECT NOTE": "plugin.xml is under src/main/resources/META-INF/plugin.xml; view/edit via full-content reading instead of structure.",
+    "NEW INSTRUCTION": "WHEN get_file_structure reports unsupported or parsing failure THEN open entire file content with open_entire_file"
+}
+
+[2026-01-06 22:44] - Updated by Junie - Error analysis
+{
+    "TYPE": "tool failure",
+    "TOOL": "get_file_structure",
+    "ERROR": "Cannot parse plugin.xml file structure",
+    "ROOT CAUSE": "get_file_structure does not support XML files like plugin.xml and returned a parse failure.",
+    "PROJECT NOTE": "Open plugin.xml with the open tool to inspect and edit extension registrations (e.g., lineMarkerProvider, runLineMarkerContributor).",
+    "NEW INSTRUCTION": "WHEN get_file_structure says cannot display file structure THEN use open to view the file content"
+}
+
+[2026-01-06 22:46] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Semantic errors after signature change",
+    "ROOT CAUSE": "The edit introduced a new PsiElement parameter without adding its import and altered code paths, causing unresolved types and mismatched calls.",
+    "PROJECT NOTE": "When touching UseActualOutcomeUseCase.kt, import com.intellij.psi.PsiElement and ensure PyAssertStatement API usage matches existing code; avoid partial block replacements that drop required imports.",
+    "NEW INSTRUCTION": "WHEN search_replace adds new types or parameters THEN add necessary imports and update all usages"
+}
+
+[2026-01-06 22:47] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Unresolved PsiElement and type mismatch after edit",
+    "ROOT CAUSE": "The edit added an overload using PsiElement but did not import it, causing element to be Any and breaking PsiTreeUtil calls.",
+    "PROJECT NOTE": "In UseActualOutcomeUseCase.kt, import com.intellij.psi.PsiElement when adding an isAvailable(project, element, file) overload.",
+    "NEW INSTRUCTION": "WHEN semantic errors show 'Unresolved reference PsiElement' THEN add import com.intellij.psi.PsiElement and retype parameters"
+}
+
+[2026-01-06 22:47] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Semantic errors after edit: unresolved references and type mismatch",
+    "ROOT CAUSE": "Method signature change introduced new types without adding required imports, causing unresolved references and cascading type inference errors.",
+    "PROJECT NOTE": "In UseActualOutcomeUseCase.kt, ensure imports for com.intellij.psi.PsiElement, com.intellij.psi.util.PsiTreeUtil, and Python PSI classes (PyAssertStatement, PyBinaryExpression, PyFunction) are present after edits.",
+    "NEW INSTRUCTION": "WHEN semantic errors report 'Unresolved reference' after edit THEN add missing imports and correct types"
+}
+
+[2026-01-06 22:48] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Unresolved reference 'PsiElement' after edit",
+    "ROOT CAUSE": "The edit added a PsiElement-typed parameter without importing com.intellij.psi.PsiElement, causing type inference to degrade and subsequent errors.",
+    "PROJECT NOTE": "In pytest/outcome/UseActualOutcomeUseCase.kt, import com.intellij.psi.PsiElement when overloading isAvailable with a PsiElement parameter.",
+    "NEW INSTRUCTION": "WHEN semantic errors show 'Unresolved reference PsiElement' THEN import com.intellij.psi.PsiElement in the file"
+}
+
+[2026-01-06 22:50] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "search_replace",
+    "ERROR": "Missing import for PsiElement after signature change",
+    "ROOT CAUSE": "Refactor introduced parameter type PsiElement without adding its import, causing cascading type inference errors.",
+    "PROJECT NOTE": "When introducing IntelliJ PSI types in Kotlin files, always add the corresponding com.intellij.psi.* imports to avoid 'Any' inference and unresolved references.",
+    "NEW INSTRUCTION": "WHEN adding PsiElement to a Kotlin signature THEN import com.intellij.psi.PsiElement in that file"
+}
+
+[2026-01-06 22:52] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "search_replace",
+    "ERROR": "Refactor introduced unresolved PsiElement and type mismatches",
+    "ROOT CAUSE": "The method signature was changed to use PsiElement without adding its import, making element effectively Any and breaking downstream calls.",
+    "PROJECT NOTE": "When editing Kotlin signatures in existing files, ensure all newly referenced types are imported (e.g., com.intellij.psi.PsiElement) before relying on them in PsiTreeUtil and Py* APIs.",
+    "NEW INSTRUCTION": "WHEN changing a Kotlin signature to new types THEN add required imports immediately"
+}
+
+[2026-01-06 23:15] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "get_file_structure",
+    "ERROR": "Requested file does not exist",
+    "ROOT CAUSE": "Attempted to open non-existent PsiExtensions.kt under util due to wrong path assumption.",
+    "PROJECT NOTE": "The util package currently contains only OwnCodeUtil.kt; no PsiExtensions.kt file exists there.",
+    "NEW INSTRUCTION": "WHEN get_file_structure target is uncertain THEN list directory or search before opening"
+}
+
+[2026-01-06 23:17] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "search_replace",
+    "ERROR": "plugin.xml unresolved language id 'Python'",
+    "ROOT CAUSE": "plugin.xml lacks a dependency on the Python plugin, so language=\"Python\" entries cannot be resolved.",
+    "PROJECT NOTE": "Add <depends>Pythonid</depends> (or the appropriate Python plugin id used in this repo) to plugin.xml so language=\"Python\" and Python-specific extensions validate.",
+    "NEW INSTRUCTION": "WHEN plugin.xml shows unknown language 'Python' THEN add Python plugin dependency to plugin.xml"
+}
+
+[2026-01-06 23:19] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "search_replace",
+    "ERROR": "plugin.xml semantic errors: unresolved Python language",
+    "ROOT CAUSE": "A Python-specific intention was registered in main plugin.xml instead of the Python-gated optional config, causing unresolved 'Python' language in this SDK.",
+    "PROJECT NOTE": "Register Python extensions in python-support.xml behind <depends optional=\"true\" config-file=\"python-support.xml\">com.intellij.modules.python</depends>; keep main plugin.xml free of Python-specific language entries.",
+    "NEW INSTRUCTION": "WHEN adding Python-specific extensions THEN register them in python-support.xml under com.intellij.modules.python depends"
+}
+
+[2026-01-06 23:20] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "search_replace",
+    "ERROR": "plugin.xml: Cannot resolve language id 'Python'",
+    "ROOT CAUSE": "plugin.xml registers Python-language extensions without declaring a dependency on the Python plugin.",
+    "PROJECT NOTE": "Add <depends>com.jetbrains.python</depends> (or the appropriate Python module id) in plugin.xml before using language=\"Python\" extensions.",
+    "NEW INSTRUCTION": "WHEN editing plugin.xml with language=\"Python\" entries THEN declare depends on com.jetbrains.python"
+}
+
+[2026-01-06 23:21] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "search_replace",
+    "ERROR": "plugin.xml: Cannot resolve language id 'Python'",
+    "ROOT CAUSE": "Python-specific extensions are registered but the plugin.xml lacks a dependency on com.jetbrains.python, so language='Python' is unresolved.",
+    "PROJECT NOTE": "Ensure plugin.xml declares <depends>com.jetbrains.python</depends> (non-optional) so all Python language extensions and contributors resolve.",
+    "NEW INSTRUCTION": "WHEN plugin.xml shows unresolved language 'Python' THEN add depends on com.jetbrains.python in plugin.xml"
+}
+
+[2026-01-06 23:21] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "search_replace",
+    "ERROR": "plugin.xml: Cannot resolve language id 'Python'",
+    "ROOT CAUSE": "plugin.xml lacks a dependency on the Python plugin, so 'Python' language IDs are unresolved.",
+    "PROJECT NOTE": "Add <depends>com.jetbrains.python</depends> (or optional with config-file) in plugin.xml before registering Python-language extensions.",
+    "NEW INSTRUCTION": "WHEN plugin.xml registers Python language extensions THEN add <depends>com.jetbrains.python</depends>"
+}
+
+[2026-01-06 23:23] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "search_replace",
+    "ERROR": "plugin.xml: Cannot resolve language id 'Python'",
+    "ROOT CAUSE": "plugin.xml lacks a dependency on the Python plugin/module, so language=\"Python\" extensions cannot be resolved.",
+    "PROJECT NOTE": "Add <depends>com.intellij.modules.python</depends> (or the appropriate Python plugin id) in plugin.xml to use language=\"Python\" extension points.",
+    "NEW INSTRUCTION": "WHEN registering extensions with language=\"Python\" in plugin.xml THEN add depends com.intellij.modules.python"
+}
+
+[2026-01-07 07:39] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "PytestStacktraceParser",
+    "ERROR": "Failed to extract line number from pytest stacktrace",
+    "ROOT CAUSE": "Filename was derived from the innermost class name instead of the module file.",
+    "PROJECT NOTE": "For location URLs like python<root>://tests.test_.ClassA.ClassB.test, use test_.py as the filename when matching 'file:(\\d+):' patterns.",
+    "NEW INSTRUCTION": "WHEN locationUrl includes classes after module THEN use module name to form '<module>.py'"
+}
+
+[2026-01-07 07:40] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "PytestStacktraceParser",
+    "ERROR": "Wrong filename derived from locationUrl; line number not found",
+    "ROOT CAUSE": "extractFileNameFromLocationUrl selects the last class segment 'TestGrandChild' as filename instead of the module 'test_.py', so subsequent 'filename:(\\d+):' searches fail.",
+    "PROJECT NOTE": "In PytestStacktraceParser.extractFileNameFromLocationUrl, map the qualified name to its module part (package.module[.classes][.function]) and build 'module.py'; ignore class/function segments and parameter ids.",
+    "NEW INSTRUCTION": "WHEN locationUrl contains package.module.class.function THEN build filename from module only"
+}
+
+[2026-01-07 07:42] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "PytestStacktraceParser.parseFailedLine",
+    "ERROR": "Could not extract line number from stacktrace",
+    "ROOT CAUSE": "The parser searches for 'filename:(\\d+):' near the '>' snippet, but pytest reports the line number on the preceding traceback frame line instead.",
+    "PROJECT NOTE": "Pytest frames include '<path>/.../TestGrandChild.py:NN: in <test_name>'; extract NN from that frame rather than the assertion snippet.",
+    "NEW INSTRUCTION": "WHEN marker found but no line number THEN scan traceback for '<filename>:(\\d+):' and use it"
+}
+
+[2026-01-07 07:42] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "PytestStacktraceParser",
+    "ERROR": "Wrong filename extracted from location URL",
+    "ROOT CAUSE": "The parser picked the last class name 'TestGrandChild' as file name instead of the module 'test_.py', so no 'file.py:line:' match was found and line stayed -1.",
+    "PROJECT NOTE": "In extractFileNameFromLocationUrl, treat parts as [pkg... , module, class..., function]; map the module segment to '<module>.py' and ignore subsequent class segments when deriving the filename.",
+    "NEW INSTRUCTION": "WHEN locationUrl splits into package, module, classes, function THEN derive filename from module segment only"
+}
+
+[2026-01-07 07:54] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "-",
+    "ERROR": "Failed to extract pytest failed line number",
+    "ROOT CAUSE": "Parser only searches for 'filename:line:' patterns and ignores code-only '>' marker excerpts.",
+    "PROJECT NOTE": "Enhance PytestStacktraceParser to, when no 'file.py:line:' match is found, read the code line after the '>' marker (e.g., '>       assert 1 == 2'), normalize whitespace, and search the resolved test file to compute the 1-based line number.",
+    "NEW INSTRUCTION": "WHEN pytest stacktrace has only '>' marker THEN locate marker code line in file to get line"
+}
+
+[2026-01-07 08:31] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid api",
+    "TOOL": "create",
+    "ERROR": "Wrong TestFailedLineManager API methods implemented",
+    "ROOT CAUSE": "The implementation used a non-existent getTestFailureInfo and missed required SDK methods, indicating a mismatch with the current TestFailedLineManager API.",
+    "PROJECT NOTE": "Register as a project service in plugin.xml: <projectService serviceInterface=\"com.intellij.testIntegration.TestFailedLineManager\" serviceImplementation=\"...pytest.outcome.PyTestFailedLineManager\"/>; implement getTestInfo, getRunQuickFix, getDebugQuickFix per SDK.",
+    "NEW INSTRUCTION": "WHEN implementing TestFailedLineManager THEN implement getTestInfo/getRunQuickFix/getDebugQuickFix per SDK"
+}
+
+[2026-01-07 08:31] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic",
+    "TOOL": "create",
+    "ERROR": "Wrong TestFailedLineManager API implemented",
+    "ROOT CAUSE": "Used nonexistent getTestFailureInfo/TestFailureInfo and omitted required interface methods and service registration.",
+    "PROJECT NOTE": "Use TestFailedLineManager#getTestInfo, getRunQuickFix, getDebugQuickFix; reference LocalQuickFix; register as project-level service in plugin.xml with serviceInterface=\"com.intellij.testIntegration.TestFailedLineManager\" and serviceImplementation set to your class.",
+    "NEW INSTRUCTION": "WHEN implementing TestFailedLineManager THEN implement required methods and register service in plugin.xml"
+}
+
+[2026-01-07 08:32] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid api",
+    "TOOL": "create",
+    "ERROR": "Implemented wrong TestFailedLineManager methods; missing service registration",
+    "ROOT CAUSE": "The implementation targeted a non-existent getTestFailureInfo API and omitted required TestFailedLineManager methods and plugin.xml service registration.",
+    "PROJECT NOTE": "Implement com.intellij.testIntegration.TestFailedLineManager with getTestInfo(PsiElement), getRunQuickFix(PsiElement), getDebugQuickFix(PsiElement,String); then register a projectService in plugin.xml: <projectService serviceInterface=\"com.intellij.testIntegration.TestFailedLineManager\" serviceImplementation=\"...PyTestFailedLineManager\"/>.",
+    "NEW INSTRUCTION": "WHEN semantic checker reports unimplemented TestFailedLineManager members THEN implement getTestInfo and quick fixes; register service in plugin.xml"
+}
+
+[2026-01-07 08:33] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid api",
+    "TOOL": "create",
+    "ERROR": "Wrong API methods and missing service registration",
+    "ROOT CAUSE": "Implemented non-existent getTestFailureInfo and omitted required TestFailedLineManager methods and service registration.",
+    "PROJECT NOTE": "Register in plugin.xml: <projectService serviceInterface=\"com.intellij.testIntegration.TestFailedLineManager\" serviceImplementation=\"...PyTestFailedLineManager\"/>; implement getTestInfo, getRunQuickFix, getDebugQuickFix and use TestFailedLineManager.TestInfo.",
+    "NEW INSTRUCTION": "WHEN implementing TestFailedLineManager THEN implement required methods and register project service in plugin.xml"
+}
+
+[2026-01-07 09:13] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "PytestLocationUrlFactory",
+    "ERROR": "Location URL mismatch for nested classes",
+    "ROOT CAUSE": "URLs built from PSI omit or inconsistently include the full nested class chain, so they don't match the SMTestProxy key stored in TestOutcomeDiffService.",
+    "PROJECT NOTE": "Ensure PytestLocationUrlFactory.buildQualifiedName returns module.Test1.Test2.func for nested classes and also provides alternative module.Test2.func when PyTest flattens class hierarchies; pass all variants to TestOutcomeDiffService.findWithKeys.",
+    "NEW INSTRUCTION": "WHEN function belongs to nested classes THEN include full nested class chain in locationUrl"
 }

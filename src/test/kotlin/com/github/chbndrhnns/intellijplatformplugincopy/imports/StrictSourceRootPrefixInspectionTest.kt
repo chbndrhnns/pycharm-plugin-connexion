@@ -14,7 +14,7 @@ class StrictSourceRootPrefixInspectionTest : TestBase() {
 
     fun testImportMissingSourceRootPrefixFromMainIsNotMarked() {
         withPluginSettings({
-            enableRestoreSourceRootPrefix = true
+            enableStrictSourceRootImportInspection = true
         }) {
             // src is a source root
             myFixture.addFileToProject("src/mypackage/module.py", "def foo(): pass")
@@ -33,7 +33,7 @@ class StrictSourceRootPrefixInspectionTest : TestBase() {
 
     fun testImportWithSourceRootPrefixIsResolved() {
         withPluginSettings({
-            enableRestoreSourceRootPrefix = true
+            enableStrictSourceRootImportInspection = true
         }) {
             myFixture.addFileToProject("src/mypackage/module.py", "def foo(): pass")
             val mainPsi = myFixture.addFileToProject("main.py", "from src.mypackage.module import foo\nfoo()")
@@ -51,7 +51,7 @@ class StrictSourceRootPrefixInspectionTest : TestBase() {
 
     fun testImportStatementMissingSourceRootPrefixFromMainIsNotMarked() {
         withPluginSettings({
-            enableRestoreSourceRootPrefix = true
+            enableStrictSourceRootImportInspection = true
         }) {
             myFixture.addFileToProject("src/mypackage/module.py", "def foo(): pass")
             val mainPsi =
@@ -70,7 +70,7 @@ class StrictSourceRootPrefixInspectionTest : TestBase() {
 
     fun testImportStatementMissingSourceRootPrefixNoHighlightIfDisabled() {
         withPluginSettings({
-            enableRestoreSourceRootPrefix = false
+            enableStrictSourceRootImportInspection = false
         }) {
             myFixture.addFileToProject("src/mypackage/module.py", "def foo(): pass")
             val mainPsi = myFixture.addFileToProject("main.py", "import mypackage.module\nmypackage.module.foo()")
@@ -88,7 +88,7 @@ class StrictSourceRootPrefixInspectionTest : TestBase() {
 
     fun testImportMissingTestSourceRootPrefixFromMainIsNotMarked() {
         withPluginSettings({
-            enableRestoreSourceRootPrefix = true
+            enableStrictSourceRootImportInspection = true
         }) {
             // tests is a test source root
             myFixture.addFileToProject("tests/mypackage/module.py", "def foo(): pass")
@@ -107,7 +107,7 @@ class StrictSourceRootPrefixInspectionTest : TestBase() {
 
     fun testImportConftestFromTestsRoot() {
         withPluginSettings({
-            enableRestoreSourceRootPrefix = true
+            enableStrictSourceRootImportInspection = true
         }) {
             // tests is a test source root
             myFixture.addFileToProject("tests/conftest.py", "def helper(): pass")
@@ -137,7 +137,7 @@ class StrictSourceRootPrefixInspectionTest : TestBase() {
 
     fun testRelativeImportDoesNotTriggerInspection() {
         withPluginSettings({
-            enableRestoreSourceRootPrefix = true
+            enableStrictSourceRootImportInspection = true
         }) {
             myFixture.addFileToProject("src/mypackage/__init__.py", "")
             myFixture.addFileToProject("src/mypackage/module.py", "def foo(): pass")
