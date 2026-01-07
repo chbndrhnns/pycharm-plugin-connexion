@@ -94,4 +94,37 @@ class TestFailureListenerTest : TestBase() {
 
         assertNull("Should have cleared data for parametrized key '$expectedKey'", state.get(expectedKey))
     }
+
+    fun `test stores failure for non-assertion error without diffHyperlink`() {
+        val listener = TestFailureListener(project)
+        val locationUrl = "python</path/to/tests>://tests.test_.test_"
+        val testProxy = SMTestProxy("test_", false, locationUrl)
+
+        // Simulate a non-assertion error (RuntimeError, ValueError, etc.)
+        // These don't have diffHyperlink, only stacktrace
+        val stacktrace = """
+            FAILED                                                   [100%]
+            tests/test_.py:1 (test_)
+            test_.py:3: in test_
+                raise RuntimeError()
+            E   RuntimeError
+        """.trimIndent()
+        testProxy.setTestFailed("RuntimeError", stacktrace, false)
+
+        listener.onTestFailed(testProxy)
+
+        val state = TestOutcomeDiffService.getInstance(project)
+        val expectedKey = locationUrl
+
+        val data = state.get(expectedKey)
+        assertNotNull(
+            "Should find data for non-assertion error with key '$expectedKey' but found null. State keys: ${state.getAllKeys()}",
+            data
+        )
+        // For non-assertion errors, expected and actual should be empty
+        assertEquals("", data?.expected)
+        assertEquals("", data?.actual)
+        // The failed line should be parsed from the stacktrace
+        assertEquals(3, data?.failedLine)
+    }
 }
