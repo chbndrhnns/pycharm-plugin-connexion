@@ -1,73 +1,3 @@
-[2026-01-05 15:06] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "run_test",
-    "ERROR": "PythonMockSdk cannot find testData directory",
-    "ROOT CAUSE": "PythonMockSdk.createRoots reads a non-existent testData path (likely with stray whitespace), preventing proper SDK setup and making the intention unavailable.",
-    "PROJECT NOTE": "Check fixtures.PythonTestSetup/PythonMockSdk for the testData path; remove trailing whitespace and ensure a testData directory exists at the project root.",
-    "NEW INSTRUCTION": "WHEN test logs NoSuchFileException for testData in PythonMockSdk THEN fix path and ensure testData exists"
-}
-
-[2026-01-05 15:09] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "run_test",
-    "ERROR": "Missing testData directory for PythonMockSdk",
-    "ROOT CAUSE": "PythonMockSdk.createRoots reads project-root/testData but the directory is absent/misnamed, causing NoSuchFileException.",
-    "PROJECT NOTE": "Create a testData directory at the project root (src/testData if code expects that path) or update PythonMockSdk.kt (createRoots) to point to the actual test data location used by this repo.",
-    "NEW INSTRUCTION": "WHEN logs show NoSuchFileException for project-root/testData THEN create folder or fix SDK path in PythonMockSdk"
-}
-
-[2026-01-05 15:36] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_project",
-    "ERROR": "Query returned more than 100 results",
-    "ROOT CAUSE": "The search term 'parameter object' is too broad for the repository.",
-    "PROJECT NOTE": "Parameter-object code resides under src/main/kotlin/.../intention/parameterobject; search for IntroduceParameterObject or InlineParameterObject within that package.",
-    "NEW INSTRUCTION": "WHEN search_project reports more than 100 results THEN refine query with file paths or class names and retry"
-}
-
-[2026-01-05 15:39] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "bash",
-    "ERROR": "cat: illegal option -A on this system",
-    "ROOT CAUSE": "Used GNU-specific cat flag (-A) in a BSD/macOS environment where it's unsupported.",
-    "PROJECT NOTE": "Use open_entire_file for source inspection or POSIX-safe commands (cat|head|sed) without GNU-only flags.",
-    "NEW INSTRUCTION": "WHEN bash command uses GNU-only cat flags THEN replace with POSIX-safe commands or open_entire_file"
-}
-
-[2026-01-05 15:39] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "bash",
-    "ERROR": "cat: illegal option -A",
-    "ROOT CAUSE": "Used GNU-specific cat flag -A on an environment where cat doesn't support it.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN command includes 'cat -A' THEN use open_entire_file or sed -n to preview content"
-}
-
-[2026-01-05 15:40] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "bash",
-    "ERROR": "cat: illegal option -A",
-    "ROOT CAUSE": "The command used GNU-specific 'cat -A' which is unsupported by the system's cat.",
-    "PROJECT NOTE": "Use open_entire_file for viewing files or stick to POSIX-compatible bash commands.",
-    "NEW INSTRUCTION": "WHEN needing to preview a file content THEN use open_entire_file instead of cat"
-}
-
-[2026-01-05 16:07] - Updated by Junie - Error analysis
-{
-    "TYPE": "missing context",
-    "TOOL": "run_test",
-    "ERROR": "Unresolved reference 'FeatureDefinition' in build",
-    "ROOT CAUSE": "IncubatingFeatureNotifier.kt references FeatureDefinition which is missing or renamed and not imported/defined.",
-    "PROJECT NOTE": "Check settings/IncubatingFeatureNotifier.kt around line ~92; ensure a settings.FeatureDefinition (or the correct replacement type) exists under settings/ and update imports/usages accordingly.",
-    "NEW INSTRUCTION": "WHEN compiler reports unresolved 'FeatureDefinition' THEN create/import correct type or update usages to existing API"
-}
-
 [2026-01-05 17:24] - Updated by Junie - Error analysis
 {
     "TYPE": "missing context",
@@ -762,18 +692,78 @@
 {
     "TYPE": "semantic",
     "TOOL": "search_replace",
-    "ERROR": "Unknown extension point 'com.intellij.localInspection'",
-    "ROOT CAUSE": "InspectionsConfigurable.getDependencies uses incorrect EP type/name; should reference LocalInspectionEP.",
-    "PROJECT NOTE": "Update src/main/kotlin/.../settings/InspectionsConfigurable.kt: import com.intellij.codeInspection.ex.LocalInspectionEP and return listOf(ExtensionPointName.create<LocalInspectionEP>(\"com.intellij.localInspection\")) in getDependencies.",
-    "NEW INSTRUCTION": "WHEN declaring EP dependencies in Configurable THEN use LocalInspectionEP with correct EP ID"
+    "ERROR": "Cannot resolve extension point 'com.intellij.localInspection'",
+    "ROOT CAUSE": "Created a generic ExtensionPointName for localInspection instead of using LocalInspectionEP.EP_NAME, so the analyzer cannot resolve the EP.",
+    "PROJECT NOTE": "In InspectionsConfigurable.getDependencies(), return com.intellij.codeInspection.ex.LocalInspectionEP.EP_NAME instead of ExtensionPointName.create(\"com.intellij.localInspection\").",
+    "NEW INSTRUCTION": "WHEN semantic errors mention unresolved 'com.intellij.localInspection' EP THEN use LocalInspectionEP.EP_NAME in getDependencies"
 }
 
-[2026-01-07 09:48] - Updated by Junie - Error analysis
+[2026-01-07 09:49] - Updated by Junie - Error analysis
 {
     "TYPE": "semantic",
-    "TOOL": "-",
+    "TOOL": "search_replace",
     "ERROR": "Cannot resolve extension point 'com.intellij.localInspection'",
-    "ROOT CAUSE": "WithEpDependencies uses ExtensionPointName.create<Any>(...) instead of the EP’s actual class type.",
-    "PROJECT NOTE": "In InspectionsConfigurable.getDependencies, use ExtensionPointName.create<com.intellij.codeInspection.ex.LocalInspectionEP>(\"com.intellij.localInspection\").",
-    "NEW INSTRUCTION": "WHEN declaring EP dependencies in WithEpDependencies THEN use the concrete EP class type, not Any"
+    "ROOT CAUSE": "InspectionsConfigurable.getDependencies uses ExtensionPointName.create with a raw string instead of the platform's LocalInspectionEP constant.",
+    "PROJECT NOTE": "In settings/InspectionsConfigurable.kt, import com.intellij.codeInspection.ex.LocalInspectionEP and return listOf(LocalInspectionEP.LOCAL_INSPECTION) from getDependencies.",
+    "NEW INSTRUCTION": "WHEN adding EP dependencies for inspections THEN use LocalInspectionEP.LOCAL_INSPECTION constant"
+}
+
+[2026-01-07 09:52] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "open",
+    "ERROR": "Cannot resolve extension point 'com.intellij.localInspection'",
+    "ROOT CAUSE": "The project lacks a dependency providing the localInspection EP, so the EP string cannot be resolved during analysis.",
+    "PROJECT NOTE": "Declare the inspections module in plugin.xml (e.g., <depends>com.intellij.modules.lang</depends> or the specific inspections module your platform requires) so com.intellij.localInspection is available.",
+    "NEW INSTRUCTION": "WHEN semantic error says cannot resolve 'com.intellij.localInspection' THEN add inspections module depends in plugin.xml"
+}
+
+[2026-01-07 09:54] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "run_test",
+    "ERROR": "Build failed during test run; IDE subprocesses killed",
+    "ROOT CAUSE": "Running IDE-based tests triggered platform processes that crashed, indicating unstable test environment rather than a code edit error.",
+    "PROJECT NOTE": "IntelliJ platform tests are heavy; ensure environment is stable and prefer compiling/fixing semantic errors before launching tests. Run the smallest possible test or compile-only first.",
+    "NEW INSTRUCTION": "WHEN run_test reports 'Build completed with errors' and long truncated logs THEN inspect recent edits for compile/semantic errors before rerunning tests"
+}
+
+[2026-01-07 10:00] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Tried extending final class and overriding a non-existent method",
+    "ROOT CAUSE": "The edit attempted to subclass a final action and override a method that doesn’t exist in the API.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN edit proposes extending a class or overriding a method THEN verify class is non-final and method exists in the SDK"
+}
+
+[2026-01-07 14:09] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic",
+    "TOOL": "create",
+    "ERROR": "Used nonexistent LogLevelConfigurationManager/LogCategory members",
+    "ROOT CAUSE": "The implementation assumed Kotlin properties (logManager.categories, LogCategory.category) that do not exist in the current IntelliJ SDK; correct getters/fields must be used.",
+    "PROJECT NOTE": "Inspect com.intellij.diagnostic.logs.LogLevelConfigurationManager and LogCategory in this SDK; use available getters (e.g., getCategories()/setCategories()) and the proper category name accessor instead of assumed Kotlin properties.",
+    "NEW INSTRUCTION": "WHEN semantic checker flags unresolved SDK members THEN inspect SDK classes and switch to existing getters/fields"
+}
+
+[2026-01-07 14:09] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid api",
+    "TOOL": "create",
+    "ERROR": "Used non-existent LogLevelConfigurationManager members",
+    "ROOT CAUSE": "The implementation guessed API members (categories, category) that don't exist in the SDK.",
+    "PROJECT NOTE": "FeatureCheckboxBuilder expects enable/disable/isLoggingEnabled over FeatureInfo.loggingCategories; implement using actual LogLevelConfigurationManager API from IntelliJ SDK instead of assuming properties.",
+    "NEW INSTRUCTION": "WHEN Kotlin reports unresolved reference on IntelliJ API member THEN open SDK sources and adjust code to existing methods"
+}
+
+[2026-01-07 14:11] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid api",
+    "TOOL": "create",
+    "ERROR": "Used nonexistent LogLevelConfigurationManager members",
+    "ROOT CAUSE": "FeatureLoggingService assumed properties/methods (categories, addCategories, setCategories) that do not exist in the current IntelliJ SDK API.",
+    "PROJECT NOTE": "Match FeatureCheckboxBuilder’s expected API (enableLogging/disableLogging/isLoggingEnabled) but implement them using the actual LogLevelConfigurationManager methods from the project’s SDK version; do not assume a 'categories' property.",
+    "NEW INSTRUCTION": "WHEN semantic errors reference unknown LogLevelConfigurationManager members THEN inspect SDK sources and update to correct API"
 }

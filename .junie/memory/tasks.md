@@ -808,3 +808,53 @@
     "NEW INSTRUCTION": "WHEN verifying code compiles THEN run './gradlew build' using bash"
 }
 
+[2026-01-07 09:53] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "open inspections configurable",
+    "MISSING STEPS": "run build",
+    "BOTTLENECK": "Used an unsupported test tool instead of compiling with gradle.",
+    "PROJECT NOTE": "For context menus in IntelliJ UI, prefer PopupHandler to handle platform differences.",
+    "NEW INSTRUCTION": "WHEN verifying changes compile THEN execute bash './gradlew build' and review errors"
+}
+
+[2026-01-07 13:56] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "support hashed logger names after switching to class-based logger resolution",
+    "MISSING STEPS": "reproduce issue, add tests, verify logger state after toggle",
+    "BOTTLENECK": "Unclear mapping between feature categories and actual Logger instances/levels.",
+    "PROJECT NOTE": "Prefer verifying debug enablement via Logger.getInstance(clazz).isDebugEnabled immediately after toggles.",
+    "NEW INSTRUCTION": "WHEN modifying logging toggle logic THEN add a test asserting isDebugEnabled for each category"
+}
+
+[2026-01-07 14:14] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "research external docs",
+    "MISSING STEPS": "open spec, run build, register service",
+    "BOTTLENECK": "Unknown LogLevelConfigurationManager API led to unresolved references.",
+    "PROJECT NOTE": "FeatureCheckboxBuilder expects instance(), isLoggingEnabled(), enableLogging(), disableLogging(); ensure service is registered if needed.",
+    "NEW INSTRUCTION": "WHEN unresolved references appear after creating code THEN open spec and search project patterns"
+}
+
+[2026-01-07 14:22] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "read upstream source, verify in IDE, add apply step",
+    "BOTTLENECK": "API semantics were assumed without confirming how changes are applied.",
+    "PROJECT NOTE": "LogLevelConfigurationManager may require an explicit apply/reconfigure step; review the linked source to invoke the correct method or listener.",
+    "NEW INSTRUCTION": "WHEN changing debug log categories programmatically THEN inspect manager source and add necessary apply/reconfigure invocation"
+}
+
+[2026-01-07 14:30] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "add logs, run build",
+    "BOTTLENECK": "No explicit warn logging on enable/disable actions.",
+    "PROJECT NOTE": "Use Logger.getInstance(FeatureLoggingService).warn to announce enable/disable with feature id.",
+    "NEW INSTRUCTION": "WHEN FeatureLoggingService toggles categories THEN emit WARN indicating enabled/disabled and category count"
+}
+

@@ -72,6 +72,13 @@ annotation class Feature(
     /** Related YouTrack issue IDs (e.g., ["PY-12345", "PY-67890"]) */
     val youtrackIssues: Array<String> = [],
 
+    /**
+     * Debug logging categories associated with this feature.
+     * If provided, a context menu action will be available to toggle debug logging for these categories.
+     * Example: ["com.example.MyClass", "com.example.mypackage"]
+     */
+    val loggingCategories: Array<String> = [],
+
     /** Version when feature was introduced */
     val since: String = "",
 

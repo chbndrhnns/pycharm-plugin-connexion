@@ -7,10 +7,11 @@ import com.intellij.ui.dsl.builder.Panel
 import com.intellij.ui.dsl.builder.bindSelected
 import com.intellij.util.ui.JBUI
 import java.awt.*
+import java.awt.datatransfer.StringSelection
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import java.awt.geom.RoundRectangle2D
-import javax.swing.JComponent
-import javax.swing.JLabel
-import javax.swing.JPanel
+import javax.swing.*
 
 /**
  * A tag-style label with rounded rectangle background.
@@ -143,17 +144,55 @@ object FeatureCheckboxBuilder {
             checkBox(label)
                 .bindSelected(feature::isEnabled, feature::setEnabled)
                 .apply {
+                    component.addMouseListener(object : MouseAdapter() {
+                        override fun mousePressed(e: MouseEvent) {
+                            handlePopup(e)
+                        }
+
+                        override fun mouseReleased(e: MouseEvent) {
+                            handlePopup(e)
+                        }
+
+                        private fun handlePopup(e: MouseEvent) {
+                            if (e.isPopupTrigger) {
+                                val popup = JPopupMenu()
+                                val copyItem = JMenuItem("Copy Feature ID")
+                                copyItem.addActionListener {
+                                    val selection = StringSelection(feature.id)
+                                    Toolkit.getDefaultToolkit().systemClipboard.setContents(selection, selection)
+                                }
+                                popup.add(copyItem)
+
+                                if (feature.loggingCategories.isNotEmpty()) {
+                                    val loggingService = FeatureLoggingService.instance()
+                                    val isLoggingEnabled = loggingService.isLoggingEnabled(feature)
+
+                                    val logItemText = if (isLoggingEnabled) "Disable Debug Logs" else "Enable Debug Logs"
+                                    val logItem = JMenuItem(logItemText)
+                                    logItem.addActionListener {
+                                        if (isLoggingEnabled) {
+                                            loggingService.disableLogging(feature)
+                                        } else {
+                                            loggingService.enableLogging(feature)
+                                        }
+                                    }
+                                    popup.add(logItem)
+                                }
+
+                                popup.show(e.component, e.x, e.y)
+                            }
+                        }
+                    })
+
                     if (feature.description.isNotEmpty()) {
                         comment(feature.description)
                     }
                 }
 
-            // Add maturity badge
             createMaturityTag(feature.maturity, feature.removeIn)?.let { tag ->
                 cell(tag)
             }
 
-            // Add YouTrack links
             if (feature.youtrackIssues.isNotEmpty()) {
                 cell(createYouTrackLinks(feature.youtrackIssues))
             }

@@ -590,3 +590,19 @@
     "NEW INSTRUCTION": "WHEN updating highlight-failed-line.md THEN read line number from TestOutcomeDiffService.kt"
 }
 
+[2026-01-07 14:21] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "IntelliJ API misuse",
+    "EXPECTATION": "Use the actual LogLevelConfigurationManager API from this SDK version instead of guessing members like 'categories', 'addCategories', or 'setCategories', and ensure the code compiles.",
+    "NEW INSTRUCTION": "WHEN LogLevelConfigurationManager members are unresolved THEN inspect SDK class and adapt to available API"
+}
+
+[2026-01-07 14:28] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "SDK API usage",
+    "EXPECTATION": "Implement FeatureLoggingService using the actual LogLevelConfigurationManager API instead of guessed members.",
+    "NEW INSTRUCTION": "WHEN compiler flags unresolved IntelliJ API members THEN inspect SDK classes and adapt to available methods"
+}
+
