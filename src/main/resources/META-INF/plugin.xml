@@ -102,6 +102,18 @@
         <applicationService
                 serviceImplementation="com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState"/>
 
+        <projectService
+                serviceInterface="com.intellij.testIntegration.TestFailedLineManager"
+                serviceImplementation="com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome.PyTestFailedLineManager"/>
+
+        <localInspection language="Python"
+                         implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome.PyTestFailedLineInspection"
+                         displayName="BetterPy: Test failed line"
+                         groupName="Python"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         shortName="PyTestFailedLineInspection"/>
+
         <runLineMarkerContributor language="Python"
                                   implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.run.PyPackageRunLineMarkerContributor"/>
 

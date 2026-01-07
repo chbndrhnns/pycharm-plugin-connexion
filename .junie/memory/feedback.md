@@ -566,3 +566,27 @@
     "NEW INSTRUCTION": "WHEN modifying strict source root import inspection THEN add settings toggle to enable or disable strict prefix inspection"
 }
 
+[2026-01-06 22:55] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "gutter icon behavior",
+    "EXPECTATION": "Display the BetterPy gutter icon at the normal size, and clicking it should trigger the intended action.",
+    "NEW INSTRUCTION": "WHEN adding or updating gutter icon THEN use 16px BetterPy icon and wire navigation handler"
+}
+
+[2026-01-07 07:39] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "gutter icon behavior",
+    "EXPECTATION": "Display the BetterPy gutter icon at normal size and wire click to the intended action.",
+    "NEW INSTRUCTION": "WHEN adding or updating gutter icon THEN use BetterPy 16px icon and GutterIconNavigationHandler"
+}
+
+[2026-01-07 08:30] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "failed line source",
+    "EXPECTATION": "Use the line number from TestOutcomeDiffService.kt when updating highlight-failed-line.md.",
+    "NEW INSTRUCTION": "WHEN updating highlight-failed-line.md THEN read line number from TestOutcomeDiffService.kt"
+}
+

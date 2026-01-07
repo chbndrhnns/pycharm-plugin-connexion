@@ -758,3 +758,33 @@
     "NEW INSTRUCTION": "WHEN all targeted tests pass THEN submit the change and stop work"
 }
 
+[2026-01-06 22:52] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "add feature toggle",
+    "MISSING STEPS": "register plugin.xml, add tests, run build",
+    "BOTTLENECK": "Caret-dependent availability check forced risky refactor and hacky caret moves.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN introducing a new IDE extension THEN register it in plugin.xml and add tests"
+}
+
+[2026-01-07 08:34] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "search for PyTestsLocator.kt, open OutcomeReplacementEngine",
+    "MISSING STEPS": "verify API, register service, run build, add tests",
+    "BOTTLENECK": "Misunderstood TestFailedLineManager API and missed plugin.xml registration.",
+    "PROJECT NOTE": "TestFailedLineManager requires getTestInfo/getRunQuickFix/getDebugQuickFix; register serviceInterface/serviceImplementation in plugin.xml.",
+    "NEW INSTRUCTION": "WHEN implementing TestFailedLineManager THEN open interface, implement required methods, and register service in plugin.xml"
+}
+
+[2026-01-07 09:14] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "unify location URLs, handle nested classes, add tests",
+    "BOTTLENECK": "Inconsistent URL construction prevents matching OutcomeDiff for nested test classes.",
+    "PROJECT NOTE": "Prefer SMTestLocator/PyTestsLocator to construct canonical python:// URLs consistently.",
+    "NEW INSTRUCTION": "WHEN no diff found for any generated locationUrl THEN build canonical URL with PyTestsLocator including full nested class path"
+}
+
