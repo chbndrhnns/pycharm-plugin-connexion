@@ -38,6 +38,11 @@ class InspectionsConfigurable : BoundConfigurable("Inspections"), Configurable.W
                 registry.getFeature("unresolved-reference-as-error-inspection")
                     ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
             }
+
+            group("Test Inspections") {
+                registry.getFeature("pytest-failed-line-inspection")
+                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
+            }
         }.asDialogPanel()
     }
 }

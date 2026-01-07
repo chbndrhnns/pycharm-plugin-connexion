@@ -1,8 +1,40 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome
 
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import fixtures.TestBase
 
 class PyTestFailedLineInspectionTest : TestBase() {
+
+    fun `test no highlight when setting disabled`() {
+        val code = """
+            def test_failing():
+                x = 1
+                y = 2
+                assert x == y
+        """.trimIndent()
+
+        myFixture.configureByText("test_disabled.py", code)
+
+        val projectRoot = project.basePath!!
+        val locationUrl = "python<$projectRoot>://test_disabled.test_failing"
+
+        val diffService = TestOutcomeDiffService.getInstance(project)
+        diffService.put(locationUrl, OutcomeDiff("1", "2", failedLine = 4))
+
+        // Disable the setting
+        PluginSettingsState.instance().state.enablePyTestFailedLineInspection = false
+
+        try {
+            myFixture.enableInspections(PyTestFailedLineInspection::class.java)
+            val highlights = myFixture.doHighlighting()
+
+            val failedLineHighlight = highlights.find { it.description == "Test failed at this line" }
+            assertNull("Highlight should NOT be present when setting is disabled", failedLineHighlight)
+        } finally {
+            // Restore setting
+            PluginSettingsState.instance().state.enablePyTestFailedLineInspection = true
+        }
+    }
 
     fun `test highlights failed assert line`() {
         val code = """

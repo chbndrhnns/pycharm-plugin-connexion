@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome
 
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
@@ -14,6 +15,10 @@ import com.jetbrains.python.psi.PyStatement
 class PyTestFailedLineInspection : LocalInspectionTool() {
 
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
+        if (!PluginSettingsState.instance().state.enablePyTestFailedLineInspection) {
+            return PsiElementVisitor.EMPTY_VISITOR
+        }
+
         return object : PyElementVisitor() {
             override fun visitPyFunction(node: PyFunction) {
                 checkElement(node, holder, isOnTheFly)

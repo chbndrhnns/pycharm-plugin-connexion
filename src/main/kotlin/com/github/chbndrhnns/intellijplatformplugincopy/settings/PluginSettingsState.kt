@@ -537,6 +537,14 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
             category = FeatureCategory.ACTIONS
         )
         var enablePyPackageRunConfigurationAction: Boolean = true,
+
+        @Feature(
+            id = "pytest-failed-line-inspection",
+            displayName = "Pytest failed line inspection",
+            description = "Marks the line where a pytest test failed",
+            category = FeatureCategory.INSPECTIONS
+        )
+        var enablePyTestFailedLineInspection: Boolean = true
     )
 
     private var myState = State()

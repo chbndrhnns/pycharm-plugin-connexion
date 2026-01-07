@@ -1,83 +1,3 @@
-[2026-01-05 09:02] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic",
-    "TOOL": "PyResolveUtils.findMember",
-    "ERROR": "IndexOutOfBoundsException accessing first resolve result for import",
-    "ROOT CAUSE": "Code assumes el.multiResolve() returns at least one result and indexes [0] without checks.",
-    "PROJECT NOTE": "In PyResolveUtils.kt (findMember), guard both from-import and import branches: use RatedResolveResult.sorted(results).firstOrNull()?.element and return null if empty.",
-    "NEW INSTRUCTION": "WHEN multiResolve returns no results THEN return null instead of indexing the first element"
-}
-
-[2026-01-05 14:18] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Wrong PsiTestUtil.addProjectLibrary overload used",
-    "ROOT CAUSE": "A List<VirtualFile> was passed where the API expects VirtualFile varargs or List<String> paths.",
-    "PROJECT NOTE": "In tests, call PsiTestUtil.addProjectLibrary(module, \"MyLib\", libDir) with VirtualFile varargs or use the overload that accepts String paths.",
-    "NEW INSTRUCTION": "WHEN adding project library in tests THEN pass VirtualFile varargs, not List<VirtualFile>"
-}
-
-[2026-01-05 14:19] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Wrong argument type for addProjectLibrary",
-    "ROOT CAUSE": "Used a List<VirtualFile> for PsiTestUtil.addProjectLibrary instead of the vararg VirtualFile overload or String paths overload.",
-    "PROJECT NOTE": "In tests, prefer PsiTestUtil.addProjectLibrary(module, name, virtualFile) using the vararg VirtualFile overload; do not pass List<VirtualFile>.",
-    "NEW INSTRUCTION": "WHEN editing PsiTestUtil.addProjectLibrary call THEN use vararg VirtualFile parameters, not List"
-}
-
-[2026-01-05 14:22] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Wrong arguments to PsiTestUtil.addProjectLibrary",
-    "ROOT CAUSE": "Used the overload expecting vararg VirtualFile but passed a List instead.",
-    "PROJECT NOTE": "In tests, call PsiTestUtil.addProjectLibrary(module, name, vararg roots: VirtualFile) or provide String paths for the paths-based overload; do not pass List<VirtualFile>.",
-    "NEW INSTRUCTION": "WHEN adding a project library in tests THEN use vararg VirtualFile overload, not List"
-}
-
-[2026-01-05 14:24] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Wrong argument types in addProjectLibrary call",
-    "ROOT CAUSE": "Used List<VirtualFile> for addProjectLibrary where vararg VirtualFile or List<String> is required.",
-    "PROJECT NOTE": "In tests, call PsiTestUtil.addProjectLibrary(module, name, vararg VirtualFile) or addProjectLibrary(module, name, listOf(String paths)); do not pass List<VirtualFile>.",
-    "NEW INSTRUCTION": "WHEN adding project library in tests THEN pass vararg VirtualFile or String path list"
-}
-
-[2026-01-05 14:27] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Wrong arguments for PsiTestUtil.addProjectLibrary",
-    "ROOT CAUSE": "The edit passed List<VirtualFile> where the API expects vararg VirtualFile or List<String> paths.",
-    "PROJECT NOTE": "In tests, call PsiTestUtil.addProjectLibrary(module, name, virtualFile) with VirtualFile vararg, or use addLibrary with String paths.",
-    "NEW INSTRUCTION": "WHEN editing addProjectLibrary invocation THEN pass VirtualFile varargs instead of a List"
-}
-
-[2026-01-05 14:28] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Argument type mismatch in PsiTestUtil.addProjectLibrary call",
-    "ROOT CAUSE": "Edited test passed List<VirtualFile> to addProjectLibrary, but overload expects VirtualFile varargs or List<String> paths.",
-    "PROJECT NOTE": "In tests, prefer PsiTestUtil.addProjectLibrary(module, name, vararg roots: VirtualFile) with VirtualFile arguments from tempDirFixture/findOrCreateDir.",
-    "NEW INSTRUCTION": "WHEN addProjectLibrary call shows type mismatch THEN use VirtualFile vararg overload with VirtualFile arguments"
-}
-
-[2026-01-05 15:00] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic",
-    "TOOL": "ToggleTypeAliasIntention",
-    "ERROR": "Intention unavailable; isAvailable() returned false",
-    "ROOT CAUSE": "isAvailable() does not recognize Python 3.12 PEP 695 'type' alias syntax, so it never enables.",
-    "PROJECT NOTE": "Update ToggleTypeAliasIntention.isAvailable to handle PyTypeAliasStatement (PEP 695) when LanguageLevel >= PYTHON312 in src/main/kotlin/.../intention/typealias/ToggleTypeAliasIntention.kt.",
-    "NEW INSTRUCTION": "WHEN code contains PEP 695 'type' alias and PYTHON312+ THEN enable intention by recognizing PyTypeAliasStatement"
-}
-
 [2026-01-05 15:06] - Updated by Junie - Error analysis
 {
     "TYPE": "env/setup",
@@ -776,4 +696,84 @@
     "ROOT CAUSE": "URLs built from PSI omit or inconsistently include the full nested class chain, so they don't match the SMTestProxy key stored in TestOutcomeDiffService.",
     "PROJECT NOTE": "Ensure PytestLocationUrlFactory.buildQualifiedName returns module.Test1.Test2.func for nested classes and also provides alternative module.Test2.func when PyTest flattens class hierarchies; pass all variants to TestOutcomeDiffService.findWithKeys.",
     "NEW INSTRUCTION": "WHEN function belongs to nested classes THEN include full nested class chain in locationUrl"
+}
+
+[2026-01-07 09:32] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "run_test",
+    "ERROR": "Gradle cannot read workspace metadata.bin",
+    "ROOT CAUSE": "A corrupted Gradle cache blocked dependency resolution for intellijPlatformTestClasspath.",
+    "PROJECT NOTE": "Recover by running Gradle with --refresh-dependencies or clearing Gradle caches before tests.",
+    "NEW INSTRUCTION": "WHEN Gradle reports 'Could not read workspace metadata' THEN run './gradlew --refresh-dependencies test'"
+}
+
+[2026-01-07 09:33] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "run_test",
+    "ERROR": "Could not read Gradle workspace metadata.bin",
+    "ROOT CAUSE": "Gradle transform cache corruption prevented resolving intellijPlatformTestClasspath dependencies.",
+    "PROJECT NOTE": "If clean + --refresh-dependencies fails, delete ~/.gradle/caches/<gradle-version>/transforms and retry.",
+    "NEW INSTRUCTION": "WHEN Gradle says \"Could not read workspace metadata\" THEN delete Gradle caches and refresh dependencies"
+}
+
+[2026-01-07 09:33] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "run_test",
+    "ERROR": "Gradle cannot read cached metadata.bin; dependency resolution fails",
+    "ROOT CAUSE": "Gradle dependency cache is corrupted in transforms metadata, breaking :intellijPlatformTestClasspath resolution.",
+    "PROJECT NOTE": "Use ./gradlew --stop; delete GRADLE_USER_HOME/caches; then ./gradlew clean --refresh-dependencies test.",
+    "NEW INSTRUCTION": "WHEN Gradle shows 'Could not read workspace metadata' THEN stop daemon and clear Gradle caches"
+}
+
+[2026-01-07 09:35] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "run_test",
+    "ERROR": "Gradle cache metadata.bin read failure",
+    "ROOT CAUSE": "Corrupted Gradle transform cache prevented dependency resolution for the test classpath.",
+    "PROJECT NOTE": "If tests fail with metadata.bin errors, clear ~/.gradle/caches/<gradle-version>/transforms and rerun with --refresh-dependencies.",
+    "NEW INSTRUCTION": "WHEN Gradle reports metadata.bin read failure THEN stop daemon, delete transforms cache, refresh dependencies"
+}
+
+[2026-01-07 09:37] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "run_test",
+    "ERROR": "Gradle cache metadata.bin is corrupted",
+    "ROOT CAUSE": "Gradle transform cache metadata became unreadable, preventing dependency resolution for tests.",
+    "PROJECT NOTE": "If Gradle fails reading transforms metadata, stop daemons, delete ~/.gradle/caches/<gradle-version>/transforms, then rerun with --refresh-dependencies.",
+    "NEW INSTRUCTION": "WHEN Gradle reports unreadable transforms metadata THEN stop daemon and delete transforms cache"
+}
+
+[2026-01-07 09:38] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "run_test",
+    "ERROR": "Missing j.u.l LogManager config (test-log.properties)",
+    "ROOT CAUSE": "The IntelliJ/PyCharm test artifacts in Gradle cache are stale or incomplete, so the expected test-log.properties file is absent.",
+    "PROJECT NOTE": "For IntelliJ Platform plugin tests, refresh IDE artifacts: run gradlew cleanTest --refresh-dependencies to rebuild transformed IDE distributions and restore test-log.properties.",
+    "NEW INSTRUCTION": "WHEN run_test logs missing test-log.properties THEN clean Gradle caches and refresh dependencies"
+}
+
+[2026-01-07 09:47] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic",
+    "TOOL": "search_replace",
+    "ERROR": "Unknown extension point 'com.intellij.localInspection'",
+    "ROOT CAUSE": "InspectionsConfigurable.getDependencies uses incorrect EP type/name; should reference LocalInspectionEP.",
+    "PROJECT NOTE": "Update src/main/kotlin/.../settings/InspectionsConfigurable.kt: import com.intellij.codeInspection.ex.LocalInspectionEP and return listOf(ExtensionPointName.create<LocalInspectionEP>(\"com.intellij.localInspection\")) in getDependencies.",
+    "NEW INSTRUCTION": "WHEN declaring EP dependencies in Configurable THEN use LocalInspectionEP with correct EP ID"
+}
+
+[2026-01-07 09:48] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic",
+    "TOOL": "-",
+    "ERROR": "Cannot resolve extension point 'com.intellij.localInspection'",
+    "ROOT CAUSE": "WithEpDependencies uses ExtensionPointName.create<Any>(...) instead of the EP’s actual class type.",
+    "PROJECT NOTE": "In InspectionsConfigurable.getDependencies, use ExtensionPointName.create<com.intellij.codeInspection.ex.LocalInspectionEP>(\"com.intellij.localInspection\").",
+    "NEW INSTRUCTION": "WHEN declaring EP dependencies in WithEpDependencies THEN use the concrete EP class type, not Any"
 }
