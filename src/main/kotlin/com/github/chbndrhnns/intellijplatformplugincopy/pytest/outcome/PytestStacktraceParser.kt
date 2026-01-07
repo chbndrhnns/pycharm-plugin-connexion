@@ -105,8 +105,10 @@ object PytestStacktraceParser {
     }
 
     /**
-     * Parses line number using the pattern "filename:lineNumber: ErrorType"
-     * Example: "test_sample.py:4: AssertionError"
+     * Parses line number using the pattern "filename:lineNumber: ErrorType" or "filename:lineNumber: in function_name"
+     * Examples:
+     * - "test_sample.py:4: AssertionError"
+     * - "test_.py:3: in test_"
      */
     private fun parseLineNumberFromPattern(stacktrace: String, fileName: String): Int {
         LOG.debug("PytestStacktraceParser.parseLineNumberFromPattern: searching for pattern '$fileName:(\\d+):' in stacktrace")
@@ -120,7 +122,7 @@ object PytestStacktraceParser {
 
         if (allLines.isNotEmpty()) {
             LOG.debug("PytestStacktraceParser.parseLineNumberFromPattern: found ${allLines.size} line number(s): $allLines")
-            // Return the last one, as it's typically the assertion line
+            // Return the last one, as it's typically the assertion line or the line where the error was raised
             val result = allLines.last()
             LOG.debug("PytestStacktraceParser.parseLineNumberFromPattern: returning last line number: $result")
             return result

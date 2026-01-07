@@ -200,4 +200,34 @@ class PytestStacktraceParserTest : TestBase() {
 
         assertEquals("Should extract line 33 from test_.py", 33, result)
     }
+
+    fun `test parseFailedLine with RuntimeError non-assertion failure`() {
+        val stacktrace = """
+            FAILED                                                   [100%]
+            tests/test_.py:1 (test_)
+            test_.py:3: in test_
+                raise RuntimeError()
+            E   RuntimeError
+        """.trimIndent()
+
+        val locationUrl = "python</path/to/tests>://tests.test_.test_"
+
+        val result = PytestStacktraceParser.parseFailedLine(stacktrace, locationUrl)
+
+        assertEquals(3, result)
+    }
+
+    fun `test parseFailedLine with ValueError non-assertion failure`() {
+        val stacktrace = """
+            test_errors.py:5: in test_value_error
+                raise ValueError("Invalid value")
+            E   ValueError: Invalid value
+        """.trimIndent()
+
+        val locationUrl = "python</path>://test_errors.test_value_error"
+
+        val result = PytestStacktraceParser.parseFailedLine(stacktrace, locationUrl)
+
+        assertEquals(5, result)
+    }
 }
