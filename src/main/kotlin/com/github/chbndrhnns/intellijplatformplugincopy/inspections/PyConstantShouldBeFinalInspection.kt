@@ -11,8 +11,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.util.QualifiedName
+import com.jetbrains.python.PyNames
 import com.jetbrains.python.inspections.PyInspection
 import com.jetbrains.python.psi.*
+import com.jetbrains.python.psi.types.PyClassType
 import com.jetbrains.python.psi.types.TypeEvalContext
 
 class PyConstantShouldBeFinalInspection : PyInspection() {
@@ -42,6 +44,13 @@ class PyConstantShouldBeFinalInspection : PyInspection() {
 
                 val name = target.name ?: return
                 if (!isConstantName(name)) return
+
+                // Skip enum members - they are capitalized but not constants
+                val containingClass = target.containingClass
+                if (containingClass != null) {
+                    val context = TypeEvalContext.codeAnalysis(holder.project, holder.file)
+                    if (isEnum(containingClass, context)) return
+                }
 
                 if (isAlreadyFinal(target)) return
 
@@ -76,6 +85,12 @@ class PyConstantShouldBeFinalInspection : PyInspection() {
                     if (annotationText.contains("Final")) return true
                 }
                 return false
+            }
+
+            private fun isEnum(cls: PyClass, context: TypeEvalContext): Boolean {
+                val metaClassType = cls.getMetaClassType(true, context)
+                return metaClassType is PyClassType &&
+                        metaClassType.pyClass.isSubclass(PyNames.TYPE_ENUM_META, context)
             }
         }
     }

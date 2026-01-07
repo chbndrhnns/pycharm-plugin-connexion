@@ -1,43 +1,3 @@
-[2025-12-15 22:09] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "broad search, repeated open",
-    "MISSING STEPS": "inspect target method",
-    "BOTTLENECK": "Did not fully inspect prepareCallSiteUpdates before proposing fix.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN modifying a specific method THEN open and read the entire method body first"
-}
-
-[2025-12-15 23:38] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "overbroad search",
-    "MISSING STEPS": "edit code,add tests,run tests,submit",
-    "BOTTLENECK": "No code changes were applied to implement the proposed fix.",
-    "PROJECT NOTE": "Both intention and refactoring delegate to IntroduceParameterObjectTarget.isAvailable; fix centrally.",
-    "NEW INSTRUCTION": "WHEN recommending code changes without edits THEN apply_patch, add tests, and run build"
-}
-
-[2025-12-31 18:21] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "add integration test, run build, run tests",
-    "BOTTLENECK": "No early build/test feedback after registration and implementation changes.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN registering new plugin extension THEN run build and unit tests immediately"
-}
-
-[2025-12-31 18:32] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "submit",
-    "MISSING STEPS": "run build, run tests, analyze failures, fix code, re-run tests",
-    "BOTTLENECK": "Skipped test execution and failure triage before submission.",
-    "PROJECT NOTE": "Verify plugin.xml navbar implementation class matches the implementation package.",
-    "NEW INSTRUCTION": "WHEN implementation is ready for submit THEN run tests and fix failures before submit"
-}
-
 [2025-12-31 22:55] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -886,5 +846,55 @@
     "BOTTLENECK": "UI does not react to logging state changes; no reliable refresh mechanism",
     "PROJECT NOTE": "Use a listener on LogLevelConfigurationManager or a model binding to toggle badge visibility and re-create badge within the row container, then revalidate/repaint that container.",
     "NEW INSTRUCTION": "WHEN logging toggled for feature THEN recreate logging badge and revalidate the row container"
+}
+
+[2026-01-07 15:15] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "review specs",
+    "MISSING STEPS": "assess platform compatibility,decide deliverable,outline non-interactive API parameters",
+    "BOTTLENECK": "MCP server is bundled with IDEA Ultimate, not PyCharm target platform.",
+    "PROJECT NOTE": "Project targets platformType=PY; MCP requires IU or optional module strategy.",
+    "NEW INSTRUCTION": "WHEN platform lacks com.intellij.mcpServer bundled plugin THEN explain compatibility options and avoid implementation"
+}
+
+[2026-01-07 15:20] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "scan project,review specs,inspect handlers in detail",
+    "MISSING STEPS": "assess platform compatibility,decide packaging strategy,plan non-interactive API",
+    "BOTTLENECK": "Jumped into code exploration instead of first validating MCP availability in PyCharm.",
+    "PROJECT NOTE": "Plugin targets PyCharm; MCP server is IDEA Ultimate-only, requiring an alternative packaging strategy.",
+    "NEW INSTRUCTION": "WHEN integration relies on platform plugin availability THEN verify IDE support and propose packaging options first"
+}
+
+[2026-01-07 15:45] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "implement McpToolset, register MCP tool, test integration",
+    "MISSING STEPS": "ask user about target IDE",
+    "BOTTLENECK": "Unclear target IDE determines whether MCP is available.",
+    "PROJECT NOTE": "Project targets PyCharm (PY); MCP server is bundled only in IDEA Ultimate.",
+    "NEW INSTRUCTION": "WHEN question requests feasibility or approach only THEN answer and ask_user, avoid code changes"
+}
+
+[2026-01-07 16:41] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "edit parser",
+    "MISSING STEPS": "dry-run parse on sample stacktrace",
+    "BOTTLENECK": "Parser was changed without confirming existing regex already covered the case.",
+    "PROJECT NOTE": "Current regex `$file:(\\d+):` already captures 'in function_name' frames; tests were sufficient.",
+    "NEW INSTRUCTION": "WHEN existing parser regex matches new sample stacktrace THEN add tests and skip code changes"
+}
+
+[2026-01-07 16:58] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "inspect existing test annotations",
+    "MISSING STEPS": "run tests",
+    "BOTTLENECK": "Uncertainty about doInspectionTest expectations delayed validation of the change.",
+    "PROJECT NOTE": "Refer to the shared test helper (doInspectionTest) to understand expected verification semantics.",
+    "NEW INSTRUCTION": "WHEN inspection logic is changed THEN run related tests and adjust fixtures if failing"
 }
 

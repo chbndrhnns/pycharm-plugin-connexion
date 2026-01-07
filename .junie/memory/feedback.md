@@ -614,3 +614,11 @@
     "NEW INSTRUCTION": "WHEN manipulating debug log categories THEN use state.categories and addCategories/setCategories"
 }
 
+[2026-01-07 16:53] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "enum vs constants",
+    "EXPECTATION": "Enum members should not be treated as constants even if capitalized.",
+    "NEW INSTRUCTION": "WHEN symbol is an Enum member THEN do not classify or report it as constant"
+}
+

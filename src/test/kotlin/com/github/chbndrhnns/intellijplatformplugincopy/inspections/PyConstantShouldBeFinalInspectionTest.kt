@@ -50,4 +50,11 @@ class PyConstantShouldBeFinalInspectionTest : TestBase() {
             "inspections/PyConstantShouldBeFinalInspection/NoneInitializer/test_after.py"
         )
     }
+
+    fun testEnumMembers() {
+        myFixture.doInspectionTest(
+            "inspections/PyConstantShouldBeFinalInspection/EnumMembers/test.py",
+            inspection
+        )
+    }
 }

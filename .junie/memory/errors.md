@@ -1,33 +1,3 @@
-[2026-01-05 17:24] - Updated by Junie - Error analysis
-{
-    "TYPE": "missing context",
-    "TOOL": "create",
-    "ERROR": "Unresolved reference 'enableUnexportSymbolIntention' in test",
-    "ROOT CAUSE": "The test referenced a new settings flag that was not yet defined in PluginSettingsState.",
-    "PROJECT NOTE": "Feature toggles live in PluginSettingsState.State with @Feature metadata; add the boolean there before using it in tests.",
-    "NEW INSTRUCTION": "WHEN adding tests referencing new settings flag THEN define flag in PluginSettingsState.State first"
-}
-
-[2026-01-05 17:26] - Updated by Junie - Error analysis
-{
-    "TYPE": "missing context",
-    "TOOL": "create",
-    "ERROR": "Unresolved reference enableUnexportSymbolIntention",
-    "ROOT CAUSE": "The test enabled a settings flag that was not yet defined in PluginSettingsState.",
-    "PROJECT NOTE": "Define feature flags in PluginSettingsState.State before referencing them in tests; keep plugin settings synchronized with new intentions.",
-    "NEW INSTRUCTION": "WHEN adding a test toggling a new feature flag THEN add the flag to PluginSettingsState first"
-}
-
-[2026-01-05 17:28] - Updated by Junie - Error analysis
-{
-    "TYPE": "missing context",
-    "TOOL": "create",
-    "ERROR": "Test references undefined setting enableUnexportSymbolIntention",
-    "ROOT CAUSE": "The test was added before defining the corresponding flag in PluginSettingsState.",
-    "PROJECT NOTE": "Plugin settings flags are defined in src/main/kotlin/.../settings/PluginSettingsState.kt with @Feature metadata; add new booleans there before tests use them.",
-    "NEW INSTRUCTION": "WHEN a test enables a new settings flag THEN add the flag to PluginSettingsState first"
-}
-
 [2026-01-05 18:58] - Updated by Junie - Error analysis
 {
     "TYPE": "env/setup",
@@ -766,4 +736,34 @@
     "ROOT CAUSE": "FeatureLoggingService assumed properties/methods (categories, addCategories, setCategories) that do not exist in the current IntelliJ SDK API.",
     "PROJECT NOTE": "Match FeatureCheckboxBuilder’s expected API (enableLogging/disableLogging/isLoggingEnabled) but implement them using the actual LogLevelConfigurationManager methods from the project’s SDK version; do not assume a 'categories' property.",
     "NEW INSTRUCTION": "WHEN semantic errors reference unknown LogLevelConfigurationManager members THEN inspect SDK sources and update to correct API"
+}
+
+[2026-01-07 16:41] - Updated by Junie - Error analysis
+{
+    "TYPE": "tool failure",
+    "TOOL": "run_test",
+    "ERROR": "Output too long; error header despite passing tests",
+    "ROOT CAUSE": "The test runner output exceeded the tool’s display limit, which prefixed an error header even though all tests passed (15/15).",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN run_test shows passed summary despite error header THEN treat test run as success"
+}
+
+[2026-01-07 16:54] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_project",
+    "ERROR": "Search query returned >100 results; refine request",
+    "ROOT CAUSE": "The search term 'constant' is too generic and matches too many files.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN search_project warns about too many results THEN refine query with additional specific keywords"
+}
+
+[2026-01-07 16:57] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "search_replace",
+    "ERROR": "Unresolved reference 'isEnum' after edit",
+    "ROOT CAUSE": "The inspection referenced isEnum before defining it or adding required imports.",
+    "PROJECT NOTE": "When adding helper checks inside PyElementVisitor in inspections, implement the helper in the same class and add necessary imports (e.g., PyNames, PyClassType) in the same edit.",
+    "NEW INSTRUCTION": "WHEN new helper or API is referenced THEN add its definition and required imports immediately"
 }
