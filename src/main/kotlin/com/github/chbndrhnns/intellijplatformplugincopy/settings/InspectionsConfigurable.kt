@@ -20,28 +20,84 @@ class InspectionsConfigurable : BoundConfigurable("Inspections"), Configurable.W
     }
 
     override fun createPanel(): DialogPanel {
-        return createFilterableFeaturePanel { visibleMaturities, searchTerm ->
+        return createFilterableFeaturePanel { visibleMaturities, searchTerm, onLoggingChanged ->
             // All inspections are in the INSPECTIONS category
             group("Code Quality Inspections") {
                 registry.getFeature("missing-in-dunder-all-inspection")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
+                    ?.let {
+                        featureRow(
+                            it,
+                            visibleMaturities = visibleMaturities,
+                            searchTerm = searchTerm,
+                            onLoggingChanged = onLoggingChanged
+                        )
+                    }
                 registry.getFeature("dataclass-missing-inspection")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
+                    ?.let {
+                        featureRow(
+                            it,
+                            visibleMaturities = visibleMaturities,
+                            searchTerm = searchTerm,
+                            onLoggingChanged = onLoggingChanged
+                        )
+                    }
                 registry.getFeature("private-module-import-inspection")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
+                    ?.let {
+                        featureRow(
+                            it,
+                            visibleMaturities = visibleMaturities,
+                            searchTerm = searchTerm,
+                            onLoggingChanged = onLoggingChanged
+                        )
+                    }
                 registry.getFeature("abstract-method-not-implemented-inspection")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
+                    ?.let {
+                        featureRow(
+                            it,
+                            visibleMaturities = visibleMaturities,
+                            searchTerm = searchTerm,
+                            onLoggingChanged = onLoggingChanged
+                        )
+                    }
                 registry.getFeature("constant-final-inspection")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
+                    ?.let {
+                        featureRow(
+                            it,
+                            visibleMaturities = visibleMaturities,
+                            searchTerm = searchTerm,
+                            onLoggingChanged = onLoggingChanged
+                        )
+                    }
                 registry.getFeature("shadowing-stdlib-module-inspection")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
+                    ?.let {
+                        featureRow(
+                            it,
+                            visibleMaturities = visibleMaturities,
+                            searchTerm = searchTerm,
+                            onLoggingChanged = onLoggingChanged
+                        )
+                    }
                 registry.getFeature("unresolved-reference-as-error-inspection")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
+                    ?.let {
+                        featureRow(
+                            it,
+                            visibleMaturities = visibleMaturities,
+                            searchTerm = searchTerm,
+                            onLoggingChanged = onLoggingChanged
+                        )
+                    }
             }
 
             group("Test Inspections") {
                 registry.getFeature("pytest-failed-line-inspection")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm) }
+                    ?.let {
+                        featureRow(
+                            it,
+                            visibleMaturities = visibleMaturities,
+                            searchTerm = searchTerm,
+                            onLoggingChanged = onLoggingChanged
+                        )
+                    }
             }
         }.asDialogPanel()
     }

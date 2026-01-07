@@ -19,7 +19,7 @@ class ImportsProjectViewConfigurable : BoundConfigurable("Imports & Project View
     }
 
     override fun createPanel(): DialogPanel {
-        return createFilterableFeaturePanel { _, searchTerm ->
+        return createFilterableFeaturePanel { _, searchTerm, _ ->
             group("Imports") {
                 row {
                     val label = "‘Restore Source Root Prefix’ in imports"

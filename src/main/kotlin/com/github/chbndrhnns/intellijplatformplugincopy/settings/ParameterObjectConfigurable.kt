@@ -10,7 +10,7 @@ class ParameterObjectConfigurable : BoundConfigurable("Parameter Object") {
     private val settings = PluginSettingsState.instance().state
 
     override fun createPanel(): DialogPanel {
-        return createFilterableFeaturePanel { _, searchTerm ->
+        return createFilterableFeaturePanel { _, searchTerm, _ ->
             group("Refactoring Actions") {
                 row {
                     val label = "Enable Parameter Object refactoring"

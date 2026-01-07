@@ -8,7 +8,7 @@ class PluginSettingsConfigurable : BoundConfigurable("BetterPy"), SearchableConf
     override fun getId(): String = "com.github.chbndrhnns.intellijplatformplugincopy.settings"
 
     override fun createPanel(): DialogPanel {
-        return createFilterableFeaturePanel { _, _ ->
+        return createFilterableFeaturePanel { _, _, _ ->
             row {
                 label("Please select a category to configure settings.")
             }

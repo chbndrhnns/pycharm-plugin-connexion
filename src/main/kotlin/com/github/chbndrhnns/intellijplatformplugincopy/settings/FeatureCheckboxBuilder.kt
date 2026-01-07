@@ -80,6 +80,7 @@ object FeatureCheckboxBuilder {
         val DEPRECATED_BG = JBColor(Color(244, 67, 54), Color(244, 67, 54)) // Red
         val HIDDEN_BG = JBColor(Color(158, 158, 158), Color(120, 120, 120)) // Gray
         val STABLE_BG = JBColor(Color(76, 175, 80), Color(76, 175, 80)) // Green
+        val LOGGING_BG = JBColor(Color(33, 150, 243), Color(33, 150, 243)) // Blue
     }
 
     /**
@@ -114,17 +115,50 @@ object FeatureCheckboxBuilder {
     }
 
     /**
+     * Creates a logging badge if debug logging is currently enabled for the feature.
+     *
+     * @param feature The feature to check for active logging
+     * @param onLoggingChanged Optional callback to trigger when logging is disabled via badge click
+     * @return A badge component if logging is active, null otherwise
+     */
+    fun createLoggingBadge(feature: FeatureRegistry.FeatureInfo, onLoggingChanged: (() -> Unit)? = null): JComponent? {
+        if (feature.loggingCategories.isEmpty()) return null
+
+        val loggingService = FeatureLoggingService.instance()
+        return if (loggingService.isLoggingEnabled(feature)) {
+            MaturityTagLabel(
+                text = "Logging",
+                backgroundColor = MaturityColors.LOGGING_BG,
+                tooltip = "Click to disable logging for this feature"
+            ).apply {
+                cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+                addMouseListener(object : MouseAdapter() {
+                    override fun mouseClicked(e: MouseEvent) {
+                        loggingService.disableLogging(feature)
+                        // Trigger UI rebuild if callback is provided
+                        onLoggingChanged?.invoke()
+                    }
+                })
+            }
+        } else {
+            null
+        }
+    }
+
+    /**
      * Creates a row with a feature checkbox, maturity badge, and optional YouTrack links.
      *
      * @param feature The feature info from the registry
      * @param labelOverride Optional custom label (defaults to feature.displayName)
      * @param visibleMaturities Set of maturity levels to show (if feature's maturity is not in this set, row is hidden)
+     * @param onLoggingChanged Optional callback to trigger when logging state changes (for UI refresh)
      */
     fun Panel.featureRow(
         feature: FeatureRegistry.FeatureInfo,
         labelOverride: String? = null,
         visibleMaturities: Set<FeatureMaturity>? = null,
-        searchTerm: String = ""
+        searchTerm: String = "",
+        onLoggingChanged: (() -> Unit)? = null
     ) {
         // Skip if maturity filtering is active and this feature's maturity is not visible
         if (visibleMaturities != null && feature.maturity !in visibleMaturities) {
@@ -141,6 +175,7 @@ object FeatureCheckboxBuilder {
 
         row {
             val label = labelOverride ?: feature.displayName
+
             checkBox(label)
                 .bindSelected(feature::isEnabled, feature::setEnabled)
                 .apply {
@@ -175,6 +210,8 @@ object FeatureCheckboxBuilder {
                                         } else {
                                             loggingService.enableLogging(feature)
                                         }
+                                        // Trigger UI rebuild if callback is provided
+                                        onLoggingChanged?.invoke()
                                     }
                                     popup.add(logItem)
                                 }
@@ -193,6 +230,10 @@ object FeatureCheckboxBuilder {
                 cell(tag)
             }
 
+            createLoggingBadge(feature, onLoggingChanged)?.let { badge ->
+                cell(badge)
+            }
+
             if (feature.youtrackIssues.isNotEmpty()) {
                 cell(createYouTrackLinks(feature.youtrackIssues))
             }
@@ -205,11 +246,13 @@ object FeatureCheckboxBuilder {
      * @param category The category to filter features by
      * @param includeHidden Whether to include hidden features (default: false)
      * @param visibleMaturities Set of maturity levels to show (null means show all non-hidden)
+     * @param onLoggingChanged Optional callback to trigger when logging state changes
      */
     fun Panel.featureRowsForCategory(
         category: FeatureCategory,
         includeHidden: Boolean = false,
-        visibleMaturities: Set<FeatureMaturity>? = null
+        visibleMaturities: Set<FeatureMaturity>? = null,
+        onLoggingChanged: (() -> Unit)? = null
     ) {
         val registry = FeatureRegistry.instance()
         val features = registry.getFeaturesByCategory(category)
@@ -217,7 +260,7 @@ object FeatureCheckboxBuilder {
             .sortedBy { it.displayName }
 
         features.forEach { feature ->
-            featureRow(feature, visibleMaturities = visibleMaturities)
+            featureRow(feature, visibleMaturities = visibleMaturities, onLoggingChanged = onLoggingChanged)
         }
     }
 
@@ -228,12 +271,14 @@ object FeatureCheckboxBuilder {
      * @param includeHidden Whether to include hidden features (default: false)
      * @param initiallyExpanded Whether the group should be expanded by default (default: true)
      * @param visibleMaturities Set of maturity levels to show (null means show all non-hidden)
+     * @param onLoggingChanged Optional callback to trigger when logging state changes
      */
     fun Panel.featureCategoryGroup(
         category: FeatureCategory,
         includeHidden: Boolean = false,
         initiallyExpanded: Boolean = true,
-        visibleMaturities: Set<FeatureMaturity>? = null
+        visibleMaturities: Set<FeatureMaturity>? = null,
+        onLoggingChanged: (() -> Unit)? = null
     ) {
         val registry = FeatureRegistry.instance()
         val features = registry.getFeaturesByCategory(category)
@@ -242,7 +287,7 @@ object FeatureCheckboxBuilder {
         if (features.isEmpty()) return
 
         collapsibleGroup(category.displayName, initiallyExpanded) {
-            featureRowsForCategory(category, includeHidden, visibleMaturities)
+            featureRowsForCategory(category, includeHidden, visibleMaturities, onLoggingChanged)
         }
     }
 
@@ -252,14 +297,21 @@ object FeatureCheckboxBuilder {
      * @param categories The categories to include (defaults to all categories)
      * @param includeHidden Whether to include hidden features (default: false)
      * @param visibleMaturities Set of maturity levels to show (null means show all non-hidden)
+     * @param onLoggingChanged Optional callback to trigger when logging state changes
      */
     fun Panel.allFeaturesByCategory(
         categories: List<FeatureCategory> = FeatureCategory.entries,
         includeHidden: Boolean = false,
-        visibleMaturities: Set<FeatureMaturity>? = null
+        visibleMaturities: Set<FeatureMaturity>? = null,
+        onLoggingChanged: (() -> Unit)? = null
     ) {
         categories.forEach { category ->
-            featureCategoryGroup(category, includeHidden, visibleMaturities = visibleMaturities)
+            featureCategoryGroup(
+                category,
+                includeHidden,
+                visibleMaturities = visibleMaturities,
+                onLoggingChanged = onLoggingChanged
+            )
         }
     }
 

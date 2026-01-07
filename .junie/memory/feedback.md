@@ -606,3 +606,11 @@
     "NEW INSTRUCTION": "WHEN compiler flags unresolved IntelliJ API members THEN inspect SDK classes and adapt to available methods"
 }
 
+[2026-01-07 14:33] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "logging API mismatch",
+    "EXPECTATION": "Implement FeatureLoggingService using the actual LogLevelConfigurationManager API so it compiles and manages categories correctly.",
+    "NEW INSTRUCTION": "WHEN manipulating debug log categories THEN use state.categories and addCategories/setCategories"
+}
+

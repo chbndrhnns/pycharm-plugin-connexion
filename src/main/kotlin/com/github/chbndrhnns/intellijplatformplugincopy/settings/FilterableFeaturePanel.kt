@@ -15,7 +15,7 @@ import javax.swing.ScrollPaneConstants
  */
 class FilterableFeaturePanel(
     private val showHidden: Boolean = false,
-    private val contentBuilder: Panel.(visibleMaturities: Set<FeatureMaturity>, searchTerm: String) -> Unit
+    private val contentBuilder: Panel.(visibleMaturities: Set<FeatureMaturity>, searchTerm: String, onLoggingChanged: () -> Unit) -> Unit
 ) : JPanel(BorderLayout()) {
 
     private val contentPanel = JPanel(BorderLayout())
@@ -73,7 +73,7 @@ class FilterableFeaturePanel(
         contentPanel.removeAll()
 
         val newPanel = panel {
-            contentBuilder(currentMaturities, currentSearchTerm)
+            contentBuilder(currentMaturities, currentSearchTerm, ::rebuildContent)
         }
 
         contentPanel.add(newPanel, BorderLayout.NORTH)
@@ -106,7 +106,7 @@ class FilterableFeaturePanel(
  */
 fun createFilterableFeaturePanel(
     showHidden: Boolean = false,
-    contentBuilder: Panel.(visibleMaturities: Set<FeatureMaturity>, searchTerm: String) -> Unit
+    contentBuilder: Panel.(visibleMaturities: Set<FeatureMaturity>, searchTerm: String, onLoggingChanged: () -> Unit) -> Unit
 ): FilterableFeaturePanel {
     return FilterableFeaturePanel(showHidden, contentBuilder)
 }
