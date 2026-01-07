@@ -542,7 +542,13 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
             id = "pytest-failed-line-inspection",
             displayName = "Pytest failed line inspection",
             description = "Marks the line where a pytest test failed",
-            category = FeatureCategory.INSPECTIONS
+            category = FeatureCategory.INSPECTIONS,
+            loggingCategories = [
+                "com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome.PyTestFailedLineInspection",
+                "com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome.TestOutcomeDiffService",
+                "com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome.TestFailureListener",
+                "com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome.PytestLocationUrlFactory"
+            ]
         )
         var enablePyTestFailedLineInspection: Boolean = true
     )
