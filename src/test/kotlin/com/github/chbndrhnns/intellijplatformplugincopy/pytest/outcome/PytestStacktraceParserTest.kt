@@ -185,4 +185,19 @@ class PytestStacktraceParserTest : TestBase() {
 
         assertEquals(10, result)
     }
+    fun `test parseFailedLine with deeply nested classes`() {
+        val stacktrace = """
+            >       assert 1 == 2
+            E       AssertionError: assert 1 == 2
+
+            test_.py:33: AssertionError
+        """.trimIndent()
+
+        // As reported in the issue: tests.test_.TestParent.TestChild.TestGrandChild.test_1
+        val locationUrl = "python</path/to/project/tests>://tests.test_.TestParent.TestChild.TestGrandChild.test_1"
+
+        val result = PytestStacktraceParser.parseFailedLine(stacktrace, locationUrl)
+
+        assertEquals("Should extract line 33 from test_.py", 33, result)
+    }
 }

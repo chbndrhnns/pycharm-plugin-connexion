@@ -97,24 +97,7 @@ object PytestStacktraceParser {
         // If we have package.module.function, the module is the second-to-last part
         // If we have module.function or module.Class.method, the module is the first part
 
-        val moduleName = when {
-            parts.size >= 3 && parts[0] != parts[1] && !parts[1][0].isUpperCase() -> {
-                // package.module.function -> use module (second part)
-                LOG.debug("PytestStacktraceParser.extractFileNameFromLocationUrl: detected package.module.function pattern")
-                parts[parts.size - 2]
-            }
-
-            parts.size >= 2 -> {
-                // module.Class.method or module.function -> use first part
-                LOG.debug("PytestStacktraceParser.extractFileNameFromLocationUrl: using first part as module")
-                parts[0]
-            }
-
-            else -> {
-                LOG.debug("PytestStacktraceParser.extractFileNameFromLocationUrl: only one part, using it as module")
-                parts[0]
-            }
-        }
+        val moduleName = parts.find { it.startsWith("test_") } ?: parts[0]
 
         val fileName = "$moduleName.py"
         LOG.debug("PytestStacktraceParser.extractFileNameFromLocationUrl: extracted fileName='$fileName'")
