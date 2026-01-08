@@ -1,213 +1,3 @@
-[2026-01-06 17:35] - Updated by Junie - Error analysis
-{
-    "TYPE": "missing context",
-    "TOOL": "search_replace",
-    "ERROR": "Unresolved reference 'getQName' in test file",
-    "ROOT CAUSE": "The test uses the getQName extension but lacks the import for com.jetbrains.python.extensions.getQName.",
-    "PROJECT NOTE": "When using Python PSI extension methods in tests, explicitly import the extension functions just like in main sources.",
-    "NEW INSTRUCTION": "WHEN Kotlin test uses getQName extension THEN import com.jetbrains.python.extensions.getQName"
-}
-
-[2026-01-06 17:36] - Updated by Junie - Error analysis
-{
-    "TYPE": "missing context",
-    "TOOL": "search_replace",
-    "ERROR": "Unresolved reference 'getQName' in test file",
-    "ROOT CAUSE": "The test started using the getQName extension without importing its package.",
-    "PROJECT NOTE": "Import com.jetbrains.python.extensions.getQName in tests when calling PyFile.getQName().",
-    "NEW INSTRUCTION": "WHEN adding calls to getQName extension THEN import com.jetbrains.python.extensions.getQName"
-}
-
-[2026-01-06 17:37] - Updated by Junie - Error analysis
-{
-    "TYPE": "missing context",
-    "TOOL": "search_replace",
-    "ERROR": "Unresolved reference 'getQName'",
-    "ROOT CAUSE": "The test added calls to getQName without importing the extension function.",
-    "PROJECT NOTE": "Kotlin uses extension imports explicitly; add import com.jetbrains.python.extensions.getQName in tests that call PyFile.getQName().",
-    "NEW INSTRUCTION": "WHEN semantic errors show Unresolved reference 'getQName' THEN import com.jetbrains.python.extensions.getQName"
-}
-
-[2026-01-06 17:52] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic",
-    "TOOL": "PytestLocationUrlFactory.fromPyFunction",
-    "ERROR": "Qualified name missing source root prefix",
-    "ROOT CAUSE": "buildQualifiedName only prepends the root name for top-level files, but pytest keys include the source root directory (e.g., 'tests.') for all files under that root.",
-    "PROJECT NOTE": "In PytestLocationUrlFactory.buildQualifiedName, for isSourceRoot=true always prefix root.name to the module path so tests/unit/test_.py becomes tests.unit.test_.<func>.",
-    "NEW INSTRUCTION": "WHEN computing qualified name under a source root THEN always prefix source root directory name"
-}
-
-[2026-01-06 17:53] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic",
-    "TOOL": "PytestLocationUrlFactory.fromPyFunction",
-    "ERROR": "Missing source root prefix in qualified name",
-    "ROOT CAUSE": "buildQualifiedName prepends the source root name only for files directly under the root, but pytest keys include the root name for nested paths too.",
-    "PROJECT NOTE": "In PytestLocationUrlFactory.buildQualifiedName (lines ~115-127), always prepend root.name when isSourceRoot is true; e.g., finalModulePath = if (isSourceRoot) \"${root.name}.$modulePath\" else modulePath.",
-    "NEW INSTRUCTION": "WHEN building qualified name for source root THEN always prepend source root directory name"
-}
-
-[2026-01-06 20:37] - Updated by Junie - Error analysis
-{
-    "TYPE": "missing context",
-    "TOOL": "search_replace",
-    "ERROR": "Unresolved reference 'Project' after edit",
-    "ROOT CAUSE": "The edit introduced Project type usage without adding its import.",
-    "PROJECT NOTE": "Add import com.intellij.openapi.project.Project to UseActualTestOutcomeFromTreeAction.kt when referencing Project.",
-    "NEW INSTRUCTION": "WHEN adding a new type reference THEN add the corresponding import immediately"
-}
-
-[2026-01-06 20:37] - Updated by Junie - Error analysis
-{
-    "TYPE": "missing context",
-    "TOOL": "search_replace",
-    "ERROR": "Unresolved reference 'Project' after edit",
-    "ROOT CAUSE": "The edit introduced type Project without adding its import statement.",
-    "PROJECT NOTE": "In UseActualTestOutcomeFromTreeAction.kt, import com.intellij.openapi.project.Project when referencing Project.",
-    "NEW INSTRUCTION": "WHEN semantic errors show unresolved symbol after edit THEN add the necessary import immediately"
-}
-
-[2026-01-06 20:38] - Updated by Junie - Error analysis
-{
-    "TYPE": "missing context",
-    "TOOL": "search_replace",
-    "ERROR": "Unresolved reference 'Project'",
-    "ROOT CAUSE": "A new method introduced the Project type without adding its import.",
-    "PROJECT NOTE": "In UseActualTestOutcomeFromTreeAction.kt, import com.intellij.openapi.project.Project when referencing Project in new methods.",
-    "NEW INSTRUCTION": "WHEN added code references new classes THEN add their imports explicitly"
-}
-
-[2026-01-06 20:38] - Updated by Junie - Error analysis
-{
-    "TYPE": "missing context",
-    "TOOL": "search_replace",
-    "ERROR": "Unresolved reference 'Project'",
-    "ROOT CAUSE": "New code referenced Project in a signature without adding its import.",
-    "PROJECT NOTE": "In UseActualTestOutcomeFromTreeAction.kt, import com.intellij.openapi.project.Project when using Project.",
-    "NEW INSTRUCTION": "WHEN introducing new IntelliJ API types in edits THEN add the required import statements"
-}
-
-[2026-01-06 20:59] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic",
-    "TOOL": "UseActualTestOutcomeFromTreeAction.update",
-    "ERROR": "Action visible despite equal expected and actual",
-    "ROOT CAUSE": "Expected value extraction fails by misparsing SMTestProxy.locationUrl as a file path, returns null, and the code defaults to showing the action.",
-    "PROJECT NOTE": "SMTestProxy.locationUrl is python<sourceRoot>://<qualified.name>, not a filesystem path. In tree actions, obtain VirtualFile/PSI via proxy.getLocation(project, properties.scope) from TestTreeView.MODEL_DATA_KEY.",
-    "NEW INSTRUCTION": "WHEN expected value extraction returns null THEN hide if diff.expected equals diff.actual"
-}
-
-[2026-01-06 21:04] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Semantic errors: extend final class and override nonexistent method",
-    "ROOT CAUSE": "The test edit attempted to subclass a final action and override a non-existent getLocation method, introducing unresolved API references.",
-    "PROJECT NOTE": "UseActualTestOutcomeFromTreeAction is a final Kotlin class; extract location/diff checks into a helper/service and inject or call it from tests instead of subclassing the action.",
-    "NEW INSTRUCTION": "WHEN a test needs to customize action behavior THEN extract a helper interface and inject a fake"
-}
-
-[2026-01-06 21:06] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Edit introduced Kotlin semantic errors",
-    "ROOT CAUSE": "The test tried to subclass a final action and override a non-existent method while adding unresolved API references.",
-    "PROJECT NOTE": "UseActualTestOutcomeFromTreeAction is final; do not subclass it in tests. Validate availability logic through UseActualOutcomeUseCase or extract a reusable helper.",
-    "NEW INSTRUCTION": "WHEN search_replace reports semantic errors THEN undo edit and test UseActualOutcomeUseCase directly"
-}
-
-[2026-01-06 21:08] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Tried overriding methods on a final class in tests",
-    "ROOT CAUSE": "The test edit attempted to subclass a final AnAction and override a non-existent method, introducing unresolved references.",
-    "PROJECT NOTE": "Do not subclass UseActualTestOutcomeFromTreeAction in tests; instead test UseActualOutcomeUseCase directly or extract a non-final, injectable helper used by the action.",
-    "NEW INSTRUCTION": "WHEN a test needs to alter action behavior THEN extract injectable helper and test the helper"
-}
-
-[2026-01-06 22:36] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic",
-    "TOOL": "run_test",
-    "ERROR": "Intention offered for @classmethod methods",
-    "ROOT CAUSE": "AddSelfParameterIntention.isAvailable does not exclude functions decorated with @classmethod.",
-    "PROJECT NOTE": "Update src/main/kotlin/.../intention/AddSelfParameterIntention.kt isAvailable() to check the PyFunction decorator list for 'classmethod' in addition to 'staticmethod' and return false.",
-    "NEW INSTRUCTION": "WHEN method decorators include 'classmethod' THEN return false in isAvailable"
-}
-
-[2026-01-06 22:43] - Updated by Junie - Error analysis
-{
-    "TYPE": "tool failure",
-    "TOOL": "get_file_structure",
-    "ERROR": "Cannot display plugin.xml structure; unsupported file type or parsing failed",
-    "ROOT CAUSE": "The file-structure tool cannot parse large or non-code XML files like plugin.xml.",
-    "PROJECT NOTE": "plugin.xml is under src/main/resources/META-INF/plugin.xml; view/edit via full-content reading instead of structure.",
-    "NEW INSTRUCTION": "WHEN get_file_structure reports unsupported or parsing failure THEN open entire file content with open_entire_file"
-}
-
-[2026-01-06 22:44] - Updated by Junie - Error analysis
-{
-    "TYPE": "tool failure",
-    "TOOL": "get_file_structure",
-    "ERROR": "Cannot parse plugin.xml file structure",
-    "ROOT CAUSE": "get_file_structure does not support XML files like plugin.xml and returned a parse failure.",
-    "PROJECT NOTE": "Open plugin.xml with the open tool to inspect and edit extension registrations (e.g., lineMarkerProvider, runLineMarkerContributor).",
-    "NEW INSTRUCTION": "WHEN get_file_structure says cannot display file structure THEN use open to view the file content"
-}
-
-[2026-01-06 22:46] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Semantic errors after signature change",
-    "ROOT CAUSE": "The edit introduced a new PsiElement parameter without adding its import and altered code paths, causing unresolved types and mismatched calls.",
-    "PROJECT NOTE": "When touching UseActualOutcomeUseCase.kt, import com.intellij.psi.PsiElement and ensure PyAssertStatement API usage matches existing code; avoid partial block replacements that drop required imports.",
-    "NEW INSTRUCTION": "WHEN search_replace adds new types or parameters THEN add necessary imports and update all usages"
-}
-
-[2026-01-06 22:47] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Unresolved PsiElement and type mismatch after edit",
-    "ROOT CAUSE": "The edit added an overload using PsiElement but did not import it, causing element to be Any and breaking PsiTreeUtil calls.",
-    "PROJECT NOTE": "In UseActualOutcomeUseCase.kt, import com.intellij.psi.PsiElement when adding an isAvailable(project, element, file) overload.",
-    "NEW INSTRUCTION": "WHEN semantic errors show 'Unresolved reference PsiElement' THEN add import com.intellij.psi.PsiElement and retype parameters"
-}
-
-[2026-01-06 22:47] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Semantic errors after edit: unresolved references and type mismatch",
-    "ROOT CAUSE": "Method signature change introduced new types without adding required imports, causing unresolved references and cascading type inference errors.",
-    "PROJECT NOTE": "In UseActualOutcomeUseCase.kt, ensure imports for com.intellij.psi.PsiElement, com.intellij.psi.util.PsiTreeUtil, and Python PSI classes (PyAssertStatement, PyBinaryExpression, PyFunction) are present after edits.",
-    "NEW INSTRUCTION": "WHEN semantic errors report 'Unresolved reference' after edit THEN add missing imports and correct types"
-}
-
-[2026-01-06 22:48] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Unresolved reference 'PsiElement' after edit",
-    "ROOT CAUSE": "The edit added a PsiElement-typed parameter without importing com.intellij.psi.PsiElement, causing type inference to degrade and subsequent errors.",
-    "PROJECT NOTE": "In pytest/outcome/UseActualOutcomeUseCase.kt, import com.intellij.psi.PsiElement when overloading isAvailable with a PsiElement parameter.",
-    "NEW INSTRUCTION": "WHEN semantic errors show 'Unresolved reference PsiElement' THEN import com.intellij.psi.PsiElement in the file"
-}
-
-[2026-01-06 22:50] - Updated by Junie - Error analysis
-{
-    "TYPE": "missing context",
-    "TOOL": "search_replace",
-    "ERROR": "Missing import for PsiElement after signature change",
-    "ROOT CAUSE": "Refactor introduced parameter type PsiElement without adding its import, causing cascading type inference errors.",
-    "PROJECT NOTE": "When introducing IntelliJ PSI types in Kotlin files, always add the corresponding com.intellij.psi.* imports to avoid 'Any' inference and unresolved references.",
-    "NEW INSTRUCTION": "WHEN adding PsiElement to a Kotlin signature THEN import com.intellij.psi.PsiElement in that file"
-}
-
 [2026-01-06 22:52] - Updated by Junie - Error analysis
 {
     "TYPE": "missing context",
@@ -776,4 +566,214 @@
     "ROOT CAUSE": "The edit introduced a call to isOverload without defining the helper or importing it.",
     "PROJECT NOTE": "Add a helper extension like fun PsiElement.isOverload(): Boolean that returns true for PyFunction with decoratorList.findDecorator(\"overload\") != null; place it in PyNavBarModelExtension.kt or a shared utils file and import where used.",
     "NEW INSTRUCTION": "WHEN adding overload filtering in PyNavBarModelExtension THEN implement isOverload extension and import it"
+}
+
+[2026-01-08 22:58] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "run_test",
+    "ERROR": "getElementAtCaret called without caret marker",
+    "ROOT CAUSE": "The first test invokes myFixture.getElementAtCaret() but no <caret> is placed in the configured file, causing the test run to error out.",
+    "PROJECT NOTE": "When using getElementAtCaret, ensure the last configured editor file contains a <caret> marker at the intended position.",
+    "NEW INSTRUCTION": "WHEN calling getElementAtCaret in a test THEN insert <caret> in the target file content"
+}
+
+[2026-01-08 22:59] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "run_test",
+    "ERROR": "Caret marker missing for getElementAtCaret",
+    "ROOT CAUSE": "The test calls getElementAtCaret without a <caret> marker in the last configured file (openapi.json).",
+    "PROJECT NOTE": "In CodeInsightFixture tests, always include a <caret> marker in the most recently configured file before calling getElementAtCaret.",
+    "NEW INSTRUCTION": "WHEN calling getElementAtCaret in tests THEN ensure last configured file contains <caret>"
+}
+
+[2026-01-08 23:01] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "run_test",
+    "ERROR": "getElementAtCaret called without caret in test",
+    "ROOT CAUSE": "The first test method does not place a <caret> marker before calling getElementAtCaret.",
+    "PROJECT NOTE": "When using CodeInsightFixture#getElementAtCaret in tests, include a <caret> marker in the configured file content.",
+    "NEW INSTRUCTION": "WHEN calling getElementAtCaret in tests THEN place a <caret> in the test file"
+}
+
+[2026-01-08 23:03] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "run_test",
+    "ERROR": "Schema reference navigation not implemented",
+    "ROOT CAUSE": "The tests expect components.schemas keys to resolve to Python classes, but no PsiReferenceProvider handles schema names in JSON/YAML.",
+    "PROJECT NOTE": "Existing ConnexionReferenceContributor/ConnexionYamlReferenceContributor only cover operationId and controller; add a ConnexionSchemaReference and register providers for components.schemas keys and $ref usage.",
+    "NEW INSTRUCTION": "WHEN adding tests for schema navigation THEN implement and register schema PsiReference providers first"
+}
+
+[2026-01-08 23:03] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic",
+    "TOOL": "search_replace",
+    "ERROR": "Attempted to extend a final Kotlin class",
+    "ROOT CAUSE": "ConnexionJsonSchemaReference subclasses ConnexionSchemaReference, but ConnexionSchemaReference was declared final (default in Kotlin).",
+    "PROJECT NOTE": "Kotlin classes are final by default; make ConnexionSchemaReference open (in connexion/ConnexionSchemaReference.kt) before declaring ConnexionJsonSchemaReference : ConnexionSchemaReference in ConnexionReferenceContributor.kt.",
+    "NEW INSTRUCTION": "WHEN introducing a subclass for a Kotlin class THEN mark the base class open or abstract first"
+}
+
+[2026-01-08 23:03] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic",
+    "TOOL": "search_replace",
+    "ERROR": "Tried to extend a final Kotlin class",
+    "ROOT CAUSE": "ConnexionSchemaReference was final by default and ConnexionJsonSchemaReference attempted to subclass it.",
+    "PROJECT NOTE": "Kotlin classes are final by default; mark base classes 'open' if they are intended to be subclassed.",
+    "NEW INSTRUCTION": "WHEN semantic error says 'type is final, cannot be extended' THEN mark base class open"
+}
+
+[2026-01-08 23:04] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic",
+    "TOOL": "search_replace",
+    "ERROR": "Tried to extend a final Kotlin class",
+    "ROOT CAUSE": "Kotlin classes are final by default; ConnexionSchemaReference was not open but was subclassed in ConnexionReferenceContributor.",
+    "PROJECT NOTE": "When introducing small wrapper reference classes (e.g., ConnexionJsonSchemaReference), ensure the base Kotlin reference class (ConnexionSchemaReference.kt) is marked 'open' or avoid subclassing by composition.",
+    "NEW INSTRUCTION": "WHEN subclassing a Kotlin class in this repo THEN declare the base class open"
+}
+
+[2026-01-08 23:04] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic",
+    "TOOL": "search_replace",
+    "ERROR": "Tried to extend a final Kotlin class",
+    "ROOT CAUSE": "ConnexionJsonSchemaReference attempted to subclass ConnexionSchemaReference, which was final because Kotlin classes are final by default.",
+    "PROJECT NOTE": "In connexion/ConnexionSchemaReference.kt, declare ConnexionSchemaReference as 'open' when providing subclassed references (used by ConnexionReferenceContributor).",
+    "NEW INSTRUCTION": "WHEN creating a Kotlin subclass of a new class THEN declare the base class open first"
+}
+
+[2026-01-08 23:05] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic",
+    "TOOL": "search_replace",
+    "ERROR": "Attempted to extend final Kotlin class",
+    "ROOT CAUSE": "ConnexionSchemaReference was declared final, but ConnexionJsonSchemaReference tried to extend it.",
+    "PROJECT NOTE": "Kotlin classes are final by default; ConnexionSchemaReference must be 'open' to be subclassed by provider-specific references.",
+    "NEW INSTRUCTION": "WHEN adding subclass of a Kotlin class THEN mark the base class 'open' first"
+}
+
+[2026-01-08 23:07] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic",
+    "TOOL": "search_replace",
+    "ERROR": "Tried to extend a final Kotlin class",
+    "ROOT CAUSE": "ConnexionSchemaReference was declared final, but ConnexionJsonSchemaReference subclasses it.",
+    "PROJECT NOTE": "Kotlin classes are final by default; ConnexionJsonSchemaReference in ConnexionReferenceContributor.kt extends ConnexionSchemaReference, so the latter must be open.",
+    "NEW INSTRUCTION": "WHEN introducing subclasses for a Kotlin base THEN declare the base class open"
+}
+
+[2026-01-08 23:08] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic",
+    "TOOL": "search_replace",
+    "ERROR": "Tried to extend a final Kotlin class",
+    "ROOT CAUSE": "A new subclass ConnexionJsonSchemaReference extends ConnexionSchemaReference, but ConnexionSchemaReference was declared final (default in Kotlin).",
+    "PROJECT NOTE": "Kotlin classes are final by default; mark base classes 'open' before subclassing in contributors/providers.",
+    "NEW INSTRUCTION": "WHEN introducing a Kotlin subclass of a new base THEN declare the base class open first"
+}
+
+[2026-01-08 23:10] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic",
+    "TOOL": "search_replace",
+    "ERROR": "Attempted to extend a final Kotlin class",
+    "ROOT CAUSE": "ConnexionSchemaReference was declared final, then subclassed in ConnexionReferenceContributor.",
+    "PROJECT NOTE": "If ConnexionJsonSchemaReference extends ConnexionSchemaReference, make ConnexionSchemaReference open (src/main/.../connexion/ConnexionSchemaReference.kt).",
+    "NEW INSTRUCTION": "WHEN semantic error says 'type is final, cannot be extended' THEN declare base class 'open'"
+}
+
+[2026-01-08 23:11] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic",
+    "TOOL": "search_replace",
+    "ERROR": "Tried to extend final Kotlin class",
+    "ROOT CAUSE": "ConnexionJsonSchemaReference subclasses ConnexionSchemaReference, which was not declared open.",
+    "PROJECT NOTE": "If ConnexionJsonSchemaReference extends ConnexionSchemaReference, declare ConnexionSchemaReference as 'open' in ConnexionSchemaReference.kt.",
+    "NEW INSTRUCTION": "WHEN compiler shows 'type is final, cannot be extended' THEN declare the base class 'open' before subclassing"
+}
+
+[2026-01-08 23:11] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "search_replace",
+    "ERROR": "Attempted to extend a final class",
+    "ROOT CAUSE": "Kotlin classes are final by default; ConnexionSchemaReference was not open when subclassed.",
+    "PROJECT NOTE": "Mark ConnexionSchemaReference (connexion/ConnexionSchemaReference.kt) as open before creating ConnexionJsonSchemaReference.",
+    "NEW INSTRUCTION": "WHEN Kotlin error says 'type is final, so it cannot be extended' THEN change the superclass declaration to 'open class'"
+}
+
+[2026-01-08 23:12] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic",
+    "TOOL": "search_replace",
+    "ERROR": "Attempted to extend a final Kotlin class",
+    "ROOT CAUSE": "A new subclass ConnexionJsonSchemaReference extended ConnexionSchemaReference, which was final by default.",
+    "PROJECT NOTE": "In Kotlin, classes are final by default; declare base PSI reference classes as 'open' before subclassing.",
+    "NEW INSTRUCTION": "WHEN semantic error says 'type is final, cannot be extended' THEN mark base class 'open' before subclassing"
+}
+
+[2026-01-08 23:14] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic",
+    "TOOL": "search_replace",
+    "ERROR": "Cannot extend final class in Kotlin",
+    "ROOT CAUSE": "A new subclass ConnexionJsonSchemaReference extends ConnexionSchemaReference, but the base class was final.",
+    "PROJECT NOTE": "Kotlin classes are final by default; mark ConnexionSchemaReference as 'open' to allow inheritance (file: connexion/ConnexionSchemaReference.kt).",
+    "NEW INSTRUCTION": "WHEN Kotlin error says 'type is final, cannot be extended' THEN mark base class open or use composition"
+}
+
+[2026-01-08 23:14] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic",
+    "TOOL": "search_replace",
+    "ERROR": "Tried to extend a final Kotlin class",
+    "ROOT CAUSE": "Kotlin classes are final by default; ConnexionSchemaReference was not marked open before subclassing.",
+    "PROJECT NOTE": "ConnexionJsonSchemaReference in ConnexionReferenceContributor.kt extends ConnexionSchemaReference; ensure ConnexionSchemaReference is declared open in ConnexionSchemaReference.kt.",
+    "NEW INSTRUCTION": "WHEN adding a Kotlin subclass of a project class THEN declare the base class 'open'"
+}
+
+[2026-01-08 23:16] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic",
+    "TOOL": "search_replace",
+    "ERROR": "This type is final; cannot be extended",
+    "ROOT CAUSE": "A new class attempted to extend ConnexionSchemaReference, which was final by default in Kotlin.",
+    "PROJECT NOTE": "Kotlin classes are final unless marked 'open'. If you intend subclassing (e.g., ConnexionJsonSchemaReference), declare the base in src/main/kotlin/.../connexion/ConnexionSchemaReference.kt as 'open class'.",
+    "NEW INSTRUCTION": "WHEN semantic error 'type is final, so it cannot be extended' THEN mark the base class open"
+}
+
+[2026-01-08 23:25] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "run_test",
+    "ERROR": "Import alias appears as variable in navbar",
+    "ROOT CAUSE": "PyNavBarModelExtension.getPresentableText does not exclude PyTargetExpression nodes that come from import aliases (children of PyImportElement/ImportStatement).",
+    "PROJECT NOTE": "In PyNavBarModelExtension.kt, before returning text for PyTargetExpression, check its PSI parent; if inside PyImportElement or PyImportStatementBase, treat it as an import alias and skip.",
+    "NEW INSTRUCTION": "WHEN PyTargetExpression parent is PyImportElement or PyImportStatementBase THEN return null to hide it"
+}
+
+[2026-01-08 23:26] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "run_test",
+    "ERROR": "Tests failed: import aliases shown as variables in navbar",
+    "ROOT CAUSE": "getPresentableText returns names for PyTargetExpression that are import aliases instead of filtering them out.",
+    "PROJECT NOTE": "Update PyNavBarModelExtension.getPresentableText to detect PyTargetExpression originating from PyImportElement (or alias contexts) and return null.",
+    "NEW INSTRUCTION": "WHEN element is PyTargetExpression from an import alias THEN return null from getPresentableText"
+}
+
+[2026-01-08 23:26] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "run_test",
+    "ERROR": "Import aliases appear as variables in Python navbar tests",
+    "ROOT CAUSE": "getPresentableText returns names for PyTargetExpression without excluding those under PyImportElement (import aliases).",
+    "PROJECT NOTE": "In PyNavBarModelExtension.kt, before handling PyTargetExpression, check if PsiTreeUtil.getParentOfType(element, PyImportElement::class.java) != null and return null to hide aliases.",
+    "NEW INSTRUCTION": "WHEN PyTargetExpression has PyImportElement parent THEN return null in getPresentableText"
 }

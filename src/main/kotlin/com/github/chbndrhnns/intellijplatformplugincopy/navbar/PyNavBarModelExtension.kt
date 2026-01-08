@@ -4,12 +4,10 @@ import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsS
 import com.intellij.ide.navigationToolbar.StructureAwareNavBarModelExtension
 import com.intellij.lang.Language
 import com.intellij.psi.PsiElement
+import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.Processor
 import com.jetbrains.python.PythonLanguage
-import com.jetbrains.python.psi.PyClass
-import com.jetbrains.python.psi.PyFile
-import com.jetbrains.python.psi.PyFunction
-import com.jetbrains.python.psi.PyTargetExpression
+import com.jetbrains.python.psi.*
 
 /**
  * Navigation bar extension for Python that shows file members (classes, functions, methods)
@@ -32,16 +30,17 @@ class PyNavBarModelExtension : StructureAwareNavBarModelExtension() {
         }
 
         val element = item as? PsiElement ?: return null
+
+        if (!shouldInclude(element)) {
+            return null
+        }
+
         val name = when (element) {
             is PyFunction -> element.name
             is PyClass -> element.name
             is PyTargetExpression -> element.name
             else -> null
         } ?: return null
-
-        if (name.isDunder() || element.isOverload()) {
-            return null
-        }
 
         return when (element) {
             is PyFunction -> if (element.isAsync) "async $name()" else "$name()"
@@ -118,6 +117,14 @@ class PyNavBarModelExtension : StructureAwareNavBarModelExtension() {
             is PyTargetExpression -> element.name
             else -> null
         } ?: return false
+
+        if (element is PyTargetExpression && PsiTreeUtil.getParentOfType(
+                element,
+                PyImportElement::class.java
+            ) != null
+        ) {
+            return false
+        }
 
         return !name.isDunder() && !element.isOverload()
     }

@@ -1,13 +1,3 @@
-[2026-01-01 10:47] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "reproduce bug, handle empty-body, add tests",
-    "BOTTLENECK": "Empty-body/ellipsis was not preserved during function-to-method conversion.",
-    "PROJECT NOTE": "Update buildMethodFromFunction to retain an Ellipsis or insert a pass when original body is empty or ellipsis-only.",
-    "NEW INSTRUCTION": "WHEN source function body is empty or ellipsis-only THEN generate method body with the same ellipsis or a pass"
-}
-
 [2026-01-01 11:08] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -897,3 +887,24 @@
     "PROJECT NOTE": "Centralize mock-source check in a shared utility to avoid duplication across inspections.",
     "NEW INSTRUCTION": "WHEN build fails after code edits THEN add missing imports and recompile before tests"
 }
+
+[2026-01-08 23:17] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "implement completion variants",
+    "MISSING STEPS": "update yaml reference provider, run tests",
+    "BOTTLENECK": "Schema references added only for JSON; YAML and tests incomplete.",
+    "PROJECT NOTE": "Mirror existing operationId patterns for YAML/JSON in ConnexionReferenceContributor.",
+    "NEW INSTRUCTION": "WHEN implementing schema reference support THEN register JSON and YAML providers and add navigation/rename tests"
+}
+
+[2026-01-08 23:27] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "add tests",
+    "MISSING STEPS": "run full test suite",
+    "BOTTLENECK": "Distinguishing import aliases among PyTargetExpression elements reliably.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN issue does not mention nested classes THEN skip adding nested class tests"
+}
+

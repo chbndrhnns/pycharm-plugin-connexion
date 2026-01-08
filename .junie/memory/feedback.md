@@ -630,3 +630,11 @@
     "NEW INSTRUCTION": "WHEN caret on pytest class 'class' keyword THEN enable skip-class intention"
 }
 
+[2026-01-08 23:24] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "navbar import aliases",
+    "EXPECTATION": "In the Python navigation bar, import aliases should not appear as variables.",
+    "NEW INSTRUCTION": "WHEN building Python navbar items THEN exclude import-alias targets from variable entries"
+}
+

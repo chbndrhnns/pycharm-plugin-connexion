@@ -408,4 +408,34 @@ class PyNavBarModelExtensionTest : BasePlatformTestCase() {
             names
         )
     }
+
+    fun testImportAliasIsNotVisibleInNavBar() {
+        val file = myFixture.configureByText(
+            "test.py", """
+            import os as my_os
+            from os import path as my_path
+            
+            x = 1
+        """.trimIndent()
+        )
+
+        val targetExpressions = PsiTreeUtil.findChildrenOfType(file, PyTargetExpression::class.java)
+
+        // x should be there
+        val x = targetExpressions.find { it.name == "x" }
+        assertNotNull("Variable x should be found", x)
+        assertEquals("x", extension.getPresentableText(x))
+
+        // my_os should not be considered a visible variable in the navbar
+        val myOs = targetExpressions.find { it.name == "my_os" }
+        if (myOs != null) {
+            assertNull("Import alias my_os should not be visible in navbar", extension.getPresentableText(myOs))
+        }
+
+        // my_path should not be considered a visible variable in the navbar
+        val myPath = targetExpressions.find { it.name == "my_path" }
+        if (myPath != null) {
+            assertNull("Import alias my_path should not be visible in navbar", extension.getPresentableText(myPath))
+        }
+    }
 }
