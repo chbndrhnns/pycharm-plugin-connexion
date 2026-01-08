@@ -18,6 +18,7 @@
 
 ## Pending Features
 
+- [ ] feat: Render links to classes in output, like `<class 'src.core.mycore.domain.MyRoute'>
 - [ ] feat: Find usages in current file
 - [ ] feat: Add surround with... pytest.raises()
 - [ ] feat: Add field to dataclass/typeddict/pydantic if missing
