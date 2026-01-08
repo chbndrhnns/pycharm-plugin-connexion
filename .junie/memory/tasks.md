@@ -1,13 +1,3 @@
-[2026-01-01 11:08] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "scan project for similar patterns, run plugin tests",
-    "BOTTLENECK": "Dialog shown during write action caused AWT event violation.",
-    "PROJECT NOTE": "PSI edits must be inside WriteCommandAction as per repo conventions.",
-    "NEW INSTRUCTION": "WHEN intention shows a dialog or UI prompt THEN set startInWriteAction false and wrap PSI edits in WriteCommandAction"
-}
-
 [2026-01-01 11:16] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -906,5 +896,15 @@
     "BOTTLENECK": "Distinguishing import aliases among PyTargetExpression elements reliably.",
     "PROJECT NOTE": "-",
     "NEW INSTRUCTION": "WHEN issue does not mention nested classes THEN skip adding nested class tests"
+}
+
+[2026-01-08 23:29] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "run tests",
+    "BOTTLENECK": "Fix was not validated by rerunning tests after code change.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN code change is applied to parser THEN run tests immediately to validate"
 }
 

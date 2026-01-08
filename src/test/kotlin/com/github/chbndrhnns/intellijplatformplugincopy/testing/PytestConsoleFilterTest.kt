@@ -124,4 +124,17 @@ class PytestConsoleFilterTest : TestBase() {
         val expectedEnd = line.indexOf(" - ")
         assertEquals(expectedEnd, item.highlightEndOffset)
     }
+
+    fun testParseShortTestSummaryInfo() {
+        val filter = PytestConsoleFilter(project)
+        val line = "FAILED tests/mytest.py - AttributeError: module 'src.abc' has no attribute 'MyAttr'"
+        val result = filter.applyFilter(line, line.length)
+        assertNotNull(result)
+        val item = result!!.resultItems.first()
+
+        val expectedStart = line.indexOf("tests/")
+        assertEquals(expectedStart, item.highlightStartOffset)
+        val expectedEnd = line.indexOf(" - ")
+        assertEquals(expectedEnd, item.highlightEndOffset)
+    }
 }

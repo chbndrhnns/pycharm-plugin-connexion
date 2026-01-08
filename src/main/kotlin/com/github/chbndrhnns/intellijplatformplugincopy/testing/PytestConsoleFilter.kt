@@ -11,23 +11,32 @@ import java.util.regex.Pattern
 
 class PytestConsoleFilter(private val project: Project) : Filter {
     companion object {
-        private val PATTERN = Pattern.compile("^\\s*(?:(?:FAILED|ERROR)\\s+)?([^\\s]+\\.py)::")
+        private val PATTERN = Pattern.compile("^\\s*(?:(?:FAILED|ERROR)\\s+)?([^\\s]+\\.py)(?:::| - )")
     }
 
     override fun applyFilter(line: String, entireLength: Int): Filter.Result? {
         val matcher = PATTERN.matcher(line)
         if (matcher.find()) {
             val filePath = matcher.group(1)
-            val nodeIdStartInLine = matcher.end()
-            val nodeIdEndInLine = findNodeIdEnd(line, nodeIdStartInLine)
-            if (nodeIdEndInLine <= nodeIdStartInLine) return null
+            val separator = matcher.group(0).substring(matcher.start(1) + filePath.length - matcher.start())
 
-            val nodeId = line.substring(nodeIdStartInLine, nodeIdEndInLine)
+            if (separator.contains("::")) {
+                val nodeIdStartInLine = matcher.end()
+                val nodeIdEndInLine = findNodeIdEnd(line, nodeIdStartInLine)
+                if (nodeIdEndInLine <= nodeIdStartInLine) return null
 
-            val startOffset = entireLength - line.length + matcher.start(1)
-            val endOffset = entireLength - line.length + nodeIdEndInLine
+                val nodeId = line.substring(nodeIdStartInLine, nodeIdEndInLine)
 
-            return Filter.Result(startOffset, endOffset, PytestNodeHyperlinkInfo(project, filePath, nodeId))
+                val startOffset = entireLength - line.length + matcher.start(1)
+                val endOffset = entireLength - line.length + nodeIdEndInLine
+
+                return Filter.Result(startOffset, endOffset, PytestNodeHyperlinkInfo(project, filePath, nodeId))
+            } else if (separator.contains(" - ")) {
+                val startOffset = entireLength - line.length + matcher.start(1)
+                val endOffset = entireLength - line.length + matcher.start(1) + filePath.length
+
+                return Filter.Result(startOffset, endOffset, PytestFileHyperlinkInfo(project, filePath))
+            }
         }
         return null
     }
@@ -76,6 +85,22 @@ class PytestConsoleFilter(private val project: Project) : Filter {
         }
 
         return line.length
+    }
+
+    private class PytestFileHyperlinkInfo(
+        private val project: Project,
+        private val filePath: String
+    ) : HyperlinkInfo {
+
+        override fun navigate(project: Project) {
+            val resolver = PytestIdentifierResolver(project)
+            val element = runWithModalProgressBlocking(project, "") {
+                readAction {
+                    resolver.resolve(filePath)
+                }
+            }
+            (element as? Navigatable)?.navigate(true)
+        }
     }
 
     private class PytestNodeHyperlinkInfo(

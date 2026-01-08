@@ -1,13 +1,3 @@
-[2026-01-06 22:52] - Updated by Junie - Error analysis
-{
-    "TYPE": "missing context",
-    "TOOL": "search_replace",
-    "ERROR": "Refactor introduced unresolved PsiElement and type mismatches",
-    "ROOT CAUSE": "The method signature was changed to use PsiElement without adding its import, making element effectively Any and breaking downstream calls.",
-    "PROJECT NOTE": "When editing Kotlin signatures in existing files, ensure all newly referenced types are imported (e.g., com.intellij.psi.PsiElement) before relying on them in PsiTreeUtil and Py* APIs.",
-    "NEW INSTRUCTION": "WHEN changing a Kotlin signature to new types THEN add required imports immediately"
-}
-
 [2026-01-06 23:15] - Updated by Junie - Error analysis
 {
     "TYPE": "invalid args",
@@ -758,22 +748,32 @@
     "NEW INSTRUCTION": "WHEN PyTargetExpression parent is PyImportElement or PyImportStatementBase THEN return null to hide it"
 }
 
-[2026-01-08 23:26] - Updated by Junie - Error analysis
+[2026-01-08 23:27] - Updated by Junie - Error analysis
 {
     "TYPE": "logic",
     "TOOL": "run_test",
-    "ERROR": "Tests failed: import aliases shown as variables in navbar",
-    "ROOT CAUSE": "getPresentableText returns names for PyTargetExpression that are import aliases instead of filtering them out.",
-    "PROJECT NOTE": "Update PyNavBarModelExtension.getPresentableText to detect PyTargetExpression originating from PyImportElement (or alias contexts) and return null.",
-    "NEW INSTRUCTION": "WHEN element is PyTargetExpression from an import alias THEN return null from getPresentableText"
+    "ERROR": "Tests failed: import aliases shown as variables",
+    "ROOT CAUSE": "PyNavBarModelExtension.getPresentableText does not filter PyTargetExpression that are import aliases (from PyImportElement).",
+    "PROJECT NOTE": "In PyNavBarModelExtension.kt, detect aliases by checking if a PyTargetExpression’s parent or defining element is a PyImportElement (or via PyImportedNameDefiner) and return null for them.",
+    "NEW INSTRUCTION": "WHEN PyTargetExpression is defined by PyImportElement THEN return null in getPresentableText"
 }
 
-[2026-01-08 23:26] - Updated by Junie - Error analysis
+[2026-01-08 23:29] - Updated by Junie - Error analysis
 {
     "TYPE": "logic",
     "TOOL": "run_test",
-    "ERROR": "Import aliases appear as variables in Python navbar tests",
-    "ROOT CAUSE": "getPresentableText returns names for PyTargetExpression without excluding those under PyImportElement (import aliases).",
-    "PROJECT NOTE": "In PyNavBarModelExtension.kt, before handling PyTargetExpression, check if PsiTreeUtil.getParentOfType(element, PyImportElement::class.java) != null and return null to hide aliases.",
-    "NEW INSTRUCTION": "WHEN PyTargetExpression has PyImportElement parent THEN return null in getPresentableText"
+    "ERROR": "Filter did not match short summary 'FAILED file.py - ...' line",
+    "ROOT CAUSE": "PytestConsoleFilter regex requires '::' node id; it ignores lines with just ' - '.",
+    "PROJECT NOTE": "Update PytestConsoleFilter.kt to accept 'FAILED <path>.py - ' without a node id and highlight from filename start to the ' - ' separator; add a regex branch like ^\\s*(?:FAILED|ERROR)\\s+([^\\s]+\\.py)\\s+-\\s+.",
+    "NEW INSTRUCTION": "WHEN console line starts with 'FAILED <path>.py - ' THEN hyperlink filename up to ' - '"
+}
+
+[2026-01-08 23:29] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "run_test",
+    "ERROR": "No link created for short summary line",
+    "ROOT CAUSE": "PytestConsoleFilter regex only handled filenames followed by '::', not ' - '.",
+    "PROJECT NOTE": "Update PytestConsoleFilter.kt to accept both '::' node-id and ' - ' short summary suffix after '<file>.py'.",
+    "NEW INSTRUCTION": "WHEN pytest line matches 'FAILED .*\\.py - ' THEN hyperlink just the file path segment"
 }
