@@ -15,6 +15,7 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
+import com.jetbrains.python.PyTokenTypes
 import com.jetbrains.python.psi.*
 import javax.swing.Icon
 
@@ -102,14 +103,18 @@ class TogglePytestSkipIntention : IntentionAction, HighPriorityAction, Iconable 
 
         val pyFunction = PsiTreeUtil.getParentOfType(element, PyFunction::class.java)
         if (pyFunction != null) {
-            return if (pyFunction.name?.startsWith("test_") == true) Scope.FUNCTION else null
+            if (pyFunction.name?.startsWith("test_") != true) return null
+            if (element.node.elementType == PyTokenTypes.DEF_KEYWORD) return Scope.FUNCTION
+            return Scope.FUNCTION
         }
 
         val pyClass = PsiTreeUtil.getParentOfType(element, PyClass::class.java)
         if (pyClass != null) {
             if (pyClass.name?.startsWith("Test") != true) return null
-            val nameIdentifier = pyClass.nameIdentifier ?: return null
-            return if (nameIdentifier.textRange.containsOffset(offset)) Scope.CLASS else null
+            val nameIdentifier = pyClass.nameIdentifier
+            if (nameIdentifier != null && nameIdentifier.textRange.containsOffset(offset)) return Scope.CLASS
+            if (element.node.elementType == PyTokenTypes.CLASS_KEYWORD) return Scope.CLASS
+            return null
         }
 
         if (!(file.name.startsWith("test_") || file.name.endsWith("_test.py"))) return null

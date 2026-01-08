@@ -87,6 +87,28 @@ class TogglePytestSkipIntentionTest : TestBase() {
         )
     }
 
+    fun testClassLevelAvailableOnClassKeyword() {
+        myFixture.doIntentionTest(
+            "test_foo.py",
+            """
+            import pytest
+
+            <caret>class TestClass:
+                def test_something(self):
+                    pass
+            """,
+            """
+            import pytest
+
+            @pytest.mark.skip
+            class TestClass:
+                def test_something(self):
+                    pass
+            """,
+            "BetterPy: Toggle pytest skip"
+        )
+    }
+
     fun testMenuItemIndicatesClassScope() {
         myFixture.configureByText(
             "test_foo.py",
@@ -172,6 +194,26 @@ class TogglePytestSkipIntentionTest : TestBase() {
         assertTrue(text.contains("import pytest"))
         // Check that module skip comment is still there
         assertTrue(text.contains("# Module skip"))
+    }
+
+    fun testFunctionLevelAvailableOnDefKeyword() {
+        myFixture.doIntentionTest(
+            "test_foo.py",
+            """
+            import pytest
+
+            <caret>def test_something():
+                pass
+            """,
+            """
+            import pytest
+
+            @pytest.mark.skip
+            def test_something():
+                pass
+            """,
+            "BetterPy: Toggle pytest skip"
+        )
     }
 
     fun testMenuItemIndicatesModuleScope() {
