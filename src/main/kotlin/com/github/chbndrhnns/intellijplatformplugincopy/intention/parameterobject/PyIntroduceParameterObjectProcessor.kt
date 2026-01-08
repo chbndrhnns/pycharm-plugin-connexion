@@ -7,6 +7,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.project.Project
 import com.intellij.platform.ide.progress.runWithModalProgressBlocking
+import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiParserFacade
 import com.intellij.psi.PsiReference
@@ -268,6 +269,11 @@ class PyIntroduceParameterObjectProcessor(
                     param.delete()
                 }
             }
+        }
+        // Commit pending PSI changes before reformatting to avoid document lock issues
+        val document = function.containingFile.viewProvider.document
+        if (document != null) {
+            PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(document)
         }
         CodeStyleManager.getInstance(project).reformat(function.containingFile)
     }
