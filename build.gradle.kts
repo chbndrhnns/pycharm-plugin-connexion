@@ -13,6 +13,8 @@ plugins {
 
 group = providers.gradleProperty("pluginGroup").get()
 version = providers.gradleProperty("pluginVersion").get()
+// set in ~/.gradle/gradle.properties, e.g. `/Users/me/Applications/PyCharm X.app/Contents`
+val localIdePath = project.findProperty("localIdePath") as? String
 
 // Set the JVM language level used to build the project.
 kotlin {
@@ -26,6 +28,14 @@ repositories {
     // IntelliJ Platform Gradle Plugin Repositories Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-repositories-extension.html
     intellijPlatform {
         defaultRepositories()
+    }
+}
+
+configurations.all {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "com.jetbrains.intellij.java" && requested.name == "java-compiler-ant-tasks") {
+            useVersion("253.29346.240")
+        }
     }
 }
 
@@ -167,23 +177,45 @@ tasks.register<Exec>("generateFeatureDocs") {
     )
 }
 
-intellijPlatformTesting {
-    runIde {
-        register("runIdeForUiTests") {
-            task {
-                jvmArgumentProviders += CommandLineArgumentProvider {
-                    listOf(
-                        "-Drobot-server.port=8082",
-                        "-Dide.mac.message.dialogs.as.sheets=false",
-                        "-Djb.privacy.policy.text=<!--999.999-->",
-                        "-Djb.consents.confirmation.enabled=false",
-                    )
-                }
-            }
-
-            plugins {
-                robotServerPlugin()
-            }
+// runIdeForUiTests task for UI testing with Robot Server Plugin
+val runIdeForUiTests by intellijPlatformTesting.runIde.registering {
+    task {
+        jvmArgumentProviders += CommandLineArgumentProvider {
+            listOf(
+                "-Drobot-server.port=8082",
+                "-Dide.mac.message.dialogs.as.sheets=false",
+                "-Djb.privacy.policy.text=<!--999.999-->",
+                "-Djb.consents.confirmation.enabled=false",
+            )
         }
+    }
+
+    plugins {
+        robotServerPlugin()
+    }
+}
+
+// runLocalIde uses local IDE installation from localIdePath property (set in ~/.gradle/gradle.properties)
+// Uses the user's actual IDE configuration instead of an isolated sandbox
+val runLocalIde by intellijPlatformTesting.runIde.registering {
+    if (localIdePath != null) {
+        localPath = file(localIdePath)
+    }
+
+    splitMode = false
+    splitModeTarget = org.jetbrains.intellij.platform.gradle.tasks.aware.SplitModeAware.SplitModeTarget.BOTH
+
+    task {
+        maxHeapSize = "2g"
+        jvmArgs("-Dignore.ide.script.launcher.used=true")
+        jvmArgs("-Dide.slow.operations.assertion=true")
+        jvmArgs("-Didea.is.internal=true")
+        jvmArgs(
+            "-XX:+HeapDumpOnOutOfMemoryError",
+            "-XX:HeapDumpPath=${rootProject.projectDir}/build/java_error_in_idea64.hprof",
+            "-XX:ErrorFile=${rootProject.projectDir}/build/java_error_in_idea64.log"
+        )
+        jvmArgs("-Didea.logger.exception.expiration.minutes=0")
+        args(listOf("nosplash"))
     }
 }
