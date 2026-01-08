@@ -2,6 +2,15 @@
 
 ## Pending Issues
 
+- [ ] fix: Wrap with builtin type callable in these cases:
+
+```
+def do(data: list[int]): ...
+
+
+do(frozenset({<caret>1, 2, 3}))
+```
+
 - [ ] fix: Parse these pytest lines:
 
 ```
