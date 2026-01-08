@@ -1,163 +1,3 @@
-[2026-01-05 18:58] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "run_test",
-    "ERROR": "NoSuchMethodError for PluginSettingsState.State constructor",
-    "ROOT CAUSE": "PluginSettingsState.State constructor signature changed, breaking binary compatibility with test setup/serialization.",
-    "PROJECT NOTE": "PersistentStateComponent expects a bean with a no-arg constructor and mutable properties; define State with no primary constructor (properties initialized inline) or add an explicit zero-arg secondary constructor to remain compatible.",
-    "NEW INSTRUCTION": "WHEN modifying PluginSettingsState.State fields THEN preserve a zero-arg constructor and inline-initialized mutable properties"
-}
-
-[2026-01-06 11:20] - Updated by Junie - Error analysis
-{
-    "TYPE": "missing context",
-    "TOOL": "search_replace",
-    "ERROR": "Added arg 'inlineAllOccurrences'; helper removeParameterObjectClass missing",
-    "ROOT CAUSE": "Call site was updated without changing the callee signature or adding the new helper.",
-    "PROJECT NOTE": "Update prepareCallSiteUpdates(...) signature in PyInlineParameterObjectProcessor.kt to include inlineAllOccurrences, and implement removeParameterObjectClass() to delete the parameter object class and clean up.",
-    "NEW INSTRUCTION": "WHEN adding parameters to a method call THEN update the callee signature accordingly"
-}
-
-[2026-01-06 11:21] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Call passes inlineAllOccurrences; callee lacks parameter; removeClass handler missing",
-    "ROOT CAUSE": "The call site was updated to pass inlineAllOccurrences and call removeParameterObjectClass(), but prepareCallSiteUpdates signature and the removeParameterObjectClass implementation were not added.",
-    "PROJECT NOTE": "Update prepareCallSiteUpdates to accept inlineAllOccurrences and implement removeParameterObjectClass(plan) to delete the parameter object class PSI when requested.",
-    "NEW INSTRUCTION": "WHEN adding a new argument or method call THEN update callee signature and implement method"
-}
-
-[2026-01-06 11:23] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Named parameter missing and helper method undefined",
-    "ROOT CAUSE": "Call site passed inlineAllOccurrences and used removeParameterObjectClass before updating prepareCallSiteUpdates signature and defining the helper.",
-    "PROJECT NOTE": "In PyInlineParameterObjectProcessor.kt, add inlineAllOccurrences to prepareCallSiteUpdates(...) and implement removeParameterObjectClass(plan) to delete the parameter object class PSI.",
-    "NEW INSTRUCTION": "WHEN adding named arguments to a method call THEN update callee signature and define new helpers"
-}
-
-[2026-01-06 11:25] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "prepareCallSiteUpdates lacks inlineAllOccurrences; removeParameterObjectClass undefined",
-    "ROOT CAUSE": "The call site added inlineAllOccurrences and class removal logic without updating the helper signature or implementing the removal method.",
-    "PROJECT NOTE": "Update prepareCallSiteUpdates in PyInlineParameterObjectProcessor to accept inlineAllOccurrences and filter usages; add removeParameterObjectClass to delete the parameter object class under WriteCommandAction.",
-    "NEW INSTRUCTION": "WHEN prepareCallSiteUpdates is called with inlineAllOccurrences THEN add parameter to method and adapt logic"
-}
-
-[2026-01-06 12:31] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic",
-    "TOOL": "PyInlineParameterObjectProcessor.countUsages",
-    "ERROR": "Usage count returns 0 despite multiple parameter object usages",
-    "ROOT CAUSE": "countUsages searches references to the function and filters call sites, but the dialog should be based on usages of the parameter object (constructor calls and typed parameters), so it returns 0 when there are no calls to the selected function.",
-    "PROJECT NOTE": "Compute usages from the parameter object class: count constructor calls (FooParams(...)) and function/method parameters annotated as FooParams; for the selected function, still collect its call sites for inlining.",
-    "NEW INSTRUCTION": "WHEN determining dialog usage count THEN search parameter object class references, not function references"
-}
-
-[2026-01-06 12:35] - Updated by Junie - Error analysis
-{
-    "TYPE": "logic",
-    "TOOL": "PyInlineParameterObjectProcessor.countUsages",
-    "ERROR": "Counting function calls instead of parameter object usages",
-    "ROOT CAUSE": "countUsages() searches references to the selected function and tallies call sites, but the user’s scenario has multiple functions that accept the parameter object type and zero call sites, yielding 0.",
-    "PROJECT NOTE": "When caret is on a parameter annotation or the parameter object class, resolve the class and count its usages as: (a) function parameters annotated with the class and (b) constructor calls passed at call sites; only fall back to function call counting when invoked on a function.",
-    "NEW INSTRUCTION": "WHEN element indicates parameter object annotation or class THEN count functions using that class as a parameter"
-}
-
-[2026-01-06 12:39] - Updated by Junie - Error analysis
-{
-    "TYPE": "threading",
-    "TOOL": "PyInlineParameterObjectProcessor.countUsages",
-    "ERROR": "Blocking search invoked on EDT; requires background thread with progress",
-    "ROOT CAUSE": "countUsages performs reference/PSI lookups on EDT which triggers runBlocking and fails.",
-    "PROJECT NOTE": "In InlineParameterObjectRefactoringHandler.invoke, wrap usage counting in runWithModalProgressBlocking + readAction, or move that wrapping into countUsages itself.",
-    "NEW INSTRUCTION": "WHEN running ReferencesSearch or PSI scans from handler THEN use runWithModalProgressBlocking(readAction)"
-}
-
-[2026-01-06 12:42] - Updated by Junie - Error analysis
-{
-    "TYPE": "threading",
-    "TOOL": "InlineParameterObjectRefactoringHandler.invoke",
-    "ERROR": "Blocking search called on EDT",
-    "ROOT CAUSE": "countUsages triggers ReferencesSearch/findAll on EDT; background thread required.",
-    "PROJECT NOTE": "Wrap usage counting in InlineParameterObjectRefactoringHandler (and any findAll in PyInlineParameterObjectProcessor) with runWithModalProgressBlocking(project, ...) { readAction { ... } } to avoid EDT violations (e.g., PyInlineParameterObjectProcessor.kt:54, handler invoke()).",
-    "NEW INSTRUCTION": "WHEN performing PSI searches or counting usages THEN run via runWithModalProgressBlocking readAction"
-}
-
-[2026-01-06 12:44] - Updated by Junie - Error analysis
-{
-    "TYPE": "threading",
-    "TOOL": "PyInlineParameterObjectProcessor.removeParameterObjectClass",
-    "ERROR": "Blocking operation on EDT: PythonPackageManager.forSdk invoked",
-    "ROOT CAUSE": "A blocking search/package query ran on the Event Dispatch Thread during refactoring.",
-    "PROJECT NOTE": "Move all ReferencesSearch/Query.findAll and package/Sdk-related calls to a background read action via runWithModalProgressBlocking; keep PSI deletions in WriteCommandAction.",
-    "NEW INSTRUCTION": "WHEN blocking PSI search or package manager call on EDT THEN wrap with runWithModalProgressBlocking(project){ readAction{ ... } }"
-}
-
-[2026-01-06 12:58] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic",
-    "TOOL": "search_replace",
-    "ERROR": "Used deprecated PyPackageManager API",
-    "ROOT CAUSE": "The edit imported com.jetbrains.python.packaging.PyPackageManager which is deprecated and scheduled for removal.",
-    "PROJECT NOTE": "Use PyPackageService (e.g., PyPackageService.getInstance(project).getPackages(sdk)) instead of PyPackageManager to obtain packages and their top-level modules.",
-    "NEW INSTRUCTION": "WHEN import causes deprecation error in IDE THEN replace with the non-deprecated successor API"
-}
-
-[2026-01-06 13:00] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid api",
-    "TOOL": "search_replace",
-    "ERROR": "Deprecated API marked for removal used",
-    "ROOT CAUSE": "Code introduced com.jetbrains.python.packaging.PyPackageManager which is deprecated and flagged by semantic checks.",
-    "PROJECT NOTE": "Prefer non-deprecated Python plugin APIs; if migration path is unclear, temporarily add @Suppress(\"DEPRECATION\") near usage and track a TODO.",
-    "NEW INSTRUCTION": "WHEN semantic checker flags deprecated API marked for removal THEN replace with supported API or add @Suppress(\"DEPRECATION\")"
-}
-
-[2026-01-06 13:03] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic",
-    "TOOL": "search_replace",
-    "ERROR": "Deprecated API used: PyPackageManager marked for removal",
-    "ROOT CAUSE": "The edit introduced com.jetbrains.python.packaging.PyPackageManager, which is deprecated and flagged as an error in this project SDK.",
-    "PROJECT NOTE": "Use the newer packaging management API (e.g., com.jetbrains.python.packaging.management.PythonPackageManager.forSdk(sdk)) to list installed packages and read top-level modules.",
-    "NEW INSTRUCTION": "WHEN semantic errors flag deprecated or removed API THEN replace with supported alternative from current SDK"
-}
-
-[2026-01-06 13:03] - Updated by Junie - Error analysis
-{
-    "TYPE": "semantic",
-    "TOOL": "search_replace",
-    "ERROR": "Deprecated API used: PyPackageManager",
-    "ROOT CAUSE": "The edit introduced PyPackageManager which is deprecated and flagged by the project checker.",
-    "PROJECT NOTE": "In imports/HideTransientImportProvider.kt, use PythonPackagingService.getInstance(sdk).getPackages() to list installed packages instead of PyPackageManager.",
-    "NEW INSTRUCTION": "WHEN semantic errors mention 'deprecated and marked for removal' THEN replace PyPackageManager with PythonPackagingService.getInstance(sdk).getPackages()"
-}
-
-[2026-01-06 17:25] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Argument type mismatch for runWithSourceRoots",
-    "ROOT CAUSE": "runWithSourceRoots expects a List<VirtualFile> but a String was provided.",
-    "PROJECT NOTE": "In fixtures.TestBase, obtain a VirtualFile via myFixture.tempDirFixture.findOrCreateDir(\"tests\") and call runWithSourceRoots(listOf(dir)).",
-    "NEW INSTRUCTION": "WHEN adding test source roots THEN pass List<VirtualFile> from tempDirFixture.findOrCreateDir"
-}
-
-[2026-01-06 17:25] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Argument type mismatch for runWithSourceRoots",
-    "ROOT CAUSE": "runWithSourceRoots expects List<VirtualFile> but a String literal was passed.",
-    "PROJECT NOTE": "Create a VirtualFile for the 'tests' dir (e.g., myFixture.tempDirFixture.findOrCreateDir(\"tests\")) and pass listOf(vFile) to runWithSourceRoots.",
-    "NEW INSTRUCTION": "WHEN calling runWithSourceRoots in tests THEN pass List<VirtualFile> not String"
-}
-
 [2026-01-06 17:26] - Updated by Junie - Error analysis
 {
     "TYPE": "invalid args",
@@ -766,4 +606,174 @@
     "ROOT CAUSE": "The inspection referenced isEnum before defining it or adding required imports.",
     "PROJECT NOTE": "When adding helper checks inside PyElementVisitor in inspections, implement the helper in the same class and add necessary imports (e.g., PyNames, PyClassType) in the same edit.",
     "NEW INSTRUCTION": "WHEN new helper or API is referenced THEN add its definition and required imports immediately"
+}
+
+[2026-01-07 17:30] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "introduce_parameter_object",
+    "ERROR": "Empty project arg {}; tool expects typed Project object with discriminator",
+    "ROOT CAUSE": "The MCP tool method requires a typed Project payload, but the call passed an untyped empty object.",
+    "PROJECT NOTE": "ParameterObjectMcpToolset methods accept Project; JetBrains MCP expects a typed project object obtained from the server’s project enumeration and passed verbatim, not {}.",
+    "NEW INSTRUCTION": "WHEN project argument is {} in MCP call THEN fetch projects and pass typed project object"
+}
+
+[2026-01-07 17:30] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "MCP introduce_parameter_object",
+    "ERROR": "Passed {} where typed Project object was required",
+    "ROOT CAUSE": "The MCP tool expects a serialized IDE Project with a discriminator; an empty object cannot be deserialized.",
+    "PROJECT NOTE": "JetBrains MCP marshals IDE objects (e.g., Project) as typed payloads with discriminators; obtain the Project from MCP metadata (projects/modules) and pass that object verbatim.",
+    "NEW INSTRUCTION": "WHEN MCP tool signature includes Project THEN fetch project metadata and pass the typed Project object"
+}
+
+[2026-01-07 17:32] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "introduce_parameter_object",
+    "ERROR": "Project argument must be typed; {} is invalid",
+    "ROOT CAUSE": "The MCP tool method expects a typed Project object, but the call passed an empty object that doesn’t match the server’s discriminator-based schema.",
+    "PROJECT NOTE": "ParameterObjectMcpToolset methods take Project; either ensure callers pass the MCP-typed Project object or provide an overload without Project and resolve the active project internally.",
+    "NEW INSTRUCTION": "WHEN MCP schema requires a typed Project argument THEN fetch project descriptor from MCP and pass it"
+}
+
+[2026-01-07 17:39] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "MCP introduce_parameter_object",
+    "ERROR": "Project argument missing discriminator; empty object passed",
+    "ROOT CAUSE": "The MCP tool expects a typed Project value, but an untyped {} was sent.",
+    "PROJECT NOTE": "ParameterObjectMcpToolset methods accept Project; JetBrains MCP encodes Project as a typed resource. Query available projects/modules via MCP discovery and pass the returned typed Project payload.",
+    "NEW INSTRUCTION": "WHEN MCP tool signature includes Project THEN pass the IDE-provided typed Project object"
+}
+
+[2026-01-07 17:39] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "introduce_parameter_object (MCP)",
+    "ERROR": "Sent {} for Project; tool expects typed Project payload",
+    "ROOT CAUSE": "The MCP call supplied an empty object for the Project parameter, but the server expects an injected IDE Project instance (typed/discriminated), not client-provided JSON.",
+    "PROJECT NOTE": "In McpToolset methods, Project is injected by the MCP server; clients should not pass a project object. Ensure the tool signature keeps Project first and other simple JSON-serializable params afterward.",
+    "NEW INSTRUCTION": "WHEN calling MCP tools that accept Project THEN omit project argument and rely on server injection"
+}
+
+[2026-01-07 17:40] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "introduce_parameter_object (MCP)",
+    "ERROR": "Project argument {} not a typed Project object",
+    "ROOT CAUSE": "The MCP tool method expects a serialized IntelliJ Project object, but an empty map was supplied.",
+    "PROJECT NOTE": "ParameterObjectMcpToolset methods accept com.intellij.openapi.project.Project; over MCP you must pass an IDE-provided Project reference, not a plain object.",
+    "NEW INSTRUCTION": "WHEN MCP tool requires Project parameter THEN fetch projects via MCP and pass returned Project object"
+}
+
+[2026-01-07 17:40] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "introduce_parameter_object",
+    "ERROR": "Project arg lacks required typed discriminator",
+    "ROOT CAUSE": "The MCP tool method expects an IntelliJ Project parameter, but the call passed an untyped {} payload which MCP cannot map to Project.",
+    "PROJECT NOTE": "Update ParameterObjectMcpToolset.kt to avoid Project in tool signatures; resolve the current project via ProjectManager/FileEditorManager or accept a projectId/name and look it up.",
+    "NEW INSTRUCTION": "WHEN MCP tool signature includes Project parameter THEN remove it and resolve project internally"
+}
+
+[2026-01-07 17:45] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "introduce_parameter_object",
+    "ERROR": "Untyped Project argument passed; MCP expects discriminated project object",
+    "ROOT CAUSE": "The MCP tool signature requires a typed Project parameter, but an empty object was sent, failing server-side validation.",
+    "PROJECT NOTE": "ParameterObjectMcpToolset methods take Project as the first argument; JetBrains MCP serializes this as a structured, discriminated project object obtained from the server’s project/module metadata.",
+    "NEW INSTRUCTION": "WHEN MCP tool parameter is Project THEN supply typed project object from MCP metadata"
+}
+
+[2026-01-07 18:24] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "introduce_parameter_object (MCP)",
+    "ERROR": "Invalid Project payload: empty object provided",
+    "ROOT CAUSE": "The MCP tool method requires a typed Project argument that MCP injects; a caller passed {} instead, which cannot be deserialized to Project.",
+    "PROJECT NOTE": "Keep the McpToolset method signature using Project and let the MCP server inject the current project; do not expect callers to supply a JSON object for Project.",
+    "NEW INSTRUCTION": "WHEN MCP tool signature includes Project parameter THEN omit project argument and rely on MCP injection"
+}
+
+[2026-01-07 18:26] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "introduce_parameter_object (MCP)",
+    "ERROR": "MCP tool expected typed Project; received {} causing deserialization failure",
+    "ROOT CAUSE": "The tool method exposes IntelliJ Project in its signature, which MCP cannot deserialize from JSON.",
+    "PROJECT NOTE": "In ParameterObjectMcpToolset, drop Project from tool method parameters and resolve the current project internally (e.g., via ProjectManager.getInstance().openProjects.firstOrNull() or MCP context) and then use FileEditorManager with that project.",
+    "NEW INSTRUCTION": "WHEN MCP tool signature includes IDE types THEN accept primitives and resolve IDE objects internally"
+}
+
+[2026-01-07 18:31] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "introduce_parameter_object",
+    "ERROR": "Empty project object sent; server expects injected Project",
+    "ROOT CAUSE": "The caller provided {} for the Project parameter, but MCP injects a non-serializable IDE Project context internally.",
+    "PROJECT NOTE": "In ParameterObjectMcpToolset, do not expose Project as a client-provided argument; let MCP inject it and avoid complex IDE types in the public tool schema.",
+    "NEW INSTRUCTION": "WHEN MCP request includes a project argument THEN omit it and rely on injected context"
+}
+
+[2026-01-07 21:21] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "run_test",
+    "ERROR": "NoSuchMethodError: State constructor signature mismatch",
+    "ROOT CAUSE": "PluginSettingsState.State gained a new parameter and TestBase.setUp still calls the old constructor.",
+    "PROJECT NOTE": "Update fixtures/TestBase.setUp to match PluginSettingsState.State's current constructor in src/main/.../settings/PluginSettingsState.kt. Prefer using named arguments or instantiate State() with defaults and adjust fields to avoid breakage on future additions.",
+    "NEW INSTRUCTION": "WHEN NoSuchMethodError references PluginSettingsState.State.<init> THEN align TestBase State(...) args with current constructor"
+}
+
+[2026-01-07 21:22] - Updated by Junie - Error analysis
+{
+    "TYPE": "invalid args",
+    "TOOL": "run_test",
+    "ERROR": "NoSuchMethodError for PluginSettingsState.State constructor",
+    "ROOT CAUSE": "fixtures.TestBase.setUp calls an outdated PluginSettingsState.State constructor missing a newly added parameter.",
+    "PROJECT NOTE": "Update fixtures/TestBase.setUp (around line 13) to instantiate PluginSettingsState.State with the exact current signature from PluginSettingsState.kt, including the new String parameter and any added booleans.",
+    "NEW INSTRUCTION": "WHEN NoSuchMethodError occurs in TestBase.setUp THEN match State constructor parameters to definition"
+}
+
+[2026-01-08 10:31] - Updated by Junie - Error analysis
+{
+    "TYPE": "env/setup",
+    "TOOL": "run_test",
+    "ERROR": "Unresolved com.intellij.mcpserver symbols during compile",
+    "ROOT CAUSE": "The project lacks the MCP Server API dependency required by ParameterObjectMcpToolset.kt.",
+    "PROJECT NOTE": "ParameterObjectMcpToolset.kt imports com.intellij.mcpserver.*; add the IDE plugin/library that provides this package to Gradle IntelliJ dependencies or exclude this file from the main source set.",
+    "NEW INSTRUCTION": "WHEN compile errors mention com.intellij.mcpserver unresolved THEN add MCP Server plugin dependency or exclude that source file"
+}
+
+[2026-01-08 10:32] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "run_test",
+    "ERROR": "Intention not available on 'class' keyword",
+    "ROOT CAUSE": "TogglePytestSkipIntention only recognizes the class name identifier, not the 'class' keyword token.",
+    "PROJECT NOTE": "Update determineScope in TogglePytestSkipIntention to accept caret on PyClass or its CLASS_KEYWORD token in addition to the identifier.",
+    "NEW INSTRUCTION": "WHEN caret element is Python CLASS_KEYWORD or within PyClass header THEN treat as class scope"
+}
+
+[2026-01-08 10:33] - Updated by Junie - Error analysis
+{
+    "TYPE": "logic",
+    "TOOL": "run_test",
+    "ERROR": "Intention not available on class keyword",
+    "ROOT CAUSE": "determineScope only handles class name identifiers, not the 'class' keyword element.",
+    "PROJECT NOTE": "Update TogglePytestSkipIntention.determineScope to recognize the class keyword (e.g., PyTokenTypes.CLASS_KEYWORD or parent PyClass) as class scope.",
+    "NEW INSTRUCTION": "WHEN caret element type is CLASS_KEYWORD THEN return class scope in determineScope"
+}
+
+[2026-01-08 10:34] - Updated by Junie - Error analysis
+{
+    "TYPE": "tool failure",
+    "TOOL": "undo_edit",
+    "ERROR": "Undo failed; cannot revert edit automatically",
+    "ROOT CAUSE": "The tool lacked a restorable edit history entry, so automatic undo was unavailable.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN undo_edit reports failure THEN restore target file via search_replace with previous content"
 }

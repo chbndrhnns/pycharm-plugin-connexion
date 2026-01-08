@@ -622,3 +622,11 @@
     "NEW INSTRUCTION": "WHEN symbol is an Enum member THEN do not classify or report it as constant"
 }
 
+[2026-01-08 10:30] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "availability range",
+    "EXPECTATION": "The 'skip pytest class' intention should be available when the caret is on the class keyword.",
+    "NEW INSTRUCTION": "WHEN caret on pytest class 'class' keyword THEN enable skip-class intention"
+}
+

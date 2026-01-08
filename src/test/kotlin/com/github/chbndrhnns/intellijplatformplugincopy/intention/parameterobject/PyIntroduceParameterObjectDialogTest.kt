@@ -194,4 +194,14 @@ class PyIntroduceParameterObjectDialogTest : TestBase() {
             """.trimIndent() + "\n"
         )
     }
+
+    fun testPreferredFocusedComponent() {
+        val dialog = IntroduceParameterObjectDialog(project, emptyList(), "MyClass")
+        try {
+            val focused = dialog.preferredFocusedComponent
+            assertEquals("classNameField should be the preferred focused component", "MyClass", (focused as? javax.swing.JTextField)?.text)
+        } finally {
+            dialog.close(com.intellij.openapi.ui.DialogWrapper.CANCEL_EXIT_CODE)
+        }
+    }
 }

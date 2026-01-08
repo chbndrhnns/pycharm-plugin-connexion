@@ -1,63 +1,3 @@
-[2025-12-31 22:55] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "-",
-    "MISSSING STEPS": "add tests, run tests, update settings UI",
-    "BOTTLENECK": "Feature was implemented before tests, violating tests-guided requirement.",
-    "PROJECT NOTE": "Mirror existing pytest intention tests using myFixture.doIntentionTest and add a checkbox in settings UI alongside other intention toggles.",
-    "NEW INSTRUCTION": "WHEN implementing a new intention THEN create guiding tests first and run them"
-}
-
-[2025-12-31 23:39] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "edit intention category, skip UI verification",
-    "MISSING STEPS": "register action, implement refactoring handler, wire action to handler, verify in IDE, add action visibility tests",
-    "BOTTLENECK": "Confused intention category with action registration for Refactor menu placement.",
-    "PROJECT NOTE": "Use an <actions> entry with add-to-group group-id=\"RefactoringMenu\" and a RefactoringActionHandler.",
-    "NEW INSTRUCTION": "WHEN feature must appear in Refactor menu THEN register action under RefactoringMenu in plugin.xml"
-}
-
-[2026-01-01 09:40] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "add intentionDescriptions",
-    "MISSING STEPS": "implement refactoring action, update plugin.xml registration, add availability test for Refactor menu",
-    "BOTTLENECK": "Misunderstood how items are surfaced in the Refactor menu versus intentions.",
-    "PROJECT NOTE": "Intention actions alone rarely show in Refactor This; register a refactoring handler/action.",
-    "NEW INSTRUCTION": "WHEN action not shown in Refactor This popup THEN implement RefactoringActionHandler and register under Refactorings"
-}
-
-[2026-01-01 09:43] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "submit solution,claim verification without asserting Refactor menu presence",
-    "MISSING STEPS": "map platform requirement for Refactor menu,implement refactoring action integration,register refactoring action in plugin.xml,add test asserting availability via Refactor This",
-    "BOTTLENECK": "Assumed intention category change and descriptions control Refactor menu visibility.",
-    "PROJECT NOTE": "Refactor This shows refactoring actions (e.g., ModCommand/Refactoring handlers), not plain intentions; integrate as a refactoring action.",
-    "NEW INSTRUCTION": "WHEN goal is appear in Refactor This menu THEN convert intention to refactoring action and register it"
-}
-
-[2026-01-01 09:58] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "submit solution, add intentionDescriptions",
-    "MISSING STEPS": "update action availability, verify handler availability, add UI availability tests, use platform test detectors",
-    "BOTTLENECK": "Availability checks do not enable the action in the current context.",
-    "PROJECT NOTE": "Ensure the action extends BaseRefactoringAction/PyBaseRefactoringAction and its update uses isAvailable; Refactor This uses these checks to enable actions.",
-    "NEW INSTRUCTION": "WHEN action appears disabled in Refactor menu THEN implement update using handler isAvailable checks"
-}
-
-[2026-01-01 09:59] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "add intentionDescriptions,menu/category tweaks",
-    "MISSING STEPS": "wrap changes in write command,guard reads in read action,add test for write/undo",
-    "BOTTLENECK": "PSI changes executed outside a write command caused the runtime exception.",
-    "PROJECT NOTE": "RefactoringActionHandler.invoke must wrap PSI edits in WriteCommandAction to support undo/redo.",
-    "NEW INSTRUCTION": "WHEN refactoring will modify PSI THEN wrap execution in WriteCommandAction.runWriteCommandAction(project)"
-}
-
 [2026-01-01 10:01] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -896,5 +836,75 @@
     "BOTTLENECK": "Uncertainty about doInspectionTest expectations delayed validation of the change.",
     "PROJECT NOTE": "Refer to the shared test helper (doInspectionTest) to understand expected verification semantics.",
     "NEW INSTRUCTION": "WHEN inspection logic is changed THEN run related tests and adjust fixtures if failing"
+}
+
+[2026-01-07 17:16] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "run git diff,open plugin.xml",
+    "MISSING STEPS": "-",
+    "BOTTLENECK": "Unnecessary repository inspection before providing straightforward versioning guidance.",
+    "PROJECT NOTE": "build.gradle.kts already derives release channel from the pre-release label in pluginVersion.",
+    "NEW INSTRUCTION": "WHEN question is about simple versioning suffix usage THEN read gradle.properties and answer directly"
+}
+
+[2026-01-07 17:45] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "submit, write docs",
+    "MISSING STEPS": "introspect tools, validate payload schema, run tool locally, add integration test, update API design",
+    "BOTTLENECK": "Used IDE-only Project type in MCP tool signature causing payload mismatch.",
+    "PROJECT NOTE": "Change MCP tool signatures to accept serializable inputs (projectId, filePath, functionName) and resolve Project/Editor/Psi inside the toolset.",
+    "NEW INSTRUCTION": "WHEN MCP tool arguments include IDE types like Project THEN use identifiers (projectId, filePath) and resolve IDE objects inside"
+}
+
+[2026-01-07 21:10] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "run build, search project",
+    "BOTTLENECK": "No verification step to confirm fix at runtime.",
+    "PROJECT NOTE": "For IntelliJ plugins, commit documents after PSI mutations before formatting or saving.",
+    "NEW INSTRUCTION": "WHEN fixing error at a specific call site THEN search project for similar unsafe patterns"
+}
+
+[2026-01-07 21:14] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "submit solution",
+    "MISSING STEPS": "scan project, reason about other reformat",
+    "BOTTLENECK": "No audit of other reformat calls after PSI mutations.",
+    "PROJECT NOTE": "Search for all CodeStyleManager.reformat usages and check if PSI changes precede them.",
+    "NEW INSTRUCTION": "WHEN fixing a pattern-specific API misuse in one location THEN search_project for similar occurrences and apply or justify consistent fixes"
+}
+
+[2026-01-07 21:22] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "inspect full constructor source, inspect setup call site, edit setup, run tests",
+    "BOTTLENECK": "Constructor and call site were not opened side-by-side to compare signatures.",
+    "PROJECT NOTE": "State constructor includes a String among many booleans; prefer named args to avoid drift.",
+    "NEW INSTRUCTION": "WHEN NoSuchMethodError for State.<init> appears in tests THEN Open constructor and call site, compare signature, update arguments accordingly"
+}
+
+[2026-01-08 10:34] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "open unrelated file,open build config,modify function scope beyond requirement",
+    "MISSING STEPS": "-",
+    "BOTTLENECK": "Distraction by unrelated compilation issues in non-target module.",
+    "PROJECT NOTE": "Existing TogglePytestSkipIntentionTest suite already validates class/name scopes; avoid touching ParameterObjectMcpToolset.",
+    "NEW INSTRUCTION": "WHEN build errors originate from unrelated modules THEN run only impacted tests and avoid edits"
+}
+
+[2026-01-08 11:54] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "optimal",
+    "REDUNDANT STEPS": "search tests for dialog",
+    "MISSING STEPS": "-",
+    "BOTTLENECK": "Overbroad initial search produced noisy results.",
+    "PROJECT NOTE": "-",
+    "NEW INSTRUCTION": "WHEN dialog requires initial focus on a text field THEN override getPreferredFocusedComponent to return it"
 }
 

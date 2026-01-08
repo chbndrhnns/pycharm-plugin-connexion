@@ -109,6 +109,8 @@ class IntroduceParameterObjectDialog(
         return panel
     }
 
+    override fun getPreferredFocusedComponent(): JComponent = classNameField
+
     fun getSettings(): IntroduceParameterObjectSettings {
         val selected = mutableListOf<PyNamedParameter>()
         for (i in 0 until checkBoxList.itemsCount) {
