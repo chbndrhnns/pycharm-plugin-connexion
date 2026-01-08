@@ -1,53 +1,3 @@
-[2026-01-06 17:26] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "runWithSourceRoots expects List<VirtualFile>, received String literal",
-    "ROOT CAUSE": "The test used runWithSourceRoots(\"tests\") but the helper requires VirtualFile roots, not a String.",
-    "PROJECT NOTE": "Create the test root via myFixture.tempDirFixture.findOrCreateDir(\"tests\") (or addFileToProject to create it) and call runWithSourceRoots(listOf(dirVirtualFile)).",
-    "NEW INSTRUCTION": "WHEN using runWithSourceRoots in tests THEN pass List<VirtualFile> obtained from tempDirFixture"
-}
-
-[2026-01-06 17:27] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Wrong argument type for runWithSourceRoots",
-    "ROOT CAUSE": "The test passed a String to runWithSourceRoots, which expects a List<VirtualFile>.",
-    "PROJECT NOTE": "In UseActualOutcomeAvailabilityTest, obtain a VirtualFile via myFixture.tempDirFixture.findOrCreateDir(\"tests\") (or addFileToProject and use parent) and call runWithSourceRoots(listOf(vf)).",
-    "NEW INSTRUCTION": "WHEN calling runWithSourceRoots in tests THEN pass List<VirtualFile> from tempDirFixture"
-}
-
-[2026-01-06 17:28] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Argument type mismatch for runWithSourceRoots",
-    "ROOT CAUSE": "The test helper runWithSourceRoots expects a List<VirtualFile> but a String was passed.",
-    "PROJECT NOTE": "In fixtures.TestBase, obtain a VirtualFile via myFixture.tempDirFixture.findOrCreateDir(\"tests\") and pass listOf(vf) to runWithSourceRoots.",
-    "NEW INSTRUCTION": "WHEN using runWithSourceRoots in tests THEN pass List<VirtualFile> created from tempDir"
-}
-
-[2026-01-06 17:30] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "Argument type mismatch for runWithSourceRoots parameter",
-    "ROOT CAUSE": "runWithSourceRoots was called with a String instead of List<VirtualFile>.",
-    "PROJECT NOTE": "In fixtures.TestBase, runWithSourceRoots expects List<VirtualFile>; obtain the tests root via myFixture.tempDirFixture.findOrCreateDir(\"tests\") (or similar) and pass listOf(virtualFile).",
-    "NEW INSTRUCTION": "WHEN calling runWithSourceRoots THEN pass List<VirtualFile> obtained via tempDirFixture or VFS"
-}
-
-[2026-01-06 17:32] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "search_replace",
-    "ERROR": "String passed to runWithSourceRoots; expected List<VirtualFile>",
-    "ROOT CAUSE": "The test edit used runWithSourceRoots(\"tests\") instead of a list of VirtualFiles.",
-    "PROJECT NOTE": "In tests, obtain VirtualFile roots via myFixture.tempDirFixture.getFile(\"tests\") and pass listOf(vf) to runWithSourceRoots.",
-    "NEW INSTRUCTION": "WHEN adding source roots in tests THEN pass List<VirtualFile> from tempDirFixture.getFile"
-}
-
 [2026-01-06 17:35] - Updated by Junie - Error analysis
 {
     "TYPE": "missing context",
@@ -776,4 +726,54 @@
     "ROOT CAUSE": "The tool lacked a restorable edit history entry, so automatic undo was unavailable.",
     "PROJECT NOTE": "-",
     "NEW INSTRUCTION": "WHEN undo_edit reports failure THEN restore target file via search_replace with previous content"
+}
+
+[2026-01-08 14:15] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "search_replace",
+    "ERROR": "Unresolved Py* PSI types after edit",
+    "ROOT CAUSE": "Edits introduced PyFunction, PyFile, PyTargetExpression, PyClass, and PyReferenceExpression without importing their Python PSI classes.",
+    "PROJECT NOTE": "In PyMockPatchObjectAttributeInspection.kt add imports for com.jetbrains.python.psi.PyFunction, PyFile, PyTargetExpression, PyClass, and PyReferenceExpression (or use com.jetbrains.python.psi.*).",
+    "NEW INSTRUCTION": "WHEN semantic errors mention unresolved Py* PSI types THEN import needed com.jetbrains.python.psi classes"
+}
+
+[2026-01-08 14:17] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "search_replace",
+    "ERROR": "Introduced unresolved Python PSI types",
+    "ROOT CAUSE": "Edits added PyFunction, PyFile, PyTargetExpression, and PyClass without required imports.",
+    "PROJECT NOTE": "In PyMockPatchObjectAttributeInspection.kt, add imports for com.jetbrains.python.psi.PyFunction, PyFile, PyTargetExpression, PyClass, and ensure PyReferenceExpression is imported.",
+    "NEW INSTRUCTION": "WHEN new code references Python PSI types THEN import corresponding com.jetbrains.python.psi classes"
+}
+
+[2026-01-08 14:18] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "search_replace",
+    "ERROR": "Semantic errors: unresolved Python PSI symbols",
+    "ROOT CAUSE": "The edit introduced PyFunction/PyFile/PyTargetExpression/PyClass without adding their imports.",
+    "PROJECT NOTE": "When using Python PSI in inspections, import com.jetbrains.python.psi.* (or specific classes) in the Kotlin file.",
+    "NEW INSTRUCTION": "WHEN semantic errors show unresolved Python PSI classes THEN add com.jetbrains.python.psi imports immediately"
+}
+
+[2026-01-08 14:20] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "search_replace",
+    "ERROR": "Semantic errors: unresolved Python PSI types after edit",
+    "ROOT CAUSE": "The edit referenced PyFunction, PyFile, PyTargetExpression, and PyClass without adding their imports.",
+    "PROJECT NOTE": "In PyMockPatchObjectAttributeInspection.kt add imports: com.jetbrains.python.psi.PyFunction, com.jetbrains.python.psi.PyFile, com.jetbrains.python.psi.PyTargetExpression, com.jetbrains.python.psi.PyClass.",
+    "NEW INSTRUCTION": "WHEN edits add new Python PSI types THEN import corresponding com.jetbrains.python.psi classes immediately"
+}
+
+[2026-01-08 14:33] - Updated by Junie - Error analysis
+{
+    "TYPE": "missing context",
+    "TOOL": "search_replace",
+    "ERROR": "Unresolved reference 'isOverload' in PyNavBarModelExtension.kt",
+    "ROOT CAUSE": "The edit introduced a call to isOverload without defining the helper or importing it.",
+    "PROJECT NOTE": "Add a helper extension like fun PsiElement.isOverload(): Boolean that returns true for PyFunction with decoratorList.findDecorator(\"overload\") != null; place it in PyNavBarModelExtension.kt or a shared utils file and import where used.",
+    "NEW INSTRUCTION": "WHEN adding overload filtering in PyNavBarModelExtension THEN implement isOverload extension and import it"
 }

@@ -1,23 +1,3 @@
-[2026-01-01 10:01] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "analyze spec, fix availability, submit solution",
-    "MISSING STEPS": "remove intention, update configuration, run tests",
-    "BOTTLENECK": "Work diverged to refactoring enablement instead of removing the intention.",
-    "PROJECT NOTE": "Also remove intentionDescriptions if intention is fully removed.",
-    "NEW INSTRUCTION": "WHEN request says remove item from intention menu THEN Unregister IntentionAction in plugin.xml and disable its availability checks."
-}
-
-[2026-01-01 10:26] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "run build",
-    "BOTTLENECK": "Out-of-order edits caused an unresolved reference to a yet-unimplemented helper.",
-    "PROJECT NOTE": "-",
-    "NEW INSTRUCTION": "WHEN adding a call to a new helper THEN implement the helper in the same change"
-}
-
 [2026-01-01 10:47] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -908,3 +888,12 @@
     "NEW INSTRUCTION": "WHEN dialog requires initial focus on a text field THEN override getPreferredFocusedComponent to return it"
 }
 
+[2026-01-08 14:21] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "suboptimal",
+    "REDUNDANT STEPS": "scan project",
+    "MISSING STEPS": "run build, fix compile errors, refine search, rerun tests",
+    "BOTTLENECK": "Compilation broke due to unresolved symbols after modifying inspections.",
+    "PROJECT NOTE": "Centralize mock-source check in a shared utility to avoid duplication across inspections.",
+    "NEW INSTRUCTION": "WHEN build fails after code edits THEN add missing imports and recompile before tests"
+}

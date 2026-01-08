@@ -39,7 +39,7 @@ class PyNavBarModelExtension : StructureAwareNavBarModelExtension() {
             else -> null
         } ?: return null
 
-        if (name.isDunder()) {
+        if (name.isDunder() || element.isOverload()) {
             return null
         }
 
@@ -94,7 +94,7 @@ class PyNavBarModelExtension : StructureAwareNavBarModelExtension() {
             else -> null
         } ?: return false
 
-        return !name.isDunder()
+        return !name.isDunder() && !element.isOverload()
     }
 
     override fun adjustElement(psiElement: PsiElement): PsiElement {
@@ -121,6 +121,9 @@ class PyNavBarModelExtension : StructureAwareNavBarModelExtension() {
 
     private fun PsiElement.isPythonMember(): Boolean =
         this is PyFunction || this is PyClass || this is PyTargetExpression
+
+    private fun PsiElement.isOverload(): Boolean =
+        (this as? PyFunction)?.decoratorList?.findDecorator("overload") != null
 
     private fun String.isDunder(): Boolean =
         startsWith("__") && endsWith("__")
