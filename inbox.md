@@ -79,14 +79,14 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## In Progress Tasks
 
-- [ ] fix: Hide overloaded methods from navbar
 - [-] feat: Move: Warn if test exists in target class already
 - [ ] feat: Block list: Do not allow names from typing or collections.abc.
 - [ ] refactor: Performance (spec/performance.md)
 
 ## Completed Tasks (newest first)
 
-- [ ] fix: Parse these pytest lines:
+- [x] fix: Hide overloaded methods from navbar
+- [x] fix: Parse these pytest lines:
 
 ```
 =============================================================================================== short test summary info ================================================================================================
