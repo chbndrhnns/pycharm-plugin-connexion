@@ -327,4 +327,85 @@ class PyNavBarModelExtensionTest : BasePlatformTestCase() {
         val adjusted = extension.adjustElement(file)
         assertEquals("Should not adjust non-Python file", file, adjusted)
     }
+
+    fun testMembersSortedByVisibility() {
+        val file = myFixture.configureByText(
+            "test.py", """
+            class MyClass:
+                def _private_method(self):
+                    pass
+                def public_method(self):
+                    pass
+                _private_field = 1
+                public_field = 2
+        """.trimIndent()
+        )
+
+        val pyClass = PsiTreeUtil.findChildOfType(file, PyClass::class.java)
+        assertNotNull(pyClass)
+
+        val children = ArrayList<Any>()
+        val processor = Processor<Any> {
+            children.add(it)
+            true
+        }
+        extension.processChildren(pyClass!!, null, processor)
+
+        val names = children.map {
+            when (it) {
+                is PyFunction -> it.name
+                is PyTargetExpression -> it.name
+                else -> null
+            }
+        }.filterNotNull()
+
+        // Expected order: public functions, private functions, public fields, private fields
+        assertEquals(listOf("public_method", "_private_method", "public_field", "_private_field"), names)
+    }
+
+    fun testFileLevelMembersSortedByVisibility() {
+        val file = myFixture.configureByText(
+            "test.py", """
+            class _PrivateClass:
+                pass
+            class PublicClass:
+                pass
+            def _private_function():
+                pass
+            def public_function():
+                pass
+            _private_var = 1
+            public_var = 2
+        """.trimIndent()
+        )
+
+        val children = ArrayList<Any>()
+        val processor = Processor<Any> {
+            children.add(it)
+            true
+        }
+        extension.processChildren(file, null, processor)
+
+        val names = children.map {
+            when (it) {
+                is PyClass -> it.name
+                is PyFunction -> it.name
+                is PyTargetExpression -> it.name
+                else -> null
+            }
+        }.filterNotNull()
+
+        // Expected order: public classes, private classes, public functions, private functions, public fields, private fields
+        assertEquals(
+            listOf(
+                "PublicClass",
+                "_PrivateClass",
+                "public_function",
+                "_private_function",
+                "public_var",
+                "_private_var"
+            ),
+            names
+        )
+    }
 }

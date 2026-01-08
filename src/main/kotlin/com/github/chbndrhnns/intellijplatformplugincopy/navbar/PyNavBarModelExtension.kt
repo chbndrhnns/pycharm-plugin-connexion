@@ -4,7 +4,6 @@ import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsS
 import com.intellij.ide.navigationToolbar.StructureAwareNavBarModelExtension
 import com.intellij.lang.Language
 import com.intellij.psi.PsiElement
-import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.Processor
 import com.jetbrains.python.PythonLanguage
 import com.jetbrains.python.psi.PyClass
@@ -17,6 +16,7 @@ import com.jetbrains.python.psi.PyTargetExpression
  * in the navigation bar when "Show Members in Navigation Bar" is enabled.
  */
 class PyNavBarModelExtension : StructureAwareNavBarModelExtension() {
+    
 
     override val language: Language
         get() = PythonLanguage.getInstance()
@@ -59,9 +59,9 @@ class PyNavBarModelExtension : StructureAwareNavBarModelExtension() {
 
         val children = when (psiElement) {
             is PyFile -> {
-                val classes = PsiTreeUtil.getChildrenOfTypeAsList(psiElement, PyClass::class.java)
-                val functions = PsiTreeUtil.getChildrenOfTypeAsList(psiElement, PyFunction::class.java)
-                val variables = PsiTreeUtil.getChildrenOfTypeAsList(psiElement, PyTargetExpression::class.java)
+                val classes = psiElement.topLevelClasses.toList()
+                val functions = psiElement.topLevelFunctions.toList()
+                val variables = psiElement.topLevelAttributes.toList()
 
                 sortByVisibility(classes, functions, variables)
             }
@@ -93,10 +93,12 @@ class PyNavBarModelExtension : StructureAwareNavBarModelExtension() {
     ): List<PsiElement> {
         val publicClasses = classes.filter { !it.isPrivate() }
         val privateClasses = classes.filter { it.isPrivate() }
-        val publicMembers = (functions + variables).filter { !it.isPrivate() }
-        val privateMembers = (functions + variables).filter { it.isPrivate() }
+        val publicFunctions = functions.filter { !it.isPrivate() }
+        val privateFunctions = functions.filter { it.isPrivate() }
+        val publicFields = variables.filter { !it.isPrivate() }
+        val privateFields = variables.filter { it.isPrivate() }
 
-        return publicClasses + privateClasses + publicMembers + privateMembers
+        return publicClasses + privateClasses + publicFunctions + privateFunctions + publicFields + privateFields
     }
 
     private fun PsiElement.isPrivate(): Boolean {
