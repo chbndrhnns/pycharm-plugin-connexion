@@ -59,19 +59,19 @@ class PyNavBarModelExtension : StructureAwareNavBarModelExtension() {
 
         val children = when (psiElement) {
             is PyFile -> {
-                val list = mutableListOf<PsiElement>()
-                list.addAll(PsiTreeUtil.getChildrenOfTypeAsList(psiElement, PyClass::class.java))
-                list.addAll(PsiTreeUtil.getChildrenOfTypeAsList(psiElement, PyFunction::class.java))
-                list.addAll(PsiTreeUtil.getChildrenOfTypeAsList(psiElement, PyTargetExpression::class.java))
-                list
+                val classes = PsiTreeUtil.getChildrenOfTypeAsList(psiElement, PyClass::class.java)
+                val functions = PsiTreeUtil.getChildrenOfTypeAsList(psiElement, PyFunction::class.java)
+                val variables = PsiTreeUtil.getChildrenOfTypeAsList(psiElement, PyTargetExpression::class.java)
+
+                sortByVisibility(classes, functions, variables)
             }
 
             is PyClass -> {
-                val list = mutableListOf<PsiElement>()
-                list.addAll(psiElement.methods)
-                list.addAll(psiElement.nestedClasses)
-                list.addAll(psiElement.classAttributes)
-                list
+                val classes = psiElement.nestedClasses.toList()
+                val functions = psiElement.methods.toList()
+                val variables = psiElement.classAttributes.toList()
+
+                sortByVisibility(classes, functions, variables)
             }
 
             else -> emptyList()
@@ -84,6 +84,29 @@ class PyNavBarModelExtension : StructureAwareNavBarModelExtension() {
         }
 
         return true
+    }
+
+    private fun sortByVisibility(
+        classes: List<PsiElement>,
+        functions: List<PsiElement>,
+        variables: List<PsiElement>
+    ): List<PsiElement> {
+        val publicClasses = classes.filter { !it.isPrivate() }
+        val privateClasses = classes.filter { it.isPrivate() }
+        val publicMembers = (functions + variables).filter { !it.isPrivate() }
+        val privateMembers = (functions + variables).filter { it.isPrivate() }
+
+        return publicClasses + privateClasses + publicMembers + privateMembers
+    }
+
+    private fun PsiElement.isPrivate(): Boolean {
+        val name = when (this) {
+            is PyFunction -> this.name
+            is PyClass -> this.name
+            is PyTargetExpression -> this.name
+            else -> null
+        }
+        return name?.startsWith("_") == true && !name.isDunder()
     }
 
     private fun shouldInclude(element: PsiElement): Boolean {
