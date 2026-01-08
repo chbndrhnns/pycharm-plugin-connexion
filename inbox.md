@@ -18,6 +18,7 @@
 
 ## Pending Features
 
+- [ ] feat: Go to declaration in new tab
 - [ ] feat: Re-run test with debug logging (add --log-cli-level=DEBUG in temporary run config)
 - [ ] feat: Render links to classes in output, like `<class 'src.core.mycore.domain.MyRoute'>
 - [ ] feat: Find usages in current file
