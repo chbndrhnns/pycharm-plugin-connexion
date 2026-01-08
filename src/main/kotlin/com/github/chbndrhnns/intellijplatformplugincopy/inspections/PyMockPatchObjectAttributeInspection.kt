@@ -10,10 +10,7 @@ import com.intellij.codeInspection.LocalInspectionToolSession
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
 import com.jetbrains.python.inspections.PyInspection
-import com.jetbrains.python.psi.PyCallExpression
-import com.jetbrains.python.psi.PyElementVisitor
-import com.jetbrains.python.psi.PyReferenceExpression
-import com.jetbrains.python.psi.PyStringLiteralExpression
+import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.types.TypeEvalContext
 
 class PyMockPatchObjectAttributeInspection : PyInspection() {
@@ -69,7 +66,53 @@ class PyMockPatchObjectAttributeInspection : PyInspection() {
         if (callee.name == "object") {
             val qualifier = callee.qualifier as? PyReferenceExpression
             if (qualifier?.name == "patch") {
-                return true
+                return isFromUnittestMock(qualifier)
+            }
+        }
+        return false
+    }
+
+    private fun isFromUnittestMock(reference: PyReferenceExpression): Boolean {
+        val resolveResults = reference.getReference().multiResolve(false)
+        if (resolveResults.isEmpty()) {
+            return reference.referencedName == "patch"
+        }
+        for (result in resolveResults) {
+            val element = result.element ?: continue
+            if (element is PyFunction && element.name == "patch") {
+                val qualifiedName = element.qualifiedName
+                if (qualifiedName == "unittest.mock.patch" || qualifiedName == "mock.patch" || qualifiedName == "pytest_mock.plugin.MockerFixture.patch") {
+                    return true
+                }
+                // Fallback for tests or cases where FQN is not fully available
+                val containingFile = element.containingFile
+                if (containingFile is PyFile) {
+                    val fileName = containingFile.name
+                    if (fileName == "mock.py" || fileName == "pytest_mock.py") {
+                        return true
+                    }
+                }
+            }
+            if (element is PyTargetExpression && element.name == "patch") {
+                val qualifiedName = element.qualifiedName
+                if (qualifiedName == "unittest.mock.patch" || qualifiedName == "mock.patch") {
+                    return true
+                }
+                // If it's a target expression, it might be an alias like 'from unittest import mock as patch'
+                // or just 'import unittest.mock as patch'
+                val containingFile = element.containingFile
+                if (containingFile is PyFile) {
+                    val fileName = containingFile.name
+                    if (fileName == "mock.py") {
+                        return true
+                    }
+                }
+            }
+            if (element is PyClass && element.name == "patch") {
+                 val qualifiedName = element.qualifiedName
+                 if (qualifiedName == "unittest.mock.patch" || qualifiedName == "mock.patch") {
+                     return true
+                 }
             }
         }
         return false
