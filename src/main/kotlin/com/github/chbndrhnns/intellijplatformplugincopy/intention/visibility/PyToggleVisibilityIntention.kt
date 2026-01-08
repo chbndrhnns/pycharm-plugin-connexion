@@ -42,9 +42,6 @@ abstract class PyToggleVisibilityIntention : IntentionAction, HighPriorityAction
         // Ignore conftest.py
         if (file.name == "conftest.py") return false
 
-        // Ignore test modules
-        if (file.name.startsWith("test_")) return false
-
         // Ignore test functions
         if (symbol is PyFunction && name.startsWith("test_")) return false
 

@@ -47,11 +47,15 @@ class ChangeVisibilityIntentionTest : TestBase() {
         )
     }
 
-    fun testChangeVisibility_NotAvailable_InTestModule() {
-        myFixture.assertIntentionNotAvailable(
+    fun testChangeVisibility_Available_InTestModule_ForNonTestFunction() {
+        myFixture.doIntentionTest(
             "test_foo.py",
             """
             def hel<caret>per():
+                pass
+            """,
+            """
+            def _helper():
                 pass
             """,
             "BetterPy: Change visibility: make private"
