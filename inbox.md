@@ -2,6 +2,8 @@
 
 ## Pending Issues
 
+- [ ] fix: Do not inspect patch methods that do not come from mock module or `MockerFixture` class
+- [ ] fix: Hide overloaded methods from navbar
 - [ ] fix: Only offer jump to test tree node if there is a jump target available, add gutter icon
 - [ ] fix: FP: We are marking directories as missing root prefix when referenced from test. 
 - [ ] fix: Should also offer Wrap: `do(Path("a<caret>bc"))` (253 vs 261?)
@@ -18,6 +20,7 @@
 
 ## Pending Features
 
+- [ ] feat: Class-like hierachy (based on directory structure) for pytest fixtures, check types
 - [ ] feat: Convert bunch of assert statements to dict and vice versa
 - [ ] feat: Go to declaration in new tab
 - [ ] feat: Re-run test with debug logging (add --log-cli-level=DEBUG in temporary run config)
