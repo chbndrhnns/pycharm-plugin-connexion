@@ -2,7 +2,14 @@
 
 ## Pending Issues
 
+- [ ] fix: Parse these pytest lines:
 
+```
+=============================================================================================== short test summary info ================================================================================================
+FAILED tests/mytest.py - AttributeError: module 'src.abc' has no attribute 'MyAttr'
+```
+
+-
 - [ ] fix: Only offer jump to test tree node if there is a jump target available, add gutter icon
 - [ ] fix: FP: We are marking directories as missing root prefix when referenced from test. 
 - [ ] fix: Should also offer Wrap: `do(Path("a<caret>bc"))` (253 vs 261?)
