@@ -2,6 +2,7 @@
 
 ## Pending Issues
 
+- [ ] fix: replace FQN popup should also include declaration site suggestions
 - [ ] fix: replace FQN popup should not display items from test code
 - [ ] fix: replace FQN seems to pick random parts of the dotted reference
 - [ ] fix: Wrap with builtin type callable in these cases:
