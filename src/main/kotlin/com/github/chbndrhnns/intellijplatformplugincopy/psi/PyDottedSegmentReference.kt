@@ -22,6 +22,10 @@ class PyDottedSegmentReference(
         return super.handleElementRename(nameWithoutExt)
     }
 
+    override fun bindToElement(element: PsiElement): PsiElement {
+        return this.element
+    }
+
     override fun isSoft(): Boolean = true
 
     override fun multiResolve(incompleteCode: Boolean): Array<ResolveResult> {
