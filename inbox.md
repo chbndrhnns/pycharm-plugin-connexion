@@ -2,6 +2,7 @@
 
 ## Pending Issues
 
+- [ ] fix: In patch, we should allow references to declarations sites
 - [ ] fix: When sorting navbar items, ignore the async keyword
 - [ ] fix: replace FQN popup should also include declaration site suggestions
 - [ ] fix: replace FQN popup should not display items from test code
