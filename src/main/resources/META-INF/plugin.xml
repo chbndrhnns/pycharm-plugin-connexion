@@ -122,6 +122,9 @@
         <notificationGroup id="BetterPy" displayType="BALLOON" isLogByDefault="true"/>
         <notificationGroup id="BetterPy Notifications" displayType="BALLOON" isLogByDefault="true"/>
 
+        <statusBarWidgetFactory id="BetterPyStatusBarWidget"
+                                implementation="com.github.chbndrhnns.intellijplatformplugincopy.statusbar.BetterPyStatusBarWidgetFactory"/>
+
         <postStartupActivity
                 implementation="com.github.chbndrhnns.intellijplatformplugincopy.startup.PythonVersionStartupActivity"/>
 
@@ -483,6 +486,12 @@
                 class="com.github.chbndrhnns.intellijplatformplugincopy.actions.CopyBuildNumberAction"
                 text="BetterPy: Copy Build Number"
                 description="Copies the current IDE build number to the clipboard">
+            <add-to-group group-id="HelpMenu" anchor="last"/>
+        </action>
+        <action id="com.github.chbndrhnns.intellijplatformplugincopy.actions.CopyDiagnosticDataAction"
+                class="com.github.chbndrhnns.intellijplatformplugincopy.actions.CopyDiagnosticDataAction"
+                text="BetterPy: Copy Diagnostic Data"
+                description="Copies plugin version and IDE build number to the clipboard">
             <add-to-group group-id="HelpMenu" anchor="last"/>
         </action>
         <action id="com.github.chbndrhnns.intellijplatformplugincopy.actions.RebuildClassMembersIndexAction"

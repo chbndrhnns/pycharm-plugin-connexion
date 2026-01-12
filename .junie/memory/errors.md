@@ -1,13 +1,3 @@
-[2026-01-06 23:15] - Updated by Junie - Error analysis
-{
-    "TYPE": "invalid args",
-    "TOOL": "get_file_structure",
-    "ERROR": "Requested file does not exist",
-    "ROOT CAUSE": "Attempted to open non-existent PsiExtensions.kt under util due to wrong path assumption.",
-    "PROJECT NOTE": "The util package currently contains only OwnCodeUtil.kt; no PsiExtensions.kt file exists there.",
-    "NEW INSTRUCTION": "WHEN get_file_structure target is uncertain THEN list directory or search before opening"
-}
-
 [2026-01-06 23:17] - Updated by Junie - Error analysis
 {
     "TYPE": "env/setup",
@@ -762,18 +752,28 @@
 {
     "TYPE": "logic",
     "TOOL": "run_test",
-    "ERROR": "Filter did not match short summary 'FAILED file.py - ...' line",
-    "ROOT CAUSE": "PytestConsoleFilter regex requires '::' node id; it ignores lines with just ' - '.",
-    "PROJECT NOTE": "Update PytestConsoleFilter.kt to accept 'FAILED <path>.py - ' without a node id and highlight from filename start to the ' - ' separator; add a regex branch like ^\\s*(?:FAILED|ERROR)\\s+([^\\s]+\\.py)\\s+-\\s+.",
-    "NEW INSTRUCTION": "WHEN console line starts with 'FAILED <path>.py - ' THEN hyperlink filename up to ' - '"
+    "ERROR": "Filter failed to match short summary 'FAILED file.py - ...'",
+    "ROOT CAUSE": "PytestConsoleFilter regex only handles '::' node IDs after filename, not ' - ' summary format.",
+    "PROJECT NOTE": "Update PytestConsoleFilter.kt to accept ' - ' after <file>.py and create a file hyperlink; tests are in PytestConsoleFilterTest.kt.",
+    "NEW INSTRUCTION": "WHEN pytest line matches '^\\s*(FAILED|ERROR)\\s+[^\\s]+\\.py\\s- ' THEN create file-only hyperlink up to ' - '"
+}
+
+[2026-01-08 23:29] - Updated by Junie - Error analysis
+{
+    "TYPE": "test failure",
+    "TOOL": "run_test",
+    "ERROR": "PytestConsoleFilter didn't match 'FAILED file.py - ...' format",
+    "ROOT CAUSE": "The console filter regex only handles filenames followed by '::', not ' - '.",
+    "PROJECT NOTE": "Update src/main/kotlin/.../testing/PytestConsoleFilter.kt pattern to accept both '::' and ' - '; tests live in src/test/kotlin/.../testing/PytestConsoleFilterTest.kt.",
+    "NEW INSTRUCTION": "WHEN line matches '^\\s*(FAILED|ERROR)\\s+[^\\s]+\\.py\\s- ' THEN create file-only hyperlink"
 }
 
 [2026-01-08 23:29] - Updated by Junie - Error analysis
 {
     "TYPE": "logic",
     "TOOL": "run_test",
-    "ERROR": "No link created for short summary line",
-    "ROOT CAUSE": "PytestConsoleFilter regex only handled filenames followed by '::', not ' - '.",
-    "PROJECT NOTE": "Update PytestConsoleFilter.kt to accept both '::' node-id and ' - ' short summary suffix after '<file>.py'.",
-    "NEW INSTRUCTION": "WHEN pytest line matches 'FAILED .*\\.py - ' THEN hyperlink just the file path segment"
+    "ERROR": "PytestConsoleFilter returned null for short summary line",
+    "ROOT CAUSE": "PytestConsoleFilter regex only matches filenames followed by '::', not the ' - ' short summary format.",
+    "PROJECT NOTE": "Update PytestConsoleFilter.kt to accept both '::' node-id and ' - ' short summary after '<path>.py'; tests are in PytestConsoleFilterTest.testParseShortTestSummaryInfo.",
+    "NEW INSTRUCTION": "WHEN console line matches 'FAILED <path>.py - ' THEN hyperlink only the <path>.py segment"
 }
