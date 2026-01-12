@@ -173,7 +173,7 @@ class PyMockPatchUnresolvedReferenceInspectionTest : TestBase() {
             """
             from unittest.mock import patch
             
-            @patch('other.foo.bar.baz<caret>')
+            @patch("other.foo.bar.baz")
             def test_something(m): pass
         """.trimIndent()
         )
