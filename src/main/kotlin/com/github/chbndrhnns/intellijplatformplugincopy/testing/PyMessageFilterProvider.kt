@@ -11,7 +11,8 @@ class PyMessageFilterProvider : ConsoleFilterProvider {
             return emptyArray()
         }
         return arrayOf(
-            PytestConsoleFilter(project)
+            PytestConsoleFilter(project),
+            PythonClassConsoleFilter(project)
         )
     }
 }
