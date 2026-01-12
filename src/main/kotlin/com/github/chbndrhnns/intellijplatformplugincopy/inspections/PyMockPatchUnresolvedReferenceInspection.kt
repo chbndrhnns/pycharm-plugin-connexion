@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.inspections
 
 import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.JbPopupHost
+import com.github.chbndrhnns.intellijplatformplugincopy.intention.shared.PopupHost
 import com.github.chbndrhnns.intellijplatformplugincopy.psi.PyResolveUtils
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.github.chbndrhnns.intellijplatformplugincopy.util.isOwnCode
@@ -54,6 +55,7 @@ class PyMockPatchUnresolvedReferenceInspection : PyInspection() {
 
                 val segments = targetPath.split('.')
                 var unresolvedSegment: String? = null
+                var suffix = ""
 
                 for (i in segments.indices) {
                     val segment = segments[i]
@@ -63,6 +65,9 @@ class PyMockPatchUnresolvedReferenceInspection : PyInspection() {
 
                     if (resolved.isEmpty()) {
                         unresolvedSegment = segment
+                        if (i < segments.size - 1) {
+                            suffix = "." + segments.subList(i + 1, segments.size).joinToString(".")
+                        }
                         break
                     }
                 }
@@ -71,14 +76,20 @@ class PyMockPatchUnresolvedReferenceInspection : PyInspection() {
                     val candidates = findCandidates(node.project, unresolvedSegment)
                     val importSites = candidates.flatMap { findImportSites(it) }
 
-                    val allCandidates = if (importSites.isNotEmpty()) importSites else candidates
-                    val fqns = allCandidates.mapNotNull { getFQN(it) }.distinct()
+                    val allCandidates = candidates + importSites
+                    val projectFileIndex = ProjectFileIndex.getInstance(node.project)
+                    val filteredCandidates = allCandidates.filter { candidate ->
+                        val file = candidate.containingFile?.virtualFile ?: return@filter true
+                        !projectFileIndex.isInTestSourceContent(file)
+                    }
+
+                    val fqns = filteredCandidates.mapNotNull { getFQN(it) }.distinct()
 
                     if (fqns.isNotEmpty()) {
                         holder.registerProblem(
                             targetArg,
                             "Unresolved reference '$unresolvedSegment' in patch target",
-                            PyMockPatchReplaceWithFQNQuickFix(unresolvedSegment, fqns)
+                            PyMockPatchReplaceWithFQNQuickFix(unresolvedSegment, fqns, suffix)
                         )
                     } else {
                         holder.registerProblem(
@@ -276,7 +287,16 @@ class PyMockPatchUnresolvedReferenceInspection : PyInspection() {
         "Checks if all segments of a mock.patch target resolve and provides a quickfix to use the FQN if a segment doesn't."
 }
 
-class PyMockPatchReplaceWithFQNQuickFix(private val name: String, private val fqns: List<String>) : LocalQuickFix {
+class PyMockPatchReplaceWithFQNQuickFix(
+    private val name: String,
+    private val fqns: List<String>,
+    private val suffix: String
+) : LocalQuickFix {
+
+    companion object {
+        var popupHost: PopupHost? = null
+    }
+
     override fun getName(): String {
         return if (fqns.size == 1) "BetterPy: Replace '$name' with '${fqns[0]}'"
         else "BetterPy: Replace '$name' with FQN..."
@@ -291,7 +311,8 @@ class PyMockPatchReplaceWithFQNQuickFix(private val name: String, private val fq
             applyReplacement(project, element, fqns[0])
         } else {
             val editor = FileEditorManager.getInstance(project).selectedTextEditor ?: return
-            JbPopupHost().showChooser(
+            val host = popupHost ?: JbPopupHost()
+            host.showChooser(
                 editor,
                 "Select FQN for '$name'",
                 fqns,
@@ -306,14 +327,7 @@ class PyMockPatchReplaceWithFQNQuickFix(private val name: String, private val fq
     }
 
     private fun applyReplacement(project: Project, element: PyStringLiteralExpression, fqn: String) {
-        val currentPath = element.stringValue
-        val newPath = if (currentPath.contains('.')) {
-            val suffix = currentPath.substring(currentPath.indexOf('.'))
-            fqn + suffix
-        } else {
-            fqn
-        }
-
+        val newPath = fqn + suffix
         val generator = PyElementGenerator.getInstance(project)
         val newLiteral = generator.createStringLiteralFromString(newPath)
         element.replace(newLiteral)
