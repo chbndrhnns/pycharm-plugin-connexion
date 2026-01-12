@@ -81,12 +81,12 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## In Progress Tasks
 
-- [-] feat: Move: Warn if test exists in target class already
 - [ ] feat: Block list: Do not allow names from typing or collections.abc.
 - [ ] refactor: Performance (spec/performance.md)
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Move: Warn if test exists in target class already
 - [x] fix: replace FQN popup should also include declaration site suggestions
 - [x] fix: replace FQN popup should not display items from test code
 - [x] fix: replace FQN seems to pick random parts of the dotted reference
