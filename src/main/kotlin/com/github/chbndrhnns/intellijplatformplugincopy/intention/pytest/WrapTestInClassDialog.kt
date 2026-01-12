@@ -12,8 +12,10 @@ import javax.swing.*
 
 class WrapTestInClassDialog(
     project: Project,
-    private val suggestedClassName: String,
-    private val existingTestClasses: List<PyClass>
+    suggestedClassName: String,
+    dialogTitle: String = "Wrap Test in Class",
+    private val existingTestClasses: List<PyClass>,
+    private val sourceFunctionName: String? = null
 ) : DialogWrapper(project) {
 
     private val classNameField = JTextField(suggestedClassName)
@@ -22,7 +24,7 @@ class WrapTestInClassDialog(
     private val existingClassComboBox = ComboBox<String>()
 
     init {
-        title = "Wrap Test in Class"
+        title = dialogTitle
         init()
 
         // Setup radio button group
@@ -56,11 +58,8 @@ class WrapTestInClassDialog(
         val panel = JPanel(BorderLayout())
 
         val optionsPanel = JPanel(GridLayout(4, 1))
-
-        // Radio buttons
         optionsPanel.add(createNewClassRadio)
 
-        // Class name field (indented)
         val classNamePanel = JPanel(BorderLayout())
         classNamePanel.add(Box.createHorizontalStrut(20), BorderLayout.WEST)
         val classNameFieldPanel = JPanel(BorderLayout())
@@ -69,7 +68,6 @@ class WrapTestInClassDialog(
         classNamePanel.add(classNameFieldPanel, BorderLayout.CENTER)
         optionsPanel.add(classNamePanel)
 
-        // Add to existing radio
         optionsPanel.add(addToExistingClassRadio)
 
         // Existing class combo (indented)
@@ -91,10 +89,25 @@ class WrapTestInClassDialog(
             if (name.isEmpty()) {
                 return ValidationInfo("Class name cannot be empty", classNameField)
             }
+            if (!name.matches(Regex("^[a-zA-Z_][a-zA-Z0-9_]*$"))) {
+                return ValidationInfo("Class name must be a valid Python identifier", classNameField)
+            }
             // Check for existing class name
             val existingNames = existingTestClasses.mapNotNull { it.name }
             if (name in existingNames) {
                 return ValidationInfo("Class '$name' already exists", classNameField).asWarning()
+            }
+        } else if (addToExistingClassRadio.isSelected) {
+            val selectedIndex = existingClassComboBox.selectedIndex
+            if (selectedIndex >= 0 && selectedIndex < existingTestClasses.size) {
+                val targetClass = existingTestClasses[selectedIndex]
+                val functionName = sourceFunctionName
+                if (functionName != null && targetClass.findMethodByName(functionName, true, null) != null) {
+                    return ValidationInfo(
+                        "Class '${targetClass.name}' already has a method named '$functionName' (or inherits it)",
+                        existingClassComboBox
+                    ).asWarning()
+                }
             }
         }
         return super.doValidate()

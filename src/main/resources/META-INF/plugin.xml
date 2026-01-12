@@ -269,6 +269,16 @@
         </intentionAction>
 
         <intentionAction>
+            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest.WrapTestInClassIntention</className>
+            <category>Test</category>
+        </intentionAction>
+
+        <intentionAction>
+            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest.MoveTestToClassIntention</className>
+            <category>Test</category>
+        </intentionAction>
+
+        <intentionAction>
             <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.abstractmethod.MakeMemberAbstractInAbstractClassIntention</className>
             <category>Abstract methods</category>
         </intentionAction>
@@ -472,6 +482,13 @@
                 class="com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest.WrapTestInClassRefactoringAction"
                 text="BetterPy: Wrap Test in Class..."
                 description="Wraps a module-level pytest test function inside a test class">
+            <add-to-group group-id="RefactoringMenu" anchor="last"/>
+        </action>
+
+        <action id="com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest.MoveTestToClassRefactoringAction"
+                class="com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest.MoveTestToClassRefactoringAction"
+                text="BetterPy: Move Test to Another Class..."
+                description="Moves a test method to another class (new or existing)">
             <add-to-group group-id="RefactoringMenu" anchor="last"/>
         </action>
 

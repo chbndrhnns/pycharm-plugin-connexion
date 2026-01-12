@@ -1,0 +1,4 @@
+class TestAuth:
+    def <spot>test_user_login</spot>(self, username, password):
+        assert username
+        assert password

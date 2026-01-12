@@ -39,6 +39,9 @@ class WrapTestInClassIntention : IntentionAction {
 
         var suggestedClassName = generateClassName(function.name ?: "TestClass")
         val existingTestClasses = findTestClassesInFile(pyFile)
+        val validTargetClasses = existingTestClasses.filter { targetClass ->
+            targetClass.findMethodByName(function.name, true, null) == null
+        }
 
         val existingNames = existingTestClasses.mapNotNull { it.name }.toSet()
         if (suggestedClassName in existingNames) {
@@ -49,7 +52,12 @@ class WrapTestInClassIntention : IntentionAction {
             suggestedClassName = "${suggestedClassName}${index}"
         }
 
-        val dialog = WrapTestInClassDialog(project, suggestedClassName, existingTestClasses)
+        val dialog = WrapTestInClassDialog(
+            project,
+            suggestedClassName,
+            sourceFunctionName = function.name,
+            existingTestClasses = validTargetClasses
+        )
         val dialogResult = if (dialog.isModal) {
             dialog.showAndGet()
         } else {

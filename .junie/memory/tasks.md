@@ -1,23 +1,3 @@
-[2026-01-01 11:16] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "-",
-    "MISSING STEPS": "prepare files for write",
-    "BOTTLENECK": "PSI edits failed due to read-only file status.",
-    "PROJECT NOTE": "Use FileModificationService.preparePsiElementsForWrite(file or elements) before PSI changes.",
-    "NEW INSTRUCTION": "WHEN starting PSI write on file THEN call FileModificationService.preparePsiElementsForWrite(file)"
-}
-
-[2026-01-01 11:19] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "suboptimal",
-    "REDUNDANT STEPS": "submit",
-    "MISSING STEPS": "test interactive mode,scan stacktrace",
-    "BOTTLENECK": "Headless tests missed UI threading issues reproducible only in interactive mode.",
-    "PROJECT NOTE": "For IntelliJ intentions, verify dialogs and action updates occur outside any running or pending write action on EDT.",
-    "NEW INSTRUCTION": "WHEN headless tests pass for UI changes THEN test feature interactively in IDE before submit"
-}
-
 [2026-01-01 11:23] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "near-optimal",
@@ -908,3 +888,12 @@
     "NEW INSTRUCTION": "WHEN code change is applied to parser THEN run tests immediately to validate"
 }
 
+[2026-01-12 19:52] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "search tests",
+    "MISSING STEPS": "-",
+    "BOTTLENECK": "Unnecessary search for tests unrelated to descriptor creation.",
+    "PROJECT NOTE": "Ensure the intentionDescriptions folder name matches the Intention class name exactly.",
+    "NEW INSTRUCTION": "WHEN task mentions missing intention descriptors THEN create intentionDescriptions/<ClassName> with description.html, before.py.template, after.py.template"
+}
