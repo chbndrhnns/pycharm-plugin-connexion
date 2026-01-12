@@ -3,6 +3,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.openapi.ui.ValidationInfo
 import com.jetbrains.python.psi.PyClass
 import com.jetbrains.python.psi.PyFile
 import java.awt.BorderLayout
@@ -82,6 +83,21 @@ class WrapTestInClassDialog(
 
         panel.add(optionsPanel, BorderLayout.CENTER)
         return panel
+    }
+
+    override fun doValidate(): ValidationInfo? {
+        if (createNewClassRadio.isSelected) {
+            val name = classNameField.text.trim()
+            if (name.isEmpty()) {
+                return ValidationInfo("Class name cannot be empty", classNameField)
+            }
+            // Check for existing class name
+            val existingNames = existingTestClasses.mapNotNull { it.name }
+            if (name in existingNames) {
+                return ValidationInfo("Class '$name' already exists", classNameField).asWarning()
+            }
+        }
+        return super.doValidate()
     }
 
     fun getSettings(): WrapTestInClassSettings {

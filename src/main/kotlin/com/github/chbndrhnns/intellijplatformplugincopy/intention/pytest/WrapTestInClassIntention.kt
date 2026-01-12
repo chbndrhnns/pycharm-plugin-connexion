@@ -37,13 +37,18 @@ class WrapTestInClassIntention : IntentionAction {
         val pyFile = file as PyFile
         val function = findTestFunctionAtCaret(editor, pyFile) ?: return
 
-        // Generate suggested class name from function name
-        val suggestedClassName = generateClassName(function.name ?: "TestClass")
-
-        // Find existing test classes in the file
+        var suggestedClassName = generateClassName(function.name ?: "TestClass")
         val existingTestClasses = findTestClassesInFile(pyFile)
 
-        // Show dialog to get user's choice
+        val existingNames = existingTestClasses.mapNotNull { it.name }.toSet()
+        if (suggestedClassName in existingNames) {
+            var index = 1
+            while ("${suggestedClassName}${index}" in existingNames) {
+                index++
+            }
+            suggestedClassName = "${suggestedClassName}${index}"
+        }
+
         val dialog = WrapTestInClassDialog(project, suggestedClassName, existingTestClasses)
         val dialogResult = if (dialog.isModal) {
             dialog.showAndGet()
@@ -68,7 +73,6 @@ class WrapTestInClassIntention : IntentionAction {
                         LanguageLevel.getLatest(), PyClass::class.java, classWithMethodText
                     )
 
-                    // Replace function with class in the file
                     function.replace(testClass)
                 }
 
@@ -79,11 +83,9 @@ class WrapTestInClassIntention : IntentionAction {
                         LanguageLevel.getLatest(), PyFunction::class.java, methodText
                     )
 
-                    // Add method to existing class (append at the end)
                     val statementList = settings.targetClass.statementList
                     statementList.add(method)
 
-                    // Remove the original function
                     function.delete()
                 }
             }
@@ -119,7 +121,6 @@ class WrapTestInClassIntention : IntentionAction {
     }
 
     private fun buildMethodFromFunction(function: PyFunction): String {
-        // Get the function signature
         val parameterList = function.parameterList
         val parameters = parameterList.parameters
 
