@@ -63,4 +63,11 @@ class BetterPyStatusBarWidgetTest : TestBase() {
             widget.isEnvironmentSupported()
         )
     }
+
+    fun testPopupActionsIncludeSettings() {
+        val widget = BetterPyStatusBarWidget(project)
+        val actions = widget.getPopupActions()
+        assertContainsElements(actions, "Settings")
+        assertContainsElements(actions, "Copy Diagnostic Data")
+    }
 }

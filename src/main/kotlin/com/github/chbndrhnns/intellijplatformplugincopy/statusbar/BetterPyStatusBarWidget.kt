@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionUiKind
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DataContext
+import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.ListPopup
@@ -69,15 +70,22 @@ class BetterPyStatusBarWidget(private val project: Project) : StatusBarWidget, S
     }
 
     private fun createPopup(): ListPopup {
-        val step = object : BaseListPopupStep<String>("BetterPy", listOf("Copy Diagnostic Data")) {
+        val step = object : BaseListPopupStep<String>("BetterPy", getPopupActions()) {
             override fun onChosen(selectedValue: String?, finalChoice: Boolean): PopupStep<*>? {
-                if (selectedValue == "Copy Diagnostic Data") {
-                    invokeCopyDiagnosticDataAction()
+                when (selectedValue) {
+                    "Copy Diagnostic Data" -> invokeCopyDiagnosticDataAction()
+                    "Settings" -> invokeShowSettingsAction()
                 }
                 return FINAL_CHOICE
             }
         }
         return JBPopupFactory.getInstance().createListPopup(step)
+    }
+
+    internal fun getPopupActions(): List<String> = listOf("Copy Diagnostic Data", "Settings")
+
+    private fun invokeShowSettingsAction() {
+        ShowSettingsUtil.getInstance().showSettingsDialog(project, "com.github.chbndrhnns.intellijplatformplugincopy.settings")
     }
 
     private fun invokeCopyDiagnosticDataAction() {
