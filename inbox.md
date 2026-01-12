@@ -4,9 +4,6 @@
 
 - [ ] fix: In patch, we should allow references to declarations sites
 - [ ] fix: When sorting navbar items, ignore the async keyword
-- [ ] fix: replace FQN popup should also include declaration site suggestions
-- [ ] fix: replace FQN popup should not display items from test code
-- [ ] fix: replace FQN seems to pick random parts of the dotted reference
 - [ ] fix: Wrap with builtin type callable in these cases:
 
 ```
@@ -90,6 +87,9 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Completed Tasks (newest first)
 
+- [x] fix: replace FQN popup should also include declaration site suggestions
+- [x] fix: replace FQN popup should not display items from test code
+- [x] fix: replace FQN seems to pick random parts of the dotted reference
 - [x] fix: Hide overloaded methods from navbar
 - [x] fix: Parse these pytest lines:
 
