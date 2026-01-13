@@ -1,35 +1,40 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.settings
 
 import com.intellij.openapi.ui.DialogPanel
-import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.dsl.builder.Panel
+import com.intellij.ui.dsl.builder.Row
 import com.intellij.ui.dsl.builder.panel
-import com.intellij.util.ui.JBUI
-import java.awt.BorderLayout
-import javax.swing.JPanel
-import javax.swing.ScrollPaneConstants
 
 /**
- * A wrapper panel that combines a [MaturityFilterPanel] with a dynamically filterable feature list.
- * When filter tags are toggled, the feature list is rebuilt to show only matching features.
+ * Metadata for a feature row to enable filtering without rebuilding the panel.
+ */
+data class RowMetadata(
+    val row: Row,
+    val maturity: FeatureMaturity,
+    val searchableText: String
+)
+
+/**
+ * A DialogPanel that combines a [MaturityFilterPanel] with a dynamically filterable feature list.
+ * When filter tags are toggled, row visibility is updated without rebuilding the panel.
  */
 class FilterableFeaturePanel(
     private val showHidden: Boolean = false,
-    private val contentBuilder: Panel.(visibleMaturities: Set<FeatureMaturity>, searchTerm: String, onLoggingChanged: () -> Unit) -> Unit
-) : JPanel(BorderLayout()) {
+    private val contentBuilder: Panel.(onLoggingChanged: () -> Unit) -> List<RowMetadata>
+) {
 
-    private val contentPanel = JPanel(BorderLayout())
     private var currentMaturities: Set<FeatureMaturity> = if (showHidden) {
         FeatureMaturity.entries.toSet()
     } else {
         setOf(FeatureMaturity.STABLE, FeatureMaturity.INCUBATING, FeatureMaturity.DEPRECATED)
     }
     private var currentSearchTerm: String = ""
+    private var rowMetadata: List<RowMetadata> = emptyList()
 
     private val filterPanel = MaturityFilterPanel(
         onFilterChanged = { maturities ->
             currentMaturities = maturities
-            rebuildContent()
+            applyFilters()
         },
         showHidden = showHidden,
         initialSelection = currentMaturities
@@ -39,46 +44,48 @@ class FilterableFeaturePanel(
         addDocumentListener(object : com.intellij.ui.DocumentAdapter() {
             override fun textChanged(e: javax.swing.event.DocumentEvent) {
                 currentSearchTerm = text.trim()
-                rebuildContent()
+                applyFilters()
             }
         })
     }
 
-    init {
-        border = JBUI.Borders.empty()
+    private val dialogPanel: DialogPanel = panel {
+        row {
+            cell(filterPanel)
+        }.bottomGap(com.intellij.ui.dsl.builder.BottomGap.SMALL)
 
-        val topPanel = JPanel(BorderLayout()).apply {
-            isOpaque = false
-            add(filterPanel, BorderLayout.WEST)
-            add(searchField, BorderLayout.CENTER)
-            border = JBUI.Borders.empty(0, 0, 8, 0)
-        }
+        row {
+            cell(searchField)
+                .resizableColumn()
+                .align(com.intellij.ui.dsl.builder.Align.FILL)
+        }.bottomGap(com.intellij.ui.dsl.builder.BottomGap.SMALL)
 
-        // Add top panel
-        add(topPanel, BorderLayout.NORTH)
-
-        // Add scrollable content area
-        val scrollPane = JBScrollPane(contentPanel).apply {
-            border = JBUI.Borders.empty()
-            horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
-            verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
-        }
-        add(scrollPane, BorderLayout.CENTER)
-
-        // Build initial content
-        rebuildContent()
+        rowMetadata = contentBuilder(::refreshLoggingBadges)
     }
 
-    private fun rebuildContent() {
-        contentPanel.removeAll()
+    init {
+        // Apply initial filter
+        applyFilters()
+    }
 
-        val newPanel = panel {
-            contentBuilder(currentMaturities, currentSearchTerm, ::rebuildContent)
+    private fun applyFilters() {
+        rowMetadata.forEach { metadata ->
+            val matchesMaturity = metadata.maturity in currentMaturities
+            val matchesSearch = currentSearchTerm.isEmpty() ||
+                    metadata.searchableText.contains(currentSearchTerm, ignoreCase = true)
+
+            metadata.row.visible(matchesMaturity && matchesSearch)
         }
 
-        contentPanel.add(newPanel, BorderLayout.NORTH)
-        contentPanel.revalidate()
-        contentPanel.repaint()
+        dialogPanel.revalidate()
+        dialogPanel.repaint()
+    }
+
+    private fun refreshLoggingBadges() {
+        // For now, we'll accept that logging badges won't update dynamically
+        // A full rebuild would break modification tracking
+        // Alternative: we could find and update the badge components directly
+        applyFilters()
     }
 
     /**
@@ -87,17 +94,11 @@ class FilterableFeaturePanel(
     fun getSelectedMaturities(): Set<FeatureMaturity> = currentMaturities
 
     /**
-     * Creates a DialogPanel wrapper for use with BoundConfigurable.
-     * Note: This returns a DialogPanel but the actual content is managed by this FilterableFeaturePanel.
+     * Returns the DialogPanel that contains all form components including filters.
+     * This is needed for BoundConfigurable to properly track modifications.
      */
     fun asDialogPanel(): DialogPanel {
-        return panel {
-            row {
-                cell(this@FilterableFeaturePanel)
-                    .resizableColumn()
-                    .align(com.intellij.ui.dsl.builder.Align.FILL)
-            }.resizableRow()
-        }
+        return dialogPanel
     }
 }
 
@@ -106,7 +107,7 @@ class FilterableFeaturePanel(
  */
 fun createFilterableFeaturePanel(
     showHidden: Boolean = false,
-    contentBuilder: Panel.(visibleMaturities: Set<FeatureMaturity>, searchTerm: String, onLoggingChanged: () -> Unit) -> Unit
+    contentBuilder: Panel.(onLoggingChanged: () -> Unit) -> List<RowMetadata>
 ): FilterableFeaturePanel {
     return FilterableFeaturePanel(showHidden, contentBuilder)
 }

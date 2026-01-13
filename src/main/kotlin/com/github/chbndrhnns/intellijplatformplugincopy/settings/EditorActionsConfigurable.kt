@@ -11,68 +11,220 @@ import com.intellij.openapi.ui.DialogPanel
  */
 class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
     private val registry = FeatureRegistry.instance()
+    private lateinit var stateSnapshot: FeatureStateSnapshot
 
     override fun createPanel(): DialogPanel {
-        return createFilterableFeaturePanel { visibleMaturities, searchTerm, onLoggingChanged ->
+        stateSnapshot = FeatureStateSnapshot.fromRegistry(registry)
+
+        return createFilterableFeaturePanel { onLoggingChanged ->
+            val rows = mutableListOf<RowMetadata>()
+
             // Copy/Clipboard Actions
             group("Copy/Clipboard Actions") {
-                registry.getFeature("copy-package-content")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm, onLoggingChanged = onLoggingChanged) }
-                registry.getFeature("copy-build-number")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm, onLoggingChanged = onLoggingChanged) }
-                registry.getFeature("copy-block-with-dependencies")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm, onLoggingChanged = onLoggingChanged) }
-                registry.getFeature("copy-pytest-node-ids")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm, onLoggingChanged = onLoggingChanged) }
-                registry.getFeature("copy-pytest-node-id-from-editor")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm, onLoggingChanged = onLoggingChanged) }
-                registry.getFeature("copy-fqns")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm, onLoggingChanged = onLoggingChanged) }
-                registry.getFeature("copy-stacktrace")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm, onLoggingChanged = onLoggingChanged) }
+                registry.getFeature("copy-package-content")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("copy-build-number")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("copy-block-with-dependencies")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("copy-pytest-node-ids")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("copy-pytest-node-id-from-editor")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("copy-fqns")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("copy-stacktrace")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
             }
 
             // Refactoring Actions
             group("Refactoring Actions") {
-                registry.getFeature("introduce-parameter-object")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm, onLoggingChanged = onLoggingChanged) }
-                registry.getFeature("inline-parameter-object")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm, onLoggingChanged = onLoggingChanged) }
+                registry.getFeature("introduce-parameter-object")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("inline-parameter-object")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
             }
 
             // Pytest Actions
             group("Pytest Actions") {
-                registry.getFeature("jump-to-pytest-node-in-test-tree")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm, onLoggingChanged = onLoggingChanged) }
-                registry.getFeature("toggle-pytest-skip-from-test-tree")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm, onLoggingChanged = onLoggingChanged) }
+                registry.getFeature("jump-to-pytest-node-in-test-tree")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("toggle-pytest-skip-from-test-tree")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
             }
 
             // Completion & Reference Contributors
             group("Completion & References") {
-                registry.getFeature("return-completion")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm, onLoggingChanged = onLoggingChanged) }
-                registry.getFeature("mock-patch-reference")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm, onLoggingChanged = onLoggingChanged) }
-                registry.getFeature("filter-warnings-reference")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm, onLoggingChanged = onLoggingChanged) }
-                registry.getFeature("pytest-identifier-search-everywhere")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm, onLoggingChanged = onLoggingChanged) }
+                registry.getFeature("return-completion")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("mock-patch-reference")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("filter-warnings-reference")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("pytest-identifier-search-everywhere")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
             }
 
             // Other Editor Features
             group("Other Editor Features") {
-                registry.getFeature("toggle-type-alias")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm, onLoggingChanged = onLoggingChanged) }
-                registry.getFeature("export-symbol-to-target")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm, onLoggingChanged = onLoggingChanged) }
-                registry.getFeature("newtype-typevar-paramspec-rename")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm, onLoggingChanged = onLoggingChanged) }
-                registry.getFeature("type-annotation-usage-filtering")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm, onLoggingChanged = onLoggingChanged) }
-                registry.getFeature("python-message-console-filter")
-                    ?.let { featureRow(it, visibleMaturities = visibleMaturities, searchTerm = searchTerm, onLoggingChanged = onLoggingChanged) }
+                registry.getFeature("toggle-type-alias")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("export-symbol-to-target")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("newtype-typevar-paramspec-rename")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("type-annotation-usage-filtering")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("python-message-console-filter")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
             }
+
+            rows
         }.asDialogPanel()
+    }
+
+    override fun isModified(): Boolean {
+        // Check both snapshot's internal modification tracking and parent's UI tracking
+        val snapshotModified = ::stateSnapshot.isInitialized && stateSnapshot.isModified()
+        val boundModified = super.isModified()
+        return snapshotModified || boundModified
+    }
+
+    override fun apply() {
+        super.apply()
+        if (::stateSnapshot.isInitialized) {
+            stateSnapshot.applyTo(registry)
+            stateSnapshot = stateSnapshot.withNewBaseline()
+            val stateComponent = PluginSettingsState.instance()
+            val stateCopy = stateComponent.state.copy()
+            stateComponent.loadState(stateCopy)
+        }
+    }
+
+    override fun reset() {
+        if (::stateSnapshot.isInitialized) {
+            stateSnapshot.reset()
+            super.reset()
+        }
     }
 }

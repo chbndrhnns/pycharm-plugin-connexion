@@ -115,7 +115,6 @@ class FeatureRegistry {
 
     @Suppress("UNCHECKED_CAST")
     private fun buildFeatureMap(): Map<String, FeatureInfo> {
-        val state = PluginSettingsState.instance().state
         val result = mutableMapOf<String, FeatureInfo>()
 
         PluginSettingsState.State::class.memberProperties.forEach { prop ->
@@ -137,8 +136,15 @@ class FeatureRegistry {
                     since = annotation.since,
                     removeIn = annotation.removeIn,
                     propertyName = prop.name,
-                    getter = { mutableProp.get(state) },
-                    setter = { value -> mutableProp.set(state, value) }
+                    // Always access fresh state instead of capturing it
+                    getter = {
+                        val state = PluginSettingsState.instance().state
+                        mutableProp.get(state)
+                    },
+                    setter = { value ->
+                        val state = PluginSettingsState.instance().state
+                        mutableProp.set(state, value)
+                    }
                 )
             }
         }

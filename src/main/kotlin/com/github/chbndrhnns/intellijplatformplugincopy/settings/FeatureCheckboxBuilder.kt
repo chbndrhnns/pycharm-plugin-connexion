@@ -149,35 +149,32 @@ object FeatureCheckboxBuilder {
      * Creates a row with a feature checkbox, maturity badge, and optional YouTrack links.
      *
      * @param feature The feature info from the registry
+     * @param getter Function to get the current state (defaults to feature.isEnabled)
+     * @param setter Function to set the state (defaults to feature.setEnabled)
      * @param labelOverride Optional custom label (defaults to feature.displayName)
-     * @param visibleMaturities Set of maturity levels to show (if feature's maturity is not in this set, row is hidden)
      * @param onLoggingChanged Optional callback to trigger when logging state changes (for UI refresh)
+     * @return RowMetadata containing the row and filtering information
      */
     fun Panel.featureRow(
         feature: FeatureRegistry.FeatureInfo,
+        getter: (() -> Boolean)? = null,
+        setter: ((Boolean) -> Unit)? = null,
         labelOverride: String? = null,
-        visibleMaturities: Set<FeatureMaturity>? = null,
-        searchTerm: String = "",
         onLoggingChanged: (() -> Unit)? = null
-    ) {
-        // Skip if maturity filtering is active and this feature's maturity is not visible
-        if (visibleMaturities != null && feature.maturity !in visibleMaturities) {
-            return
+    ): RowMetadata {
+        val label = labelOverride ?: feature.displayName
+        val searchableText = buildString {
+            append(label)
+            append(" ")
+            append(feature.description)
         }
 
-        // Skip if search term is active and doesn't match
-        if (searchTerm.isNotEmpty()) {
-            val matchesSearch = feature.displayName.contains(searchTerm, ignoreCase = true) ||
-                    feature.description.contains(searchTerm, ignoreCase = true) ||
-                    (labelOverride?.contains(searchTerm, ignoreCase = true) ?: false)
-            if (!matchesSearch) return
-        }
+        val actualGetter = getter ?: feature::isEnabled
+        val actualSetter = setter ?: feature::setEnabled
 
-        row {
-            val label = labelOverride ?: feature.displayName
-
+        val row = row {
             checkBox(label)
-                .bindSelected(feature::isEnabled, feature::setEnabled)
+                .bindSelected(actualGetter, actualSetter)
                 .apply {
                     component.addMouseListener(object : MouseAdapter() {
                         override fun mousePressed(e: MouseEvent) {
@@ -238,81 +235,12 @@ object FeatureCheckboxBuilder {
                 cell(createYouTrackLinks(feature.youtrackIssues))
             }
         }
-    }
 
-    /**
-     * Creates feature rows for all features in a category.
-     *
-     * @param category The category to filter features by
-     * @param includeHidden Whether to include hidden features (default: false)
-     * @param visibleMaturities Set of maturity levels to show (null means show all non-hidden)
-     * @param onLoggingChanged Optional callback to trigger when logging state changes
-     */
-    fun Panel.featureRowsForCategory(
-        category: FeatureCategory,
-        includeHidden: Boolean = false,
-        visibleMaturities: Set<FeatureMaturity>? = null,
-        onLoggingChanged: (() -> Unit)? = null
-    ) {
-        val registry = FeatureRegistry.instance()
-        val features = registry.getFeaturesByCategory(category)
-            .filter { includeHidden || it.maturity != FeatureMaturity.HIDDEN }
-            .sortedBy { it.displayName }
-
-        features.forEach { feature ->
-            featureRow(feature, visibleMaturities = visibleMaturities, onLoggingChanged = onLoggingChanged)
-        }
-    }
-
-    /**
-     * Creates a collapsible group for a feature category.
-     *
-     * @param category The category to create a group for
-     * @param includeHidden Whether to include hidden features (default: false)
-     * @param initiallyExpanded Whether the group should be expanded by default (default: true)
-     * @param visibleMaturities Set of maturity levels to show (null means show all non-hidden)
-     * @param onLoggingChanged Optional callback to trigger when logging state changes
-     */
-    fun Panel.featureCategoryGroup(
-        category: FeatureCategory,
-        includeHidden: Boolean = false,
-        initiallyExpanded: Boolean = true,
-        visibleMaturities: Set<FeatureMaturity>? = null,
-        onLoggingChanged: (() -> Unit)? = null
-    ) {
-        val registry = FeatureRegistry.instance()
-        val features = registry.getFeaturesByCategory(category)
-            .filter { includeHidden || it.maturity != FeatureMaturity.HIDDEN }
-
-        if (features.isEmpty()) return
-
-        collapsibleGroup(category.displayName, initiallyExpanded) {
-            featureRowsForCategory(category, includeHidden, visibleMaturities, onLoggingChanged)
-        }
-    }
-
-    /**
-     * Creates a panel with all visible features grouped by category.
-     *
-     * @param categories The categories to include (defaults to all categories)
-     * @param includeHidden Whether to include hidden features (default: false)
-     * @param visibleMaturities Set of maturity levels to show (null means show all non-hidden)
-     * @param onLoggingChanged Optional callback to trigger when logging state changes
-     */
-    fun Panel.allFeaturesByCategory(
-        categories: List<FeatureCategory> = FeatureCategory.entries,
-        includeHidden: Boolean = false,
-        visibleMaturities: Set<FeatureMaturity>? = null,
-        onLoggingChanged: (() -> Unit)? = null
-    ) {
-        categories.forEach { category ->
-            featureCategoryGroup(
-                category,
-                includeHidden,
-                visibleMaturities = visibleMaturities,
-                onLoggingChanged = onLoggingChanged
-            )
-        }
+        return RowMetadata(
+            row = row,
+            maturity = feature.maturity,
+            searchableText = searchableText
+        )
     }
 
     private fun createYouTrackLinks(issues: List<String>): ActionLink {

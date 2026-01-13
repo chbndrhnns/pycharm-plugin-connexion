@@ -1,14 +1,15 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.settings
 
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.FeatureCheckboxBuilder.featureRow
 import com.intellij.openapi.extensions.BaseExtensionPointName
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.ui.DialogPanel
-import com.intellij.ui.dsl.builder.bindSelected
 
 class ImportsProjectViewConfigurable : BoundConfigurable("Imports & Project View"), Configurable.WithEpDependencies {
-    private val settings = PluginSettingsState.instance().state
+    private val registry = FeatureRegistry.instance()
+    private lateinit var stateSnapshot: FeatureStateSnapshot
 
     override fun getDependencies(): Collection<BaseExtensionPointName<*>> {
         return listOf(
@@ -19,39 +20,74 @@ class ImportsProjectViewConfigurable : BoundConfigurable("Imports & Project View
     }
 
     override fun createPanel(): DialogPanel {
-        return createFilterableFeaturePanel { _, searchTerm, _ ->
+        stateSnapshot = FeatureStateSnapshot.fromRegistry(registry)
+
+        return createFilterableFeaturePanel { onLoggingChanged ->
+            val rows = mutableListOf<RowMetadata>()
+
             group("Imports") {
-                row {
-                    val label = "‘Restore Source Root Prefix’ in imports"
-                    if (searchTerm.isEmpty() || label.contains(searchTerm, ignoreCase = true)) {
-                        checkBox(label)
-                            .bindSelected(settings::enableRestoreSourceRootPrefix)
-                    }
+                registry.getFeature("restore-source-root-prefix")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
                 }
-                row {
-                    val label = "‘Prefer relative imports’ in auto-import"
-                    if (searchTerm.isEmpty() || label.contains(searchTerm, ignoreCase = true)) {
-                        checkBox(label)
-                            .bindSelected(settings::enableRelativeImportPreference)
-                    }
+                registry.getFeature("relative-import-preference")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
                 }
-                row {
-                    val label = "Hide transient dependency imports (only show direct dependencies)"
-                    if (searchTerm.isEmpty() || label.contains(searchTerm, ignoreCase = true)) {
-                        checkBox(label)
-                            .bindSelected(settings::enableHideTransientImports)
-                    }
+                registry.getFeature("hide-transient-imports")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
                 }
             }
             group("Project View") {
-                row {
-                    val label = "‘Show Private Members’ filter in Structure View"
-                    if (searchTerm.isEmpty() || label.contains(searchTerm, ignoreCase = true)) {
-                        checkBox(label)
-                            .bindSelected(settings::enableStructureViewPrivateMembersFilter)
-                    }
+                registry.getFeature("structure-view-private-members-filter")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
                 }
             }
+
+            rows
         }.asDialogPanel()
+    }
+
+    override fun isModified(): Boolean {
+        // Check both snapshot's internal modification tracking and parent's UI tracking
+        val snapshotModified = ::stateSnapshot.isInitialized && stateSnapshot.isModified()
+        val boundModified = super.isModified()
+        return snapshotModified || boundModified
+    }
+
+    override fun apply() {
+        super.apply()
+        if (::stateSnapshot.isInitialized) {
+            stateSnapshot.applyTo(registry)
+            stateSnapshot = stateSnapshot.withNewBaseline()
+            val stateComponent = PluginSettingsState.instance()
+            val stateCopy = stateComponent.state.copy()
+            stateComponent.loadState(stateCopy)
+        }
+    }
+
+    override fun reset() {
+        if (::stateSnapshot.isInitialized) {
+            stateSnapshot.reset()
+            super.reset()
+        }
     }
 }

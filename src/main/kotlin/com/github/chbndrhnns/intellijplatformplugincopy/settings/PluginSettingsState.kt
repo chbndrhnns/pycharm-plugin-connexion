@@ -556,6 +556,7 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
     private var myState = State()
 
     override fun getState(): State = myState
+
     override fun loadState(state: State) {
         myState = state
     }

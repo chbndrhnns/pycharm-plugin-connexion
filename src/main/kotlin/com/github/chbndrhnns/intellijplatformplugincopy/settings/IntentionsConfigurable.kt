@@ -10,295 +10,313 @@ import com.intellij.openapi.ui.DialogPanel
  * Settings configurable for intention-related features.
  * Uses [FeatureRegistry] to dynamically build the UI with maturity indicators and YouTrack links.
  * Includes a maturity filter panel at the top to filter features by status.
+ *
+ * Implements proper copy-on-edit state management:
+ * - UI binds to a temporary state snapshot
+ * - Changes are not persisted until Apply is clicked
+ * - Reset restores the original persistent state
+ * - Cancel discards all changes
  */
 class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.WithEpDependencies {
     private val registry = FeatureRegistry.instance()
+    private lateinit var stateSnapshot: FeatureStateSnapshot
 
     override fun getDependencies(): Collection<BaseExtensionPointName<*>> {
         return emptyList()
     }
 
     override fun createPanel(): DialogPanel {
-        return createFilterableFeaturePanel { visibleMaturities, searchTerm, onLoggingChanged ->
+        // Create snapshot of current persistent state
+        stateSnapshot = FeatureStateSnapshot.fromRegistry(registry)
+
+        return createFilterableFeaturePanel { onLoggingChanged ->
+            val rows = mutableListOf<RowMetadata>()
+
             // Type Wrapping/Unwrapping
             group("Type Wrapping/Unwrapping") {
-                registry.getFeature("wrap-with-expected-type")
-                    ?.let {
-                        featureRow(
-                            it,
-                            visibleMaturities = visibleMaturities,
-                            searchTerm = searchTerm,
-                            onLoggingChanged = onLoggingChanged
-                        )
-                    }
-                registry.getFeature("wrap-items-with-expected-type")
-                    ?.let {
-                        featureRow(
-                            it,
-                            visibleMaturities = visibleMaturities,
-                            searchTerm = searchTerm,
-                            onLoggingChanged = onLoggingChanged
-                        )
-                    }
-                registry.getFeature("unwrap-to-expected-type")
-                    ?.let {
-                        featureRow(
-                            it,
-                            visibleMaturities = visibleMaturities,
-                            searchTerm = searchTerm,
-                            onLoggingChanged = onLoggingChanged
-                        )
-                    }
-                registry.getFeature("unwrap-items-to-expected-type")
-                    ?.let {
-                        featureRow(
-                            it,
-                            visibleMaturities = visibleMaturities,
-                            searchTerm = searchTerm,
-                            onLoggingChanged = onLoggingChanged
-                        )
-                    }
-                registry.getFeature("introduce-custom-type-from-stdlib")
-                    ?.let {
-                        featureRow(
-                            it,
-                            visibleMaturities = visibleMaturities,
-                            searchTerm = searchTerm,
-                            onLoggingChanged = onLoggingChanged
-                        )
-                    }
+                registry.getFeature("wrap-with-expected-type")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("wrap-items-with-expected-type")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("unwrap-to-expected-type")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("unwrap-items-to-expected-type")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("introduce-custom-type-from-stdlib")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
             }
 
             // Parameter & Argument
             group("Parameter & Argument") {
-                registry.getFeature("populate-arguments")
-                    ?.let {
-                        featureRow(
-                            it,
-                            visibleMaturities = visibleMaturities,
-                            searchTerm = searchTerm,
-                            onLoggingChanged = onLoggingChanged
-                        )
-                    }
-                registry.getFeature("make-parameter-optional")
-                    ?.let {
-                        featureRow(
-                            it,
-                            visibleMaturities = visibleMaturities,
-                            searchTerm = searchTerm,
-                            onLoggingChanged = onLoggingChanged
-                        )
-                    }
-                registry.getFeature("make-parameter-mandatory")
-                    ?.let {
-                        featureRow(
-                            it,
-                            visibleMaturities = visibleMaturities,
-                            searchTerm = searchTerm,
-                            onLoggingChanged = onLoggingChanged
-                        )
-                    }
-                registry.getFeature("create-local-variable")
-                    ?.let {
-                        featureRow(
-                            it,
-                            visibleMaturities = visibleMaturities,
-                            searchTerm = searchTerm,
-                            onLoggingChanged = onLoggingChanged
-                        )
-                    }
+                registry.getFeature("populate-arguments")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("make-parameter-optional")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("make-parameter-mandatory")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("create-local-variable")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
             }
 
             // Code Structure
             group("Code Structure") {
-                registry.getFeature("dict-access")
-                    ?.let {
-                        featureRow(
-                            it,
-                            visibleMaturities = visibleMaturities,
-                            searchTerm = searchTerm,
-                            onLoggingChanged = onLoggingChanged
-                        )
-                    }
-                registry.getFeature("change-visibility")
-                    ?.let {
-                        featureRow(
-                            it,
-                            visibleMaturities = visibleMaturities,
-                            searchTerm = searchTerm,
-                            onLoggingChanged = onLoggingChanged
-                        )
-                    }
-                registry.getFeature("unexport-symbol")
-                    ?.let {
-                        featureRow(
-                            it,
-                            visibleMaturities = visibleMaturities,
-                            searchTerm = searchTerm,
-                            onLoggingChanged = onLoggingChanged
-                        )
-                    }
-                registry.getFeature("callable-to-protocol")
-                    ?.let {
-                        featureRow(
-                            it,
-                            visibleMaturities = visibleMaturities,
-                            searchTerm = searchTerm,
-                            onLoggingChanged = onLoggingChanged
-                        )
-                    }
-                registry.getFeature("add-exception-capture")
-                    ?.let {
-                        featureRow(
-                            it,
-                            visibleMaturities = visibleMaturities,
-                            searchTerm = searchTerm,
-                            onLoggingChanged = onLoggingChanged
-                        )
-                    }
-                registry.getFeature("wrap-exceptions-with-parentheses")
-                    ?.let {
-                        featureRow(
-                            it,
-                            visibleMaturities = visibleMaturities,
-                            searchTerm = searchTerm,
-                            onLoggingChanged = onLoggingChanged
-                        )
-                    }
-                registry.getFeature("strip-signature-type-annotations")
-                    ?.let {
-                        featureRow(
-                            it,
-                            visibleMaturities = visibleMaturities,
-                            searchTerm = searchTerm,
-                            onLoggingChanged = onLoggingChanged
-                        )
-                    }
-                registry.getFeature("toggle-type-alias")
-                    ?.let {
-                        featureRow(
-                            it,
-                            visibleMaturities = visibleMaturities,
-                            searchTerm = searchTerm,
-                            onLoggingChanged = onLoggingChanged
-                        )
-                    }
-                registry.getFeature("newtype-typevar-paramspec-rename")
-                    ?.let {
-                        featureRow(
-                            it,
-                            visibleMaturities = visibleMaturities,
-                            searchTerm = searchTerm,
-                            onLoggingChanged = onLoggingChanged
-                        )
-                    }
+                registry.getFeature("dict-access")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("change-visibility")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("unexport-symbol")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("callable-to-protocol")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("add-exception-capture")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("wrap-exceptions-with-parentheses")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("strip-signature-type-annotations")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("toggle-type-alias")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("newtype-typevar-paramspec-rename")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
             }
 
             // Abstract Methods
             group("Abstract Methods") {
-                registry.getFeature("implement-abstract-method-in-child-classes")
-                    ?.let {
-                        featureRow(
-                            it,
-                            visibleMaturities = visibleMaturities,
-                            searchTerm = searchTerm,
-                            onLoggingChanged = onLoggingChanged
-                        )
-                    }
-                registry.getFeature("make-member-abstract-in-abstract-class")
-                    ?.let {
-                        featureRow(
-                            it,
-                            visibleMaturities = visibleMaturities,
-                            searchTerm = searchTerm,
-                            onLoggingChanged = onLoggingChanged
-                        )
-                    }
+                registry.getFeature("implement-abstract-method-in-child-classes")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("make-member-abstract-in-abstract-class")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
             }
 
             // Pytest
             group("Pytest") {
-                registry.getFeature("toggle-pytest-skip")
-                    ?.let {
-                        featureRow(
-                            it,
-                            visibleMaturities = visibleMaturities,
-                            searchTerm = searchTerm,
-                            onLoggingChanged = onLoggingChanged
-                        )
-                    }
-                registry.getFeature("parametrize-pytest-test")
-                    ?.let {
-                        featureRow(
-                            it,
-                            visibleMaturities = visibleMaturities,
-                            searchTerm = searchTerm,
-                            onLoggingChanged = onLoggingChanged
-                        )
-                    }
-                registry.getFeature("convert-pytest-param")
-                    ?.let {
-                        featureRow(
-                            it,
-                            visibleMaturities = visibleMaturities,
-                            searchTerm = searchTerm,
-                            onLoggingChanged = onLoggingChanged
-                        )
-                    }
-                registry.getFeature("mock-type-provider")
-                    ?.let {
-                        featureRow(
-                            it,
-                            visibleMaturities = visibleMaturities,
-                            searchTerm = searchTerm,
-                            onLoggingChanged = onLoggingChanged
-                        )
-                    }
-                registry.getFeature("wrap-test-in-class")
-                    ?.let {
-                        featureRow(
-                            it,
-                            visibleMaturities = visibleMaturities,
-                            searchTerm = searchTerm,
-                            onLoggingChanged = onLoggingChanged
-                        )
-                    }
+                registry.getFeature("toggle-pytest-skip")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("parametrize-pytest-test")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("convert-pytest-param")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("mock-type-provider")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("wrap-test-in-class")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
             }
 
             // Filters & Suppressors
             group("Filters & Suppressors") {
-                registry.getFeature("suppress-signature-change-intention")
-                    ?.let {
-                        featureRow(
-                            it,
-                            visibleMaturities = visibleMaturities,
-                            searchTerm = searchTerm,
-                            onLoggingChanged = onLoggingChanged
-                        )
-                    }
-                registry.getFeature("rename-to-self-filter")
-                    ?.let {
-                        featureRow(
-                            it,
-                            visibleMaturities = visibleMaturities,
-                            searchTerm = searchTerm,
-                            onLoggingChanged = onLoggingChanged
-                        )
-                    }
+                registry.getFeature("suppress-signature-change-intention")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
+                registry.getFeature("rename-to-self-filter")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
             }
 
             // Other
             group("Other") {
-                registry.getFeature("package-run-configuration")
-                    ?.let {
-                        featureRow(
-                            it,
-                            visibleMaturities = visibleMaturities,
-                            searchTerm = searchTerm,
-                            onLoggingChanged = onLoggingChanged
-                        )
-                    }
+                registry.getFeature("package-run-configuration")?.let { feature ->
+                    rows.add(featureRow(
+                        feature,
+                        getter = { stateSnapshot.isEnabled(feature.id) },
+                        setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                        onLoggingChanged = onLoggingChanged
+                    ))
+                }
             }
+
+            rows
         }.asDialogPanel()
+    }
+
+    override fun isModified(): Boolean {
+        // We need to check both:
+        // 1. Our snapshot's internal modification tracking
+        // 2. The parent BoundConfigurable's modification tracking (for UI changes)
+        val snapshotModified = ::stateSnapshot.isInitialized && stateSnapshot.isModified()
+        val boundModified = super.isModified()
+        return snapshotModified || boundModified
+    }
+
+    override fun apply() {
+        // First let BoundConfigurable handle any UI-bound components
+        super.apply()
+
+        if (::stateSnapshot.isInitialized) {
+            stateSnapshot.applyTo(registry)
+            stateSnapshot = stateSnapshot.withNewBaseline()
+
+            // Force persistence by creating a new state object
+            // IntelliJ's PersistentStateComponent detects changes by object reference
+            val stateComponent = PluginSettingsState.instance()
+            val stateCopy = stateComponent.state.copy()
+            stateComponent.loadState(stateCopy)
+        }
+    }
+
+    override fun reset() {
+        if (::stateSnapshot.isInitialized) {
+            stateSnapshot.reset()
+            super.reset()
+        }
     }
 }
