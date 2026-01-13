@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.statusbar
 
 import com.github.chbndrhnns.intellijplatformplugincopy.python.PythonVersionGuard
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsConfigurable
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionUiKind
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -84,8 +85,8 @@ class BetterPyStatusBarWidget(private val project: Project) : StatusBarWidget, S
 
     internal fun getPopupActions(): List<String> = listOf("Copy Diagnostic Data", "Settings")
 
-    private fun invokeShowSettingsAction() {
-        ShowSettingsUtil.getInstance().showSettingsDialog(project, "com.github.chbndrhnns.intellijplatformplugincopy.settings")
+    internal fun invokeShowSettingsAction(showSettingsUtil: ShowSettingsUtil = ShowSettingsUtil.getInstance()) {
+        showSettingsUtil.showSettingsDialog(project, PluginSettingsConfigurable::class.java)
     }
 
     private fun invokeCopyDiagnosticDataAction() {

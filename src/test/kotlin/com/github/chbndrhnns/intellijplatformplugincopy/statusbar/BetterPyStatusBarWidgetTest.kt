@@ -1,7 +1,15 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.statusbar
 
 import com.github.chbndrhnns.intellijplatformplugincopy.python.PythonVersionGuard
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsConfigurable
+import com.intellij.openapi.options.Configurable
+import com.intellij.openapi.options.ConfigurableGroup
+import com.intellij.openapi.options.ShowSettingsUtil
+import com.intellij.openapi.project.Project
 import fixtures.TestBase
+import java.awt.Component
+import java.util.function.Consumer
+import java.util.function.Predicate
 
 class BetterPyStatusBarWidgetTest : TestBase() {
 
@@ -69,5 +77,90 @@ class BetterPyStatusBarWidgetTest : TestBase() {
         val actions = widget.getPopupActions()
         assertContainsElements(actions, "Settings")
         assertContainsElements(actions, "Copy Diagnostic Data")
+    }
+
+    fun testInvokeShowSettingsActionOpensPluginConfigurable() {
+        val fakeShowSettingsUtil = FakeShowSettingsUtil()
+
+        val widget = BetterPyStatusBarWidget(project)
+        widget.invokeShowSettingsAction(fakeShowSettingsUtil)
+
+        assertEquals("Should open settings for current project", project, fakeShowSettingsUtil.lastProject)
+        assertEquals(
+            "Should open PluginSettingsConfigurable",
+            PluginSettingsConfigurable::class.java,
+            fakeShowSettingsUtil.lastConfigurableClass
+        )
+    }
+
+    class FakeShowSettingsUtil : ShowSettingsUtil() {
+        var lastProject: Project? = null
+        var lastConfigurableClass: Class<*>? = null
+
+        override fun <T : Configurable> showSettingsDialog(project: Project?, configurableClass: Class<T>) {
+            lastProject = project
+            lastConfigurableClass = configurableClass
+        }
+
+        override fun showSettingsDialog(project: Project, vararg groups: ConfigurableGroup) {}
+        override fun showSettingsDialog(project: Project?, nameToSelect: String) {}
+        override fun showSettingsDialog(project: Project, configurable: Configurable?) {}
+        override fun <T : Configurable> showSettingsDialog(
+            project: Project?,
+            configurableClass: Class<T>,
+            consumer: Consumer<in T>?
+        ) {
+        }
+
+        override fun showSettingsDialog(
+            project: Project?,
+            predicate: Predicate<in Configurable>,
+            consumer: Consumer<in Configurable>?
+        ) {
+        }
+
+        override fun editConfigurable(project: Project, configurable: Configurable): Boolean = false
+        override fun editConfigurable(
+            project: Project?,
+            configurable: Configurable,
+            advancedSettings: Runnable?
+        ): Boolean = false
+
+        override fun <T : Configurable> editConfigurable(
+            project: Project?,
+            configurable: T,
+            consumer: Consumer<in T>
+        ): Boolean = false
+
+        override fun editConfigurable(component: Component?, configurable: Configurable): Boolean = false
+        override fun editConfigurable(component: Component?, nameToSelect: String): Boolean = false
+        override fun editConfigurable(
+            component: Component?,
+            nameToSelect: String,
+            advancedSettings: Runnable?
+        ): Boolean = false
+
+        override fun editConfigurable(
+            component: Component,
+            configurable: Configurable,
+            advancedSettings: Runnable
+        ): Boolean = false
+
+        override fun editConfigurable(project: Project, nameToSelect: String, configurable: Configurable): Boolean =
+            false
+
+        override fun editConfigurable(
+            project: Project,
+            nameToSelect: String,
+            configurable: Configurable,
+            showApplyButton: Boolean
+        ): Boolean = false
+
+        override fun editConfigurable(component: Component, nameToSelect: String, configurable: Configurable): Boolean =
+            false
+
+        override fun closeSettings(project: Project, component: Component) {}
+
+        override suspend fun showSettingsDialog(project: Project, groups: List<ConfigurableGroup>) {}
     }
 }
