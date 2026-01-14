@@ -47,7 +47,6 @@ do(frozenset({<caret>1, 2, 3}))
 - [ ] feat: Discover if pydantic v2 is installed and show parameter object option only in this case
 - [ ] feat: If callable is expected, complete without parens
 - [ ] feat: Transform between lambda, function, partial
-- [ ] feat: Render quick doc for pydantic/dataclass, showing inherited members, as well
 - [ ] feat: In case of unexpected type, offer cast to the expected type
 - [S] feat: Turn dict into dataclass/pydantic model (spec/upgrade-dict.md)
 - [ ] feat: Convert parametrized test to multiple unparametrized tests
@@ -87,6 +86,7 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Render quick doc for pydantic/dataclass, showing inherited members, as well
 - [x] feat: Move: Warn if test exists in target class already
 - [x] fix: replace FQN popup should also include declaration site suggestions
 - [x] fix: replace FQN popup should not display items from test code
