@@ -47,7 +47,7 @@ class LoggingBadgeTest : TestBase() {
 
         // Build a panel with the feature row
         val panel = panel {
-            featureRow(feature, onLoggingChanged = onLoggingChanged)
+            featureRow(feature, { false }, {}, null, onLoggingChanged)
         }
 
         // Verify no logging badge exists initially
@@ -60,7 +60,7 @@ class LoggingBadgeTest : TestBase() {
 
         // Rebuild the panel (simulating what happens in the real UI)
         val rebuiltPanel = panel {
-            featureRow(feature, onLoggingChanged = onLoggingChanged)
+            featureRow(feature, { false }, {}, null, onLoggingChanged)
         }
 
         // Verify logging badge now exists
@@ -77,7 +77,7 @@ class LoggingBadgeTest : TestBase() {
 
         // Rebuild the panel again
         val finalPanel = panel {
-            featureRow(feature, onLoggingChanged = onLoggingChanged)
+            featureRow(feature, { false }, {}, null, onLoggingChanged)
         }
 
         // Verify logging badge is gone
@@ -94,7 +94,7 @@ class LoggingBadgeTest : TestBase() {
 
         // Build a panel with this feature
         val panel = panel {
-            featureRow(featureWithoutLogging)
+            featureRow(featureWithoutLogging, { false }, {})
         }
 
         // Verify no logging badge exists (even if we somehow tried to enable logging)
