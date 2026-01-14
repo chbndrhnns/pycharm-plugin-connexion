@@ -73,6 +73,7 @@ abstract class TestBase : MyPlatformTestCase() {
                 enablePyTestFailedLineInspection = true,
                 enableRenameToSelfFilter = true,
                 enablePyGotoTargetPresentation = true,
+                enableEnhancedDataclassQuickInfo = true,
                 defaultParameterObjectBaseType = "dataclass",
             ),
         )

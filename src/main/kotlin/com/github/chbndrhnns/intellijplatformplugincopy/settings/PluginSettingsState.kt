@@ -530,6 +530,15 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         )
         var enableNewTypeTypeVarParamSpecRename: Boolean = true,
 
+        // ---- Documentation ----
+        @Feature(
+            id = "enhanced-dataclass-quick-info",
+            displayName = "Enhanced Dataclass Quick Info",
+            description = "Shows fields and inheritance details in Quick Documentation for dataclasses and Pydantic models",
+            category = FeatureCategory.DOCUMENTATION
+        )
+        var enableEnhancedDataclassQuickInfo: Boolean = true,
+
         @Feature(
             id = "package-run-configuration",
             displayName = "Package run configuration",

@@ -426,6 +426,10 @@
 
         <daemon.intentionActionFilter
                 implementation="com.github.chbndrhnns.intellijplatformplugincopy.intention.suppressor.RenameToSelfFilter"/>
+
+        <lang.documentationProvider language="Python"
+                                    implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.documentation.DataclassQuickInfoProvider"
+                                    order="first"/>
     </extensions>
 
     <extensions defaultExtensionNs="Pythonid">
@@ -564,6 +568,9 @@
         </action>
     </actions>
     <extensions defaultExtensionNs="Pythonid">
+        <pythonDocumentationQuickInfoProvider
+            implementation="com.github.chbndrhnns.intellijplatformplugincopy.documentation.DataclassQuickInfoProvider"
+            order="first"/>
         <typeProvider implementation="com.github.chbndrhnns.intellijplatformplugincopy.type.PyMockTypeProvider"
                       order="first"/>
         <typeCheckerExtension implementation="com.github.chbndrhnns.intellijplatformplugincopy.type.PyMockTypeCheckerExtension"/>

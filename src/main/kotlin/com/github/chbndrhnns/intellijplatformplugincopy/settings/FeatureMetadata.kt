@@ -30,6 +30,7 @@ enum class FeatureCategory(val displayName: String) {
     NAVIGATION("Navigation"),
     FILTERS("Filters & Suppressors"),
     CONNEXION("Connexion"),
+    DOCUMENTATION("Documentation"),
     OTHER("Other")
 }
 
