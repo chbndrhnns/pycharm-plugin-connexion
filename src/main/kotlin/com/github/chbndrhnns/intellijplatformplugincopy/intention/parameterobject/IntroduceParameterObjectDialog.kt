@@ -3,6 +3,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobje
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.CheckBoxList
 import com.intellij.ui.components.JBScrollPane
 import com.jetbrains.python.psi.PyNamedParameter
@@ -10,7 +11,7 @@ import java.awt.BorderLayout
 import javax.swing.*
 
 class IntroduceParameterObjectDialog(
-    project: Project,
+    private val project: Project,
     parameters: List<PyNamedParameter>,
     defaultClassName: String
 ) : DialogWrapper(project) {
@@ -22,6 +23,12 @@ class IntroduceParameterObjectDialog(
     private val frozenCheckBox = JCheckBox("Frozen", true)
     private val slotsCheckBox = JCheckBox("Slots", true)
     private val kwOnlyCheckBox = JCheckBox("kw_only", true)
+
+    private val validator = if (parameters.isNotEmpty()) {
+        IntroduceParameterObjectValidator(project, parameters.first())
+    } else {
+        null
+    }
 
     init {
         title = "Introduce Parameter Object"
@@ -110,6 +117,24 @@ class IntroduceParameterObjectDialog(
     }
 
     override fun getPreferredFocusedComponent(): JComponent = classNameField
+
+    override fun doValidate(): ValidationInfo? {
+        if (validator == null) return null
+
+        val selected = mutableListOf<PyNamedParameter>()
+        for (i in 0 until checkBoxList.itemsCount) {
+            val item = checkBoxList.getItemAt(i)
+            if (checkBoxList.isItemSelected(i) && item != null) {
+                selected.add(item)
+            }
+        }
+
+        return validator.validate(
+            className = classNameField.text,
+            parameterName = parameterNameField.text,
+            selectedParameters = selected
+        )
+    }
 
     fun getSettings(): IntroduceParameterObjectSettings {
         val selected = mutableListOf<PyNamedParameter>()
