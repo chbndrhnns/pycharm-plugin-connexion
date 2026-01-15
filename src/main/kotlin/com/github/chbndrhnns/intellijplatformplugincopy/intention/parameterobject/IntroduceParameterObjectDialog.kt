@@ -2,6 +2,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobje
 
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.CheckBoxList
@@ -19,7 +20,7 @@ class IntroduceParameterObjectDialog(
     private val checkBoxList = CheckBoxList<PyNamedParameter>()
     private val classNameField = JTextField(defaultClassName)
     private val parameterNameField = JTextField(IntroduceParameterObjectSettings.DEFAULT_PARAMETER_NAME)
-    private val baseTypeComboBox = JComboBox(DefaultComboBoxModel(ParameterObjectBaseType.entries.toTypedArray()))
+    private val baseTypeComboBox = ComboBox(DefaultComboBoxModel(ParameterObjectBaseType.entries.toTypedArray()))
     private val frozenCheckBox = JCheckBox("Frozen", true)
     private val slotsCheckBox = JCheckBox("Slots", true)
     private val kwOnlyCheckBox = JCheckBox("kw_only", true)
