@@ -11,14 +11,14 @@ import java.awt.BorderLayout
 import javax.swing.*
 
 class IntroduceParameterObjectDialog(
-    private val project: Project,
+    project: Project,
     parameters: List<PyNamedParameter>,
     defaultClassName: String
 ) : DialogWrapper(project) {
 
     private val checkBoxList = CheckBoxList<PyNamedParameter>()
     private val classNameField = JTextField(defaultClassName)
-    private val parameterNameField = JTextField("params")
+    private val parameterNameField = JTextField(IntroduceParameterObjectSettings.DEFAULT_PARAMETER_NAME)
     private val baseTypeComboBox = JComboBox(DefaultComboBoxModel(ParameterObjectBaseType.entries.toTypedArray()))
     private val frozenCheckBox = JCheckBox("Frozen", true)
     private val slotsCheckBox = JCheckBox("Slots", true)

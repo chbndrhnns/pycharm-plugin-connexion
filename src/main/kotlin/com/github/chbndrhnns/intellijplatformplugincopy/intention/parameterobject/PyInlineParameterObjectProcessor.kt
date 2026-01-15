@@ -3,6 +3,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobje
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.project.Project
 import com.intellij.platform.ide.progress.runWithModalProgressBlocking
 import com.intellij.psi.PsiElement
@@ -15,6 +16,8 @@ import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.resolve.PyResolveContext
 import com.jetbrains.python.psi.types.TypeEvalContext
 import com.jetbrains.python.refactoring.PyReplaceExpressionUtil
+
+private val LOG = logger<PyInlineParameterObjectProcessor>()
 
 class PyInlineParameterObjectProcessor(
     private val function: PyFunction,
@@ -56,10 +59,18 @@ class PyInlineParameterObjectProcessor(
         val context = TypeEvalContext.codeAnalysis(project, function.containingFile)
 
         // Find the parameter object class
-        val parameter = findInlineableParameter(function, context) ?: return 0
+        val parameter = findInlineableParameter(function, context)
+        if (parameter == null) {
+            LOG.debug("countUsages: No inlineable parameter found for function ${function.name}")
+            return 0
+        }
         cachedParameter = parameter
         
-        val parameterObjectClass = resolveParameterClass(parameter) ?: return 0
+        val parameterObjectClass = resolveParameterClass(parameter)
+        if (parameterObjectClass == null) {
+            LOG.debug("countUsages: Could not resolve parameter class for parameter ${parameter.name}")
+            return 0
+        }
         cachedParameterObjectClass = parameterObjectClass
 
         // Search for all references to the parameter object class
@@ -90,6 +101,7 @@ class PyInlineParameterObjectProcessor(
         )
     ) {
         val project = function.project
+        LOG.debug("Starting Inline Parameter Object refactoring for function: ${function.name}")
 
         val result = runWithModalProgressBlocking(project, "Inline parameter object") {
             readAction {
@@ -97,14 +109,23 @@ class PyInlineParameterObjectProcessor(
                 
                 // Use cached parameter if available, otherwise find it
                 val parameter = cachedParameter ?: findInlineableParameter(function, context)
-                if (parameter == null) return@readAction null
+                if (parameter == null) {
+                    LOG.debug("run: No inlineable parameter found")
+                    return@readAction null
+                }
 
                 // Use cached class if available
                 val parameterObjectClass = cachedParameterObjectClass ?: resolveParameterClass(parameter) 
-                if (parameterObjectClass == null) return@readAction null
+                if (parameterObjectClass == null) {
+                    LOG.debug("run: Could not resolve parameter class")
+                    return@readAction null
+                }
 
                 val fields = extractFields(parameterObjectClass)
-                if (fields.isEmpty()) return@readAction null
+                if (fields.isEmpty()) {
+                    LOG.debug("run: No fields found in parameter class")
+                    return@readAction null
+                }
                 
                 val isTypedDict = cachedIsTypedDict ?: isTypedDict(parameterObjectClass, context)
 
@@ -144,10 +165,8 @@ class PyInlineParameterObjectProcessor(
                         ReferencesSearch.search(targetFunction, GlobalSearchScope.projectScope(project)).findAll()
 
                     val (callSiteUpdates, consumedElements) = prepareCallSiteUpdates(
-                        project = project,
                         function = targetFunction,
                         parameter = targetParameter,
-                        parameterName = parameterName,
                         parameterObjectClass = parameterObjectClass,
                         fields = fields,
                         functionUsages = functionUsages,
@@ -185,7 +204,7 @@ class PyInlineParameterObjectProcessor(
 
         val (plans, parameterObjectClass, canDeleteClass) = result
 
-        WriteCommandAction.runWriteCommandAction(project, "Inline parameter object", null, Runnable {
+        WriteCommandAction.runWriteCommandAction(project, "Inline parameter object", null, {
             // Process all plans
             for (plan in plans) {
                 replaceFunctionSignature(plan)
@@ -245,7 +264,7 @@ class PyInlineParameterObjectProcessor(
         val dummy = generator.createFromText(
             languageLevel,
             PyFunction::class.java,
-            "def __inline_param_object" + newParamsText + ":\\n    pass"
+            "def __inline_param_object$newParamsText:\\n    pass"
         )
 
         plan.function.parameterList.replace(dummy.parameterList)
@@ -276,7 +295,7 @@ class PyInlineParameterObjectProcessor(
                 val languageLevel = LanguageLevel.forElement(element)
                 val newExpr = generator.createExpressionFromText(languageLevel, fieldName)
                 if (PyReplaceExpressionUtil.isNeedParenthesis(element, newExpr)) {
-                    val parenthesized = generator.createExpressionFromText(languageLevel, "(" + fieldName + ")")
+                    val parenthesized = generator.createExpressionFromText(languageLevel, "($fieldName)")
                     element.replace(parenthesized)
                 } else {
                     element.replace(newExpr)
@@ -293,7 +312,7 @@ class PyInlineParameterObjectProcessor(
                 val languageLevel = LanguageLevel.forElement(element)
                 val newExpr = generator.createExpressionFromText(languageLevel, fieldName)
                 if (PyReplaceExpressionUtil.isNeedParenthesis(element, newExpr)) {
-                    val parenthesized = generator.createExpressionFromText(languageLevel, "(" + fieldName + ")")
+                    val parenthesized = generator.createExpressionFromText(languageLevel, "($fieldName)")
                     element.replace(parenthesized)
                 } else {
                     element.replace(newExpr)
@@ -303,10 +322,8 @@ class PyInlineParameterObjectProcessor(
     }
 
     private fun prepareCallSiteUpdates(
-        project: Project,
         function: PyFunction,
         parameter: PyNamedParameter,
-        parameterName: String,
         parameterObjectClass: PyClass,
         fields: List<FieldInfo>,
         functionUsages: Collection<PsiReference>,
@@ -432,9 +449,9 @@ class PyInlineParameterObjectProcessor(
             val newArgsText = updateInfo.newArgumentListText
 
             val newArgListElement = try {
-                generator.createArgumentList(languageLevel, "(" + newArgsText + ")")
+                generator.createArgumentList(languageLevel, "($newArgsText)")
             } catch (e: Exception) {
-                                LOG.debug("Failed to create argument list from '" + newArgsText + "'", e)
+                                LOG.debug("Failed to create argument list from '$newArgsText'", e)
                 null
             }
 
@@ -453,10 +470,7 @@ class PyInlineParameterObjectProcessor(
                 if (p.isSelf || p.isPositionalContainer || p.isKeywordContainer) return@firstOrNull false
                 if (name == "self" || name == "cls") return@firstOrNull false
 
-                val cls = resolveParameterClass(p)
-                if (cls == null) {
-                    return@firstOrNull false
-                }
+                val cls = resolveParameterClass(p) ?: return@firstOrNull false
 
                 val valid = isValidParameterObject(cls, context)
                 val fields = extractFields(cls)
@@ -542,7 +556,10 @@ class PyInlineParameterObjectProcessor(
             return try {
                 val context = TypeEvalContext.codeAnalysis(function.project, function.containingFile)
                 PyInlineParameterObjectProcessor(function, function).findInlineableParameter(function, context) != null
-            } catch (_: Throwable) {
+            } catch (e: ProcessCanceledException) {
+                throw e
+            } catch (e: Throwable) {
+                LOG.warn("Error checking for inlineable parameter object", e)
                 false
             }
         }

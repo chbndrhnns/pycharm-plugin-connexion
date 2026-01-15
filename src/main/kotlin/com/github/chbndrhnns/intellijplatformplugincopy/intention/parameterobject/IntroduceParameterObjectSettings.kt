@@ -10,4 +10,8 @@ data class IntroduceParameterObjectSettings(
     val generateFrozen: Boolean = true,
     val generateSlots: Boolean = true,
     val generateKwOnly: Boolean = true
-)
+) {
+    companion object {
+        const val DEFAULT_PARAMETER_NAME = "params"
+    }
+}

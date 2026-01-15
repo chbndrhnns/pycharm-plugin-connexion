@@ -313,7 +313,13 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
             id = "parameter-object-refactoring",
             displayName = "Parameter object refactoring",
             description = "Enables introduce/inline parameter object refactoring actions",
-            category = FeatureCategory.ACTIONS
+            category = FeatureCategory.ACTIONS,
+            loggingCategories = [
+                "com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.PyIntroduceParameterObjectProcessor",
+                "com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.PyInlineParameterObjectProcessor",
+                "com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectTarget",
+                "com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.InlineParameterObjectTarget"
+            ]
         )
         var enableParameterObjectRefactoring: Boolean = true,
 

@@ -37,9 +37,13 @@ class PyIntroduceParameterObjectProcessor(
 
     fun run() {
         val project = function.project
+        LOG.debug("Starting Introduce Parameter Object refactoring for function: ${function.name}")
 
         val allParams = collectParameters(function)
-        if (allParams.isEmpty()) return
+        if (allParams.isEmpty()) {
+            LOG.debug("No parameters found for function: ${function.name}")
+            return
+        }
 
         val defaultClassName = generateDataclassName(function)
 
@@ -55,7 +59,10 @@ class PyIntroduceParameterObjectProcessor(
             }
         }
 
-        if (settings == null || settings.selectedParameters.isEmpty()) return
+        if (settings == null || settings.selectedParameters.isEmpty()) {
+            LOG.debug("Refactoring cancelled or no parameters selected")
+            return
+        }
 
         val params = settings.selectedParameters
         val dataclassName = settings.className
@@ -91,6 +98,7 @@ class PyIntroduceParameterObjectProcessor(
             }
         } catch (e: Exception) {
             if (e is ProcessCanceledException || e is CancellationException) {
+                LOG.debug("Refactoring process canceled")
                 return
             }
             throw e
