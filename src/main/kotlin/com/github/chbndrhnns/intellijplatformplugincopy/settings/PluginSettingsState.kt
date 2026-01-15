@@ -559,7 +559,13 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
                 "com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome.PytestLocationUrlFactory"
             ]
         )
-        var enablePyTestFailedLineInspection: Boolean = true
+        var enablePyTestFailedLineInspection: Boolean = true,
+
+        /**
+         * Snapshotted state before "Mute All" was activated.
+         * If non-null, it means the plugin is currently in "Mute All" mode.
+         */
+        var originalState: State? = null
     )
 
     private var myState = State()
@@ -568,6 +574,74 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
 
     override fun loadState(state: State) {
         myState = state
+        if (isMuted()) {
+            unmute()
+        }
+    }
+
+    fun isMuted(): Boolean = myState.originalState != null
+
+    fun mute() {
+        if (isMuted()) return
+
+        // Save current state
+        val backup = myState.copy(originalState = null)
+        myState.originalState = backup
+
+        // Disable all features
+        val fields = State::class.java.declaredFields
+        for (field in fields) {
+            var hasAnnotation = field.isAnnotationPresent(Feature::class.java)
+            if (!hasAnnotation) {
+                // Check getter (PROPERTY target often puts annotation on getter)
+                val capitalized = field.name.replaceFirstChar { it.uppercase() }
+                
+                // 1. Check standard getter
+                val getterNames = listOf("get$capitalized", "is$capitalized")
+                for (name in getterNames) {
+                    try {
+                        val method = State::class.java.getDeclaredMethod(name)
+                        if (method.isAnnotationPresent(Feature::class.java)) {
+                            hasAnnotation = true
+                            break
+                        }
+                    } catch (e: NoSuchMethodException) {
+                        // ignore
+                    }
+                }
+
+                // 2. Check Kotlin synthetic annotations method (e.g. getProperty$annotations)
+                if (!hasAnnotation) {
+                     val annotationsMethodName = "get$capitalized\$annotations"
+                     try {
+                        val method = State::class.java.getDeclaredMethod(annotationsMethodName)
+                        if (method.isAnnotationPresent(Feature::class.java)) {
+                            hasAnnotation = true
+                        }
+                     } catch (e: NoSuchMethodException) {
+                        // ignore
+                     }
+                }
+            }
+
+            if (hasAnnotation) {
+                field.isAccessible = true
+                if (field.type == Boolean::class.javaPrimitiveType || field.type == Boolean::class.javaObjectType) {
+                    try {
+                        field.set(myState, false)
+                    } catch (e: Exception) {
+                        // Best effort
+                    }
+                }
+            }
+        }
+    }
+
+    fun unmute() {
+        if (!isMuted()) return
+        myState.originalState?.let {
+            myState = it
+        }
     }
 
     companion object {

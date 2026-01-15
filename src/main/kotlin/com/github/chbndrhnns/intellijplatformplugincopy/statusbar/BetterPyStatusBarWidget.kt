@@ -2,6 +2,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.statusbar
 
 import com.github.chbndrhnns.intellijplatformplugincopy.python.PythonVersionGuard
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsConfigurable
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionUiKind
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -46,12 +47,22 @@ class BetterPyStatusBarWidget(private val project: Project) : StatusBarWidget, S
 
     override fun getPresentation(): StatusBarWidget.WidgetPresentation = this
 
-    override fun getIcon(): Icon = if (isEnvironmentSupported()) ICON else ICON_DISABLED
+    override fun getIcon(): Icon {
+        return if (!isEnvironmentSupported() || PluginSettingsState.instance().isMuted()) {
+            ICON_DISABLED
+        } else {
+            ICON
+        }
+    }
 
-    override fun getTooltipText(): String = if (isEnvironmentSupported()) {
-        "BetterPy"
-    } else {
-        "BetterPy (disabled: Python ${PythonVersionGuard.minVersionString()}+ required)"
+    override fun getTooltipText(): String {
+        return if (!isEnvironmentSupported()) {
+            "BetterPy (disabled: Python ${PythonVersionGuard.minVersionString()}+ required)"
+        } else if (PluginSettingsState.instance().isMuted()) {
+            "BetterPy (Muted)"
+        } else {
+            "BetterPy"
+        }
     }
 
     override fun getClickConsumer(): com.intellij.util.Consumer<MouseEvent> {
@@ -76,6 +87,15 @@ class BetterPyStatusBarWidget(private val project: Project) : StatusBarWidget, S
                 when (selectedValue) {
                     "Copy Diagnostic Data" -> invokeCopyDiagnosticDataAction()
                     "Settings" -> invokeShowSettingsAction()
+                    "Disable all features" -> {
+                        PluginSettingsState.instance().mute()
+                        statusBar?.updateWidget(ID)
+                    }
+
+                    "Enable all features" -> {
+                        PluginSettingsState.instance().unmute()
+                        statusBar?.updateWidget(ID)
+                    }
                 }
                 return FINAL_CHOICE
             }
@@ -83,7 +103,16 @@ class BetterPyStatusBarWidget(private val project: Project) : StatusBarWidget, S
         return JBPopupFactory.getInstance().createListPopup(step)
     }
 
-    internal fun getPopupActions(): List<String> = listOf("Copy Diagnostic Data", "Settings")
+    internal fun getPopupActions(): List<String> {
+        val actions = mutableListOf("Copy Diagnostic Data", "Settings")
+        val settings = PluginSettingsState.instance()
+        if (settings.isMuted()) {
+            actions.add("Enable all features")
+        } else {
+            actions.add("Disable all features")
+        }
+        return actions
+    }
 
     internal fun invokeShowSettingsAction(showSettingsUtil: ShowSettingsUtil = ShowSettingsUtil.getInstance()) {
         showSettingsUtil.showSettingsDialog(project, PluginSettingsConfigurable::class.java)

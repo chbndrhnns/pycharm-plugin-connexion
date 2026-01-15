@@ -2,6 +2,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.statusbar
 
 import com.github.chbndrhnns.intellijplatformplugincopy.python.PythonVersionGuard
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsConfigurable
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.options.ConfigurableGroup
 import com.intellij.openapi.options.ShowSettingsUtil
@@ -77,6 +78,41 @@ class BetterPyStatusBarWidgetTest : TestBase() {
         val actions = widget.getPopupActions()
         assertContainsElements(actions, "Settings")
         assertContainsElements(actions, "Copy Diagnostic Data")
+    }
+
+    fun testPopupActionsIncludeDisableFeatures() {
+        // Ensure not muted initially
+        PluginSettingsState.instance().unmute()
+
+        val widget = BetterPyStatusBarWidget(project)
+        val actions = widget.getPopupActions()
+        assertContainsElements(actions, "Disable all features")
+        assertFalse(actions.contains("Enable all features"))
+    }
+
+    fun testPopupActionsIncludeEnableFeaturesWhenMuted() {
+        val settings = PluginSettingsState.instance()
+        settings.mute()
+        try {
+            val widget = BetterPyStatusBarWidget(project)
+            val actions = widget.getPopupActions()
+            assertContainsElements(actions, "Enable all features")
+            assertFalse(actions.contains("Disable all features"))
+        } finally {
+            settings.unmute()
+        }
+    }
+
+    fun testIconAndTooltipWhenMuted() {
+        val settings = PluginSettingsState.instance()
+        settings.mute()
+        try {
+            val widget = BetterPyStatusBarWidget(project)
+            assertEquals("BetterPy (Muted)", widget.getTooltipText())
+            assertNotNull(widget.getIcon())
+        } finally {
+            settings.unmute()
+        }
     }
 
     fun testInvokeShowSettingsActionOpensPluginConfigurable() {
