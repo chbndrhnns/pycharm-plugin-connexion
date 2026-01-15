@@ -24,9 +24,6 @@ class PyInlineNamedTupleTest : TestBase() {
             """
         from typing import NamedTuple
 
-        class Point(NamedTuple):
-            x: int
-            y: int
 
         def dist(x: int, y: int):
             print(x + y)

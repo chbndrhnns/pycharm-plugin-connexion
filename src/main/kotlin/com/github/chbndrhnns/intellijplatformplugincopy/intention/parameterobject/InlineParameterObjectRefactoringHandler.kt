@@ -31,8 +31,8 @@ class InlineParameterObjectRefactoringHandler : RefactoringActionHandler {
                 processor.run(settings)
             }
         } else {
-            // Single usage or no usages - use default settings (inline all, keep class)
-            processor.run(InlineParameterObjectSettings(inlineAllOccurrences = true, removeClass = false))
+            // Single usage or no usages - use default settings (inline all, remove class if unused)
+            processor.run(InlineParameterObjectSettings(inlineAllOccurrences = true, removeClass = true))
         }
     }
 

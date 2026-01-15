@@ -42,7 +42,8 @@ class PyInlineParameterObjectProcessor(
         val fields: List<FieldInfo>,
         val functionUsages: Collection<PsiReference>,
         val callSiteUpdates: List<CallSiteUpdateInfo>,
-        val isTypedDict: Boolean
+        val isTypedDict: Boolean,
+        val consumedElements: List<PsiElement>
     )
 
     private data class CallSiteUpdateInfo(
@@ -141,8 +142,8 @@ class PyInlineParameterObjectProcessor(
 
                     val functionUsages =
                         ReferencesSearch.search(targetFunction, GlobalSearchScope.projectScope(project)).findAll()
-                    
-                    val callSiteUpdates = prepareCallSiteUpdates(
+
+                    val (callSiteUpdates, consumedElements) = prepareCallSiteUpdates(
                         project = project,
                         function = targetFunction,
                         parameter = targetParameter,
@@ -154,6 +155,10 @@ class PyInlineParameterObjectProcessor(
                         context = targetContext
                     )
 
+                    val planConsumedElements = consumedElements.toMutableList()
+                    val annotationRef = targetParameter.annotation?.value as? PyReferenceExpression
+                    if (annotationRef != null) planConsumedElements.add(annotationRef)
+
                     Plan(
                         project = project,
                         function = targetFunction,
@@ -163,15 +168,22 @@ class PyInlineParameterObjectProcessor(
                         fields = fields,
                         functionUsages = functionUsages,
                         callSiteUpdates = callSiteUpdates,
-                        isTypedDict = isTypedDict
+                        isTypedDict = isTypedDict,
+                        consumedElements = planConsumedElements
                     )
                 }
-                
-                Pair(plans, parameterObjectClass)
+
+                // Determine if class can be safely deleted
+                val allClassUsages = classReferences.map { it.element }.toMutableSet()
+                val allConsumedElements = plans.flatMap { it.consumedElements }.toSet()
+                allClassUsages.removeAll(allConsumedElements)
+                val canDeleteClass = allClassUsages.isEmpty()
+
+                Triple(plans, parameterObjectClass, canDeleteClass)
             }
         } ?: return
 
-        val (plans, parameterObjectClass) = result
+        val (plans, parameterObjectClass, canDeleteClass) = result
 
         WriteCommandAction.runWriteCommandAction(project, "Inline parameter object", null, Runnable {
             // Process all plans
@@ -186,13 +198,9 @@ class PyInlineParameterObjectProcessor(
             }
 
             // Remove the class if requested and no usages remain
-            if (settings.removeClass) {
-                // Perform a fresh search to be safe about removal
-                val remainingUsages = ReferencesSearch.search(parameterObjectClass, GlobalSearchScope.projectScope(project)).findAll()
-                if (remainingUsages.isEmpty()) {
-                    if (parameterObjectClass.isValid) {
-                        parameterObjectClass.delete()
-                    }
+            if (settings.removeClass && canDeleteClass) {
+                if (parameterObjectClass.isValid) {
+                    parameterObjectClass.delete()
                 }
             }
         })
@@ -304,12 +312,14 @@ class PyInlineParameterObjectProcessor(
         functionUsages: Collection<PsiReference>,
         inlineAllOccurrences: Boolean,
         context: TypeEvalContext
-    ): List<CallSiteUpdateInfo> {
-        if (functionUsages.isEmpty()) return emptyList()
+    ): Pair<List<CallSiteUpdateInfo>, List<PsiElement>> {
+        if (functionUsages.isEmpty()) return Pair(emptyList(), emptyList())
 
         val resolveContext = PyResolveContext.defaultContext(context)
 
         val result = mutableListOf<CallSiteUpdateInfo>()
+        val consumedElements = mutableListOf<PsiElement>()
+
         for (ref in functionUsages) {
             val element = ref.element
             val call = PsiTreeUtil.getParentOfType(element, PyCallExpression::class.java) ?: continue
@@ -334,12 +344,14 @@ class PyInlineParameterObjectProcessor(
             } ?: continue
 
             var ctorCall = paramObjectExpr as? PyCallExpression
+            var isDirectCall = true
             if (ctorCall == null && paramObjectExpr is PyReferenceExpression) {
                 val resolved = paramObjectExpr.reference.resolve()
                 if (resolved is PyTargetExpression) {
                     val assignedValue = resolved.findAssignedValue()
                     if (assignedValue is PyCallExpression) {
                         ctorCall = assignedValue
+                        isDirectCall = false
                     }
                 }
             }
@@ -349,6 +361,11 @@ class PyInlineParameterObjectProcessor(
             val ctorCallee = ctorCall.callee as? PyReferenceExpression ?: continue
             val resolvedClass = ctorCallee.reference.resolve() as? PyClass ?: continue
             if (resolvedClass != parameterObjectClass) continue
+
+            // If we are replacing a direct constructor call, we consume the reference to the class
+            if (isDirectCall) {
+                consumedElements.add(ctorCallee)
+            }
 
             val ctorArgs = ctorCall.argumentList?.arguments ?: emptyArray()
             val hasKeywordArgs = ctorArgs.any { it is PyKeywordArgument }
@@ -401,7 +418,7 @@ class PyInlineParameterObjectProcessor(
             )
         }
 
-        return result
+        return Pair(result, consumedElements)
     }
 
     private fun applyCallSiteUpdates(plan: Plan) {

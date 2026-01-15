@@ -26,10 +26,6 @@ class PyInlinePydanticTest : TestBase() {
             """
             from pydantic import BaseModel
 
-            class Params(BaseModel):
-                x: int
-                y: int
-                model_config = {}
 
             def foo(x: int, y: int):
                 print(x)

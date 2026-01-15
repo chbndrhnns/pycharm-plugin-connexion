@@ -40,14 +40,6 @@ class PyInlineParameterObjectRefactoringTest : TestBase() {
             from typing import Any
 
 
-            @dataclass(frozen=True, slots=True, kw_only=True)
-            class CreateUserParams:
-                first_name: Any
-                last_name: Any
-                email: Any
-                age: Any
-
-
             def create_user(first_name: Any, last_name: Any, email: Any, age: Any):
                 print(first_name, last_name, email, age)
 
@@ -85,14 +77,6 @@ class PyInlineParameterObjectRefactoringTest : TestBase() {
             """
             from dataclasses import dataclass
             from typing import Any
-
-
-            @dataclass(frozen=True, slots=True, kw_only=True)
-            class CreateUserParams:
-                first_name: Any
-                last_name: Any
-                email: Any
-                age: Any
 
 
             def create_user(first_name: Any, last_name: Any, email: Any, age: Any):
@@ -134,14 +118,6 @@ class PyInlineParameterObjectRefactoringTest : TestBase() {
             from typing import Any
 
 
-            @dataclass(frozen=True, slots=True, kw_only=True)
-            class CreateUserParams:
-                first_name: Any
-                last_name: Any
-                email: Any
-                age: Any
-
-
             def create_user(first_name: Any, last_name: Any, email: Any, age: Any):
                 print(first_name, last_name, email, age)
 
@@ -181,14 +157,6 @@ class PyInlineParameterObjectRefactoringTest : TestBase() {
             from typing import Any
 
 
-            @dataclass(frozen=True, slots=True, kw_only=True)
-            class CreateUserParams:
-                first_name: Any
-                last_name: Any
-                email: Any
-                age: Any
-
-
             def create_user(first_name: Any, last_name: Any, email: Any, age: Any):
                 print(first_name, last_name, email, age)
 
@@ -226,14 +194,6 @@ class PyInlineParameterObjectRefactoringTest : TestBase() {
             """
             from dataclasses import dataclass
             from typing import Any
-
-
-            @dataclass(frozen=True, slots=True, kw_only=True)
-            class FooParams1:
-                first_name: Any
-                last_name: Any
-                email: Any
-                age: Any
 
 
             def foo(first_name: Any, last_name: Any, email: Any, age: Any):

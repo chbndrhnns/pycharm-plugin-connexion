@@ -24,9 +24,6 @@ class PyInlineTypedDictTest : TestBase() {
             """
             from typing import TypedDict
 
-            class Point(TypedDict):
-                x: int
-                y: int
 
             def dist(x: int, y: int):
                 print(x + y)
