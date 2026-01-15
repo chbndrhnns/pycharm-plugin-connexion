@@ -333,7 +333,19 @@ class PyInlineParameterObjectProcessor(
                 else -> argForParam
             } ?: continue
 
-            val ctorCall = paramObjectExpr as? PyCallExpression ?: continue
+            var ctorCall = paramObjectExpr as? PyCallExpression
+            if (ctorCall == null && paramObjectExpr is PyReferenceExpression) {
+                val resolved = paramObjectExpr.reference.resolve()
+                if (resolved is PyTargetExpression) {
+                    val assignedValue = resolved.findAssignedValue()
+                    if (assignedValue is PyCallExpression) {
+                        ctorCall = assignedValue
+                    }
+                }
+            }
+
+            if (ctorCall == null) continue
+
             val ctorCallee = ctorCall.callee as? PyReferenceExpression ?: continue
             val resolvedClass = ctorCallee.reference.resolve() as? PyClass ?: continue
             if (resolvedClass != parameterObjectClass) continue
