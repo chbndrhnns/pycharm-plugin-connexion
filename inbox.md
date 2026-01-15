@@ -2,6 +2,7 @@
 
 ## Pending Issues
 
+- [ ] fix: Move to class should keep async/sync statement
 - [ ] fix: In patch, we should allow references to declarations sites
 - [ ] fix: When sorting navbar items, ignore the async keyword
 - [ ] fix: Wrap with builtin type callable in these cases:
