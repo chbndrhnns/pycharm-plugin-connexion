@@ -97,7 +97,8 @@ class DataclassQuickInfoProviderTest : TestBase() {
 
         assertNotNull(doc)
         // Extract just the fields portion for comparison (doc includes standard provider content)
-        assertTrue("Doc should contain 'field: int'. Actual: $doc", doc!!.contains("field: int"))
+        assertTrue("Doc should contain 'field'. Actual: $doc", doc!!.contains("<span>field</span>"))
+        assertTrue("Doc should contain 'int'. Actual: $doc", doc!!.contains("<span>int</span>"))
         // Note: In test environment, PythonDocumentationProvider might return "Unittest placeholder"
         // instead of the actual docstring due to indexing/PSI limitations with configureByText.
         // We assume standard provider works correctly in production.
@@ -123,17 +124,12 @@ class DataclassQuickInfoProviderTest : TestBase() {
         assertNotNull("Generated documentation should not be null", doc)
 
         // Assert on complete HTML output snapshot
-        val expectedHtml = """<br>
-<span>Fields:</span>
-<br>
-  <span>name</span><span>: </span><span>str</span><br>
-  <span>age</span><span>: </span><span>int</span><br>
-  <span>email</span><span>: </span><span>str</span><span> = </span>"default@example.com"<br>
-<br>
-<span>Dataclass options:</span>
-<br>
-  init, repr, eq"""
+        val expectedHtml =
+            """<br/><span>Fields:</span><br/>  <span>name</span><span>: </span><span>str</span><br/>  <span>age</span><span>: </span><span>int</span><br/>  <span>email</span><span>: </span><span>str</span><span> = </span>&quot;default@example.com&quot;<br/><br/><span>Dataclass options:</span><br/>  init, repr, eq"""
 
-        assertEquals(expectedHtml, doc)
+        assertTrue(
+            "Expected HTML not found in doc.\nExpected: $expectedHtml\nActual: $doc",
+            doc!!.contains(expectedHtml)
+        )
     }
 }

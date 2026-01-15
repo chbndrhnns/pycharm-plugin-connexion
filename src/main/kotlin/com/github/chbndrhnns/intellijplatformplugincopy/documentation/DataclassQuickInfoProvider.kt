@@ -92,7 +92,7 @@ class DataclassQuickInfoProvider : AbstractDocumentationProvider(), PythonDocume
         }
 
         // Build enhanced quick info (only fields, as signature is handled by standard provider)
-        return buildFieldsInfo(pyClass, dataclassParams, context, isPydantic)
+        return buildFieldsInfo(pyClass, dataclassParams, context, isPydantic, true)
     }
 
     private fun isPydanticModel(cls: PyClass, context: TypeEvalContext): Boolean {
@@ -103,20 +103,39 @@ class DataclassQuickInfoProvider : AbstractDocumentationProvider(), PythonDocume
     }
 
     private fun buildFieldsInfo(
-        pyClass: PyClass, params: PyDataclassParameters?, context: TypeEvalContext, isPydantic: Boolean
+        pyClass: PyClass,
+        params: PyDataclassParameters?,
+        context: TypeEvalContext,
+        isPydantic: Boolean,
+        plainText: Boolean = false
     ): String {
+        if (plainText) {
+            val sb = StringBuilder()
+            val fields = collectFieldsWithInheritance(pyClass, context)
+            fields.forEachIndexed { index, (field, _) ->
+                sb.append(field.name ?: "unknown")
+                val fieldType = context.getType(field)
+                if (fieldType != null) {
+                    sb.append(": ")
+                    sb.append(PythonDocumentationProvider.getTypeName(fieldType, context))
+                }
+                if (index < fields.size - 1) sb.append("\n")
+            }
+            return sb.toString()
+        }
+
         val html = HtmlBuilder()
 
         // Add "Pydantic Model" label if needed
         if (isPydantic) {
             html.append(styledSpan("Pydantic Model", PyHighlighter.PY_DECORATOR))
-            html.br()
+            html.append(HtmlChunk.br())
         }
 
         // Add fields section
-        html.br()
+        html.append(HtmlChunk.br())
         html.append(styledSpan("Fields:", PyHighlighter.PY_KEYWORD))
-        html.br()
+        html.append(HtmlChunk.br())
 
         // Collect fields with inheritance
         val fields = collectFieldsWithInheritance(pyClass, context)
@@ -155,13 +174,13 @@ class DataclassQuickInfoProvider : AbstractDocumentationProvider(), PythonDocume
                     html.append(styledSpan(" (from ${sourceClass.name})", PyHighlighter.PY_LINE_COMMENT))
                 }
 
-                html.br()
+                html.append(HtmlChunk.br())
             }
         }
 
         // Add dataclass parameters info
         if (params != null) {
-            html.br()
+            html.append(HtmlChunk.br())
             html.append(buildDataclassParamsInfo(params))
         }
 
@@ -199,10 +218,10 @@ class DataclassQuickInfoProvider : AbstractDocumentationProvider(), PythonDocume
 
     private fun buildDataclassParamsInfo(
         params: PyDataclassParameters
-    ): String {
+    ): HtmlChunk {
         val html = HtmlBuilder()
         html.append(styledSpan("Dataclass options:", PyHighlighter.PY_KEYWORD))
-        html.br()
+        html.append(HtmlChunk.br())
 
         val options = listOf(
             "init" to params.init,
@@ -217,10 +236,10 @@ class DataclassQuickInfoProvider : AbstractDocumentationProvider(), PythonDocume
             html.append("  ${options.joinToString(", ") { it.first }}")
         }
 
-        return html.toString()
+        return html.toFragment()
     }
 
     private fun styledSpan(text: String, key: TextAttributesKey): HtmlChunk {
-        return HtmlChunk.text(text)
+        return HtmlChunk.tag("span").child(HtmlChunk.text(text))
     }
 }
