@@ -13,6 +13,8 @@ import com.jetbrains.python.psi.*
  */
 class TypedDictGenerator : ParameterObjectGenerator {
 
+    private var importsNotRequired = false
+
     override fun generateClass(
         project: Project,
         languageLevel: LanguageLevel,
@@ -22,6 +24,7 @@ class TypedDictGenerator : ParameterObjectGenerator {
         generateSlots: Boolean,
         generateKwOnly: Boolean
     ): PyClass {
+        importsNotRequired = false
         val generator = PyElementGenerator.getInstance(project)
 
         // Create class inheriting from TypedDict
@@ -45,6 +48,12 @@ class TypedDictGenerator : ParameterObjectGenerator {
         AddImportHelper.addOrUpdateFromImportStatement(
             file, "typing", "Any", null, AddImportHelper.ImportPriority.BUILTIN, anchor
         )
+
+        if (importsNotRequired) {
+            AddImportHelper.addOrUpdateFromImportStatement(
+                file, "typing", "NotRequired", null, AddImportHelper.ImportPriority.BUILTIN, anchor
+            )
+        }
     }
 
     private fun addFields(
@@ -59,7 +68,12 @@ class TypedDictGenerator : ParameterObjectGenerator {
 
         for (p in params) {
             val ann = p.annotationValue
-            val typeText = ann ?: "Any"
+            var typeText = ann ?: "Any"
+
+            if (p.defaultValue != null) {
+                typeText = "NotRequired[$typeText]"
+                importsNotRequired = true
+            }
 
             // TypedDict fields are just type annotations, no default values in the class body
             // Default values would need to be handled at instantiation

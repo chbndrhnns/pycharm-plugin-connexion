@@ -119,7 +119,14 @@ class PyIntroduceParameterObjectProcessor(
                 if (file != null) {
                     generator.addRequiredImports(file, function)
                 }
-                updateFunctionBody(project, function, params, paramUsages, parameterName)
+                updateFunctionBody(
+                    project,
+                    function,
+                    params,
+                    paramUsages,
+                    parameterName,
+                    settings.baseType == ParameterObjectBaseType.TYPED_DICT
+                )
                 applyCallSiteUpdates(project, function, dataclass, callSiteUpdates)
                 replaceFunctionSignature(project, function, dataclassName, params, parameterName)
         }
@@ -283,7 +290,8 @@ class PyIntroduceParameterObjectProcessor(
         function: PyFunction,
         params: List<PyNamedParameter>,
         paramUsages: Map<PyNamedParameter, Collection<PsiReference>>,
-        parameterName: String
+        parameterName: String,
+        isTypedDict: Boolean = false
     ) {
         val generator = PyElementGenerator.getInstance(project)
 
@@ -301,7 +309,16 @@ class PyIntroduceParameterObjectProcessor(
                 ) {
 
                     val languageLevel = LanguageLevel.forElement(element)
-                    val newExprText = "$parameterName.$paramName"
+                    val newExprText = if (isTypedDict) {
+                        if (p.defaultValue != null) {
+                            "$parameterName.get(\"$paramName\", ${p.defaultValueText})"
+                        } else {
+                            "$parameterName[\"$paramName\"]"
+                        }
+                    } else {
+                        "$parameterName.$paramName"
+                    }
+
                     val newExpr = generator.createExpressionFromText(languageLevel, newExprText)
 
                     // Handle precedence: Wrap in parentheses if the new expression

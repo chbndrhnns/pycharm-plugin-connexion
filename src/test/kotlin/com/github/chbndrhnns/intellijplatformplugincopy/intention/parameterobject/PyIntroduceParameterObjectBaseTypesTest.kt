@@ -141,7 +141,7 @@ class PyIntroduceParameterObjectBaseTypesTest : TestBase() {
             
             
             def my_func(params: MyFuncParams):
-                print(params.name, params.age)
+                print(params["name"], params["age"])
             
             
             my_func(MyFuncParams(name="John", age=30))
