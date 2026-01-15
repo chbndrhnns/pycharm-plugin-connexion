@@ -21,6 +21,12 @@ class PyInlineParameterObjectProcessor(
     @Suppress("unused") private val invocationElement: PsiElement,
 ) {
 
+    // Cache for expensive operations to share between countUsages() and run()
+    private var cachedParameter: PyNamedParameter? = null
+    private var cachedParameterObjectClass: PyClass? = null
+    private var cachedClassUsages: Collection<PsiReference>? = null
+    private var cachedIsTypedDict: Boolean? = null
+
     data class FieldInfo(
         val name: String,
         val typeText: String?,
@@ -36,6 +42,7 @@ class PyInlineParameterObjectProcessor(
         val fields: List<FieldInfo>,
         val functionUsages: Collection<PsiReference>,
         val callSiteUpdates: List<CallSiteUpdateInfo>,
+        val isTypedDict: Boolean
     )
 
     private data class CallSiteUpdateInfo(
@@ -45,24 +52,27 @@ class PyInlineParameterObjectProcessor(
 
     fun countUsages(): Int {
         val project = function.project
+        val context = TypeEvalContext.codeAnalysis(project, function.containingFile)
 
         // Find the parameter object class
-        val parameter = findInlineableParameter(function) ?: return 0
+        val parameter = findInlineableParameter(function, context) ?: return 0
+        cachedParameter = parameter
+        
         val parameterObjectClass = resolveParameterClass(parameter) ?: return 0
+        cachedParameterObjectClass = parameterObjectClass
 
         // Search for all references to the parameter object class
         val classReferences =
             ReferencesSearch.search(parameterObjectClass, GlobalSearchScope.projectScope(project)).findAll()
+        cachedClassUsages = classReferences
 
         // Count unique functions that use this class as a parameter type
         val functionsUsingClass = mutableSetOf<PyFunction>()
         for (ref in classReferences) {
             val element = ref.element
-
-            // Check if this reference is in a parameter annotation
-            val parameter = PsiTreeUtil.getParentOfType(element, PyNamedParameter::class.java)
-            if (parameter != null) {
-                val containingFunction = PsiTreeUtil.getParentOfType(parameter, PyFunction::class.java)
+            val param = PsiTreeUtil.getParentOfType(element, PyNamedParameter::class.java)
+            if (param != null) {
+                val containingFunction = PsiTreeUtil.getParentOfType(param, PyFunction::class.java)
                 if (containingFunction != null) {
                     functionsUsingClass.add(containingFunction)
                 }
@@ -82,27 +92,56 @@ class PyInlineParameterObjectProcessor(
 
         val result = runWithModalProgressBlocking(project, "Inline parameter object") {
             readAction {
-                val parameter = findInlineableParameter(function)
-                    ?: return@readAction null
+                val context = TypeEvalContext.codeAnalysis(project, function.containingFile)
+                
+                // Use cached parameter if available, otherwise find it
+                val parameter = cachedParameter ?: findInlineableParameter(function, context)
+                if (parameter == null) return@readAction null
 
-                val parameterObjectClass = resolveParameterClass(parameter) ?: return@readAction null
+                // Use cached class if available
+                val parameterObjectClass = cachedParameterObjectClass ?: resolveParameterClass(parameter) 
+                if (parameterObjectClass == null) return@readAction null
+
                 val fields = extractFields(parameterObjectClass)
                 if (fields.isEmpty()) return@readAction null
+                
+                val isTypedDict = cachedIsTypedDict ?: isTypedDict(parameterObjectClass, context)
 
-                // Find all functions that use this parameter object class
+                // Use cached references if available
+                val classReferences = cachedClassUsages ?: ReferencesSearch.search(parameterObjectClass, GlobalSearchScope.projectScope(project)).findAll()
+
+                // Identify functions to process
                 val functionsToProcess = if (settings.inlineAllOccurrences) {
-                    findAllFunctionsUsingClass(parameterObjectClass, project)
+                    val functionsUsingClass = mutableSetOf<PyFunction>()
+                    for (ref in classReferences) {
+                        val element = ref.element
+                        val param = PsiTreeUtil.getParentOfType(element, PyNamedParameter::class.java)
+                        if (param != null) {
+                            val containingFunction = PsiTreeUtil.getParentOfType(param, PyFunction::class.java)
+                            if (containingFunction != null) {
+                                functionsUsingClass.add(containingFunction)
+                            }
+                        }
+                    }
+                    functionsUsingClass.toList()
                 } else {
                     listOf(function)
                 }
 
                 // Create a plan for each function
                 val plans = functionsToProcess.mapNotNull { targetFunction ->
-                    val targetParameter = findInlineableParameter(targetFunction) ?: return@mapNotNull null
+                    val targetContext = if (targetFunction.containingFile == function.containingFile) {
+                        context
+                    } else {
+                        TypeEvalContext.codeAnalysis(project, targetFunction.containingFile)
+                    }
+
+                    val targetParameter = findInlineableParameter(targetFunction, targetContext) ?: return@mapNotNull null
                     val parameterName = targetParameter.name ?: return@mapNotNull null
 
                     val functionUsages =
                         ReferencesSearch.search(targetFunction, GlobalSearchScope.projectScope(project)).findAll()
+                    
                     val callSiteUpdates = prepareCallSiteUpdates(
                         project = project,
                         function = targetFunction,
@@ -111,7 +150,8 @@ class PyInlineParameterObjectProcessor(
                         parameterObjectClass = parameterObjectClass,
                         fields = fields,
                         functionUsages = functionUsages,
-                        inlineAllOccurrences = true // Always inline all call sites for each function
+                        inlineAllOccurrences = true, // Always inline all call sites for the target function
+                        context = targetContext
                     )
 
                     Plan(
@@ -123,21 +163,15 @@ class PyInlineParameterObjectProcessor(
                         fields = fields,
                         functionUsages = functionUsages,
                         callSiteUpdates = callSiteUpdates,
+                        isTypedDict = isTypedDict
                     )
                 }
-
-                // Check if the class has any remaining usages (before the write action)
-                val classUsages = if (settings.removeClass) {
-                    ReferencesSearch.search(parameterObjectClass, GlobalSearchScope.projectScope(project)).findAll()
-                } else {
-                    emptyList()
-                }
-
-                Pair(plans, classUsages)
+                
+                Pair(plans, parameterObjectClass)
             }
         } ?: return
 
-        val (plans, classUsages) = result
+        val (plans, parameterObjectClass) = result
 
         WriteCommandAction.runWriteCommandAction(project, "Inline parameter object", null, Runnable {
             // Process all plans
@@ -152,32 +186,16 @@ class PyInlineParameterObjectProcessor(
             }
 
             // Remove the class if requested and no usages remain
-            if (settings.removeClass && classUsages.isEmpty()) {
-                val parameterObjectClass = plans.first().parameterObjectClass
-                if (parameterObjectClass.isValid) {
-                    parameterObjectClass.delete()
+            if (settings.removeClass) {
+                // Perform a fresh search to be safe about removal
+                val remainingUsages = ReferencesSearch.search(parameterObjectClass, GlobalSearchScope.projectScope(project)).findAll()
+                if (remainingUsages.isEmpty()) {
+                    if (parameterObjectClass.isValid) {
+                        parameterObjectClass.delete()
+                    }
                 }
             }
         })
-    }
-
-    private fun findAllFunctionsUsingClass(parameterObjectClass: PyClass, project: Project): List<PyFunction> {
-        val classReferences =
-            ReferencesSearch.search(parameterObjectClass, GlobalSearchScope.projectScope(project)).findAll()
-        val functionsUsingClass = mutableSetOf<PyFunction>()
-
-        for (ref in classReferences) {
-            val element = ref.element
-            val parameter = PsiTreeUtil.getParentOfType(element, PyNamedParameter::class.java)
-            if (parameter != null) {
-                val containingFunction = PsiTreeUtil.getParentOfType(parameter, PyFunction::class.java)
-                if (containingFunction != null) {
-                    functionsUsingClass.add(containingFunction)
-                }
-            }
-        }
-
-        return functionsUsingClass.toList()
     }
 
     private fun replaceFunctionSignature(plan: Plan) {
@@ -219,7 +237,7 @@ class PyInlineParameterObjectProcessor(
         val dummy = generator.createFromText(
             languageLevel,
             PyFunction::class.java,
-            "def __inline_param_object$newParamsText:\n    pass"
+            "def __inline_param_object" + newParamsText + ":\\n    pass"
         )
 
         plan.function.parameterList.replace(dummy.parameterList)
@@ -228,51 +246,49 @@ class PyInlineParameterObjectProcessor(
     private fun updateFunctionBody(plan: Plan) {
         val generator = PyElementGenerator.getInstance(plan.project)
         val fieldNames = plan.fields.map { it.name }.toSet()
-        val isTypedDict = isTypedDict(plan.parameterObjectClass)
+        
+        // Optimize: Collect both types in one pass
+        val elements = PsiTreeUtil.findChildrenOfAnyType(
+            plan.function,
+            PyReferenceExpression::class.java,
+            PySubscriptionExpression::class.java
+        )
 
-        // 1. Replace attribute access: params.field -> field
-        val references = PsiTreeUtil.collectElementsOfType(plan.function, PyReferenceExpression::class.java)
-        for (ref in references) {
-            if (!ref.isValid) continue
+        for (element in elements) {
+            if (!element.isValid) continue
 
-            val qualifier = ref.qualifier as? PyReferenceExpression ?: continue
-            if (qualifier.name != plan.parameterName) continue
+            if (element is PyReferenceExpression) {
+                // 1. Replace attribute access: params.field -> field
+                val qualifier = element.qualifier as? PyReferenceExpression ?: continue
+                if (qualifier.name != plan.parameterName) continue
 
-            val fieldName = ref.name ?: continue
-            if (!fieldNames.contains(fieldName)) continue
+                val fieldName = element.name ?: continue
+                if (!fieldNames.contains(fieldName)) continue
 
-            val languageLevel = LanguageLevel.forElement(ref)
-            val newExpr = generator.createExpressionFromText(languageLevel, fieldName)
-            if (PyReplaceExpressionUtil.isNeedParenthesis(ref, newExpr)) {
-                val parenthesized = generator.createExpressionFromText(languageLevel, "($fieldName)")
-                ref.replace(parenthesized)
-            } else {
-                ref.replace(newExpr)
-            }
-        }
-
-        // 2. Replace subscription access (TypedDict): params["field"] -> field
-        if (isTypedDict) {
-            val subscriptions = PsiTreeUtil.collectElementsOfType(plan.function, PySubscriptionExpression::class.java)
-            for (sub in subscriptions) {
-                if (!sub.isValid) continue
-
-                val operand = sub.operand as? PyReferenceExpression ?: continue
+                val languageLevel = LanguageLevel.forElement(element)
+                val newExpr = generator.createExpressionFromText(languageLevel, fieldName)
+                if (PyReplaceExpressionUtil.isNeedParenthesis(element, newExpr)) {
+                    val parenthesized = generator.createExpressionFromText(languageLevel, "(" + fieldName + ")")
+                    element.replace(parenthesized)
+                } else {
+                    element.replace(newExpr)
+                }
+            } else if (plan.isTypedDict && element is PySubscriptionExpression) {
+                // 2. Replace subscription access (TypedDict): params["field"] -> field
+                val operand = element.operand as? PyReferenceExpression ?: continue
                 if (operand.name != plan.parameterName) continue
 
-                val indexExpr = sub.indexExpression as? PyStringLiteralExpression ?: continue
+                val indexExpr = element.indexExpression as? PyStringLiteralExpression ?: continue
                 val fieldName = indexExpr.stringValue
                 if (!fieldNames.contains(fieldName)) continue
 
-                val languageLevel = LanguageLevel.forElement(sub)
+                val languageLevel = LanguageLevel.forElement(element)
                 val newExpr = generator.createExpressionFromText(languageLevel, fieldName)
-                // Subscription usually has high precedence, but simple name replacement should be safe.
-                // We check parenthesis just in case.
-                if (PyReplaceExpressionUtil.isNeedParenthesis(sub, newExpr)) {
-                    val parenthesized = generator.createExpressionFromText(languageLevel, "($fieldName)")
-                    sub.replace(parenthesized)
+                if (PyReplaceExpressionUtil.isNeedParenthesis(element, newExpr)) {
+                    val parenthesized = generator.createExpressionFromText(languageLevel, "(" + fieldName + ")")
+                    element.replace(parenthesized)
                 } else {
-                    sub.replace(newExpr)
+                    element.replace(newExpr)
                 }
             }
         }
@@ -287,12 +303,11 @@ class PyInlineParameterObjectProcessor(
         fields: List<FieldInfo>,
         functionUsages: Collection<PsiReference>,
         inlineAllOccurrences: Boolean,
+        context: TypeEvalContext
     ): List<CallSiteUpdateInfo> {
         if (functionUsages.isEmpty()) return emptyList()
 
-        val resolveContext = PyResolveContext.defaultContext(
-            TypeEvalContext.codeAnalysis(project, function.containingFile)
-        )
+        val resolveContext = PyResolveContext.defaultContext(context)
 
         val result = mutableListOf<CallSiteUpdateInfo>()
         for (ref in functionUsages) {
@@ -388,9 +403,9 @@ class PyInlineParameterObjectProcessor(
             val newArgsText = updateInfo.newArgumentListText
 
             val newArgListElement = try {
-                generator.createArgumentList(languageLevel, "($newArgsText)")
+                generator.createArgumentList(languageLevel, "(" + newArgsText + ")")
             } catch (e: Exception) {
-                LOG.debug("Failed to create argument list from '$newArgsText'", e)
+                                LOG.debug("Failed to create argument list from '" + newArgsText + "'", e)
                 null
             }
 
@@ -401,8 +416,7 @@ class PyInlineParameterObjectProcessor(
     }
 
 
-    private fun findInlineableParameter(function: PyFunction): PyNamedParameter? {
-        val context = TypeEvalContext.codeAnalysis(function.project, function.containingFile)
+    private fun findInlineableParameter(function: PyFunction, context: TypeEvalContext): PyNamedParameter? {
         return function.parameterList.parameters
             .filterIsInstance<PyNamedParameter>()
             .firstOrNull { p ->
@@ -430,7 +444,7 @@ class PyInlineParameterObjectProcessor(
 
     private fun isValidParameterObject(pyClass: PyClass, context: TypeEvalContext): Boolean {
         if (isDataclass(pyClass)) return true
-        if (isTypedDict(pyClass)) return true
+        if (isTypedDict(pyClass, context)) return true
 
         val superClasses = pyClass.getSuperClasses(context)
         for (superClass in superClasses) {
@@ -449,8 +463,7 @@ class PyInlineParameterObjectProcessor(
         }
     }
 
-    private fun isTypedDict(pyClass: PyClass): Boolean {
-        val context = TypeEvalContext.codeAnalysis(pyClass.project, pyClass.containingFile)
+    private fun isTypedDict(pyClass: PyClass, context: TypeEvalContext): Boolean {
         val superClasses = pyClass.getSuperClasses(context)
         if (superClasses.any {
             it.qualifiedName == "typing.TypedDict" ||
@@ -468,11 +481,6 @@ class PyInlineParameterObjectProcessor(
         val result = mutableListOf<FieldInfo>()
         val statements = pyClass.statementList.statements
         for (st in statements) {
-            // Handles both:
-            // - annotated assignment without value: `x: int`
-            // - annotated assignment with value: `x: int = 1`
-            // - plain assignment with value: `x = 1` (type may be null)
-
             val target: PyTargetExpression?
             val defaultText: String?
 
@@ -481,19 +489,16 @@ class PyInlineParameterObjectProcessor(
                 target = assignment.targets.singleOrNull() as? PyTargetExpression
                 defaultText = assignment.assignedValue?.text
             } else {
-                // For annotation-only statements, the PSI may not be a PyAssignmentStatement.
                 target = PsiTreeUtil.findChildOfType(st, PyTargetExpression::class.java, false)
                 defaultText = null
             }
 
             val name = target?.name ?: continue
 
-            // Pydantic V2 config
             if (name == "model_config") continue
 
             val typeText = target.annotation?.value?.text
 
-            // Only treat it as a field if it has at least an annotation or a default value.
             if (typeText == null && defaultText == null) continue
 
             result.add(FieldInfo(name = name, typeText = typeText, defaultText = defaultText))
@@ -506,7 +511,8 @@ class PyInlineParameterObjectProcessor(
 
         fun hasInlineableParameterObject(function: PyFunction): Boolean {
             return try {
-                PyInlineParameterObjectProcessor(function, function).findInlineableParameter(function) != null
+                val context = TypeEvalContext.codeAnalysis(function.project, function.containingFile)
+                PyInlineParameterObjectProcessor(function, function).findInlineableParameter(function, context) != null
             } catch (_: Throwable) {
                 false
             }

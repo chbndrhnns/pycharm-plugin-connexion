@@ -155,4 +155,11 @@ class IntroduceParameterObjectDialog(
             generateKwOnly = kwOnlyCheckBox.isSelected
         )
     }
+
+    /**
+     * For testing purposes.
+     */
+    fun setBaseType(baseType: ParameterObjectBaseType) {
+        baseTypeComboBox.selectedItem = baseType
+    }
 }

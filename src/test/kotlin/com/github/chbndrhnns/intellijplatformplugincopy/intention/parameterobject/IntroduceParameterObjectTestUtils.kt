@@ -3,10 +3,14 @@ package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobje
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.UiInterceptors
 
-fun withMockIntroduceParameterObjectDialog(action: () -> Unit) {
+fun withMockIntroduceParameterObjectDialog(
+    configure: (IntroduceParameterObjectDialog) -> Unit = {},
+    action: () -> Unit
+) {
     UiInterceptors.register(object :
         UiInterceptors.UiInterceptor<IntroduceParameterObjectDialog>(IntroduceParameterObjectDialog::class.java) {
         override fun doIntercept(component: IntroduceParameterObjectDialog) {
+            configure(component)
             component.close(DialogWrapper.OK_EXIT_CODE)
         }
     })

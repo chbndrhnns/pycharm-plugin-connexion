@@ -13,6 +13,8 @@ import com.jetbrains.python.psi.*
  */
 class PydanticGenerator : ParameterObjectGenerator {
 
+    private var importsField = false
+
     override fun generateClass(
         project: Project,
         languageLevel: LanguageLevel,
@@ -22,6 +24,7 @@ class PydanticGenerator : ParameterObjectGenerator {
         generateSlots: Boolean,
         generateKwOnly: Boolean
     ): PyClass {
+        importsField = false
         val generator = PyElementGenerator.getInstance(project)
 
         // Create class inheriting from BaseModel
@@ -47,6 +50,12 @@ class PydanticGenerator : ParameterObjectGenerator {
             file, "pydantic", "BaseModel", null, AddImportHelper.ImportPriority.THIRD_PARTY, anchor
         )
 
+        if (importsField) {
+            AddImportHelper.addOrUpdateFromImportStatement(
+                file, "pydantic", "Field", null, AddImportHelper.ImportPriority.THIRD_PARTY, anchor
+            )
+        }
+
         AddImportHelper.addOrUpdateFromImportStatement(
             file, "typing", "Any", null, AddImportHelper.ImportPriority.BUILTIN, anchor
         )
@@ -65,15 +74,24 @@ class PydanticGenerator : ParameterObjectGenerator {
         for (p in params) {
             val ann = p.annotationValue
             val typeText = ann ?: "Any"
+            val defaultValue = p.defaultValue
 
             // Text generation for each field (e.g., name: str = "default")
             val fieldText = StringBuilder().apply {
                 append(p.name)
                 append(": ")
                 append(typeText)
-                if (p.defaultValue != null) {
+                if (defaultValue != null) {
                     append(" = ")
-                    append(p.defaultValueText)
+                    if (defaultValue is PyListLiteralExpression && defaultValue.elements.isEmpty()) {
+                        append("Field(default_factory=list)")
+                        importsField = true
+                    } else if (defaultValue is PyDictLiteralExpression && defaultValue.elements.isEmpty()) {
+                        append("Field(default_factory=dict)")
+                        importsField = true
+                    } else {
+                        append(p.defaultValueText)
+                    }
                 }
             }.toString()
 
