@@ -1,6 +1,5 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject
 
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.psi.PsiElement
 import com.jetbrains.python.PyNames
@@ -8,7 +7,6 @@ import com.jetbrains.python.psi.PyFile
 import com.jetbrains.python.psi.PyNamedParameter
 
 class IntroduceParameterObjectValidator(
-    private val project: Project,
     private val scope: PsiElement
 ) {
     fun validate(
@@ -48,17 +46,6 @@ class IntroduceParameterObjectValidator(
 
     private fun isNameTaken(name: String): Boolean {
         val file = scope.containingFile as? PyFile ?: return false
-
-        if (file.findTopLevelClass(name) != null) return true
-        if (file.findTopLevelFunction(name) != null) return true
-        if (file.findTopLevelAttribute(name) != null) return true
-
-        for (stmt in file.importBlock) {
-            for (element in stmt.importElements) {
-                val visibleName = element.asName ?: element.importedQName?.lastComponent
-                if (visibleName == name) return true
-            }
-        }
-        return false
+        return ParameterObjectUtils.isNameTaken(file, name)
     }
 }

@@ -26,7 +26,7 @@ class IntroduceParameterObjectDialog(
     private val kwOnlyCheckBox = JCheckBox("kw_only", true)
 
     private val validator = if (parameters.isNotEmpty()) {
-        IntroduceParameterObjectValidator(project, parameters.first())
+        IntroduceParameterObjectValidator(parameters.first())
     } else {
         null
     }

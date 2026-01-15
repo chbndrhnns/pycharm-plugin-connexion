@@ -12,7 +12,7 @@ class PyIntroduceParameterObjectValidationTest : TestBase() {
         val function = PsiTreeUtil.findChildOfType(myFixture.file, PyFunction::class.java)!!
         val params = function.parameterList.parameters.filterIsInstance<PyNamedParameter>()
 
-        val validator = IntroduceParameterObjectValidator(function.project, function)
+        val validator = IntroduceParameterObjectValidator(function)
 
         // Valid name
         assertNull(validator.validate("MyClass", "params", params))
@@ -29,7 +29,7 @@ class PyIntroduceParameterObjectValidationTest : TestBase() {
         val function = PsiTreeUtil.findChildOfType(myFixture.file, PyFunction::class.java)!!
         val params = function.parameterList.parameters.filterIsInstance<PyNamedParameter>()
 
-        val validator = IntroduceParameterObjectValidator(function.project, function)
+        val validator = IntroduceParameterObjectValidator(function)
 
         // Valid name
         assertNull(validator.validate("MyClass", "params", params))
@@ -46,7 +46,7 @@ class PyIntroduceParameterObjectValidationTest : TestBase() {
         val function = PsiTreeUtil.findChildOfType(myFixture.file, PyFunction::class.java)!!
         val params = function.parameterList.parameters.filterIsInstance<PyNamedParameter>()
 
-        val validator = IntroduceParameterObjectValidator(function.project, function)
+        val validator = IntroduceParameterObjectValidator(function)
 
         // No parameters selected
         assertNotNull(validator.validate("MyClass", "params", emptyList()))
@@ -65,7 +65,7 @@ class PyIntroduceParameterObjectValidationTest : TestBase() {
         val function = PsiTreeUtil.findChildOfType(myFixture.file, PyFunction::class.java)!!
         val params = function.parameterList.parameters.filterIsInstance<PyNamedParameter>()
 
-        val validator = IntroduceParameterObjectValidator(function.project, function)
+        val validator = IntroduceParameterObjectValidator(function)
 
         // Duplicate name
         assertNotNull(validator.validate("ExistingClass", "params", params))

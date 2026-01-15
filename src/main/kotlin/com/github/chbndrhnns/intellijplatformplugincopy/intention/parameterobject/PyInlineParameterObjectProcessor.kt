@@ -15,9 +15,6 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.resolve.PyResolveContext
 import com.jetbrains.python.psi.types.TypeEvalContext
-import com.jetbrains.python.refactoring.PyReplaceExpressionUtil
-
-private val LOG = logger<PyInlineParameterObjectProcessor>()
 
 class PyInlineParameterObjectProcessor(
     private val function: PyFunction,
@@ -292,14 +289,7 @@ class PyInlineParameterObjectProcessor(
                 val fieldName = element.name ?: continue
                 if (!fieldNames.contains(fieldName)) continue
 
-                val languageLevel = LanguageLevel.forElement(element)
-                val newExpr = generator.createExpressionFromText(languageLevel, fieldName)
-                if (PyReplaceExpressionUtil.isNeedParenthesis(element, newExpr)) {
-                    val parenthesized = generator.createExpressionFromText(languageLevel, "($fieldName)")
-                    element.replace(parenthesized)
-                } else {
-                    element.replace(newExpr)
-                }
+                ParameterObjectUtils.replaceExpression(generator, element, fieldName)
             } else if (plan.isTypedDict && element is PySubscriptionExpression) {
                 // 2. Replace subscription access (TypedDict): params["field"] -> field
                 val operand = element.operand as? PyReferenceExpression ?: continue
@@ -309,14 +299,7 @@ class PyInlineParameterObjectProcessor(
                 val fieldName = indexExpr.stringValue
                 if (!fieldNames.contains(fieldName)) continue
 
-                val languageLevel = LanguageLevel.forElement(element)
-                val newExpr = generator.createExpressionFromText(languageLevel, fieldName)
-                if (PyReplaceExpressionUtil.isNeedParenthesis(element, newExpr)) {
-                    val parenthesized = generator.createExpressionFromText(languageLevel, "($fieldName)")
-                    element.replace(parenthesized)
-                } else {
-                    element.replace(newExpr)
-                }
+                ParameterObjectUtils.replaceExpression(generator, element, fieldName)
             }
         }
     }
@@ -448,16 +431,7 @@ class PyInlineParameterObjectProcessor(
             val call = updateInfo.callExpression
             val newArgsText = updateInfo.newArgumentListText
 
-            val newArgListElement = try {
-                generator.createArgumentList(languageLevel, "($newArgsText)")
-            } catch (e: Exception) {
-                                LOG.debug("Failed to create argument list from '$newArgsText'", e)
-                null
-            }
-
-            if (newArgListElement != null) {
-                call.argumentList?.replace(newArgListElement)
-            }
+            ParameterObjectUtils.replaceArgumentList(generator, languageLevel, call, newArgsText, LOG)
         }
     }
 

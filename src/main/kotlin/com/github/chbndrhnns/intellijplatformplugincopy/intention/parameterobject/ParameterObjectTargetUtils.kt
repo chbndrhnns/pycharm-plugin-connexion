@@ -1,10 +1,38 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject
 
+import com.github.chbndrhnns.intellijplatformplugincopy.search.PyTestDetection
+import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.*
 
 object ParameterObjectTargetUtils {
+    fun isCommonRefactoringCandidate(function: PyFunction, log: Logger): Boolean {
+        val virtualFile = function.containingFile.virtualFile
+        if (virtualFile != null) {
+            val fileIndex = ProjectFileIndex.getInstance(function.project)
+            if (fileIndex.isInLibraryClasses(virtualFile) || fileIndex.isInLibrarySource(virtualFile)) {
+                log.debug("isAvailable: Function is in library code")
+                return false
+            }
+        }
+
+        if (function.containingFile.name.endsWith(".pyi")) {
+            log.debug("isAvailable: Function is in .pyi file")
+            return false
+        }
+        if (PyTestDetection.isTestFunction(function)) {
+            log.debug("isAvailable: Function is a test function")
+            return false
+        }
+        if (PyTestDetection.isPytestFixture(function)) {
+            log.debug("isAvailable: Function is a pytest fixture")
+            return false
+        }
+        return true
+    }
+
     fun findTargetFunction(element: PsiElement): PyFunction? {
         val function = element as? PyFunction ?: PsiTreeUtil.getParentOfType(element, PyFunction::class.java)
         if (function != null) {

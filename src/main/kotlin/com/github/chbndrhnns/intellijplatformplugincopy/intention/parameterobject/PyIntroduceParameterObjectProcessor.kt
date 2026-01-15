@@ -19,7 +19,6 @@ import com.jetbrains.python.codeInsight.imports.AddImportHelper
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.resolve.PyResolveContext
 import com.jetbrains.python.psi.types.TypeEvalContext
-import com.jetbrains.python.refactoring.PyReplaceExpressionUtil
 import java.util.concurrent.CancellationException
 
 private val LOG = logger<PyIntroduceParameterObjectProcessor>()
@@ -165,7 +164,7 @@ class PyIntroduceParameterObjectProcessor(
 
         var candidate = baseName
         var index = 1
-        while (isNameTaken(file, candidate)) {
+        while (ParameterObjectUtils.isNameTaken(file, candidate)) {
             candidate = baseName + index
             index++
         }
@@ -188,20 +187,6 @@ class PyIntroduceParameterObjectProcessor(
 
         val first = sanitized.firstOrNull() ?: return "Params"
         return if (first == '_' || first.isLetter()) sanitized else "_$sanitized"
-    }
-
-    private fun isNameTaken(file: PyFile, name: String): Boolean {
-        if (file.findTopLevelClass(name) != null) return true
-        if (file.findTopLevelFunction(name) != null) return true
-        if (file.findTopLevelAttribute(name) != null) return true
-
-        for (stmt in file.importBlock) {
-            for (element in stmt.importElements) {
-                val visibleName = element.asName ?: element.importedQName?.lastComponent
-                if (visibleName == name) return true
-            }
-        }
-        return false
     }
 
     private fun insertClassIntoFile(
@@ -316,7 +301,6 @@ class PyIntroduceParameterObjectProcessor(
                     PsiTreeUtil.isAncestor(function, element, true)
                 ) {
 
-                    val languageLevel = LanguageLevel.forElement(element)
                     val newExprText = if (isTypedDict) {
                         if (p.defaultValue != null) {
                             "$parameterName.get(\"$paramName\", ${p.defaultValueText})"
@@ -327,16 +311,7 @@ class PyIntroduceParameterObjectProcessor(
                         "$parameterName.$paramName"
                     }
 
-                    val newExpr = generator.createExpressionFromText(languageLevel, newExprText)
-
-                    // Handle precedence: Wrap in parentheses if the new expression
-                    // has lower precedence than the context requires.
-                    if (PyReplaceExpressionUtil.isNeedParenthesis(element, newExpr)) {
-                        val parenthesized = generator.createExpressionFromText(languageLevel, "($newExprText)")
-                        element.replace(parenthesized)
-                    } else {
-                        element.replace(newExpr)
-                    }
+                    ParameterObjectUtils.replaceExpression(generator, element, newExprText)
                 }
             }
         }
@@ -465,16 +440,7 @@ class PyIntroduceParameterObjectProcessor(
             val call = updateInfo.callExpression
             val newArgsText = updateInfo.newArgumentListText
 
-            val newArgListElement = try {
-                generator.createArgumentList(languageLevel, "($newArgsText)")
-            } catch (e: Exception) {
-                LOG.debug("Failed to create argument list from '$newArgsText'", e)
-                null
-            }
-
-            if (newArgListElement != null) {
-                call.argumentList?.replace(newArgListElement)
-            }
+            ParameterObjectUtils.replaceArgumentList(generator, languageLevel, call, newArgsText, LOG)
 
             if (updateInfo.needsDataclassImport) {
                 val usageFile = call.containingFile
