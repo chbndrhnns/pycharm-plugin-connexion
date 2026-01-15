@@ -1,5 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.documentation
 
+import com.jetbrains.python.documentation.PyDocumentationSettings
+import com.jetbrains.python.documentation.docstrings.DocStringFormat
 import com.jetbrains.python.psi.PyClass
 import fixtures.TestBase
 
@@ -92,16 +94,40 @@ class DataclassQuickInfoProviderTest : TestBase() {
         )
 
         val pyClass = myFixture.findElementByText("DocTest", PyClass::class.java)
-        val provider = DataclassQuickInfoProvider()
-        val doc = provider.generateDoc(pyClass, null)
 
-        assertNotNull(doc)
-        // Extract just the fields portion for comparison (doc includes standard provider content)
-        assertTrue("Doc should contain 'field'. Actual: $doc", doc!!.contains("<span>field</span>"))
-        assertTrue("Doc should contain 'int'. Actual: $doc", doc!!.contains("<span>int</span>"))
-        // Note: In test environment, PythonDocumentationProvider might return "Unittest placeholder"
-        // instead of the actual docstring due to indexing/PSI limitations with configureByText.
-        // We assume standard provider works correctly in production.
+        // Set docstring format to PLAIN to avoid "Unittest placeholder"
+        val settings = PyDocumentationSettings.getInstance(myFixture.module)
+        val oldFormat = settings.format
+        settings.format = DocStringFormat.PLAIN
+        try {
+            val provider = DataclassQuickInfoProvider()
+            val doc = provider.generateDoc(pyClass, null)
+
+            assertNotNull("Generated documentation should not be null", doc)
+
+            val expectedDoc = """
+                <html>
+                <body>
+                <div class="bottom">
+                    <icon src="AllIcons.Nodes.Package"/>&nbsp;<code><a href="psi_element://#module#test_doc">test_doc</a></code></div>
+                <div class="definition">
+                    <pre><span style="color:#808000;">@dataclass</span><br/><span
+                            style="color:#000080;font-weight:bold;">class </span><span style="color:#000000;">DocTest</span></pre>
+                </div>
+                <br/><span>Fields:</span><br/>
+                <span>field</span><span>: </span><span>int</span><br/><br/><span>Dataclass options:</span><br/> init, repr, eq
+                <div class="content">My docstring</div>
+                </body>
+                </html>
+            """.trimIndent().replace(Regex(">\\s+<"), "><").replace("\n", "").replace(Regex("\\s+"), " ")
+
+            assertEquals(
+                expectedDoc,
+                doc!!.replace(Regex(">\\s+<"), "><").replace("\n", "").replace(Regex("\\s+"), " ")
+            )
+        } finally {
+            settings.format = oldFormat
+        }
     }
 
     fun testGenerateDocSnapshot() {
@@ -111,6 +137,7 @@ class DataclassQuickInfoProviderTest : TestBase() {
 
             @dataclass
             class Person:
+                '''Person docstring'''
                 name: str
                 age: int
                 email: str = "default@example.com"
@@ -118,18 +145,28 @@ class DataclassQuickInfoProviderTest : TestBase() {
         )
 
         val pyClass = myFixture.findElementByText("Person", PyClass::class.java)
-        val provider = DataclassQuickInfoProvider()
-        val doc = provider.generateDoc(pyClass, null)
 
-        assertNotNull("Generated documentation should not be null", doc)
+        // Set docstring format to PLAIN to avoid "Unittest placeholder"
+        val settings = PyDocumentationSettings.getInstance(myFixture.module)
+        val oldFormat = settings.format
+        settings.format = DocStringFormat.PLAIN
+        try {
+            val provider = DataclassQuickInfoProvider()
+            val doc = provider.generateDoc(pyClass, null)
 
-        // Assert on complete HTML output snapshot
-        val expectedHtml =
-            """<br/><span>Fields:</span><br/>  <span>name</span><span>: </span><span>str</span><br/>  <span>age</span><span>: </span><span>int</span><br/>  <span>email</span><span>: </span><span>str</span><span> = </span>&quot;default@example.com&quot;<br/><br/><span>Dataclass options:</span><br/>  init, repr, eq"""
+            assertNotNull("Generated documentation should not be null", doc)
 
-        assertTrue(
-            "Expected HTML not found in doc.\nExpected: $expectedHtml\nActual: $doc",
-            doc!!.contains(expectedHtml)
-        )
+            // Assert on complete HTML output snapshot
+            val expectedDoc = """
+                <html><body><div class="bottom"><icon src="AllIcons.Nodes.Package"/>&nbsp;<code><a href="psi_element://#module#test_snapshot">test_snapshot</a></code></div><div class="definition"><pre><span style="color:#808000;">@dataclass</span><br/><span style="color:#000080;font-weight:bold;">class </span><span style="color:#000000;">Person</span></pre></div><br/><span>Fields:</span><br/>  <span>name</span><span>: </span><span>str</span><br/>  <span>age</span><span>: </span><span>int</span><br/>  <span>email</span><span>: </span><span>str</span><span> = </span>&quot;default@example.com&quot;<br/><br/><span>Dataclass options:</span><br/>  init, repr, eq<div class="content">Person docstring</div></body></html>
+            """.trimIndent().replace(Regex(">\\s+<"), "><").replace("\n", "").replace(Regex("\\s+"), " ")
+
+            assertEquals(
+                expectedDoc,
+                doc!!.replace(Regex(">\\s+<"), "><").replace("\n", "").replace(Regex("\\s+"), " ")
+            )
+        } finally {
+            settings.format = oldFormat
+        }
     }
 }
