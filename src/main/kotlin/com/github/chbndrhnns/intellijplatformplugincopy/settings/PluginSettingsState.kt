@@ -318,7 +318,9 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
                 "com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.PyIntroduceParameterObjectProcessor",
                 "com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.PyInlineParameterObjectProcessor",
                 "com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectTarget",
-                "com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.InlineParameterObjectTarget"
+            ],
+            youtrackIssues = [
+                "PY-59270",
             ]
         )
         var enableParameterObjectRefactoring: Boolean = true,
