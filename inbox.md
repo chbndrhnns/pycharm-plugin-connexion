@@ -29,6 +29,7 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Pending Features
 
+- [ ] feat: Add quick enable/disable to status bar menu
 - [ ] feat: Qualify imports using last segment, available on import statements
 - [ ] feat: Class-like hierachy (based on directory structure) for pytest fixtures, check types
 - [ ] feat: Convert bunch of assert statements to dict and vice versa
