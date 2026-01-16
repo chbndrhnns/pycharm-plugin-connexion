@@ -97,21 +97,9 @@ class SnapshotStateManagementTest : TestBase() {
 
     fun testConfigurableInstantiation() {
         // Just verify all configurables can be created without errors
-        val intentions = IntentionsConfigurable()
-        val inspections = InspectionsConfigurable()
-        val editorActions = EditorActionsConfigurable()
-        val connexion = ConnexionConfigurable()
-        val imports = ImportsProjectViewConfigurable()
-        val parameterObject = ParameterObjectConfigurable()
         val pluginSettings = PluginSettingsConfigurable()
 
         // Create panels to ensure snapshot initialization works
-        assertNotNull(intentions.createComponent())
-        assertNotNull(inspections.createComponent())
-        assertNotNull(editorActions.createComponent())
-        assertNotNull(connexion.createComponent())
-        assertNotNull(imports.createComponent())
-        assertNotNull(parameterObject.createComponent())
         assertNotNull(pluginSettings.createComponent())
     }
 }

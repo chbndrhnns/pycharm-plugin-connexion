@@ -289,41 +289,6 @@
                 id="com.github.chbndrhnns.intellijplatformplugincopy.settings"
                 instance="com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsConfigurable"/>
 
-        <applicationConfigurable
-                parentId="com.github.chbndrhnns.intellijplatformplugincopy.settings"
-                displayName="Intentions"
-                id="com.github.chbndrhnns.intellijplatformplugincopy.settings.intentions"
-                instance="com.github.chbndrhnns.intellijplatformplugincopy.settings.IntentionsConfigurable"/>
-
-        <applicationConfigurable
-                parentId="com.github.chbndrhnns.intellijplatformplugincopy.settings"
-                displayName="Inspections"
-                id="com.github.chbndrhnns.intellijplatformplugincopy.settings.inspections"
-                instance="com.github.chbndrhnns.intellijplatformplugincopy.settings.InspectionsConfigurable"/>
-
-        <applicationConfigurable
-                parentId="com.github.chbndrhnns.intellijplatformplugincopy.settings"
-                displayName="Editor Actions"
-                id="com.github.chbndrhnns.intellijplatformplugincopy.settings.editoractions"
-                instance="com.github.chbndrhnns.intellijplatformplugincopy.settings.EditorActionsConfigurable"/>
-
-        <applicationConfigurable
-                parentId="com.github.chbndrhnns.intellijplatformplugincopy.settings"
-                displayName="Connexion"
-                id="com.github.chbndrhnns.intellijplatformplugincopy.settings.connexion"
-                instance="com.github.chbndrhnns.intellijplatformplugincopy.settings.ConnexionConfigurable"/>
-
-        <applicationConfigurable
-                parentId="com.github.chbndrhnns.intellijplatformplugincopy.settings"
-                displayName="Imports &amp; Project View"
-                id="com.github.chbndrhnns.intellijplatformplugincopy.settings.importsprojectview"
-                instance="com.github.chbndrhnns.intellijplatformplugincopy.settings.ImportsProjectViewConfigurable"/>
-
-        <applicationConfigurable
-                parentId="com.github.chbndrhnns.intellijplatformplugincopy.settings"
-                displayName="Parameter Object"
-                id="com.github.chbndrhnns.intellijplatformplugincopy.settings.parameterobject"
-                instance="com.github.chbndrhnns.intellijplatformplugincopy.settings.ParameterObjectConfigurable"/>
 
         <localInspection
                 language="Python"

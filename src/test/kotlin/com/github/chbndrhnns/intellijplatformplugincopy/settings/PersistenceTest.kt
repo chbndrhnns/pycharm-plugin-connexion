@@ -16,7 +16,7 @@ class PersistenceTest : TestBase() {
         val originalState = feature.isEnabled()
 
         // Create first configurable instance (simulates opening settings)
-        val configurable1 = IntentionsConfigurable()
+        val configurable1 = PluginSettingsConfigurable()
         configurable1.createComponent()
 
         // Snapshot should capture original state
@@ -37,7 +37,7 @@ class PersistenceTest : TestBase() {
         assertEquals("Persistent state should be updated", newValue, feature.isEnabled())
 
         // Simulate closing and reopening settings by creating new configurable
-        val configurable2 = IntentionsConfigurable()
+        val configurable2 = PluginSettingsConfigurable()
         configurable2.createComponent()
 
         // New configurable should see the persisted change
