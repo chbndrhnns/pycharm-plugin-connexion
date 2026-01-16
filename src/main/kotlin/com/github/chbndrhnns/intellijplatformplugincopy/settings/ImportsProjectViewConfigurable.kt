@@ -31,7 +31,6 @@ class ImportsProjectViewConfigurable : BoundConfigurable("Imports & Project View
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("relative-import-preference")?.let { feature ->
@@ -39,7 +38,6 @@ class ImportsProjectViewConfigurable : BoundConfigurable("Imports & Project View
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("hide-transient-imports")?.let { feature ->
@@ -47,7 +45,6 @@ class ImportsProjectViewConfigurable : BoundConfigurable("Imports & Project View
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
             }
@@ -57,7 +54,6 @@ class ImportsProjectViewConfigurable : BoundConfigurable("Imports & Project View
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
             }

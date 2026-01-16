@@ -35,7 +35,6 @@ class InspectionsConfigurable : BoundConfigurable("Inspections"), Configurable.W
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("dataclass-missing-inspection")?.let { feature ->
@@ -43,7 +42,6 @@ class InspectionsConfigurable : BoundConfigurable("Inspections"), Configurable.W
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("private-module-import-inspection")?.let { feature ->
@@ -51,7 +49,6 @@ class InspectionsConfigurable : BoundConfigurable("Inspections"), Configurable.W
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("abstract-method-not-implemented-inspection")?.let { feature ->
@@ -59,7 +56,6 @@ class InspectionsConfigurable : BoundConfigurable("Inspections"), Configurable.W
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("constant-final-inspection")?.let { feature ->
@@ -67,7 +63,6 @@ class InspectionsConfigurable : BoundConfigurable("Inspections"), Configurable.W
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("shadowing-stdlib-module-inspection")?.let { feature ->
@@ -75,7 +70,6 @@ class InspectionsConfigurable : BoundConfigurable("Inspections"), Configurable.W
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("unresolved-reference-as-error-inspection")?.let { feature ->
@@ -83,7 +77,6 @@ class InspectionsConfigurable : BoundConfigurable("Inspections"), Configurable.W
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
             }
@@ -94,7 +87,6 @@ class InspectionsConfigurable : BoundConfigurable("Inspections"), Configurable.W
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
             }

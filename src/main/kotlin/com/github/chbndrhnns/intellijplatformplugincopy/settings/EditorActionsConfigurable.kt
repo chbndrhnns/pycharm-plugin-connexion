@@ -26,7 +26,6 @@ class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("copy-build-number")?.let { feature ->
@@ -34,7 +33,6 @@ class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("copy-block-with-dependencies")?.let { feature ->
@@ -42,7 +40,6 @@ class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("copy-pytest-node-ids")?.let { feature ->
@@ -50,7 +47,6 @@ class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("copy-pytest-node-id-from-editor")?.let { feature ->
@@ -58,7 +54,6 @@ class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("copy-fqns")?.let { feature ->
@@ -66,7 +61,6 @@ class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("copy-stacktrace")?.let { feature ->
@@ -74,7 +68,6 @@ class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
             }
@@ -86,7 +79,6 @@ class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("inline-parameter-object")?.let { feature ->
@@ -94,7 +86,6 @@ class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
             }
@@ -106,7 +97,6 @@ class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("toggle-pytest-skip-from-test-tree")?.let { feature ->
@@ -114,7 +104,6 @@ class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
             }
@@ -126,7 +115,6 @@ class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("mock-patch-reference")?.let { feature ->
@@ -134,7 +122,6 @@ class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("filter-warnings-reference")?.let { feature ->
@@ -142,7 +129,6 @@ class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("pytest-identifier-search-everywhere")?.let { feature ->
@@ -150,7 +136,6 @@ class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
             }
@@ -162,7 +147,6 @@ class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("export-symbol-to-target")?.let { feature ->
@@ -170,7 +154,6 @@ class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("newtype-typevar-paramspec-rename")?.let { feature ->
@@ -178,7 +161,6 @@ class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("type-annotation-usage-filtering")?.let { feature ->
@@ -186,7 +168,6 @@ class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("python-message-console-filter")?.let { feature ->
@@ -194,7 +175,6 @@ class EditorActionsConfigurable : BoundConfigurable("Editor Actions") {
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
             }

@@ -21,7 +21,6 @@ class ConnexionConfigurable : BoundConfigurable("Connexion") {
                             feature,
                             getter = { stateSnapshot.isEnabled(feature.id) },
                             setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                            onLoggingChanged = onLoggingChanged
                         )
                     )
                 }
@@ -31,7 +30,6 @@ class ConnexionConfigurable : BoundConfigurable("Connexion") {
                             feature,
                             getter = { stateSnapshot.isEnabled(feature.id) },
                             setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                            onLoggingChanged = onLoggingChanged
                         )
                     )
                 }

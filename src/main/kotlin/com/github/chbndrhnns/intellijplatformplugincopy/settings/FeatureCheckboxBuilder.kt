@@ -114,36 +114,6 @@ object FeatureCheckboxBuilder {
         }
     }
 
-    /**
-     * Creates a logging badge if debug logging is currently enabled for the feature.
-     *
-     * @param feature The feature to check for active logging
-     * @param onLoggingChanged Optional callback to trigger when logging is disabled via badge click
-     * @return A badge component if logging is active, null otherwise
-     */
-    fun createLoggingBadge(feature: FeatureRegistry.FeatureInfo, onLoggingChanged: (() -> Unit)? = null): JComponent? {
-        if (feature.loggingCategories.isEmpty()) return null
-
-        val loggingService = FeatureLoggingService.instance()
-        return if (loggingService.isLoggingEnabled(feature)) {
-            MaturityTagLabel(
-                text = "Logging",
-                backgroundColor = MaturityColors.LOGGING_BG,
-                tooltip = "Click to disable logging for this feature"
-            ).apply {
-                cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
-                addMouseListener(object : MouseAdapter() {
-                    override fun mouseClicked(e: MouseEvent) {
-                        loggingService.disableLogging(feature)
-                        // Trigger UI rebuild if callback is provided
-                        onLoggingChanged?.invoke()
-                    }
-                })
-            }
-        } else {
-            null
-        }
-    }
 
     /**
      * Creates a row with a feature checkbox, maturity badge, and optional YouTrack links.
@@ -152,15 +122,13 @@ object FeatureCheckboxBuilder {
      * @param getter Function to get the current state (defaults to feature.isEnabled)
      * @param setter Function to set the state (defaults to feature.setEnabled)
      * @param labelOverride Optional custom label (defaults to feature.displayName)
-     * @param onLoggingChanged Optional callback to trigger when logging state changes (for UI refresh)
      * @return RowMetadata containing the row and filtering information
      */
     fun Panel.featureRow(
         feature: FeatureRegistry.FeatureInfo,
         getter: (() -> Boolean)? = null,
         setter: ((Boolean) -> Unit)? = null,
-        labelOverride: String? = null,
-        onLoggingChanged: (() -> Unit)? = null
+        labelOverride: String? = null
     ): RowMetadata {
         val label = labelOverride ?: feature.displayName
         val searchableText = buildString {
@@ -197,18 +165,10 @@ object FeatureCheckboxBuilder {
 
                                 if (feature.loggingCategories.isNotEmpty()) {
                                     val loggingService = FeatureLoggingService.instance()
-                                    val isLoggingEnabled = loggingService.isLoggingEnabled(feature)
 
-                                    val logItemText = if (isLoggingEnabled) "Disable Debug Logs" else "Enable Debug Logs"
-                                    val logItem = JMenuItem(logItemText)
+                                    val logItem = JMenuItem("Copy Log Categories")
                                     logItem.addActionListener {
-                                        if (isLoggingEnabled) {
-                                            loggingService.disableLogging(feature)
-                                        } else {
-                                            loggingService.enableLogging(feature)
-                                        }
-                                        // Trigger UI rebuild if callback is provided
-                                        onLoggingChanged?.invoke()
+                                        loggingService.copyLoggingCategoriesToClipboard(feature)
                                     }
                                     popup.add(logItem)
                                 }
@@ -225,10 +185,6 @@ object FeatureCheckboxBuilder {
 
             createMaturityTag(feature.maturity, feature.removeIn)?.let { tag ->
                 cell(tag)
-            }
-
-            createLoggingBadge(feature, onLoggingChanged)?.let { badge ->
-                cell(badge)
             }
 
             if (feature.youtrackIssues.isNotEmpty()) {

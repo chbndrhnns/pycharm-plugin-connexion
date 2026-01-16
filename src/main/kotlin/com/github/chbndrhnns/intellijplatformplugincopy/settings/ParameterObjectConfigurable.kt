@@ -23,7 +23,6 @@ class ParameterObjectConfigurable : BoundConfigurable("Parameter Object") {
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
             }

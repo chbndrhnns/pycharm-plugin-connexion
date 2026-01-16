@@ -39,7 +39,6 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("wrap-items-with-expected-type")?.let { feature ->
@@ -47,7 +46,6 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("unwrap-to-expected-type")?.let { feature ->
@@ -55,7 +53,6 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("unwrap-items-to-expected-type")?.let { feature ->
@@ -63,7 +60,6 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("introduce-custom-type-from-stdlib")?.let { feature ->
@@ -71,7 +67,6 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
             }
@@ -83,7 +78,6 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("make-parameter-optional")?.let { feature ->
@@ -91,7 +85,6 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("make-parameter-mandatory")?.let { feature ->
@@ -99,7 +92,6 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("create-local-variable")?.let { feature ->
@@ -107,7 +99,6 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
             }
@@ -119,7 +110,6 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("change-visibility")?.let { feature ->
@@ -127,7 +117,6 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("unexport-symbol")?.let { feature ->
@@ -135,7 +124,6 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("callable-to-protocol")?.let { feature ->
@@ -143,7 +131,6 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("add-exception-capture")?.let { feature ->
@@ -151,7 +138,6 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("wrap-exceptions-with-parentheses")?.let { feature ->
@@ -159,7 +145,6 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("strip-signature-type-annotations")?.let { feature ->
@@ -167,7 +152,6 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("toggle-type-alias")?.let { feature ->
@@ -175,7 +159,6 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("newtype-typevar-paramspec-rename")?.let { feature ->
@@ -183,7 +166,6 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
             }
@@ -195,7 +177,6 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("make-member-abstract-in-abstract-class")?.let { feature ->
@@ -203,7 +184,6 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
             }
@@ -215,7 +195,6 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("parametrize-pytest-test")?.let { feature ->
@@ -223,7 +202,6 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("convert-pytest-param")?.let { feature ->
@@ -231,7 +209,6 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("mock-type-provider")?.let { feature ->
@@ -239,7 +216,6 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("wrap-test-in-class")?.let { feature ->
@@ -247,7 +223,6 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
             }
@@ -259,7 +234,6 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
                 registry.getFeature("rename-to-self-filter")?.let { feature ->
@@ -267,7 +241,6 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
             }
@@ -279,7 +252,6 @@ class IntentionsConfigurable : BoundConfigurable("Intentions"), Configurable.Wit
                         feature,
                         getter = { stateSnapshot.isEnabled(feature.id) },
                         setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
-                        onLoggingChanged = onLoggingChanged
                     ))
                 }
             }
