@@ -1,6 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.settings
 
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.ParameterObjectBaseType
+import com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.ParameterObjectBaseType
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.FeatureCheckboxBuilder.featureRow
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.ui.DialogPanel

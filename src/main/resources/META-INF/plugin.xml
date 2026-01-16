@@ -85,7 +85,7 @@
         <codeInsight.lineMarkerProvider language="JSON"
                                         implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.connexion.ConnexionJsonLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="Python"
-                                        implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.ParameterObjectLineMarkerProvider"/>
+                                        implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.ParameterObjectLineMarkerProvider"/>
 
         <definitionsScopedSearch implementation="com.github.chbndrhnns.intellijplatformplugincopy.search.PyProtocolDefinitionsSearchExecutor"/>
 
@@ -469,15 +469,15 @@
         </action>
 
 
-        <action id="com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectRefactoringAction"
-                class="com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.IntroduceParameterObjectRefactoringAction"
+        <action id="com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.IntroduceParameterObjectRefactoringAction"
+                class="com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.IntroduceParameterObjectRefactoringAction"
                 text="BetterPy: Introduce Parameter Object..."
                 description="Introduces a parameter object for the current function">
             <add-to-group group-id="RefactoringMenu" anchor="last"/>
         </action>
 
-        <action id="com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.InlineParameterObjectRefactoringAction"
-                class="com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.InlineParameterObjectRefactoringAction"
+        <action id="com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.InlineParameterObjectRefactoringAction"
+                class="com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.InlineParameterObjectRefactoringAction"
                 text="BetterPy: Inline Parameter Object..."
                 description="Inlines a parameter object back into individual parameters">
             <add-to-group group-id="RefactoringMenu" anchor="last"/>

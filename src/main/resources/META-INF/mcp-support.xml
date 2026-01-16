@@ -1,5 +1,5 @@
 <idea-plugin>
     <extensions defaultExtensionNs="com.intellij.mcpServer">
-        <mcpToolset implementation="com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.mcp.ParameterObjectToolset"/>
+        <mcpToolset implementation="com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.mcp.ParameterObjectToolset"/>
     </extensions>
 </idea-plugin>

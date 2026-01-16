@@ -315,7 +315,7 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
             description = "Enables introduce/inline parameter object refactoring actions",
             category = FeatureCategory.ACTIONS,
             loggingCategories = [
-                "com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject",
+                "com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject",
             ],
             youtrackIssues = [
                 "PY-59270",
