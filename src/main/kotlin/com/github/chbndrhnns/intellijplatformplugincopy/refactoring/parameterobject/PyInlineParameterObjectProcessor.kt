@@ -204,8 +204,8 @@ class PyInlineParameterObjectProcessor(
         WriteCommandAction.runWriteCommandAction(project, "Inline parameter object", null, {
             // Process all plans
             for (plan in plans) {
-                replaceFunctionSignature(plan)
                 updateFunctionBody(plan)
+                replaceFunctionSignature(plan)
                 applyCallSiteUpdates(plan)
                 // Reformat each function individually to avoid PSI crashes
                 if (plan.function.isValid) {
@@ -286,6 +286,9 @@ class PyInlineParameterObjectProcessor(
                 val qualifier = element.qualifier as? PyReferenceExpression ?: continue
                 if (qualifier.name != plan.parameterName) continue
 
+                // Important: Verify the qualifier actually refers to the parameter being inlined
+                if (qualifier.reference.resolve() != plan.parameter) continue
+
                 val fieldName = element.name ?: continue
                 if (!fieldNames.contains(fieldName)) continue
 
@@ -294,6 +297,9 @@ class PyInlineParameterObjectProcessor(
                 // 2. Replace subscription access (TypedDict): params["field"] -> field
                 val operand = element.operand as? PyReferenceExpression ?: continue
                 if (operand.name != plan.parameterName) continue
+
+                // Important: Verify the operand actually refers to the parameter being inlined
+                if (operand.reference.resolve() != plan.parameter) continue
 
                 val indexExpr = element.indexExpression as? PyStringLiteralExpression ?: continue
                 val fieldName = indexExpr.stringValue
