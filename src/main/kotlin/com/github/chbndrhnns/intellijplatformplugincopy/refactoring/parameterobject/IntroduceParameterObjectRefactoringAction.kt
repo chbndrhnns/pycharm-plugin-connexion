@@ -20,7 +20,7 @@ class IntroduceParameterObjectRefactoringAction : PyBaseRefactoringAction() {
         file: PsiFile,
         context: DataContext
     ): Boolean {
-        if (!PluginSettingsState.instance().state.enableParameterObjectRefactoring) return false
+        if (!PluginSettingsState.instance().state.parameterObject.enableParameterObjectRefactoring) return false
         // `PyBaseRefactoringAction` may provide a *resolved* target element (e.g. built-in `int` from library)
         // when the caret is on a type annotation. For availability we must prefer the leaf PSI at the caret,
         // just like the refactoring handler does.

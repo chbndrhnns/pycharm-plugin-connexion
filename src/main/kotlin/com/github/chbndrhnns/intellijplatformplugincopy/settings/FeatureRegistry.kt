@@ -116,14 +116,42 @@ class FeatureRegistry {
     @Suppress("UNCHECKED_CAST")
     private fun buildFeatureMap(): Map<String, FeatureInfo> {
         val result = mutableMapOf<String, FeatureInfo>()
+        val visited = mutableSetOf<kotlin.reflect.KClass<*>>()
 
-        PluginSettingsState.State::class.memberProperties.forEach { prop ->
+        // Scan top-level properties in PluginSettingsState.State
+        scanPropertiesForFeatures(
+            klass = PluginSettingsState.State::class,
+            instanceGetter = { PluginSettingsState.instance().state },
+            result = result,
+            visited = visited
+        )
+
+        return result
+    }
+
+    /**
+     * Recursively scans properties of a class for @Feature annotations.
+     * Supports both direct Boolean properties and nested settings objects.
+     */
+    @Suppress("UNCHECKED_CAST")
+    private fun <T : Any> scanPropertiesForFeatures(
+        klass: kotlin.reflect.KClass<T>,
+        instanceGetter: () -> T,
+        result: MutableMap<String, FeatureInfo>,
+        visited: MutableSet<kotlin.reflect.KClass<*>>
+    ) {
+        // Prevent infinite recursion by tracking visited classes
+        if (!visited.add(klass)) {
+            return
+        }
+
+        klass.memberProperties.forEach { prop ->
             val annotation = prop.findAnnotation<Feature>()
                 ?: prop.javaField?.getAnnotation(Feature::class.java)
 
             if (annotation != null && prop is KMutableProperty1<*, *>) {
-                @Suppress("UNCHECKED_CAST")
-                val mutableProp = prop as KMutableProperty1<PluginSettingsState.State, Boolean>
+                // This is a @Feature-annotated Boolean property
+                val mutableProp = prop as KMutableProperty1<T, Boolean>
 
                 result[annotation.id] = FeatureInfo(
                     id = annotation.id,
@@ -136,20 +164,42 @@ class FeatureRegistry {
                     since = annotation.since,
                     removeIn = annotation.removeIn,
                     propertyName = prop.name,
-                    // Always access fresh state instead of capturing it
                     getter = {
-                        val state = PluginSettingsState.instance().state
-                        mutableProp.get(state)
+                        val instance = instanceGetter()
+                        mutableProp.get(instance)
                     },
                     setter = { value ->
-                        val state = PluginSettingsState.instance().state
-                        mutableProp.set(state, value)
+                        val instance = instanceGetter()
+                        mutableProp.set(instance, value)
                     }
                 )
+            } else if (prop is KMutableProperty1<*, *> && prop.returnType.classifier is kotlin.reflect.KClass<*>) {
+                // Check if this is a nested settings object (data class with @Feature-annotated properties)
+                val nestedClass = prop.returnType.classifier as? kotlin.reflect.KClass<*>
+                if (nestedClass != null && hasFeatureAnnotatedProperties(nestedClass)) {
+                    // Recursively scan the nested object
+                    val nestedProp = prop as KMutableProperty1<T, Any>
+                    scanPropertiesForFeatures(
+                        klass = nestedClass as kotlin.reflect.KClass<Any>,
+                        instanceGetter = {
+                            val parentInstance = instanceGetter()
+                            nestedProp.get(parentInstance)
+                        },
+                        result = result,
+                        visited = visited
+                    )
+                }
             }
         }
+    }
 
-        return result
+    /**
+     * Checks if a class has any properties annotated with @Feature.
+     */
+    private fun hasFeatureAnnotatedProperties(klass: kotlin.reflect.KClass<*>): Boolean {
+        return klass.memberProperties.any { prop ->
+            prop.findAnnotation<Feature>() != null || prop.javaField?.getAnnotation(Feature::class.java) != null
+        }
     }
 
     companion object {

@@ -1,0 +1,35 @@
+package com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject
+
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.Feature
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.FeatureCategory
+
+/**
+ * Feature settings for parameter object refactoring.
+ * These settings are discovered by FeatureRegistry via reflection.
+ */
+data class ParameterObjectFeatureSettings(
+    @Feature(
+        id = "parameter-object-refactoring",
+        displayName = "Parameter object refactoring",
+        description = "Enables introduce/inline parameter object refactoring actions",
+        category = FeatureCategory.ACTIONS,
+        loggingCategories = [
+            "com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject",
+        ],
+        youtrackIssues = [
+            "PY-59270",
+        ]
+    )
+    var enableParameterObjectRefactoring: Boolean = true,
+
+    @Feature(
+        id = "parameter-object-gutter-icon",
+        displayName = "Parameter object gutter icon",
+        description = "Shows a gutter icon on functions that are candidates for 'Introduce Parameter Object' refactoring",
+        category = FeatureCategory.ACTIONS
+    )
+    var enableParameterObjectGutterIcon: Boolean = true,
+
+    /** Default base type for parameter objects (dataclass, NamedTuple, TypedDict, pydantic.BaseModel) */
+    var defaultParameterObjectBaseType: String = "dataclass",
+)

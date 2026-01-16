@@ -37,7 +37,7 @@ class IntroduceParameterObjectDialog(
 
         // Set default base type from global settings
         val defaultBaseType = ParameterObjectBaseType.fromDisplayName(
-            PluginSettingsState.instance().state.defaultParameterObjectBaseType
+            PluginSettingsState.instance().state.parameterObject.defaultParameterObjectBaseType
         )
         baseTypeComboBox.selectedItem = defaultBaseType
         updateOptionsForBaseType(defaultBaseType)

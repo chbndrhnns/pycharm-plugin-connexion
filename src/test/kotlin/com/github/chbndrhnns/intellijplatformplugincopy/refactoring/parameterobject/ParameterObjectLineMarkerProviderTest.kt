@@ -74,7 +74,7 @@ class ParameterObjectLineMarkerProviderTest : TestBase() {
     }
 
     fun testGutterIconNotAvailableWhenGutterIconDisabled() {
-        PluginSettingsState.instance().state.enableParameterObjectGutterIcon = false
+        PluginSettingsState.instance().state.parameterObject.enableParameterObjectGutterIcon = false
 
         myFixture.configureByText(
             "e.py", """
@@ -92,7 +92,7 @@ class ParameterObjectLineMarkerProviderTest : TestBase() {
     }
 
     fun testGutterIconNotAvailableWhenRefactoringDisabled() {
-        PluginSettingsState.instance().state.enableParameterObjectRefactoring = false
+        PluginSettingsState.instance().state.parameterObject.enableParameterObjectRefactoring = false
 
         myFixture.configureByText(
             "f.py", """

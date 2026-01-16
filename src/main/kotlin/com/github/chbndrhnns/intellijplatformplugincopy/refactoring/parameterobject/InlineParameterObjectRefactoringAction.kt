@@ -20,7 +20,7 @@ class InlineParameterObjectRefactoringAction : PyBaseRefactoringAction() {
         file: PsiFile,
         context: DataContext
     ): Boolean {
-        if (!PluginSettingsState.instance().state.enableParameterObjectRefactoring) return false
+        if (!PluginSettingsState.instance().state.parameterObject.enableParameterObjectRefactoring) return false
 
         // PyBaseRefactoringAction sometimes passes the resolved element (e.g., the class definition)
         // instead of the element at the caret (e.g., the reference to the class in the annotation).

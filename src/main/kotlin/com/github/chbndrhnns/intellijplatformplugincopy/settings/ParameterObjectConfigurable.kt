@@ -30,9 +30,9 @@ class ParameterObjectConfigurable : BoundConfigurable("Parameter Object") {
                 row("Default base type:") {
                     comboBox(ParameterObjectBaseType.entries)
                         .bindItem(
-                            getter = { ParameterObjectBaseType.fromDisplayName(settings.defaultParameterObjectBaseType) },
+                            getter = { ParameterObjectBaseType.fromDisplayName(settings.parameterObject.defaultParameterObjectBaseType) },
                             setter = {
-                                settings.defaultParameterObjectBaseType =
+                                settings.parameterObject.defaultParameterObjectBaseType =
                                     it?.displayName ?: ParameterObjectBaseType.default().displayName
                             }
                         )

@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.settings
 
+import com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.ParameterObjectFeatureSettings
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
@@ -309,19 +310,8 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enableCopyStacktraceAction: Boolean = true,
 
         // ---- Refactoring Actions ----
-        @Feature(
-            id = "parameter-object-refactoring",
-            displayName = "Parameter object refactoring",
-            description = "Enables introduce/inline parameter object refactoring actions",
-            category = FeatureCategory.ACTIONS,
-            loggingCategories = [
-                "com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject",
-            ],
-            youtrackIssues = [
-                "PY-59270",
-            ]
-        )
-        var enableParameterObjectRefactoring: Boolean = true,
+        var parameterObject: ParameterObjectFeatureSettings =
+            ParameterObjectFeatureSettings(),
 
         @Feature(
             id = "introduce-custom-type",
@@ -330,18 +320,6 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
             category = FeatureCategory.ACTIONS
         )
         var enableIntroduceCustomTypeRefactoringAction: Boolean = true,
-
-        // ---- Parameter Object Settings ----
-        @Feature(
-            id = "parameter-object-gutter-icon",
-            displayName = "Parameter object gutter icon",
-            description = "Shows a gutter icon on functions that are candidates for 'Introduce Parameter Object' refactoring",
-            category = FeatureCategory.ACTIONS
-        )
-        var enableParameterObjectGutterIcon: Boolean = true,
-
-        /** Default base type for parameter objects (dataclass, NamedTuple, TypedDict, pydantic.BaseModel) */
-        var defaultParameterObjectBaseType: String = "dataclass",
 
         // ---- Pytest Tree Actions ----
         @Feature(

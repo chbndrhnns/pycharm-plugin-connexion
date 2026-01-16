@@ -23,8 +23,8 @@ class ParameterObjectLineMarkerProvider : LineMarkerProvider {
     }
 
     override fun getLineMarkerInfo(element: PsiElement): LineMarkerInfo<*>? {
-        if (!PluginSettingsState.instance().state.enableParameterObjectGutterIcon) return null
-        if (!PluginSettingsState.instance().state.enableParameterObjectRefactoring) return null
+        if (!PluginSettingsState.instance().state.parameterObject.enableParameterObjectGutterIcon) return null
+        if (!PluginSettingsState.instance().state.parameterObject.enableParameterObjectRefactoring) return null
 
         // Only process PyFunction elements to avoid duplicate markers
         if (element !is PyFunction) return null

@@ -12,7 +12,7 @@ class PyParameterObjectSettingsTest : TestBase() {
         "com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.InlineParameterObjectRefactoringAction"
 
     fun testParameterObjectRefactoringDisabled_IntroduceNotAvailable() {
-        withPluginSettings({ enableParameterObjectRefactoring = false }) {
+        withPluginSettings({ parameterObject.enableParameterObjectRefactoring = false }) {
             myFixture.assertActionNotAvailable(
                 "a.py",
                 """
@@ -25,7 +25,7 @@ class PyParameterObjectSettingsTest : TestBase() {
     }
 
     fun testParameterObjectRefactoringDisabled_InlineNotAvailable() {
-        withPluginSettings({ enableParameterObjectRefactoring = false }) {
+        withPluginSettings({ parameterObject.enableParameterObjectRefactoring = false }) {
             myFixture.assertActionNotAvailable(
                 "a.py",
                 """
