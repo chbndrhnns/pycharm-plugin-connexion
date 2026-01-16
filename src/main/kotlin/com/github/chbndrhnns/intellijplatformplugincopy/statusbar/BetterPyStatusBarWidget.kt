@@ -83,10 +83,11 @@ class BetterPyStatusBarWidget(private val project: Project) : StatusBarWidget, S
 
     private fun createPopup(): ListPopup {
         val step = object : BaseListPopupStep<String>("BetterPy", getPopupActions()) {
+            private var lastSelectedValue: String? = null
+
             override fun onChosen(selectedValue: String?, finalChoice: Boolean): PopupStep<*>? {
+                lastSelectedValue = selectedValue
                 when (selectedValue) {
-                    "Copy Diagnostic Data" -> invokeCopyDiagnosticDataAction()
-                    "Settings" -> invokeShowSettingsAction()
                     "Disable all features" -> {
                         PluginSettingsState.instance().mute()
                         statusBar?.updateWidget(ID)
@@ -98,6 +99,14 @@ class BetterPyStatusBarWidget(private val project: Project) : StatusBarWidget, S
                     }
                 }
                 return FINAL_CHOICE
+            }
+
+            override fun getFinalRunnable(): Runnable? {
+                return when (lastSelectedValue) {
+                    "Copy Diagnostic Data" -> Runnable { invokeCopyDiagnosticDataAction() }
+                    "Settings" -> Runnable { invokeShowSettingsAction() }
+                    else -> null
+                }
             }
         }
         return JBPopupFactory.getInstance().createListPopup(step)
