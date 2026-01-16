@@ -1,13 +1,3 @@
-[2026-01-01 11:23] - Updated by Junie - Trajectory analysis
-{
-    "PLAN QUALITY": "near-optimal",
-    "REDUNDANT STEPS": "search symbol",
-    "MISSING STEPS": "use invokeLater for dialog, scan related handler",
-    "BOTTLENECK": "Dialog shown during write action caused AWT event violation.",
-    "PROJECT NOTE": "WrapTestInClassRefactoringHandler.invoke also shows UI; verify it avoids write actions.",
-    "NEW INSTRUCTION": "WHEN intention opens DialogWrapper THEN show via invokeLater and edit in WriteCommandAction afterward"
-}
-
 [2026-01-01 12:14] - Updated by Junie - Trajectory analysis
 {
     "PLAN QUALITY": "suboptimal",
@@ -896,4 +886,14 @@
     "BOTTLENECK": "Unnecessary search for tests unrelated to descriptor creation.",
     "PROJECT NOTE": "Ensure the intentionDescriptions folder name matches the Intention class name exactly.",
     "NEW INSTRUCTION": "WHEN task mentions missing intention descriptors THEN create intentionDescriptions/<ClassName> with description.html, before.py.template, after.py.template"
+}
+
+[2026-01-16 09:48] - Updated by Junie - Trajectory analysis
+{
+    "PLAN QUALITY": "near-optimal",
+    "REDUNDANT STEPS": "-",
+    "MISSING STEPS": "validate extension point schema,run build",
+    "BOTTLENECK": "No verification of the MCP extension tag/attributes after moving to config file.",
+    "PROJECT NOTE": "Optional dependency configs must use the exact extension point name and allowed attributes of com.intellij.mcpServer; fix tag/attribute if mismatched.",
+    "NEW INSTRUCTION": "WHEN semantic errors appear in optional config file THEN verify extension tag and attributes against dependency EP"
 }

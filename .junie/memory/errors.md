@@ -1,13 +1,3 @@
-[2026-01-06 23:17] - Updated by Junie - Error analysis
-{
-    "TYPE": "env/setup",
-    "TOOL": "search_replace",
-    "ERROR": "plugin.xml unresolved language id 'Python'",
-    "ROOT CAUSE": "plugin.xml lacks a dependency on the Python plugin, so language=\"Python\" entries cannot be resolved.",
-    "PROJECT NOTE": "Add <depends>Pythonid</depends> (or the appropriate Python plugin id used in this repo) to plugin.xml so language=\"Python\" and Python-specific extensions validate.",
-    "NEW INSTRUCTION": "WHEN plugin.xml shows unknown language 'Python' THEN add Python plugin dependency to plugin.xml"
-}
-
 [2026-01-06 23:19] - Updated by Junie - Error analysis
 {
     "TYPE": "env/setup",
@@ -776,4 +766,14 @@
     "ROOT CAUSE": "PytestConsoleFilter regex only matches filenames followed by '::', not the ' - ' short summary format.",
     "PROJECT NOTE": "Update PytestConsoleFilter.kt to accept both '::' node-id and ' - ' short summary after '<path>.py'; tests are in PytestConsoleFilterTest.testParseShortTestSummaryInfo.",
     "NEW INSTRUCTION": "WHEN console line matches 'FAILED <path>.py - ' THEN hyperlink only the <path>.py segment"
+}
+
+[2026-01-16 09:47] - Updated by Junie - Error analysis
+{
+    "TYPE": "semantic",
+    "TOOL": "create",
+    "ERROR": "Invalid EP attribute and missing depends config-file",
+    "ROOT CAUSE": "mcpToolset extension used 'implementation' instead of 'implementationClass' and plugin.xml lacked an optional depends with config-file for com.intellij.mcpServer.",
+    "PROJECT NOTE": "Add <depends optional=\"true\" config-file=\"META-INF/mcp-support.xml\">com.intellij.mcpServer</depends> to plugin.xml and, in META-INF/mcp-support.xml, register <extensions defaultExtensionNs=\"com.intellij.mcpServer\"><mcpToolset implementationClass=\"com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.mcp.ParameterObjectToolset\"/></extensions>.",
+    "NEW INSTRUCTION": "WHEN optional dependency used without config-file THEN create config file and reference it"
 }
