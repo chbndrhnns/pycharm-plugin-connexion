@@ -98,8 +98,10 @@ class SnapshotStateManagementTest : TestBase() {
     fun testConfigurableInstantiation() {
         // Just verify all configurables can be created without errors
         val pluginSettings = PluginSettingsConfigurable()
+        val parameterObjectSettings = ParameterObjectConfigurable()
 
         // Create panels to ensure snapshot initialization works
         assertNotNull(pluginSettings.createComponent())
+        assertNotNull(parameterObjectSettings.createComponent())
     }
 }

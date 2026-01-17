@@ -30,6 +30,14 @@ data class ParameterObjectFeatureSettings(
     )
     var enableParameterObjectGutterIcon: Boolean = true,
 
+    @Feature(
+        id = "parameter-object-mcp-tool",
+        displayName = "Parameter object MCP tool",
+        description = "Enables MCP (Model Context Protocol) tools for parameter object refactoring",
+        category = FeatureCategory.MCP_TOOLS
+    )
+    var enableParameterObjectMcpTool: Boolean = true,
+
     /** Default base type for parameter objects (dataclass, NamedTuple, TypedDict, pydantic.BaseModel) */
     var defaultParameterObjectBaseType: String = "dataclass",
 )

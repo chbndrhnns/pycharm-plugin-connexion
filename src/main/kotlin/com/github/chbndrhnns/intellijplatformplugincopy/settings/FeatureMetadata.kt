@@ -25,6 +25,7 @@ enum class FeatureCategory(val displayName: String) {
     PYTEST("Pytest"),
     INSPECTIONS("Inspections"),
     ACTIONS("Actions"),
+    MCP_TOOLS("MCP Tools"),
     COMPLETION("Completion & References"),
     IMPORTS("Import & Structure"),
     NAVIGATION("Navigation"),

@@ -5,12 +5,10 @@ import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.options.SearchableConfigurable
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.dsl.builder.bindSelected
-import com.intellij.ui.dsl.builder.bindText
 
 class PluginSettingsConfigurable : BoundConfigurable("BetterPy"), SearchableConfigurable {
     private val registry = FeatureRegistry.instance()
     private lateinit var stateSnapshot: FeatureStateSnapshot
-    private var defaultParameterObjectBaseType: String = ""
     private var preferOwnTypesInUnionWrapping: Boolean = true
     private var includeStdlibInUnionWrapping: Boolean = true
 
@@ -18,6 +16,11 @@ class PluginSettingsConfigurable : BoundConfigurable("BetterPy"), SearchableConf
 
     override fun createPanel(): DialogPanel {
         stateSnapshot = FeatureStateSnapshot.fromRegistry(registry)
+
+        // Initialize manual settings from state
+        val state = PluginSettingsState.instance().state
+        preferOwnTypesInUnionWrapping = state.preferOwnTypesInUnionWrapping
+        includeStdlibInUnionWrapping = state.includeStdlibInUnionWrapping
 
         return createFilterableFeaturePanel { _ ->
             val rows = mutableListOf<RowMetadata>()
@@ -28,12 +31,6 @@ class PluginSettingsConfigurable : BoundConfigurable("BetterPy"), SearchableConf
                 if (features.isEmpty()) return@forEach
 
                 group(category.displayName) {
-                    if (category == FeatureCategory.ACTIONS) {
-                        row("Default parameter object base type:") {
-                            textField()
-                                .bindText(::defaultParameterObjectBaseType)
-                        }
-                    }
                     if (category == FeatureCategory.TYPE_WRAPPING) {
                         row {
                             checkBox("Prefer project types in union wrapping")
@@ -45,18 +42,18 @@ class PluginSettingsConfigurable : BoundConfigurable("BetterPy"), SearchableConf
                         }
                     }
 
-                    features.forEach { feature ->
+                    // Filter out parameter object features - they're in a separate configurable
+                    val filteredFeatures = if (category == FeatureCategory.ACTIONS) {
+                        features.filter { !it.id.startsWith("parameter-object-") }
+                    } else features
+
+                    filteredFeatures.forEach { feature ->
                         val row = featureRow(
                             feature,
                             getter = { stateSnapshot.isEnabled(feature.id) },
                             setter = { value -> stateSnapshot.setEnabled(feature.id, value) }
                         )
                         rows.add(row)
-
-                        // Special handling for nested settings fields that aren't Boolean features
-                        if (feature.id == "parameter-object-refactoring") {
-                            row.row.visible(stateSnapshot.isEnabled("parameter-object-refactoring"))
-                        }
                     }
                 }
             }
@@ -72,8 +69,7 @@ class PluginSettingsConfigurable : BoundConfigurable("BetterPy"), SearchableConf
 
         // Manual checks
         val state = PluginSettingsState.instance().state
-        val manualModified = defaultParameterObjectBaseType != state.parameterObject.defaultParameterObjectBaseType ||
-                preferOwnTypesInUnionWrapping != state.preferOwnTypesInUnionWrapping ||
+        val manualModified = preferOwnTypesInUnionWrapping != state.preferOwnTypesInUnionWrapping ||
                 includeStdlibInUnionWrapping != state.includeStdlibInUnionWrapping
 
         return snapshotModified || boundModified || manualModified
@@ -88,7 +84,6 @@ class PluginSettingsConfigurable : BoundConfigurable("BetterPy"), SearchableConf
             val stateCopy = stateComponent.state.copy()
 
             // Apply manual settings
-            stateCopy.parameterObject.defaultParameterObjectBaseType = defaultParameterObjectBaseType
             stateCopy.preferOwnTypesInUnionWrapping = preferOwnTypesInUnionWrapping
             stateCopy.includeStdlibInUnionWrapping = includeStdlibInUnionWrapping
             
@@ -101,7 +96,6 @@ class PluginSettingsConfigurable : BoundConfigurable("BetterPy"), SearchableConf
             stateSnapshot.reset()
             // Reset manual settings
             val state = PluginSettingsState.instance().state
-            defaultParameterObjectBaseType = state.parameterObject.defaultParameterObjectBaseType
             preferOwnTypesInUnionWrapping = state.preferOwnTypesInUnionWrapping
             includeStdlibInUnionWrapping = state.includeStdlibInUnionWrapping
             

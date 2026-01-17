@@ -1,0 +1,1239 @@
+DialogPanel
+  MaturityFilterPanel
+    Label: 'Filter by status:'
+    MaturityFilterTag
+      Label: 'Stable'
+    MaturityFilterTag
+      Label: 'Incubating'
+    MaturityFilterTag
+      Label: 'Deprecated'
+  SearchTextField
+    TextField: ''
+      Button: ''
+      Label: ' '
+  
+    Label: 'Type Wrapping/Unwrapping'
+    JSeparator
+  CheckBox: [x] 'Prefer project types in union wrapping'
+  CheckBox: [x] 'Include standard library types in union wrapping'
+  CheckBox: [x] 'Unwrap items to expected type'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Unwraps collection items to match the expected type annotation
+  </body>
+</html>
+'
+  CheckBox: [x] 'Unwrap to expected type'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Unwraps an expression to match the expected type annotation
+  </body>
+</html>
+'
+  CheckBox: [x] 'Wrap items with expected type'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body width="560">
+    Wraps collection items with types matching the expected type annotation
+  </body>
+</html>
+'
+  CheckBox: [x] 'Wrap with expected type'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body width="560">
+    Wraps an expression with a type that matches the expected type annotation
+  </body>
+</html>
+'
+  
+    Label: 'Parameter  Argument'
+    JSeparator
+  CheckBox: [x] 'Create local variable'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Creates a local variable from an expression
+  </body>
+</html>
+'
+  CheckBox: [x] 'Make parameter mandatory'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body width="560">
+    Converts an optional parameter to a required one by removing the default 
+    value
+  </body>
+</html>
+'
+  CheckBox: [x] 'Make parameter optional'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Converts a required parameter to an optional one with a default value
+  </body>
+</html>
+'
+  CheckBox: [x] 'Populate arguments'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body width="560">
+    Automatically fills in function call arguments based on the function 
+    signature
+  </body>
+</html>
+'
+  
+    Label: 'Code Structure'
+    JSeparator
+  CheckBox: [x] 'Add exception capture'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Adds an 'as' clause to capture the exception in an except block
+  </body>
+</html>
+'
+  CheckBox: [x] 'Convert Callable to Protocol'
+  MaturityTagLabel
+    Label: 'Incubating'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Converts a Callable type hint to an equivalent Protocol definition
+  </body>
+</html>
+'
+  CheckBox: [x] 'Change visibility'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Changes the visibility of a symbol (public/protected/private)
+  </body>
+</html>
+'
+  CheckBox: [x] 'Dict access conversion'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Converts between dict bracket access and .get() method calls
+  </body>
+</html>
+'
+  CheckBox: [x] 'NewType/TypeVar/ParamSpec rename'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Enables smart rename for NewType, TypeVar, and ParamSpec definitions
+  </body>
+</html>
+'
+  CheckBox: [x] 'Strip signature type annotations'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Removes type annotations from a function signature
+  </body>
+</html>
+'
+  CheckBox: [x] 'Toggle type alias'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Converts between TypeAlias and type statement syntax
+  </body>
+</html>
+'
+  CheckBox: [x] 'Wrap exceptions with parentheses'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Wraps multiple exception types in parentheses for proper syntax
+  </body>
+</html>
+'
+  
+    Label: 'Abstract Methods'
+    JSeparator
+  CheckBox: [x] 'Implement abstract method in child classes'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Generates implementations of an abstract method in all child classes
+  </body>
+</html>
+'
+  CheckBox: [x] 'Make member abstract'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Converts a concrete method to an abstract method in an abstract class
+  </body>
+</html>
+'
+  
+    Label: 'Pytest'
+    JSeparator
+  CheckBox: [x] 'Convert pytest.param'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Converts between different pytest parameter formats
+  </body>
+</html>
+'
+  CheckBox: [x] 'Jump to pytest node in test tree'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Navigates to the corresponding node in the test tree view
+  </body>
+</html>
+'
+  CheckBox: [x] 'Parametrize pytest test'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Converts a test function to use @pytest.mark.parametrize
+  </body>
+</html>
+'
+  CheckBox: [x] 'Mock type provider'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Provides type information for unittest.mock objects
+  </body>
+</html>
+'
+  CheckBox: [x] 'Toggle pytest skip from test tree'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Adds or removes @pytest.mark.skip from the test tree context menu
+  </body>
+</html>
+'
+  CheckBox: [x] 'Toggle pytest skip'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Adds or removes @pytest.mark.skip decorator from a test
+  </body>
+</html>
+'
+  CheckBox: [x] 'Wrap test in class'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Wraps a test function in a test class
+  </body>
+</html>
+'
+  
+    Label: 'Inspections'
+    JSeparator
+  CheckBox: [x] 'Abstract method not implemented inspection'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body width="560">
+    Reports abstract methods that are not implemented in concrete subclasses
+  </body>
+</html>
+'
+  CheckBox: [x] 'Constant should be Final inspection'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Reports module-level constants that should be annotated with Final
+  </body>
+</html>
+'
+  CheckBox: [x] 'Dataclass missing inspection'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Reports missing dataclass decorator or field definitions
+  </body>
+</html>
+'
+  CheckBox: [x] 'Private module import inspection'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Reports imports from private modules (starting with underscore)
+  </body>
+</html>
+'
+  CheckBox: [x] 'Missing in __all__ inspection'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Reports public symbols that are not listed in __all__
+  </body>
+</html>
+'
+  CheckBox: [x] 'Pytest failed line inspection'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Marks the line where a pytest test failed
+  </body>
+</html>
+'
+  CheckBox: [x] 'Shadowing stdlib module inspection'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Reports project modules that shadow Python standard library modules
+  </body>
+</html>
+'
+  CheckBox: [x] 'Unresolved reference as error'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Reports unresolved references as errors instead of warnings
+  </body>
+</html>
+'
+  
+    Label: 'Actions'
+    JSeparator
+  CheckBox: [x] 'Copy block with dependencies'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Copies a code block along with its required imports and dependencies
+  </body>
+</html>
+'
+  CheckBox: [x] 'Copy build number'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Copies the IDE build number to the clipboard
+  </body>
+</html>
+'
+  CheckBox: [x] 'Copy FQNs'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Copies fully qualified names of selected symbols to the clipboard
+  </body>
+</html>
+'
+  CheckBox: [x] 'Copy package content'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Copies the content of a Python package to the clipboard
+  </body>
+</html>
+'
+  CheckBox: [x] 'Copy pytest node ID from editor'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Copies the pytest node ID for the test at the caret position
+  </body>
+</html>
+'
+  CheckBox: [x] 'Copy pytest node IDs'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Copies pytest node IDs for selected tests to the clipboard
+  </body>
+</html>
+'
+  CheckBox: [x] 'Copy stacktrace'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Copies a formatted stacktrace to the clipboard
+  </body>
+</html>
+'
+  CheckBox: [x] 'Introduce custom type'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Creates a custom type from a stdlib type annotation
+  </body>
+</html>
+'
+  CheckBox: [x] 'Package run configuration'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Enables run configuration for Python packages with -m flag
+  </body>
+</html>
+'
+  
+    Label: 'Completion  References'
+    JSeparator
+  CheckBox: [x] 'Filter warnings reference'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Provides reference resolution for filterwarnings category strings
+  </body>
+</html>
+'
+  CheckBox: [x] 'Mock patch reference'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Provides reference resolution for mock.patch target strings
+  </body>
+</html>
+'
+  CheckBox: [x] 'Return completion'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body width="560">
+    Provides completion suggestions for return statements based on return type
+  </body>
+</html>
+'
+  CheckBox: [x] 'Pytest identifier in Search Everywhere'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Includes pytest identifiers in Search Everywhere results
+  </body>
+</html>
+'
+  
+    Label: 'Import  Structure'
+    JSeparator
+  CheckBox: [x] 'Export symbol to target'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Exports a symbol to a specified target module's __all__
+  </body>
+</html>
+'
+  CheckBox: [x] 'Hide transient imports'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Hides transient (re-exported) imports in the structure view
+  </body>
+</html>
+'
+  CheckBox: [x] 'Relative import preference'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Prefers relative imports over absolute imports when applicable
+  </body>
+</html>
+'
+  CheckBox: [x] 'Restore source root prefix'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Restores the source root prefix in import statements
+  </body>
+</html>
+'
+  CheckBox: [x] 'Strict source root import inspection'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Reports imports that are missing the source root prefix
+  </body>
+</html>
+'
+  CheckBox: [x] 'Structure view private members filter'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Adds a filter to hide private members in the structure view
+  </body>
+</html>
+'
+  CheckBox: [x] 'Unexport symbol'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Removes a symbol from __all__ and its corresponding import
+  </body>
+</html>
+'
+  
+    Label: 'Navigation'
+    JSeparator
+  CheckBox: [x] 'Enhanced Go to Implementation presentation'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body width="560">
+    Prepends class name to method name in Go to Implementation popup when 
+    names are identical
+  </body>
+</html>
+'
+  CheckBox: [x] 'Python navigation bar'
+  Button: 'PY-53757'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Enables enhanced Python navigation bar with module path display
+  </body>
+</html>
+'
+  
+    Label: 'Filters  Suppressors'
+    JSeparator
+  CheckBox: [x] 'Message console filter'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Filters and formats Python messages in the console
+  </body>
+</html>
+'
+  CheckBox: [x] 'Rename to self filter'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Filters out 'rename to self' suggestions in certain contexts
+  </body>
+</html>
+'
+  CheckBox: [x] 'Type annotation usage filtering'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Filters out type annotation usages from Find Usages results
+  </body>
+</html>
+'
+  CheckBox: [x] 'Suppress signature change intention'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Suppresses the suggested refactoring signature change intention
+  </body>
+</html>
+'
+  
+    Label: 'Connexion'
+    JSeparator
+  CheckBox: [x] 'Connexion completion'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Enables code completion for Connexion API framework
+  </body>
+</html>
+'
+  CheckBox: [x] 'Connexion inspections'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Enables inspections for Connexion API framework
+  </body>
+</html>
+'
+  
+    Label: 'Documentation'
+    JSeparator
+  CheckBox: [x] 'Enhanced Dataclass Quick Info'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body width="560">
+    Shows fields and inheritance details in Quick Documentation for 
+    dataclasses and Pydantic models
+  </body>
+</html>
+'

@@ -289,6 +289,12 @@
                 id="com.github.chbndrhnns.intellijplatformplugincopy.settings"
                 instance="com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsConfigurable"/>
 
+        <applicationConfigurable
+                parentId="com.github.chbndrhnns.intellijplatformplugincopy.settings"
+                displayName="Parameter Object Refactoring"
+                id="com.github.chbndrhnns.intellijplatformplugincopy.settings.parameterobject"
+                instance="com.github.chbndrhnns.intellijplatformplugincopy.settings.ParameterObjectConfigurable"/>
+
 
         <localInspection
                 language="Python"
