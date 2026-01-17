@@ -1,3 +1,4 @@
+=== BetterPy ===
 DialogPanel
   MaturityFilterPanel
     Label: 'Filter by status:'
@@ -1237,3 +1238,67 @@ DialogPanel
   </body>
 </html>
 '
+
+=== Parameter Object Refactoring ===
+DialogPanel
+  CheckBox: [x] 'Parameter object gutter icon'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body width="560">
+    Shows a gutter icon on functions that are candidates for 'Introduce 
+    Parameter Object' refactoring
+  </body>
+</html>
+'
+  CheckBox: [x] 'Parameter object MCP tool'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body width="560">
+    Enables MCP (Model Context Protocol) tools for parameter object refactoring
+  </body>
+</html>
+'
+  CheckBox: [x] 'Parameter object refactoring'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Enables introduce/inline parameter object refactoring actions
+  </body>
+</html>
+'
+  Label: 'Default parameter object base type:'
+  ComboBox
+    Button: ''

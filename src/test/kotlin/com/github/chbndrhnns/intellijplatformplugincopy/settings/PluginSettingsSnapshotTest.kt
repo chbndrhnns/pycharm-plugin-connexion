@@ -1,7 +1,10 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.settings
 
+import com.intellij.openapi.options.BoundConfigurable
+import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.ui.DialogPanel
 import fixtures.TestBase
+import io.github.classgraph.ClassGraph
 import java.awt.Component
 import java.awt.Container
 import javax.swing.JLabel
@@ -9,17 +12,54 @@ import javax.swing.text.JTextComponent
 
 class PluginSettingsSnapshotTest : TestBase() {
 
+    /**
+     * Automatically discovers all BoundConfigurable subclasses in the settings package
+     * and returns those that are not the main PluginSettingsConfigurable (i.e., sub-menus).
+     */
+    private fun discoverSubConfigurables(): List<Configurable> {
+        return ClassGraph()
+            .acceptPackages("com.github.chbndrhnns.intellijplatformplugincopy.settings")
+            .enableClassInfo()
+            .scan()
+            .use { scanResult ->
+                scanResult.getSubclasses(BoundConfigurable::class.java)
+                    .mapNotNull { classInfo ->
+                        try {
+                            val clazz = classInfo.loadClass()
+                            // Exclude the main configurable, only get sub-menus
+                            if (clazz != PluginSettingsConfigurable::class.java) {
+                                clazz.getDeclaredConstructor().newInstance() as? Configurable
+                            } else null
+                        } catch (e: Exception) {
+                            // Skip classes that can't be instantiated
+                            null
+                        }
+                    }
+            }
+    }
+
+    private val subConfigurables: List<Configurable> by lazy {
+        discoverSubConfigurables()
+    }
+
     fun testPluginSettingsUiSnapshot() {
-        val configurable = PluginSettingsConfigurable()
-        val panel = configurable.createComponent() as DialogPanel
-        assertNotNull(panel)
-        configurable.reset() // Load settings into UI
+        val mainConfigurable = PluginSettingsConfigurable()
+        val mainPanel = mainConfigurable.createComponent() as DialogPanel
+        assertNotNull(mainPanel)
+        mainConfigurable.reset() // Load settings into UI
+
+        // Create and initialize all sub-configurable panels
+        val childPanels = subConfigurables.map { child ->
+            val panel = child.createComponent() as DialogPanel
+            child.reset()
+            child.displayName to panel
+        }
 
         val registry = FeatureRegistry.instance()
         val featureId = "jump-to-pytest-node-in-test-tree"
 
         // 1. Initial snapshot
-        val initialSnapshot = buildSnapshot(panel)
+        val initialSnapshot = buildCompleteSnapshot(mainConfigurable.displayName, mainPanel, childPanels)
 
         // 2. Change state in registry (persistent state)
         val originalValue = registry.isFeatureEnabled(featureId)
@@ -27,7 +67,7 @@ class PluginSettingsSnapshotTest : TestBase() {
             registry.setFeatureEnabled(featureId, !originalValue)
 
             // 3. Second snapshot - should be IDENTICAL because panel is bound to snapshot, not registry
-            val secondSnapshot = buildSnapshot(panel)
+            val secondSnapshot = buildCompleteSnapshot(mainConfigurable.displayName, mainPanel, childPanels)
             assertEquals(
                 "UI should not change when registry changes because it is bound to a snapshot baseline",
                 initialSnapshot,
@@ -44,9 +84,27 @@ class PluginSettingsSnapshotTest : TestBase() {
         val actualSnapshot = initialSnapshot.replace("\r\n", "\n").trim()
 
         // Uncomment to update snapshot
-//        java.io.File("src/test/resources/settings_snapshot.txt").writeText(actualSnapshot)
+        java.io.File("src/test/resources/settings_snapshot.txt").writeText(actualSnapshot)
 
         assertEquals(expectedSnapshot, actualSnapshot)
+    }
+
+    private fun buildCompleteSnapshot(
+        mainDisplayName: String,
+        mainPanel: DialogPanel,
+        childPanels: List<Pair<String, DialogPanel>>
+    ): String {
+        val sb = StringBuilder()
+        sb.append("=== $mainDisplayName ===\n")
+        sb.append(buildSnapshot(mainPanel).trimEnd())
+
+        childPanels.forEach { (childName, childPanel) ->
+            sb.append("\n\n")
+            sb.append("=== $childName ===\n")
+            sb.append(buildSnapshot(childPanel).trimEnd())
+        }
+
+        return sb.toString()
     }
 
     private fun buildSnapshot(component: Component, indent: String = ""): String {

@@ -34,7 +34,7 @@ data class ParameterObjectFeatureSettings(
         id = "parameter-object-mcp-tool",
         displayName = "Parameter object MCP tool",
         description = "Enables MCP (Model Context Protocol) tools for parameter object refactoring",
-        category = FeatureCategory.MCP_TOOLS
+        category = FeatureCategory.ACTIONS
     )
     var enableParameterObjectMcpTool: Boolean = true,
 
