@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest
 
 import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
+import com.github.chbndrhnns.intellijplatformplugincopy.pytest.testtree.PytestTestContextUtils
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.github.chbndrhnns.intellijplatformplugincopy.util.isOwnCode
 import com.intellij.codeInsight.intention.HighPriorityAction
@@ -66,17 +67,17 @@ class TogglePytestSkipIntention : IntentionAction, HighPriorityAction, Iconable 
             return
         }
 
-        if (pyFunction != null && pyFunction.name?.startsWith("test_") == true) {
+        if (pyFunction != null && PytestTestContextUtils.isTestFunction(pyFunction)) {
             toggler.toggleOnFunction(pyFunction, pyFile)
             return
         }
 
-        if (pyClass != null && pyClass.name?.startsWith("Test") == true) {
+        if (pyClass != null && PytestTestContextUtils.isTestClass(pyClass)) {
             toggler.toggleOnClass(pyClass, pyFile)
             return
         }
 
-        if (pyFile.name.startsWith("test_") || pyFile.name.endsWith("_test.py")) {
+        if (PytestTestContextUtils.isTestFile(pyFile)) {
             toggler.toggleOnModule(pyFile)
         }
     }
@@ -103,21 +104,21 @@ class TogglePytestSkipIntention : IntentionAction, HighPriorityAction, Iconable 
 
         val pyFunction = PsiTreeUtil.getParentOfType(element, PyFunction::class.java)
         if (pyFunction != null) {
-            if (pyFunction.name?.startsWith("test_") != true) return null
+            if (!PytestTestContextUtils.isTestFunction(pyFunction)) return null
             if (element.node.elementType == PyTokenTypes.DEF_KEYWORD) return Scope.FUNCTION
             return Scope.FUNCTION
         }
 
         val pyClass = PsiTreeUtil.getParentOfType(element, PyClass::class.java)
         if (pyClass != null) {
-            if (pyClass.name?.startsWith("Test") != true) return null
+            if (!PytestTestContextUtils.isTestClass(pyClass)) return null
             val nameIdentifier = pyClass.nameIdentifier
             if (nameIdentifier != null && nameIdentifier.textRange.containsOffset(offset)) return Scope.CLASS
             if (element.node.elementType == PyTokenTypes.CLASS_KEYWORD) return Scope.CLASS
             return null
         }
 
-        if (!(file.name.startsWith("test_") || file.name.endsWith("_test.py"))) return null
+        if (!PytestTestContextUtils.isTestFile(file)) return null
 
         val assignment = PsiTreeUtil.getParentOfType(element, PyAssignmentStatement::class.java)
         if (assignment != null && assignment.targets.any { it.text == "pytestmark" }) {

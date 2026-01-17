@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest
 
 import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
+import com.github.chbndrhnns.intellijplatformplugincopy.pytest.testtree.PytestTestContextUtils
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.github.chbndrhnns.intellijplatformplugincopy.util.isOwnCode
 import com.intellij.codeInsight.intention.IntentionAction
@@ -35,7 +36,7 @@ class MoveTestToClassIntention : IntentionAction {
 
         // Check if it is inside a class
         val parentClass = PsiTreeUtil.getParentOfType(function, PyClass::class.java)
-        return parentClass != null && isTestFunction(function)
+        return parentClass != null && PytestTestContextUtils.isTestFunction(function)
     }
 
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
@@ -133,10 +134,6 @@ class MoveTestToClassIntention : IntentionAction {
         return PsiTreeUtil.getParentOfType(element, PyFunction::class.java)
     }
 
-    private fun isTestFunction(function: PyFunction): Boolean {
-        val name = function.name ?: return false
-        return name.startsWith("test_")
-    }
 
     private fun generateClassName(functionName: String): String {
         // Convert test_user_login -> TestUserLogin

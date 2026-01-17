@@ -64,13 +64,13 @@ object TogglePytestSkipFromTestTreeTargetResolver {
 
         if (name.startsWith("Test")) {
             val clazz = PsiTreeUtil.getParentOfType(leafElement, PyClass::class.java, false) ?: return null
-            if (clazz.name?.startsWith("Test") != true) return null
+            if (!PytestTestContextUtils.isTestClass(clazz)) return null
             return Target.Clazz(clazz, file)
         }
 
         if (name.startsWith("test_")) {
             val function = PsiTreeUtil.getParentOfType(leafElement, PyFunction::class.java, false) ?: return null
-            if (function.name?.startsWith("test_") != true) return null
+            if (!PytestTestContextUtils.isTestFunction(function)) return null
             return Target.Function(function, file)
         }
 
@@ -84,12 +84,12 @@ object TogglePytestSkipFromTestTreeTargetResolver {
         val pyFile = element.containingFile as? PyFile
 
         val function = PsiTreeUtil.getParentOfType(element, PyFunction::class.java, false)
-        if (function != null && function.name?.startsWith("test_") == true && pyFile != null) {
+        if (function != null && PytestTestContextUtils.isTestFunction(function) && pyFile != null) {
             return Target.Function(function, pyFile)
         }
 
         val clazz = PsiTreeUtil.getParentOfType(element, PyClass::class.java, false)
-        if (clazz != null && clazz.name?.startsWith("Test") == true && pyFile != null) {
+        if (clazz != null && PytestTestContextUtils.isTestClass(clazz) && pyFile != null) {
             return Target.Clazz(clazz, pyFile)
         }
 

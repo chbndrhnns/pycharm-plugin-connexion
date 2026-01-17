@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.intention.pytest
 
 import com.github.chbndrhnns.intellijplatformplugincopy.PluginConstants
+import com.github.chbndrhnns.intellijplatformplugincopy.pytest.testtree.PytestTestContextUtils
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.github.chbndrhnns.intellijplatformplugincopy.util.isOwnCode
 import com.intellij.codeInsight.intention.IntentionAction
@@ -30,7 +31,7 @@ class WrapTestInClassIntention : IntentionAction {
         if (parentClass != null) return false
 
         // Check if it's a test function
-        return isTestFunction(function)
+        return PytestTestContextUtils.isTestFunction(function)
     }
 
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
@@ -110,10 +111,6 @@ class WrapTestInClassIntention : IntentionAction {
         return PsiTreeUtil.getParentOfType(element, PyFunction::class.java)
     }
 
-    private fun isTestFunction(function: PyFunction): Boolean {
-        val name = function.name ?: return false
-        return name.startsWith("test_")
-    }
 
     private fun generateClassName(functionName: String): String {
         // Convert test_user_login -> TestUserLogin
