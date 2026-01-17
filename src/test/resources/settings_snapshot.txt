@@ -489,6 +489,26 @@ DialogPanel
   </body>
 </html>
 '
+  CheckBox: [x] 'Use actual test outcome'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body width="560">
+    Replaces assertion expected values with the actual value from the last 
+    failed test run
+  </body>
+</html>
+'
   CheckBox: [x] 'Wrap test in class'
   TextField: '<html>
   <head>

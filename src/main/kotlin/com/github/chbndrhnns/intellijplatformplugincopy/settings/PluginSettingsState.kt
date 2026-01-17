@@ -195,6 +195,20 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         )
         var enableWrapTestInClassIntention: Boolean = true,
 
+        @Feature(
+            id = "use-actual-test-outcome",
+            displayName = "Use actual test outcome",
+            description = "Replaces assertion expected values with the actual value from the last failed test run",
+            category = FeatureCategory.PYTEST,
+            loggingCategories = [
+                "com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome.ReplaceExpectedWithActualIntention",
+                "com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome.UseActualOutcomeUseCase",
+                "com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome.TestOutcomeDiffService",
+                "com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome.TestFailureListener"
+            ]
+        )
+        var enableUseActualTestOutcomeIntention: Boolean = true,
+
         // ---- Inspections ----
         @Feature(
             id = "missing-in-dunder-all-inspection",
