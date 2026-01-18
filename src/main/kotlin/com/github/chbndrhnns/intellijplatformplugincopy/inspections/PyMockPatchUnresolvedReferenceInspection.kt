@@ -39,7 +39,7 @@ class PyMockPatchUnresolvedReferenceInspection : PyInspection() {
             override fun visitPyCallExpression(node: PyCallExpression) {
                 super.visitPyCallExpression(node)
 
-                if (!PluginSettingsState.instance().state.enablePyMockPatchReferenceContributor) return
+                if (!PluginSettingsState.instance().state.enablePyMockPatchUnresolvedReferenceInspection) return
 
                 if (!isPatchCall(node)) {
                     return

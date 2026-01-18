@@ -137,6 +137,17 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         )
         var enableStripSignatureTypeAnnotationsIntention: Boolean = true,
 
+        @Feature(
+            id = "add-self-parameter",
+            displayName = "Add self parameter",
+            description = "Adds a missing self parameter to instance methods",
+            category = FeatureCategory.CODE_STRUCTURE,
+            loggingCategories = [
+                "com.github.chbndrhnns.intellijplatformplugincopy.intention.AddSelfParameterIntention"
+            ]
+        )
+        var enableAddSelfParameterIntention: Boolean = true,
+
         // ---- Abstract Method Intentions ----
         @Feature(
             id = "implement-abstract-method-in-child-classes",
@@ -266,6 +277,50 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         )
         var enableUnresolvedReferenceAsErrorInspection: Boolean = true,
 
+        @Feature(
+            id = "mock-unresolved-reference-inspection",
+            displayName = "Mock unresolved reference inspection",
+            description = "Reports unresolved references in mock usage",
+            category = FeatureCategory.INSPECTIONS,
+            loggingCategories = [
+                "com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyMockUnresolvedReferenceInspection"
+            ]
+        )
+        var enablePyMockUnresolvedReferenceInspection: Boolean = true,
+
+        @Feature(
+            id = "mock-return-assignment-inspection",
+            displayName = "Mock return assignment inspection",
+            description = "Reports invalid assignments to mock return values",
+            category = FeatureCategory.INSPECTIONS,
+            loggingCategories = [
+                "com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyMockReturnAssignmentInspection"
+            ]
+        )
+        var enablePyMockReturnAssignmentInspection: Boolean = true,
+
+        @Feature(
+            id = "mock-patch-object-attribute-inspection",
+            displayName = "Mock patch object attribute inspection",
+            description = "Reports unresolved attributes in mock.patch.object calls",
+            category = FeatureCategory.INSPECTIONS,
+            loggingCategories = [
+                "com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyMockPatchObjectAttributeInspection"
+            ]
+        )
+        var enablePyMockPatchObjectAttributeInspection: Boolean = true,
+
+        @Feature(
+            id = "mock-patch-unresolved-reference-inspection",
+            displayName = "Mock patch unresolved reference inspection",
+            description = "Reports unresolved references in mock.patch target strings",
+            category = FeatureCategory.INSPECTIONS,
+            loggingCategories = [
+                "com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyMockPatchUnresolvedReferenceInspection"
+            ]
+        )
+        var enablePyMockPatchUnresolvedReferenceInspection: Boolean = true,
+
         // ---- Copy/Clipboard Actions ----
         @Feature(
             id = "copy-package-content",
@@ -362,6 +417,50 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enablePyReturnCompletionContributor: Boolean = true,
 
         @Feature(
+            id = "expected-type-completion",
+            displayName = "Expected type completion",
+            description = "Suggests values based on the expected type at the caret",
+            category = FeatureCategory.COMPLETION,
+            loggingCategories = [
+                "com.github.chbndrhnns.intellijplatformplugincopy.completion.PyExpectedTypeCompletionContributor"
+            ]
+        )
+        var enableExpectedTypeCompletionContributor: Boolean = true,
+
+        @Feature(
+            id = "named-argument-from-scope-completion",
+            displayName = "Named argument from scope completion",
+            description = "Suggests keyword arguments using in-scope variables",
+            category = FeatureCategory.COMPLETION,
+            loggingCategories = [
+                "com.github.chbndrhnns.intellijplatformplugincopy.completion.PyNamedArgumentFromScopeCompletionContributor"
+            ]
+        )
+        var enableNamedArgumentFromScopeCompletionContributor: Boolean = true,
+
+        @Feature(
+            id = "mock-patch-object-attribute-completion",
+            displayName = "Mock patch object attribute completion",
+            description = "Completes attributes for mock.patch.object targets",
+            category = FeatureCategory.COMPLETION,
+            loggingCategories = [
+                "com.github.chbndrhnns.intellijplatformplugincopy.completion.PyMockPatchObjectAttributeCompletionContributor"
+            ]
+        )
+        var enableMockPatchObjectAttributeCompletionContributor: Boolean = true,
+
+        @Feature(
+            id = "newtype-typevar-paramspec-reference",
+            displayName = "NewType/TypeVar/ParamSpec reference",
+            description = "Adds references for NewType/TypeVar/ParamSpec name literals",
+            category = FeatureCategory.COMPLETION,
+            loggingCategories = [
+                "com.github.chbndrhnns.intellijplatformplugincopy.psi.PyNewTypeTypeVarReferenceContributor"
+            ]
+        )
+        var enableNewTypeTypeVarParamSpecReferenceContributor: Boolean = true,
+
+        @Feature(
             id = "mock-patch-reference",
             displayName = "Mock patch reference",
             description = "Provides reference resolution for mock.patch target strings",
@@ -411,6 +510,19 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
 
         // ---- Import & Structure View Settings ----
         @Feature(
+            id = "enhanced-python-structure-view",
+            displayName = "Enhanced Python structure view",
+            description = "Wraps the Python structure view with BetterPy filters",
+            category = FeatureCategory.IMPORTS,
+            loggingCategories = [
+                "com.github.chbndrhnns.intellijplatformplugincopy.structureView.MyPythonStructureViewFactory",
+                "com.github.chbndrhnns.intellijplatformplugincopy.structureView.MyStructureViewModelWrapper",
+                "com.github.chbndrhnns.intellijplatformplugincopy.structureView.MyPrivateMembersFilter"
+            ]
+        )
+        var enableEnhancedPythonStructureView: Boolean = true,
+
+        @Feature(
             id = "restore-source-root-prefix",
             displayName = "Restore source root prefix",
             description = "Restores the source root prefix in import statements",
@@ -451,6 +563,17 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enableHideTransientImports: Boolean = true,
 
         // ---- Navigation Bar Settings ----
+        @Feature(
+            id = "python-package-run-line-marker",
+            displayName = "Python package run line marker",
+            description = "Adds a run gutter icon for Python package entry points",
+            category = FeatureCategory.NAVIGATION,
+            loggingCategories = [
+                "com.github.chbndrhnns.intellijplatformplugincopy.run.PyPackageRunLineMarkerContributor"
+            ]
+        )
+        var enablePyPackageRunLineMarkerContributor: Boolean = true,
+
         @Feature(
             id = "python-navigation-bar",
             displayName = "Python navigation bar",
@@ -504,6 +627,19 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enableRenameToSelfFilter: Boolean = true,
 
         // ---- Connexion ----
+        @Feature(
+            id = "connexion-line-markers",
+            displayName = "Connexion line markers",
+            description = "Adds navigation gutter icons between OpenAPI specs and Python handlers",
+            category = FeatureCategory.CONNEXION,
+            loggingCategories = [
+                "com.github.chbndrhnns.intellijplatformplugincopy.connexion.ConnexionPythonLineMarkerProvider",
+                "com.github.chbndrhnns.intellijplatformplugincopy.connexion.ConnexionJsonLineMarkerProvider",
+                "com.github.chbndrhnns.intellijplatformplugincopy.connexion.ConnexionYamlLineMarkerProvider"
+            ]
+        )
+        var enableConnexionLineMarkers: Boolean = true,
+
         @Feature(
             id = "connexion-inspections",
             displayName = "Connexion inspections",

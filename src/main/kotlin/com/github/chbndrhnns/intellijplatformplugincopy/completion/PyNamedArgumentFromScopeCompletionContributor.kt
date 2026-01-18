@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.completion
 
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.patterns.PlatformPatterns.psiElement
@@ -30,6 +31,7 @@ class PyNamedArgumentFromScopeCompletionContributor : CompletionContributor() {
                     context: ProcessingContext,
                     result: CompletionResultSet
                 ) {
+                    if (!PluginSettingsState.instance().state.enableNamedArgumentFromScopeCompletionContributor) return
                     val position = parameters.position
                     val file = position.containingFile as? PyFile ?: return
 

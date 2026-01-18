@@ -25,7 +25,7 @@ class PyMockPatchObjectAttributeCompletionContributor : CompletionContributor() 
                     context: ProcessingContext,
                     result: CompletionResultSet
                 ) {
-                    if (!PluginSettingsState.instance().state.enablePyMockPatchReferenceContributor) return
+                    if (!PluginSettingsState.instance().state.enableMockPatchObjectAttributeCompletionContributor) return
 
                     val position = parameters.position
                     val stringLiteral = position.parent as? PyStringLiteralExpression ?: return

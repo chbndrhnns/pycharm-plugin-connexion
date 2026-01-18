@@ -196,6 +196,25 @@ DialogPanel
   </body>
 </html>
 '
+  CheckBox: [x] 'Add self parameter'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Adds a missing self parameter to instance methods
+  </body>
+</html>
+'
   CheckBox: [x] 'Convert Callable to Protocol'
   MaturityTagLabel
     Label: 'Incubating'
@@ -626,6 +645,82 @@ DialogPanel
   </body>
 </html>
 '
+  CheckBox: [x] 'Mock patch object attribute inspection'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Reports unresolved attributes in mock.patch.object calls
+  </body>
+</html>
+'
+  CheckBox: [x] 'Mock patch unresolved reference inspection'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Reports unresolved references in mock.patch target strings
+  </body>
+</html>
+'
+  CheckBox: [x] 'Mock return assignment inspection'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Reports invalid assignments to mock return values
+  </body>
+</html>
+'
+  CheckBox: [x] 'Mock unresolved reference inspection'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Reports unresolved references in mock usage
+  </body>
+</html>
+'
   CheckBox: [x] 'Pytest failed line inspection'
   TextField: '<html>
   <head>
@@ -860,6 +955,82 @@ DialogPanel
   
     Label: 'Completion  References'
     JSeparator
+  CheckBox: [x] 'Expected type completion'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Suggests values based on the expected type at the caret
+  </body>
+</html>
+'
+  CheckBox: [x] 'Mock patch object attribute completion'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Completes attributes for mock.patch.object targets
+  </body>
+</html>
+'
+  CheckBox: [x] 'Named argument from scope completion'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Suggests keyword arguments using in-scope variables
+  </body>
+</html>
+'
+  CheckBox: [x] 'NewType/TypeVar/ParamSpec reference'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Adds references for NewType/TypeVar/ParamSpec name literals
+  </body>
+</html>
+'
   CheckBox: [x] 'Filter warnings reference'
   TextField: '<html>
   <head>
@@ -939,6 +1110,25 @@ DialogPanel
   
     Label: 'Import  Structure'
     JSeparator
+  CheckBox: [x] 'Enhanced Python structure view'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Wraps the Python structure view with BetterPy filters
+  </body>
+</html>
+'
   CheckBox: [x] 'Export symbol to target'
   TextField: '<html>
   <head>
@@ -1095,6 +1285,25 @@ DialogPanel
   </body>
 </html>
 '
+  CheckBox: [x] 'Python package run line marker'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Adds a run gutter icon for Python package entry points
+  </body>
+</html>
+'
   CheckBox: [x] 'Python navigation bar'
   Button: 'PY-53757'
   TextField: '<html>
@@ -1232,6 +1441,25 @@ DialogPanel
   </head>
   <body>
     Enables inspections for Connexion API framework
+  </body>
+</html>
+'
+  CheckBox: [x] 'Connexion line markers'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Adds navigation gutter icons between OpenAPI specs and Python handlers
   </body>
 </html>
 '

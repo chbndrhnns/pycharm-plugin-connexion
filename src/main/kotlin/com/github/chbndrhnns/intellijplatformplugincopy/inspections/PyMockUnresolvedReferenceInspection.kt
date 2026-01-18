@@ -25,7 +25,7 @@ class PyMockUnresolvedReferenceInspection : PyInspection() {
             override fun visitPyReferenceExpression(node: PyReferenceExpression) {
                 super.visitPyReferenceExpression(node)
 
-                if (!PluginSettingsState.instance().state.enablePyMockTypeProvider) return
+                if (!PluginSettingsState.instance().state.enablePyMockUnresolvedReferenceInspection) return
 
                 val qualifier = node.qualifier ?: return
                 val context = TypeEvalContext.codeAnalysis(node.project, node.containingFile)

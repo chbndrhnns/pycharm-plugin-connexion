@@ -17,7 +17,9 @@ class PyNewTypeTypeVarReferenceContributor : PsiReferenceContributor() {
                     element: PsiElement,
                     context: ProcessingContext
                 ): Array<PsiReference> {
-                    if (!PluginSettingsState.instance().state.enableNewTypeTypeVarParamSpecRename) return PsiReference.EMPTY_ARRAY
+                    if (!PluginSettingsState.instance().state.enableNewTypeTypeVarParamSpecReferenceContributor) {
+                        return PsiReference.EMPTY_ARRAY
+                    }
 
                     val literal = element as? PyStringLiteralExpression ?: return PsiReference.EMPTY_ARRAY
                     val argumentList = literal.parent as? PyArgumentList ?: return PsiReference.EMPTY_ARRAY
@@ -51,6 +53,9 @@ class PyNewTypeTypeVarReference(element: PyStringLiteralExpression, private val 
     override fun resolve(): PsiElement = target
 
     override fun handleElementRename(newElementName: String): PsiElement {
+        if (!PluginSettingsState.instance().state.enableNewTypeTypeVarParamSpecRename) {
+            return element
+        }
         val generator = PyElementGenerator.getInstance(element.project)
         val newLiteral = generator.createStringLiteralAlreadyEscaped("\"$newElementName\"")
         return element.replace(newLiteral)

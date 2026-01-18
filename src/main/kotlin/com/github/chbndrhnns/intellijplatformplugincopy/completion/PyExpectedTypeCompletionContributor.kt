@@ -32,7 +32,7 @@ class PyExpectedTypeCompletionContributor : CompletionContributor() {
                     context: ProcessingContext,
                     result: CompletionResultSet
                 ) {
-                    if (!PluginSettingsState.instance().state.enablePyReturnCompletionContributor) {
+                    if (!PluginSettingsState.instance().state.enableExpectedTypeCompletionContributor) {
                         return
                     }
                     val position = parameters.position

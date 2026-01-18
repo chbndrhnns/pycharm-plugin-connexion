@@ -26,7 +26,10 @@ import com.jetbrains.python.run.PythonRunConfiguration
 class PyPackageRunLineMarkerContributor : RunLineMarkerContributor() {
 
     override fun getInfo(element: PsiElement): Info? {
-        if (!PluginSettingsState.instance().state.enablePyPackageRunConfigurationAction) return null
+        val settings = PluginSettingsState.instance().state
+        if (!settings.enablePyPackageRunLineMarkerContributor || !settings.enablePyPackageRunConfigurationAction) {
+            return null
+        }
 
         if (element.node.elementType != PyTokenTypes.IF_KEYWORD) return null
 

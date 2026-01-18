@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.structureView
 
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.ide.structureView.StructureViewBuilder
 import com.intellij.ide.structureView.StructureViewModel
 import com.intellij.ide.structureView.TreeBasedStructureViewBuilder
@@ -17,6 +18,10 @@ class MyPythonStructureViewFactory : PsiStructureViewFactory {
             .filter { factory -> factory !is MyPythonStructureViewFactory }
             .map { factory -> factory.getStructureViewBuilder(psiFile) }
             .firstOrNull() ?: return null
+
+        if (!PluginSettingsState.instance().state.enableEnhancedPythonStructureView) {
+            return originalBuilder
+        }
 
         // 2. Wrap the builder
         // We must always return a TreeBasedStructureViewBuilder for the popup to work correctly

@@ -84,7 +84,7 @@ class PluginSettingsSnapshotTest : TestBase() {
         val actualSnapshot = initialSnapshot.replace("\r\n", "\n").trim()
 
         // Uncomment to update snapshot
-        java.io.File("src/test/resources/settings_snapshot.txt").writeText(actualSnapshot)
+//        java.io.File("src/test/resources/settings_snapshot.txt").writeText(actualSnapshot)
 
         assertEquals(expectedSnapshot, actualSnapshot)
     }

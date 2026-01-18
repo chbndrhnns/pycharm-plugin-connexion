@@ -17,7 +17,7 @@ class ConnexionPythonLineMarkerProvider : RelatedItemLineMarkerProvider() {
         element: PsiElement,
         result: MutableCollection<in RelatedItemLineMarkerInfo<*>>
     ) {
-        if (!PluginSettingsState.instance().state.enableConnexionCompletion) return
+        if (!PluginSettingsState.instance().state.enableConnexionLineMarkers) return
         if (element !is PyFunction) return
 
         val operations = OpenApiSpecUtil.findSpecOperationsForFunction(element)
@@ -36,7 +36,7 @@ class ConnexionJsonLineMarkerProvider : RelatedItemLineMarkerProvider() {
         element: PsiElement,
         result: MutableCollection<in RelatedItemLineMarkerInfo<*>>
     ) {
-        if (!PluginSettingsState.instance().state.enableConnexionCompletion) return
+        if (!PluginSettingsState.instance().state.enableConnexionLineMarkers) return
         if (element !is JsonStringLiteral) return
 
         if (!isOperationIdValue(element)) return
@@ -57,7 +57,7 @@ class ConnexionYamlLineMarkerProvider : RelatedItemLineMarkerProvider() {
         element: PsiElement,
         result: MutableCollection<in RelatedItemLineMarkerInfo<*>>
     ) {
-        if (!PluginSettingsState.instance().state.enableConnexionCompletion) return
+        if (!PluginSettingsState.instance().state.enableConnexionLineMarkers) return
         if (element !is YAMLScalar) return
 
         if (!isOperationIdValue(element)) return

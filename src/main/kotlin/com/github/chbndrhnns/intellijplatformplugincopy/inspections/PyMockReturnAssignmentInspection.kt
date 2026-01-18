@@ -27,7 +27,7 @@ class PyMockReturnAssignmentInspection : PyInspection() {
             override fun visitPyAssignmentStatement(node: PyAssignmentStatement) {
                 super.visitPyAssignmentStatement(node)
 
-                if (!PluginSettingsState.instance().state.enablePyMockTypeProvider) return
+                if (!PluginSettingsState.instance().state.enablePyMockReturnAssignmentInspection) return
 
                 TypeEvalContext.codeAnalysis(node.project, node.containingFile)
 

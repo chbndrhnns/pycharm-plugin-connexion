@@ -27,7 +27,7 @@ class PyMockPatchObjectAttributeInspection : PyInspection() {
             override fun visitPyCallExpression(node: PyCallExpression) {
                 super.visitPyCallExpression(node)
 
-                if (!PluginSettingsState.instance().state.enablePyMockPatchReferenceContributor) return
+                if (!PluginSettingsState.instance().state.enablePyMockPatchObjectAttributeInspection) return
 
                 if (!isPatchObjectCall(node)) return
 

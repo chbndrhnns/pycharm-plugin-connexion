@@ -54,7 +54,7 @@ class WrapTestInClassDialogValidationTest : TestBase() {
 
         val existingClassComboBoxField = dialog.javaClass.getDeclaredField("existingClassComboBox")
         existingClassComboBoxField.isAccessible = true
-        val existingClassComboBox = existingClassComboBoxField.get(dialog) as com.intellij.openapi.ui.ComboBox<String>
+        val existingClassComboBox = existingClassComboBoxField.get(dialog) as com.intellij.openapi.ui.ComboBox<*>
 
         // Select TestTarget
         existingClassComboBox.selectedItem = "TestTarget"
@@ -113,7 +113,7 @@ class WrapTestInClassDialogValidationTest : TestBase() {
 
         val existingClassComboBoxField = dialog.javaClass.getDeclaredField("existingClassComboBox")
         existingClassComboBoxField.isAccessible = true
-        val existingClassComboBox = existingClassComboBoxField.get(dialog) as com.intellij.openapi.ui.ComboBox<String>
+        val existingClassComboBox = existingClassComboBoxField.get(dialog) as com.intellij.openapi.ui.ComboBox<*>
 
         // Select TestTarget
         existingClassComboBox.selectedItem = "TestTarget"
