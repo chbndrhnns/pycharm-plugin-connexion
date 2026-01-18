@@ -384,6 +384,23 @@ class WrapTestInClassRefactoringTest : TestBase() {
         assertFalse("Should not contain nested 'def test_'", result.contains("def test_b(self):\n\n        def test_"))
     }
 
+    fun testWrapAsyncTestFunction() {
+        myFixture.doRefactoringActionTest(
+            "test_async.py",
+            """
+            async def test_async_feature():
+                <caret>pass
+            """,
+            """
+            class TestAsyncFeature:
+                async def test_async_feature(self):
+                    pass
+            """,
+            actionId,
+            dialogOk = true
+        )
+    }
+
     // Settings toggle test
     fun testNotAvailableWhenSettingDisabled() {
         val settings = com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState.instance()

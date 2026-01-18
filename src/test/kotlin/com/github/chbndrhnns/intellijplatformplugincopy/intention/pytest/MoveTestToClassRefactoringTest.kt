@@ -68,4 +68,26 @@ class MoveTestToClassRefactoringTest : TestBase() {
             intentionName
         )
     }
+
+    fun testMoveAsyncTestToNewClass() {
+        myFixture.doIntentionTest(
+            "test_move_async.py",
+            """
+            class TestOld:
+                <caret>async def test_async_feature(self):
+                    pass
+            """,
+            """
+            class TestOld:
+                pass
+
+
+            class TestAsyncFeature:
+                async def test_async_feature(self):
+                    pass
+            """,
+            intentionName,
+            dialogOk = true
+        )
+    }
 }

@@ -160,9 +160,8 @@ class WrapTestInClassIntention : IntentionAction {
         val reindentedBody = bodyLines.joinToString("\n") { line ->
             if (line.isNotEmpty()) "    $line" else line
         }
-
-        // Build the method text
-        return "${decoratorsText}def $functionName($newParams)$returnTypeText:\n$reindentedBody"
+        val asyncModifier = if (function.isAsync) "async " else ""
+        return "${decoratorsText}${asyncModifier}def $functionName($newParams)$returnTypeText:\n$reindentedBody"
     }
 
     private fun buildClassWithMethod(function: PyFunction, className: String): String {
@@ -202,7 +201,7 @@ class WrapTestInClassIntention : IntentionAction {
             if (line.isNotEmpty()) "        $line" else line
         }
 
-        // Build the complete class text
-        return "class $className:\n${decoratorsText}    def $functionName($newParams)$returnTypeText:\n$reindentedBody"
+        val asyncModifier = if (function.isAsync) "async " else ""
+        return "class $className:\n${decoratorsText}    ${asyncModifier}def $functionName($newParams)$returnTypeText:\n$reindentedBody"
     }
 }
