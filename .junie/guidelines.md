@@ -19,6 +19,7 @@
 - Note on config-cache/build-cache:
   - `org.gradle.configuration-cache = true` and `org.gradle.caching = true` are enabled (see `gradle.properties`). If you hit dependency transform cache oddities, a clean + refresh can help:
     - `./gradlew clean --refresh-dependencies test`
+- If PluginState was changed, we need to make one build without caches: `./gradlew clean build --no-build-cache`
 
 #### Testing (how tests are structured here)
 
