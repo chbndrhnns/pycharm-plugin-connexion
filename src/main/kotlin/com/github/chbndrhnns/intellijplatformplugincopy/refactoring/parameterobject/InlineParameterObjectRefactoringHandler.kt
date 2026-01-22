@@ -1,9 +1,11 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject
 
+import com.github.chbndrhnns.intellijplatformplugincopy.MyBundle
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.Messages
 import com.intellij.platform.ide.progress.runWithModalProgressBlocking
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -21,6 +23,21 @@ class InlineParameterObjectRefactoringHandler : RefactoringActionHandler {
             readAction {
                 processor.countUsages()
             }
+        }
+
+        val hasUnsupportedTypeHints = runWithModalProgressBlocking(project, "Checking type hints") {
+            readAction {
+                processor.hasUnsupportedTypeHintUsages()
+            }
+        }
+
+        if (hasUnsupportedTypeHints) {
+            Messages.showErrorDialog(
+                project,
+                MyBundle.message("inline.parameter.object.blocked.type.hints"),
+                "Inline Parameter Object"
+            )
+            return
         }
 
         if (usageCount > 1) {

@@ -69,7 +69,7 @@ class PyInlineParameterObjectClassRemovalTest : TestBase() {
                 print(params.name, params.age)
 
             def other_usage():
-                p: UserParams = UserParams(name="Jane", age=25)
+                p = UserParams(name="Jane", age=25)
                 print(p)
             """.trimIndent(),
             """
@@ -85,7 +85,7 @@ class PyInlineParameterObjectClassRemovalTest : TestBase() {
                 print(name, age)
 
             def other_usage():
-                p: UserParams = UserParams(name="Jane", age=25)
+                p = UserParams(name="Jane", age=25)
                 print(p)
             """.trimIndent(),
             actionId

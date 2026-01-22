@@ -7,9 +7,12 @@ import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.project.Project
 import com.intellij.platform.ide.progress.runWithModalProgressBlocking
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiReference
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.search.PsiSearchHelper
+import com.intellij.psi.search.UsageSearchContext
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.*
@@ -89,6 +92,31 @@ class PyInlineParameterObjectProcessor(
         }
 
         return functionsUsingClass.size
+    }
+
+    fun hasUnsupportedTypeHintUsages(): Boolean {
+        val project = function.project
+        val context = TypeEvalContext.codeAnalysis(project, function.containingFile)
+
+        val parameter = cachedParameter ?: findInlineableParameter(function, context)
+        if (parameter == null) {
+            LOG.debug("hasUnsupportedTypeHintUsages: No inlineable parameter found")
+            return false
+        }
+        cachedParameter = parameter
+
+        val parameterObjectClass = cachedParameterObjectClass ?: resolveParameterClass(parameter)
+        if (parameterObjectClass == null) {
+            LOG.debug("hasUnsupportedTypeHintUsages: Could not resolve parameter class")
+            return false
+        }
+        cachedParameterObjectClass = parameterObjectClass
+
+        val classReferences = cachedClassUsages
+            ?: ReferencesSearch.search(parameterObjectClass, GlobalSearchScope.projectScope(project)).findAll()
+        cachedClassUsages = classReferences
+
+        return findUnsupportedTypeHintUsages(parameterObjectClass, classReferences).isNotEmpty()
     }
 
     fun run(
@@ -527,6 +555,71 @@ class PyInlineParameterObjectProcessor(
             result.add(FieldInfo(name = name, typeText = typeText, defaultText = defaultText))
         }
         return result
+    }
+
+    private fun findUnsupportedTypeHintUsages(
+        parameterObjectClass: PyClass,
+        classReferences: Collection<PsiReference>
+    ): List<PsiElement> {
+        val blockedUsages = LinkedHashSet<PsiElement>()
+        val candidateFiles = LinkedHashSet<PsiFile>()
+        val project = parameterObjectClass.project
+
+        candidateFiles.add(parameterObjectClass.containingFile)
+        for (ref in classReferences) {
+            candidateFiles.add(ref.element.containingFile)
+        }
+
+        val className = parameterObjectClass.name
+        if (!className.isNullOrBlank()) {
+            val scope = GlobalSearchScope.projectScope(project)
+            val searchHelper = PsiSearchHelper.getInstance(project)
+            searchHelper.processElementsWithWord(
+                { element, _ ->
+                    candidateFiles.add(element.containingFile)
+                    true
+                },
+                scope,
+                className,
+                UsageSearchContext.IN_CODE,
+                true
+            )
+        }
+
+        fun hasBlockedAnnotation(owner: PyAnnotationOwner?): Boolean {
+            return when (owner) {
+                is PyFunction -> true
+                is PyNamedParameter -> false
+                else -> owner != null
+            }
+        }
+
+        for (file in candidateFiles) {
+            val annotations = PsiTreeUtil.findChildrenOfType(file, PyAnnotation::class.java)
+            for (annotation in annotations) {
+                val owner = PsiTreeUtil.getParentOfType(annotation, PyAnnotationOwner::class.java, true)
+                if (!hasBlockedAnnotation(owner)) continue
+
+                val refs = PsiTreeUtil.findChildrenOfType(annotation, PyReferenceExpression::class.java)
+                for (ref in refs) {
+                    if (ref.reference.resolve() == parameterObjectClass) {
+                        blockedUsages.add(ref)
+                    }
+                }
+            }
+
+            val typeDecls = PsiTreeUtil.findChildrenOfType(file, PyTypeDeclarationStatement::class.java)
+            for (decl in typeDecls) {
+                val refs = PsiTreeUtil.findChildrenOfType(decl, PyReferenceExpression::class.java)
+                for (ref in refs) {
+                    if (ref.reference.resolve() == parameterObjectClass) {
+                        blockedUsages.add(ref)
+                    }
+                }
+            }
+        }
+
+        return blockedUsages.toList()
     }
 
     companion object {
