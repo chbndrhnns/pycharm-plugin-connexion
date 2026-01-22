@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject
 
+import com.github.chbndrhnns.intellijplatformplugincopy.MyBundle
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
@@ -128,7 +129,7 @@ class PyInlineParameterObjectProcessor(
         val project = function.project
         LOG.debug("Starting Inline Parameter Object refactoring for function: ${function.name}")
 
-        val result = runWithModalProgressBlocking(project, "Inline parameter object") {
+        val result = runWithModalProgressBlocking(project, MyBundle.message("inline.parameter.object.command.name")) {
             readAction {
                 val context = TypeEvalContext.codeAnalysis(project, function.containingFile)
                 
@@ -229,7 +230,11 @@ class PyInlineParameterObjectProcessor(
 
         val (plans, parameterObjectClass, canDeleteClass) = result
 
-        WriteCommandAction.runWriteCommandAction(project, "Inline parameter object", null, {
+        WriteCommandAction.runWriteCommandAction(
+            project,
+            MyBundle.message("inline.parameter.object.command.name"),
+            null,
+            {
             // Process all plans
             for (plan in plans) {
                 updateFunctionBody(plan)

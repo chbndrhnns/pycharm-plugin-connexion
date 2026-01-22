@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject
 
+import com.github.chbndrhnns.intellijplatformplugincopy.MyBundle
 import com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.generator.ParameterObjectGeneratorFactory
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.command.WriteCommandAction
@@ -72,7 +73,10 @@ class PyIntroduceParameterObjectProcessor(
         var filesToUpdate: List<PsiFile> = emptyList()
 
         try {
-            runWithModalProgressBlocking(project, "Searching for usages...") {
+            runWithModalProgressBlocking(
+                project,
+                MyBundle.message("introduce.parameter.object.progress.searching.usages")
+            ) {
                 readAction {
                     // 1. Find all functions to update (root + overrides)
                     val overrides = PyOverridingMethodsSearch.search(rootFunction, true).findAll()
@@ -138,7 +142,7 @@ class PyIntroduceParameterObjectProcessor(
         }
 
         WriteCommandAction.writeCommandAction(project, *filesToUpdate.toTypedArray())
-            .withName("Introduce Parameter Object")
+            .withName(MyBundle.message("introduce.parameter.object.command.name"))
             .run<Throwable> {
                 val generator = ParameterObjectGeneratorFactory.getGenerator(settings.baseType)
                 val languageLevel = LanguageLevel.forElement(rootFunction)

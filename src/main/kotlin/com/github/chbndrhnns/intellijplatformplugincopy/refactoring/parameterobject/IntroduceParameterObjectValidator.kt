@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject
 
+import com.github.chbndrhnns.intellijplatformplugincopy.MyBundle
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.psi.PsiElement
 import com.jetbrains.python.PyNames
@@ -15,25 +16,25 @@ class IntroduceParameterObjectValidator(
         selectedParameters: List<PyNamedParameter>
     ): ValidationInfo? {
         if (className.isBlank()) {
-            return ValidationInfo("Class name cannot be empty")
+            return ValidationInfo(MyBundle.message("introduce.parameter.object.validation.class.name.empty"))
         }
         if (!isValidPythonIdentifier(className)) {
-            return ValidationInfo("Class name must be a valid Python identifier")
+            return ValidationInfo(MyBundle.message("introduce.parameter.object.validation.class.name.invalid"))
         }
 
         if (parameterName.isBlank()) {
-            return ValidationInfo("Parameter name cannot be empty")
+            return ValidationInfo(MyBundle.message("introduce.parameter.object.validation.parameter.name.empty"))
         }
         if (!isValidPythonIdentifier(parameterName)) {
-            return ValidationInfo("Parameter name must be a valid Python identifier")
+            return ValidationInfo(MyBundle.message("introduce.parameter.object.validation.parameter.name.invalid"))
         }
 
         if (selectedParameters.isEmpty()) {
-            return ValidationInfo("At least one parameter must be selected")
+            return ValidationInfo(MyBundle.message("introduce.parameter.object.validation.parameters.empty"))
         }
 
         if (isNameTaken(className)) {
-            return ValidationInfo("Class name '$className' is already in use")
+            return ValidationInfo(MyBundle.message("introduce.parameter.object.validation.class.name.taken", className))
         }
 
         return null

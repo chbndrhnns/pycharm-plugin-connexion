@@ -19,13 +19,19 @@ class InlineParameterObjectRefactoringHandler : RefactoringActionHandler {
 
         // Count usages to determine if we need to show the dialog
         val processor = PyInlineParameterObjectProcessor(function, element)
-        val usageCount = runWithModalProgressBlocking(project, "Counting usages") {
+        val usageCount = runWithModalProgressBlocking(
+            project,
+            MyBundle.message("inline.parameter.object.progress.counting.usages")
+        ) {
             readAction {
                 processor.countUsages()
             }
         }
 
-        val hasUnsupportedTypeHints = runWithModalProgressBlocking(project, "Checking type hints") {
+        val hasUnsupportedTypeHints = runWithModalProgressBlocking(
+            project,
+            MyBundle.message("inline.parameter.object.progress.checking.type.hints")
+        ) {
             readAction {
                 processor.hasUnsupportedTypeHintUsages()
             }
@@ -35,7 +41,7 @@ class InlineParameterObjectRefactoringHandler : RefactoringActionHandler {
             Messages.showErrorDialog(
                 project,
                 MyBundle.message("inline.parameter.object.blocked.type.hints"),
-                "Inline Parameter Object"
+                MyBundle.message("inline.parameter.object.title")
             )
             return
         }

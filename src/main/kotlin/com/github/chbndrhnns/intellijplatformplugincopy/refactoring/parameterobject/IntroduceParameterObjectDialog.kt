@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject
 
+import com.github.chbndrhnns.intellijplatformplugincopy.MyBundle
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
@@ -21,9 +22,9 @@ class IntroduceParameterObjectDialog(
     private val classNameField = JTextField(defaultClassName)
     private val parameterNameField = JTextField(IntroduceParameterObjectSettings.DEFAULT_PARAMETER_NAME)
     private val baseTypeComboBox = ComboBox(DefaultComboBoxModel(ParameterObjectBaseType.entries.toTypedArray()))
-    private val frozenCheckBox = JCheckBox("Frozen", true)
-    private val slotsCheckBox = JCheckBox("Slots", true)
-    private val kwOnlyCheckBox = JCheckBox("kw_only", true)
+    private val frozenCheckBox = JCheckBox(MyBundle.message("introduce.parameter.object.dialog.option.frozen"), true)
+    private val slotsCheckBox = JCheckBox(MyBundle.message("introduce.parameter.object.dialog.option.slots"), true)
+    private val kwOnlyCheckBox = JCheckBox(MyBundle.message("introduce.parameter.object.dialog.option.kw.only"), true)
 
     private val validator = if (parameters.isNotEmpty()) {
         IntroduceParameterObjectValidator(parameters.first())
@@ -32,7 +33,7 @@ class IntroduceParameterObjectDialog(
     }
 
     init {
-        title = "Introduce Parameter Object"
+        title = MyBundle.message("introduce.parameter.object.title")
         init()
 
         // Set default base type from global settings
@@ -99,13 +100,13 @@ class IntroduceParameterObjectDialog(
         val panel = JPanel(BorderLayout())
 
         val configPanel = JPanel(java.awt.GridLayout(5, 2))
-        configPanel.add(JLabel("Class Name:"))
+        configPanel.add(JLabel(MyBundle.message("introduce.parameter.object.dialog.class.name.label")))
         configPanel.add(classNameField)
-        configPanel.add(JLabel("Parameter Name:"))
+        configPanel.add(JLabel(MyBundle.message("introduce.parameter.object.dialog.parameter.name.label")))
         configPanel.add(parameterNameField)
-        configPanel.add(JLabel("Base Type:"))
+        configPanel.add(JLabel(MyBundle.message("introduce.parameter.object.dialog.base.type.label")))
         configPanel.add(baseTypeComboBox)
-        configPanel.add(JLabel("Options:"))
+        configPanel.add(JLabel(MyBundle.message("introduce.parameter.object.dialog.options.label")))
         val optionsPanel = JPanel(java.awt.FlowLayout(java.awt.FlowLayout.LEFT))
         optionsPanel.add(frozenCheckBox)
         optionsPanel.add(slotsCheckBox)

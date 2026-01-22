@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject
 
+import com.github.chbndrhnns.intellijplatformplugincopy.MyBundle
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import java.awt.BorderLayout
@@ -11,12 +12,21 @@ class InlineParameterObjectDialog(
     private val usageCount: Int
 ) : DialogWrapper(project) {
 
-    private val inlineThisOccurrenceRadio = JRadioButton("Inline this occurrence only", false)
-    private val inlineAllOccurrencesRadio = JRadioButton("Inline all occurrences ($usageCount)", true)
-    private val removeClassCheckBox = JCheckBox("Remove the parameter object class", true)
+    private val inlineThisOccurrenceRadio = JRadioButton(
+        MyBundle.message("inline.parameter.object.dialog.option.this"),
+        false
+    )
+    private val inlineAllOccurrencesRadio = JRadioButton(
+        MyBundle.message("inline.parameter.object.dialog.option.all", usageCount),
+        true
+    )
+    private val removeClassCheckBox = JCheckBox(
+        MyBundle.message("inline.parameter.object.dialog.option.remove.class"),
+        true
+    )
 
     init {
-        title = "Inline Parameter Object"
+        title = MyBundle.message("inline.parameter.object.title")
         init()
 
         // Setup radio button group

@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject
 
+import com.github.chbndrhnns.intellijplatformplugincopy.MyBundle
 import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
 import com.intellij.codeInsight.daemon.LineMarkerInfo
 import com.intellij.codeInsight.daemon.LineMarkerProvider
@@ -19,7 +20,7 @@ import com.jetbrains.python.psi.PyFunction
 class ParameterObjectLineMarkerProvider : LineMarkerProvider {
 
     companion object {
-        private const val TOOLTIP_TEXT = "Introduce Parameter Object"
+        private val tooltipText = MyBundle.message("introduce.parameter.object.title")
     }
 
     override fun getLineMarkerInfo(element: PsiElement): LineMarkerInfo<*>? {
@@ -42,14 +43,14 @@ class ParameterObjectLineMarkerProvider : LineMarkerProvider {
             anchor,
             anchor.textRange,
             AllIcons.Actions.RefactoringBulb,
-            { TOOLTIP_TEXT },
+            { tooltipText },
             { _, psiElement ->
                 // Find the function from the anchor element and invoke the action
                 val function = psiElement.parent as? PyFunction ?: return@LineMarkerInfo
                 invokeRefactoringAction(function)
             },
             GutterIconRenderer.Alignment.RIGHT,
-            { TOOLTIP_TEXT }
+            { tooltipText }
         )
     }
 
