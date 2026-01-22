@@ -7,10 +7,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.project.Project
 import com.intellij.platform.ide.progress.runWithModalProgressBlocking
-import com.intellij.psi.PsiDocumentManager
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiParserFacade
-import com.intellij.psi.PsiReference
+import com.intellij.psi.*
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.searches.ReferencesSearch
@@ -18,6 +15,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.codeInsight.imports.AddImportHelper
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.resolve.PyResolveContext
+import com.jetbrains.python.psi.search.PyOverridingMethodsSearch
 import com.jetbrains.python.psi.types.TypeEvalContext
 import java.util.concurrent.CancellationException
 
@@ -36,15 +34,16 @@ class PyIntroduceParameterObjectProcessor(
 
     fun run() {
         val project = function.project
-        LOG.debug("Starting Introduce Parameter Object refactoring for function: ${function.name}")
+        val rootFunction = findRootFunction(function)
+        LOG.debug("Starting Introduce Parameter Object refactoring for function: ${function.name} (root: ${rootFunction.name})")
 
-        val allParams = collectParameters(function)
+        val allParams = collectParameters(rootFunction)
         if (allParams.isEmpty()) {
-            LOG.debug("No parameters found for function: ${function.name}")
+            LOG.debug("No parameters found for function: ${rootFunction.name}")
             return
         }
 
-        val defaultClassName = generateDataclassName(function)
+        val defaultClassName = generateDataclassName(rootFunction)
 
         val settings = if (configSelector != null) {
             configSelector.invoke(allParams, defaultClassName)
@@ -63,36 +62,71 @@ class PyIntroduceParameterObjectProcessor(
             return
         }
 
-        val params = settings.selectedParameters
+        val rootParams = settings.selectedParameters
         val dataclassName = settings.className
         val parameterName = settings.parameterName
 
+        var functionsToUpdate: List<PyFunction> = emptyList()
         var paramUsages: Map<PyNamedParameter, Collection<PsiReference>> = emptyMap()
         var callSiteUpdates: List<CallSiteUpdateInfo> = emptyList()
+        var filesToUpdate: List<PsiFile> = emptyList()
 
         try {
             runWithModalProgressBlocking(project, "Searching for usages...") {
                 readAction {
-                    val pUsages = mutableMapOf<PyNamedParameter, Collection<PsiReference>>()
-                    for (p in params) {
-                        if (p.name != null) {
-                            pUsages[p] =
-                                ReferencesSearch.search(p, GlobalSearchScope.fileScope(function.containingFile))
-                                    .findAll()
-                        }
-                    }
-                    paramUsages = pUsages
-                    val functionUsages =
-                        ReferencesSearch.search(function, GlobalSearchScope.projectScope(project)).findAll()
+                    // 1. Find all functions to update (root + overrides)
+                    val overrides = PyOverridingMethodsSearch.search(rootFunction, true).findAll()
+                    functionsToUpdate = listOf(rootFunction) + overrides
+                    filesToUpdate = functionsToUpdate.map { it.containingFile }.distinct()
 
-                    callSiteUpdates = prepareCallSiteUpdates(
-                        project,
-                        function,
-                        dataclassName,
-                        params,
-                        parameterName,
-                        functionUsages
-                    )
+                    // 2. Collect param usages and call site updates for EACH function
+                    val combinedParamUsages = mutableMapOf<PyNamedParameter, Collection<PsiReference>>()
+                    val combinedCallSiteUpdates = mutableListOf<CallSiteUpdateInfo>()
+
+                    val functionParamsMap = mutableMapOf<PyFunction, List<PyNamedParameter>>()
+
+                    for (func in functionsToUpdate) {
+                        val funcParams = collectParameters(func)
+                        val paramsToUpdateInFunc = mutableListOf<PyNamedParameter>()
+
+                        // Map root parameters to this function's parameters by name
+                        for (rootParam in rootParams) {
+                            val pName = rootParam.name
+                            if (pName != null) {
+                                val matchingParam = funcParams.find { it.name == pName }
+                                if (matchingParam != null) {
+                                    paramsToUpdateInFunc.add(matchingParam)
+
+                                    val usages = ReferencesSearch.search(
+                                        matchingParam,
+                                        GlobalSearchScope.fileScope(func.containingFile)
+                                    ).findAll()
+                                    combinedParamUsages[matchingParam] = usages
+                                }
+                            }
+                        }
+                        functionParamsMap[func] = paramsToUpdateInFunc
+                    }
+
+                    for (func in functionsToUpdate) {
+                        val paramsToUpdateInFunc = functionParamsMap[func] ?: emptyList()
+                        val functionUsages =
+                            ReferencesSearch.search(func, GlobalSearchScope.projectScope(project)).findAll()
+
+                        combinedCallSiteUpdates.addAll(
+                            prepareCallSiteUpdates(
+                                project,
+                                func,
+                                dataclassName,
+                                paramsToUpdateInFunc,
+                                parameterName,
+                                functionUsages,
+                                functionParamsMap
+                            )
+                        )
+                    }
+                    paramUsages = combinedParamUsages
+                    callSiteUpdates = combinedCallSiteUpdates
                 }
             }
         } catch (e: Exception) {
@@ -103,40 +137,74 @@ class PyIntroduceParameterObjectProcessor(
             throw e
         }
 
-        WriteCommandAction.writeCommandAction(project, function.containingFile)
+        WriteCommandAction.writeCommandAction(project, *filesToUpdate.toTypedArray())
             .withName("Introduce Parameter Object")
             .run<Throwable> {
                 val generator = ParameterObjectGeneratorFactory.getGenerator(settings.baseType)
-                val languageLevel = LanguageLevel.forElement(function)
+                val languageLevel = LanguageLevel.forElement(rootFunction)
 
                 val generatedClass = generator.generateClass(
                     project,
                     languageLevel,
                     dataclassName,
-                    params,
+                    rootParams,
                     settings.generateFrozen,
                     settings.generateSlots,
                     settings.generateKwOnly
                 )
 
-                val dataclass = insertClassIntoFile(project, function, generatedClass)
+                val dataclass = insertClassIntoFile(project, rootFunction, generatedClass)
 
                 // Add required imports for the selected base type
-                val file = function.containingFile as? PyFile
+                val file = rootFunction.containingFile as? PyFile
                 if (file != null) {
-                    generator.addRequiredImports(file, function)
+                    generator.addRequiredImports(file, rootFunction)
                 }
-                updateFunctionBody(
-                    project,
-                    function,
-                    params,
-                    paramUsages,
-                    parameterName,
-                    settings.baseType == ParameterObjectBaseType.TYPED_DICT
-                )
-                applyCallSiteUpdates(project, function, dataclass, callSiteUpdates)
-                replaceFunctionSignature(project, function, dataclassName, params, parameterName)
+
+                // Update Signature and Body for ALL functions
+                for (func in functionsToUpdate) {
+                    val funcParams = collectParameters(func)
+                    val paramsToUpdateInFunc = rootParams.mapNotNull { rp -> funcParams.find { it.name == rp.name } }
+
+                    if (paramsToUpdateInFunc.isNotEmpty()) {
+                        // Add import if in different file
+                        if (func.containingFile != rootFunction.containingFile) {
+                            val funcFile = func.containingFile as? PyFile
+                            if (funcFile != null) {
+                                AddImportHelper.addImport(dataclass, funcFile, func)
+                            }
+                        }
+
+                        updateFunctionBody(
+                            project,
+                            func,
+                            paramsToUpdateInFunc,
+                            paramUsages,
+                            parameterName,
+                            settings.baseType == ParameterObjectBaseType.TYPED_DICT
+                        )
+                        replaceFunctionSignature(project, func, dataclassName, paramsToUpdateInFunc, parameterName)
+                    }
+                }
+
+                applyCallSiteUpdates(project, rootFunction, dataclass, callSiteUpdates)
+            }
+    }
+
+    private fun findRootFunction(function: PyFunction): PyFunction {
+        val containingClass = function.containingClass ?: return function
+        val name = function.name ?: return function
+        val context = TypeEvalContext.codeInsightFallback(function.project)
+        val superClasses = containingClass.getSuperClasses(context)
+
+        var root = function
+        for (cls in superClasses) {
+            val method = cls.findMethodByName(name, false, context)
+            if (method != null) {
+                root = method
+            }
         }
+        return root
     }
 
     private fun collectParameters(function: PyFunction): List<PyNamedParameter> {
@@ -323,7 +391,8 @@ class PyIntroduceParameterObjectProcessor(
         dataclassName: String,
         params: List<PyNamedParameter>,
         parameterName: String,
-        functionUsages: Collection<PsiReference>
+        functionUsages: Collection<PsiReference>,
+        functionParamsMap: Map<PyFunction, List<PyNamedParameter>>
     ): List<CallSiteUpdateInfo> {
         val result = mutableListOf<CallSiteUpdateInfo>()
 
@@ -371,6 +440,20 @@ class PyIntroduceParameterObjectProcessor(
 
                     val argText = if (argExpr is PyKeywordArgument) {
                         argExpr.valueExpression?.text ?: "None"
+                    } else if (argExpr is PyReferenceExpression) {
+                        // Check if this reference resolves to a parameter that is being extracted from the containing function
+                        val resolved = argExpr.reference.resolve()
+                        if (resolved is PyNamedParameter) {
+                            val containingFunction = PsiTreeUtil.getParentOfType(resolved, PyFunction::class.java)
+                            val extractedParams = functionParamsMap[containingFunction]
+                            if (extractedParams != null && resolved in extractedParams) {
+                                "$parameterName.${resolved.name}"
+                            } else {
+                                argExpr.text
+                            }
+                        } else {
+                            argExpr.text
+                        }
                     } else {
                         argExpr.text
                     }
