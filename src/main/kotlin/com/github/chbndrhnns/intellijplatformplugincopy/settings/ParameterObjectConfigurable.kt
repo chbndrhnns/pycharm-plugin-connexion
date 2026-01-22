@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.settings
 
+import com.github.chbndrhnns.intellijplatformplugincopy.settings.FeatureCheckboxBuilder.featureRow
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.options.SearchableConfigurable
 import com.intellij.openapi.ui.DialogPanel
@@ -28,14 +29,11 @@ class ParameterObjectConfigurable : BoundConfigurable("Parameter Object Refactor
                 ?.filter { it.id.startsWith("parameter-object-") } ?: emptyList()
 
             features.forEach { feature ->
-                row {
-                    val checkbox = checkBox(feature.displayName)
-                        .comment(feature.description)
-                    checkbox.component.isSelected = stateSnapshot.isEnabled(feature.id)
-                    checkbox.component.addActionListener {
-                        stateSnapshot.setEnabled(feature.id, checkbox.component.isSelected)
-                    }
-                }
+                featureRow(
+                    feature,
+                    getter = { stateSnapshot.isEnabled(feature.id) },
+                    setter = { value -> stateSnapshot.setEnabled(feature.id, value) }
+                )
             }
 
             row("Default parameter object base type:") {
