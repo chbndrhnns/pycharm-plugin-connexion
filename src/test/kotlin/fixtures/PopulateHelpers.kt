@@ -1,6 +1,6 @@
 package fixtures
 
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.populate.PopulateArgumentsIntentionHooks
+import com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.populate.PopulateArgumentsIntentionHooks
 
 /**
  * Sets up a [FakePopupHost] for the duration of [block].

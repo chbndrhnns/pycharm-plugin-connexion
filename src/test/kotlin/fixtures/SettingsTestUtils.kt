@@ -1,6 +1,6 @@
 package fixtures
 
-import com.github.chbndrhnns.intellijplatformplugincopy.settings.PluginSettingsState
+import com.github.chbndrhnns.intellijplatformplugincopy.featureflags.PluginSettingsState
 import com.intellij.util.xmlb.XmlSerializerUtil
 
 object SettingsTestUtils {

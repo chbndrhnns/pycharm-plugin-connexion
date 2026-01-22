@@ -464,13 +464,13 @@ class PyProtocolLambdaPerformanceTest : TestBase() {
 
 ```bash
 # Run all index tests
-./gradlew test --tests "com.github.chbndrhnns.intellijplatformplugincopy.index.*"
+./gradlew test --tests "com.github.chbndrhnns.intellijplatformplugincopy.core.index.*"
 
 # Run lambda-specific tests
-./gradlew test --tests "com.github.chbndrhnns.intellijplatformplugincopy.index.PyLambdaExpectedTypeIndexTest"
+./gradlew test --tests "com.github.chbndrhnns.intellijplatformplugincopy.core.index.PyLambdaExpectedTypeIndexTest"
 
 # Run lambda cache tests
-./gradlew test --tests "com.github.chbndrhnns.intellijplatformplugincopy.search.PyProtocolLambdaCacheTest"
+./gradlew test --tests "com.github.chbndrhnns.intellijplatformplugincopy.features.search.PyProtocolLambdaCacheTest"
 
 # Run all performance tests
 ./gradlew test --tests "*PerformanceTest"

@@ -274,7 +274,7 @@ Create a custom annotation that mirrors `FeatureMaturity`:
 // src/test/kotlin/fixtures/TestMaturity.kt
 package fixtures
 
-import com.github.chbndrhnns.intellijplatformplugincopy.settings.FeatureMaturity
+import com.github.chbndrhnns.intellijplatformplugincopy.featureflags.FeatureMaturity
 
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)

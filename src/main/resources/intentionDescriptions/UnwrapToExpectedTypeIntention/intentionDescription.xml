@@ -1,5 +1,5 @@
 <intentionAction>
     <category>Type mismatch</category>
     <descriptionDirectoryName>UnwrapToExpectedTypeIntention</descriptionDirectoryName>
-    <instance>com.github.chbndrhnns.intellijplatformplugincopy.intention.UnwrapToExpectedTypeIntention</instance>
+    <instance>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.UnwrapToExpectedTypeIntention</instance>
 </intentionAction>

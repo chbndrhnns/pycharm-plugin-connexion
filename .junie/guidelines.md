@@ -46,15 +46,15 @@
   - `./gradlew test`
 
 - Run a single test class (recommended for local dev because this suite is large):
-  - `./gradlew test --tests com.github.chbndrhnns.intellijplatformplugincopy.intention.populate.PopulateArgumentsLocalTest`
+  - `./gradlew test --tests com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.populate.PopulateArgumentsLocalTest`
 
 - Run a single test method:
-  - `./gradlew test --tests com.github.chbndrhnns.intellijplatformplugincopy.intention.populate.PopulateArgumentsLocalTest.test<MethodName>`
+  - `./gradlew test --tests com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.populate.PopulateArgumentsLocalTest.test<MethodName>`
 
 #### Known test status (verified on 2025-12-12)
 
 - ✅ Verified passing example command:
-  - `./gradlew test --tests com.github.chbndrhnns.intellijplatformplugincopy.intention.populate.PopulateArgumentsLocalTest`
+  - `./gradlew test --tests com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.populate.PopulateArgumentsLocalTest`
   - Run focused tests while developing, and only run the full suite once those failing groups are addressed.
 
 #### Adding a new test (project conventions)

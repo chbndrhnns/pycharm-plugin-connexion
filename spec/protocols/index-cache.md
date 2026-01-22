@@ -93,7 +93,7 @@ private fun findCandidateClasses(
 
 ```xml
 <extensions defaultExtensionNs="com.intellij">
-    <stubIndex implementation="com.github.chbndrhnns.intellijplatformplugincopy.index.PyClassMembersIndex"/>
+    <stubIndex implementation="com.github.chbndrhnns.intellijplatformplugincopy.core.index.PyClassMembersIndex"/>
 </extensions>
 ```
 
@@ -185,7 +185,7 @@ class ProtocolCacheInvalidationListener : PsiTreeChangeAdapter() {
 ```xml
 <extensions defaultExtensionNs="com.intellij">
     <psi.treeChangeListener 
-        implementation="com.github.chbndrhnns.intellijplatformplugincopy.listeners.ProtocolCacheInvalidationListener"/>
+        implementation="com.github.chbndrhnns.intellijplatformplugincopy.bootstrap.listeners.ProtocolCacheInvalidationListener"/>
 </extensions>
 ```
 
@@ -453,11 +453,11 @@ The index provides **~10x improvement** for initial searches, and the cache prov
 
 ```bash
 # Run all protocol search tests
-./gradlew test --tests "com.github.chbndrhnns.intellijplatformplugincopy.search.*"
+./gradlew test --tests "com.github.chbndrhnns.intellijplatformplugincopy.features.search.*"
 
 # Run specific test class
-./gradlew test --tests "com.github.chbndrhnns.intellijplatformplugincopy.index.PyClassMembersIndexTest"
+./gradlew test --tests "com.github.chbndrhnns.intellijplatformplugincopy.core.index.PyClassMembersIndexTest"
 
 # Run performance tests
-./gradlew test --tests "com.github.chbndrhnns.intellijplatformplugincopy.search.PyProtocolImplementationsPerformanceTest"
+./gradlew test --tests "com.github.chbndrhnns.intellijplatformplugincopy.features.search.PyProtocolImplementationsPerformanceTest"
 ```

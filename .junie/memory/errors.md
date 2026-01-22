@@ -774,6 +774,6 @@
     "TOOL": "create",
     "ERROR": "Invalid EP attribute and missing depends config-file",
     "ROOT CAUSE": "mcpToolset extension used 'implementation' instead of 'implementationClass' and plugin.xml lacked an optional depends with config-file for com.intellij.mcpServer.",
-    "PROJECT NOTE": "Add <depends optional=\"true\" config-file=\"META-INF/mcp-support.xml\">com.intellij.mcpServer</depends> to plugin.xml and, in META-INF/mcp-support.xml, register <extensions defaultExtensionNs=\"com.intellij.mcpServer\"><mcpToolset implementationClass=\"com.github.chbndrhnns.intellijplatformplugincopy.intention.parameterobject.mcp.ParameterObjectToolset\"/></extensions>.",
+    "PROJECT NOTE": "Add <depends optional=\"true\" config-file=\"META-INF/mcp-support.xml\">com.intellij.mcpServer</depends> to plugin.xml and, in META-INF/mcp-support.xml, register <extensions defaultExtensionNs=\"com.intellij.mcpServer\"><mcpToolset implementationClass=\"com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.parameterobject.mcp.ParameterObjectToolset\"/></extensions>.",
     "NEW INSTRUCTION": "WHEN optional dependency used without config-file THEN create config file and reference it"
 }

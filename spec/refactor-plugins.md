@@ -178,7 +178,7 @@ src/main/resources/META-INF/
     <extensions defaultExtensionNs="com.intellij">
         <!-- Type Mismatch Intentions -->
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.intention.WrapWithExpectedTypeIntention</className>
+            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.WrapWithExpectedTypeIntention</className>
             <category>Type mismatch</category>
         </intentionAction>
         <!-- ... more intentions ... -->

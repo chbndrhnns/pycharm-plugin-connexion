@@ -1,6 +1,6 @@
 package fixtures
 
-import com.github.chbndrhnns.intellijplatformplugincopy.intention.WrapWithExpectedTypeIntentionHooks
+import com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.WrapWithExpectedTypeIntentionHooks
 
 /**
  * Sets up a [FakePopupHost] for the duration of [block].

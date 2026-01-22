@@ -1,0 +1,79 @@
+package com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.populate
+
+import fixtures.TestBase
+import fixtures.assertIntentionNotAvailable
+import fixtures.doIntentionTest
+import fixtures.withPopulatePopupSelection
+
+class PopulateArgumentsCaretPositionTest : TestBase() {
+
+    fun testAvailableInsideParentheses() {
+        withPopulatePopupSelection(index = 0) {
+            myFixture.doIntentionTest(
+                "a.py",
+                """
+                from dataclasses import dataclass
+                @dataclass
+                class A:
+                    x: int
+
+                A(<caret>)
+                """,
+                """
+                from dataclasses import dataclass
+                @dataclass
+                class A:
+                    x: int
+
+                A(x=...)
+                """,
+                "BetterPy: Populate arguments..."
+            )
+        }
+    }
+
+    fun testNotAvailableOnClassName() {
+        myFixture.assertIntentionNotAvailable(
+            "a.py",
+            """
+            from dataclasses import dataclass
+            @dataclass
+            class A:
+                x: int
+
+            A<caret>()
+            """,
+            "BetterPy: Populate arguments..."
+        )
+    }
+
+    fun testNotAvailableBeforeParentheses() {
+        myFixture.assertIntentionNotAvailable(
+            "a.py",
+            """
+            from dataclasses import dataclass
+            @dataclass
+            class A:
+                x: int
+
+            A<caret>()
+            """,
+            "BetterPy: Populate arguments..."
+        )
+    }
+
+    fun testNotAvailableAfterParentheses() {
+        myFixture.assertIntentionNotAvailable(
+            "a.py",
+            """
+            from dataclasses import dataclass
+            @dataclass
+            class A:
+                x: int
+
+            A()<caret>
+            """,
+            "BetterPy: Populate arguments..."
+        )
+    }
+}

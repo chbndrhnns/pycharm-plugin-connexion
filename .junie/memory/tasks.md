@@ -624,7 +624,7 @@
     "REDUNDANT STEPS": "adjust test URL scheme to fit parser,add println noise,gradle cache cleanup attempt,undo edit churn",
     "MISSING STEPS": "scan project,fix imports/resolve symbol,run existing tests",
     "BOTTLENECK": "Unresolved reference to parser led to test adjustments instead of fixing code/imports.",
-    "PROJECT NOTE": "Ensure test imports/reference com.github.chbndrhnns.intellijplatformplugincopy.pytest.outcome.PytestStacktraceParser correctly.",
+    "PROJECT NOTE": "Ensure test imports/reference com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.outcome.PytestStacktraceParser correctly.",
     "NEW INSTRUCTION": "WHEN test shows unresolved symbol THEN search project and fix import or create symbol"
 }
 

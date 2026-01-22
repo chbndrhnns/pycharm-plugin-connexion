@@ -1,0 +1,163 @@
+package com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.outcome
+
+import fixtures.TestBase
+
+class ParametrizeFixTest : TestBase() {
+
+    override fun setUp() {
+        super.setUp()
+        TestOutcomeDiffService.getInstance(myFixture.project).clearAll()
+    }
+
+    private fun setDiffData(qName: String, expected: String, actual: String) {
+        // SMTestProxy.locationUrl uses the project base path in angle brackets
+        // The qualified name already includes the full module path
+        val projectBasePath = project.basePath ?: return
+        val key = "python<$projectBasePath>://$qName"
+        TestOutcomeDiffService.getInstance(project).put(key, OutcomeDiff(expected, actual))
+    }
+
+    fun `test parametrize with list of argnames`() {
+        myFixture.configureByText(
+            "test_list_args.py", """
+            import pytest
+            
+            @pytest.mark.parametrize(["arg", "expected"], [
+                ("input", "exp")
+            ], ids=["input-exp"])
+            def test_foo(arg, expected):
+                assert arg == expec<caret>ted
+        """.trimIndent()
+        )
+
+        // Mock failure
+        setDiffData("test_list_args.test_foo[input-exp]", "exp", "input")
+
+        val intention = myFixture.findSingleIntention("BetterPy: Use actual test outcome")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            import pytest
+            
+            @pytest.mark.parametrize(["arg", "expected"], [
+                ("input", "input")
+            ], ids=["input-exp"])
+            def test_foo(arg, expected):
+                assert arg == expected
+        """.trimIndent()
+        )
+    }
+
+    fun `test parametrize with keyword arguments`() {
+        myFixture.configureByText(
+            "test_kwargs.py", """
+            import pytest
+            
+            @pytest.mark.parametrize(argnames="arg, expected", argvalues=[
+                ("input", "exp")
+            ], ids=["input-exp"])
+            def test_kwargs(arg, expected):
+                assert arg == expec<caret>ted
+        """.trimIndent()
+        )
+
+        setDiffData("test_kwargs.test_kwargs[input-exp]", "exp", "input")
+
+        val intention = myFixture.findSingleIntention("BetterPy: Use actual test outcome")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            import pytest
+            
+            @pytest.mark.parametrize(argnames="arg, expected", argvalues=[
+                ("input", "input")
+            ], ids=["input-exp"])
+            def test_kwargs(arg, expected):
+                assert arg == expected
+        """.trimIndent()
+        )
+    }
+
+    fun `test parametrize with extra arguments and keyword mix`() {
+        myFixture.configureByText(
+            "test_extra.py", """
+            import pytest
+            
+            @pytest.mark.parametrize("expected", ["exp"], ids=["case1"])
+            def test_extra(expected):
+                assert "actual" == expec<caret>ted
+        """.trimIndent()
+        )
+
+        setDiffData("test_extra.test_extra[case1]", "exp", "actual")
+
+        val intention = myFixture.findSingleIntention("BetterPy: Use actual test outcome")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            import pytest
+            
+            @pytest.mark.parametrize("expected", ["actual"], ids=["case1"])
+            def test_extra(expected):
+                assert "actual" == expected
+        """.trimIndent()
+        )
+    }
+
+    fun `test parametrize with integer values`() {
+        myFixture.configureByText(
+            "test_int.py", """
+            import pytest
+            
+            @pytest.mark.parametrize("expected", [1], ids=["case-1"])
+            def test_int(expected):
+                assert 2 == expec<caret>ted
+        """.trimIndent()
+        )
+
+        setDiffData("test_int.test_int[case-1]", "1", "2")
+
+        val intention = myFixture.findSingleIntention("BetterPy: Use actual test outcome")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            import pytest
+            
+            @pytest.mark.parametrize("expected", [2], ids=["case-1"])
+            def test_int(expected):
+                assert 2 == expected
+        """.trimIndent()
+        )
+    }
+
+    fun `test parametrize replaces dict literal in decorator`() {
+        myFixture.configureByText(
+            "test_dict.py", """
+            import pytest
+
+            @pytest.mark.parametrize("arg,exp", [({"abc": 1}, {"abc": 2})], ids=["case-1"])
+            def test_(arg, exp):
+                assert arg == e<caret>xp
+        """.trimIndent()
+        )
+
+        setDiffData("test_dict.test_[case-1]", "{'abc': 2}", "{'abc': 1}")
+
+        val intention = myFixture.findSingleIntention("BetterPy: Use actual test outcome")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            import pytest
+
+            @pytest.mark.parametrize("arg,exp", [({"abc": 1}, {'abc': 1})], ids=["case-1"])
+            def test_(arg, exp):
+                assert arg == exp
+            """.trimIndent()
+        )
+    }
+}

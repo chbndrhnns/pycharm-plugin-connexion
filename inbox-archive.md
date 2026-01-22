@@ -91,10 +91,10 @@ Unprocessed elements: Py:ASSIGNMENT_STATEMENT(0,38)
 	at com.intellij.formatting.service.FormattingServiceUtil.formatElement(FormattingServiceUtil.java:67)
 	at com.intellij.psi.impl.source.codeStyle.CodeStyleManagerImpl.reformat(CodeStyleManagerImpl.java:82)
 	at com.intellij.psi.impl.source.codeStyle.CodeStyleManagerImpl.reformat(CodeStyleManagerImpl.java:66)
-	at com.github.chbndrhnns.intellijplatformplugincopy.exports.PyAllExportUtil.insertStatementBelowDocstring(PyAllExportUtil.kt:208)
-	at com.github.chbndrhnns.intellijplatformplugincopy.exports.PyAllExportUtil.createNewDunderAll(PyAllExportUtil.kt:178)
-	at com.github.chbndrhnns.intellijplatformplugincopy.exports.PyAllExportUtil.ensureSymbolExported(PyAllExportUtil.kt:47)
-	at com.github.chbndrhnns.intellijplatformplugincopy.exports.PyExportSymbolToTargetIntention.exportToTarget$lambda$6(PyExportSymbolToTargetIntention.kt:166)
+	at com.github.chbndrhnns.intellijplatformplugincopy.features.exports.PyAllExportUtil.insertStatementBelowDocstring(PyAllExportUtil.kt:208)
+	at com.github.chbndrhnns.intellijplatformplugincopy.features.exports.PyAllExportUtil.createNewDunderAll(PyAllExportUtil.kt:178)
+	at com.github.chbndrhnns.intellijplatformplugincopy.features.exports.PyAllExportUtil.ensureSymbolExported(PyAllExportUtil.kt:47)
+	at com.github.chbndrhnns.intellijplatformplugincopy.features.exports.PyExportSymbolToTargetIntention.exportToTarget$lambda$6(PyExportSymbolToTargetIntention.kt:166)
 ```
 
 - [x] refactor: `IntentionPreviewUtils.write<RuntimeException> { symbol.setName(newName) }` -> ok
@@ -283,7 +283,7 @@ val = d["<caret>abc"]
 - [x] refactor: More PSI-based helpers
 - [x] fix: FP export: `from prance import BaseParse<caret>r`
 - [x] refactor:
-  `com.github.chbndrhnns.intellijplatformplugincopy.inspections.PyPrivateModuleImportInspection.buildVisitor`
+  `com.github.chbndrhnns.intellijplatformplugincopy.features.inspections.PyPrivateModuleImportInspection.buildVisitor`
     - Use either node.fromImports, node.importBlock or node.importtargets
 - [x] Generate TypeEvalContext once, reuse
 - [x] fix: Do not rename assignment target when introducing custom type

@@ -83,7 +83,7 @@ class GenerateFeatureDocsAction : AnAction("Generate Feature Docs") {
 
 2. Open the Kotlin scratch file or use **Evaluate Expression** in the debugger:
    ```kotlin
-   com.github.chbndrhnns.intellijplatformplugincopy.settings.FeatureDocumentationGenerator.generateMarkdown()
+   com.github.chbndrhnns.intellijplatformplugincopy.featureflags.FeatureDocumentationGenerator.generateMarkdown()
    ```
 
 ## Output Examples
