@@ -16,6 +16,8 @@ import com.intellij.psi.search.PsiSearchHelper
 import com.intellij.psi.search.UsageSearchContext
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.PsiTreeUtil
+import com.jetbrains.python.PyTokenTypes
+import com.jetbrains.python.codeInsight.typing.PyTypingTypeProvider
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.resolve.PyResolveContext
 import com.jetbrains.python.psi.types.TypeEvalContext
@@ -29,7 +31,6 @@ class PyInlineParameterObjectProcessor(
     private var cachedParameter: PyNamedParameter? = null
     private var cachedParameterObjectClass: PyClass? = null
     private var cachedClassUsages: Collection<PsiReference>? = null
-    private var cachedIsTypedDict: Boolean? = null
 
     data class FieldInfo(
         val name: String,
@@ -66,8 +67,8 @@ class PyInlineParameterObjectProcessor(
             return 0
         }
         cachedParameter = parameter
-        
-        val parameterObjectClass = resolveParameterClass(parameter)
+
+        val parameterObjectClass = resolveParameterClass(parameter, context)
         if (parameterObjectClass == null) {
             LOG.debug("countUsages: Could not resolve parameter class for parameter ${parameter.name}")
             return 0
@@ -106,7 +107,7 @@ class PyInlineParameterObjectProcessor(
         }
         cachedParameter = parameter
 
-        val parameterObjectClass = cachedParameterObjectClass ?: resolveParameterClass(parameter)
+        val parameterObjectClass = cachedParameterObjectClass ?: resolveParameterClass(parameter, context)
         if (parameterObjectClass == null) {
             LOG.debug("hasUnsupportedTypeHintUsages: Could not resolve parameter class")
             return false
@@ -141,7 +142,7 @@ class PyInlineParameterObjectProcessor(
                 }
 
                 // Use cached class if available
-                val parameterObjectClass = cachedParameterObjectClass ?: resolveParameterClass(parameter) 
+                val parameterObjectClass = cachedParameterObjectClass ?: resolveParameterClass(parameter, context)
                 if (parameterObjectClass == null) {
                     LOG.debug("run: Could not resolve parameter class")
                     return@readAction null
@@ -152,8 +153,8 @@ class PyInlineParameterObjectProcessor(
                     LOG.debug("run: No fields found in parameter class")
                     return@readAction null
                 }
-                
-                val isTypedDict = cachedIsTypedDict ?: isTypedDict(parameterObjectClass, context)
+
+                val isTypedDict = isTypedDict(parameterObjectClass, context)
 
                 // Use cached references if available
                 val classReferences = cachedClassUsages ?: ReferencesSearch.search(parameterObjectClass, GlobalSearchScope.projectScope(project)).findAll()
@@ -201,8 +202,21 @@ class PyInlineParameterObjectProcessor(
                     )
 
                     val planConsumedElements = consumedElements.toMutableList()
-                    val annotationRef = targetParameter.annotation?.value as? PyReferenceExpression
-                    if (annotationRef != null) planConsumedElements.add(annotationRef)
+                    val annotationValue = targetParameter.annotation?.value
+                    if (annotationValue != null) {
+                        if (annotationValue is PyReferenceExpression &&
+                            annotationValue.reference.resolve() == parameterObjectClass
+                        ) {
+                            planConsumedElements.add(annotationValue)
+                        }
+                        val annotationRefs =
+                            PsiTreeUtil.findChildrenOfType(annotationValue, PyReferenceExpression::class.java)
+                        for (ref in annotationRefs) {
+                            if (ref.reference.resolve() == parameterObjectClass) {
+                                planConsumedElements.add(ref)
+                            }
+                        }
+                    }
 
                     Plan(
                         project = project,
@@ -423,8 +437,20 @@ class PyInlineParameterObjectProcessor(
             }
 
             // Build the new argument list by replacing only the argument that carried the parameter object.
+            val callArgs = call.argumentList?.arguments ?: emptyArray()
+            val argIndex = callArgs.indexOf(argForParam)
+            val hasTrailingPositionalArgs = argIndex >= 0 &&
+                    callArgs.drop(argIndex + 1).any { it !is PyKeywordArgument }
+
+            val positionalFieldValues = buildList {
+                for (field in fields) {
+                    val value = fieldValues[field.name] ?: break
+                    add(value)
+                }
+            }
+
             val newArgs = mutableListOf<String>()
-            for (arg in call.argumentList?.arguments ?: emptyArray()) {
+            for (arg in callArgs) {
                 if (arg == argForParam) {
                     if (arg is PyKeywordArgument) {
                         // params=MyParams(...) -> expand to field keywords
@@ -432,15 +458,16 @@ class PyInlineParameterObjectProcessor(
                             newArgs.add("$k=$v")
                         }
                     } else {
-                        if (hasKeywordArgs) {
-                            for ((k, v) in fieldValues) {
-                                newArgs.add("$k=$v")
+                        val usePositional =
+                            hasTrailingPositionalArgs || !hasKeywordArgs
+                        if (usePositional) {
+                            // Preserve positional ordering when later positional args exist.
+                            for (value in positionalFieldValues) {
+                                newArgs.add(value)
                             }
                         } else {
-                            // Positional ctor call -> positional function call
-                            for (field in fields) {
-                                val v = fieldValues[field.name] ?: continue
-                                newArgs.add(v)
+                            for ((k, v) in fieldValues) {
+                                newArgs.add("$k=$v")
                             }
                         }
                     }
@@ -483,7 +510,7 @@ class PyInlineParameterObjectProcessor(
                 if (p.isSelf || p.isPositionalContainer || p.isKeywordContainer) return@firstOrNull false
                 if (name == "self" || name == "cls") return@firstOrNull false
 
-                val cls = resolveParameterClass(p) ?: return@firstOrNull false
+                val cls = resolveParameterClass(p, context) ?: return@firstOrNull false
 
                 val valid = isValidParameterObject(cls, context)
                 val fields = extractFields(cls)
@@ -492,10 +519,80 @@ class PyInlineParameterObjectProcessor(
             }
     }
 
-    private fun resolveParameterClass(parameter: PyNamedParameter): PyClass? {
+    private fun resolveParameterClass(parameter: PyNamedParameter, context: TypeEvalContext): PyClass? {
         val annotationValue = parameter.annotation?.value ?: return null
-        val ref = annotationValue as? PyReferenceExpression ?: return null
-        return ref.reference.resolve() as? PyClass
+        return resolveParameterClassFromAnnotation(annotationValue, context)
+    }
+
+    private fun resolveParameterClassFromAnnotation(
+        annotationValue: PyExpression,
+        context: TypeEvalContext
+    ): PyClass? {
+        val candidates = collectAnnotationCandidates(annotationValue, context)
+        val classes = candidates.mapNotNull { candidate ->
+            (candidate as? PyReferenceExpression)?.reference?.resolve() as? PyClass
+        }.distinct()
+        return classes.singleOrNull()
+    }
+
+    private fun collectAnnotationCandidates(
+        expression: PyExpression,
+        context: TypeEvalContext
+    ): List<PyExpression> {
+        if (expression is PyNoneLiteralExpression) return emptyList()
+        if (expression is PyReferenceExpression && expression.name == "None") return emptyList()
+        if (expression.text == "None") return emptyList()
+
+        return when (expression) {
+            is PyParenthesizedExpression -> {
+                val inner = expression.containedExpression ?: return emptyList()
+                collectAnnotationCandidates(inner, context)
+            }
+
+            is PyBinaryExpression -> {
+                if (expression.operator == PyTokenTypes.OR) {
+                    val left = collectAnnotationCandidates(expression.leftExpression, context)
+                    val right =
+                        expression.rightExpression?.let { collectAnnotationCandidates(it, context) } ?: emptyList()
+                    left + right
+                } else {
+                    listOf(expression)
+                }
+            }
+
+            is PySubscriptionExpression -> {
+                val operand = expression.operand
+                val index = expression.indexExpression ?: return listOf(expression)
+                val qualifiedNames = PyTypingTypeProvider.resolveToQualifiedNames(operand, context)
+                val operandName = (operand as? PyReferenceExpression)?.name
+                val operandText = operand.text
+
+                fun matchesAny(vararg names: String): Boolean {
+                    return qualifiedNames.any { it in names } ||
+                            operandName in names ||
+                            operandText in names
+                }
+
+                if (matchesAny("typing.Optional", "Optional", "typing_extensions.Optional")) {
+                    return collectAnnotationCandidates(index, context)
+                }
+
+                if (matchesAny("typing.Union", "Union", "typing_extensions.Union")) {
+                    val elements = if (index is PyTupleExpression) index.elements.toList() else listOf(index)
+                    return elements.flatMap { collectAnnotationCandidates(it, context) }
+                }
+
+                if (matchesAny("typing.Annotated", "Annotated", "typing_extensions.Annotated")) {
+                    val elements = if (index is PyTupleExpression) index.elements.toList() else listOf(index)
+                    val first = elements.firstOrNull() ?: return emptyList()
+                    return collectAnnotationCandidates(first, context)
+                }
+
+                listOf(expression)
+            }
+
+            else -> listOf(expression)
+        }
     }
 
     private fun isValidParameterObject(pyClass: PyClass, context: TypeEvalContext): Boolean {

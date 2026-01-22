@@ -207,6 +207,117 @@ class PyInlineParameterObjectRefactoringTest : TestBase() {
         )
     }
 
+    fun testInlineParameterObjectFromOptionalAnnotation() {
+        myFixture.doRefactoringTest(
+            "a.py",
+            """
+            from dataclasses import dataclass
+            from typing import Any, Optional
+
+
+            @dataclass(frozen=True, slots=True, kw_only=True)
+            class FooParams:
+                first_name: Any
+                last_name: Any
+
+
+            def foo(params: Optional[Foo<caret>Params]):
+                print(params.first_name, params.last_name)
+
+
+            def main():
+                foo(FooParams(first_name="John", last_name="Doe"))
+            """.trimIndent(),
+            """
+            from dataclasses import dataclass
+            from typing import Any, Optional
+
+
+            def foo(first_name: Any, last_name: Any):
+                print(first_name, last_name)
+
+
+            def main():
+                foo(first_name="John", last_name="Doe")
+            """.trimIndent(),
+            actionId
+        )
+    }
+
+    fun testInlineParameterObjectFromUnionAnnotation() {
+        myFixture.doRefactoringTest(
+            "a.py",
+            """
+            from dataclasses import dataclass
+            from typing import Any, Union
+
+
+            @dataclass(frozen=True, slots=True, kw_only=True)
+            class FooParams:
+                first_name: Any
+                last_name: Any
+
+
+            def foo(params: Union[Foo<caret>Params, None]):
+                print(params.first_name, params.last_name)
+
+
+            def main():
+                foo(FooParams(first_name="John", last_name="Doe"))
+            """.trimIndent(),
+            """
+            from dataclasses import dataclass
+            from typing import Any, Union
+
+
+            def foo(first_name: Any, last_name: Any):
+                print(first_name, last_name)
+
+
+            def main():
+                foo(first_name="John", last_name="Doe")
+            """.trimIndent(),
+            actionId
+        )
+    }
+
+    fun testInlineParameterObjectPreservesPositionalOrderWithTrailingArgs() {
+        myFixture.doRefactoringTest(
+            "a.py",
+            """
+            from dataclasses import dataclass
+            from typing import Any
+
+
+            @dataclass(frozen=True, slots=True, kw_only=True)
+            class FooParams:
+                first_name: Any
+                last_name: Any
+
+
+            def foo(<caret>params: FooParams, age: Any):
+                print(params.first_name, params.last_name, age)
+
+
+            def main():
+                foo(FooParams(first_name="John", last_name="Doe"), 42)
+            """.trimIndent(),
+            """
+            from dataclasses import dataclass
+            from typing import Any
+
+
+            def foo(first_name: Any, last_name: Any, age: Any):
+                print(first_name, last_name, age)
+
+
+            def main():
+                foo("John", "Doe", 42)
+            """.trimIndent(),
+            actionId
+        )
+    }
+
     fun testActionAvailabilityInMiddleOfAnnotation() {
         myFixture.configureByText(
             "a.py",

@@ -18,6 +18,7 @@ import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.resolve.PyResolveContext
 import com.jetbrains.python.psi.search.PyOverridingMethodsSearch
 import com.jetbrains.python.psi.types.TypeEvalContext
+import java.util.*
 import java.util.concurrent.CancellationException
 
 private val LOG = logger<PyIntroduceParameterObjectProcessor>()
@@ -199,14 +200,20 @@ class PyIntroduceParameterObjectProcessor(
         val containingClass = function.containingClass ?: return function
         val name = function.name ?: return function
         val context = TypeEvalContext.codeInsightFallback(function.project)
-        val superClasses = containingClass.getSuperClasses(context)
 
         var root = function
-        for (cls in superClasses) {
+        val visited = mutableSetOf<PyClass>()
+        val queue = ArrayDeque<PyClass>()
+        queue.addAll(containingClass.getSuperClasses(context))
+
+        while (queue.isNotEmpty()) {
+            val cls = queue.removeFirst()
+            if (!visited.add(cls)) continue
             val method = cls.findMethodByName(name, false, context)
             if (method != null) {
                 root = method
             }
+            queue.addAll(cls.getSuperClasses(context))
         }
         return root
     }
@@ -341,6 +348,12 @@ class PyIntroduceParameterObjectProcessor(
                     param.delete()
                 }
             }
+        }
+        // Cleanup dangling '/' (positional-only marker) if it is the last parameter.
+        val paramsAfterStarCleanup = function.parameterList.parameters
+        val slash = paramsAfterStarCleanup.firstOrNull { it is PySlashParameter } as? PySlashParameter
+        if (slash != null && slash == paramsAfterStarCleanup.lastOrNull()) {
+            slash.delete()
         }
         // Commit pending PSI changes before reformatting to avoid document lock issues
         val document = function.containingFile.viewProvider.document

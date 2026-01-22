@@ -119,23 +119,23 @@ class PyIntroduceParameterObjectVariadicTest : TestBase() {
                     foo(1, 2)
                 """.trimIndent(),
                 """
-                 from dataclasses import dataclass
-                 from typing import Any
-                
-                
-                 @dataclass(frozen=True, slots=True, kw_only=True)
-                 class FooParams:
-                     a: Any
-                     b: Any
-                
-                
-                 def foo(params: FooParams, /):
-                     print(params.a, params.b)
-                
-                
-                 def main():
-                     foo(FooParams(a=1, b=2))
-                 """.trimIndent(),
+                from dataclasses import dataclass
+                from typing import Any
+
+
+                @dataclass(frozen=True, slots=True, kw_only=True)
+                class FooParams:
+                    a: Any
+                    b: Any
+
+
+                def foo(params: FooParams):
+                    print(params.a, params.b)
+
+
+                def main():
+                    foo(FooParams(a=1, b=2))
+                """.trimIndent(),
                 INTRODUCE_PARAMETER_OBJECT_ACTION_ID
             )
         }

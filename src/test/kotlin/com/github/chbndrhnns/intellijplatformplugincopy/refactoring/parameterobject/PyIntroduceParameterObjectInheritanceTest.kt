@@ -157,4 +157,62 @@ class PyIntroduceParameterObjectInheritanceTest : TestBase() {
             )
         }
     }
+
+    fun testIntroduceAcrossMultiLevelHierarchy() {
+        withMockIntroduceParameterObjectDialog {
+            myFixture.doRefactoringTest(
+                "a.py",
+                """
+                class Base:
+                    def foo(self, a, b):
+                        print(a, b)
+
+                class Mid(Base):
+                    def foo(self, a, b):
+                        print(a, b)
+
+                class Child(Mid):
+                    def fo<caret>o(self, a, b):
+                        print(a, b)
+
+                def main():
+                    Base().foo(1, 2)
+                    Mid().foo(3, 4)
+                    Child().foo(5, 6)
+                """.trimIndent(),
+                """
+                from dataclasses import dataclass
+                from typing import Any
+
+
+                @dataclass(frozen=True, slots=True, kw_only=True)
+                class FooParams:
+                    a: Any
+                    b: Any
+
+
+                class Base:
+                    def foo(self, params: FooParams):
+                        print(params.a, params.b)
+
+
+                class Mid(Base):
+                    def foo(self, params: FooParams):
+                        print(params.a, params.b)
+
+
+                class Child(Mid):
+                    def foo(self, params: FooParams):
+                        print(params.a, params.b)
+
+
+                def main():
+                    Base().foo(FooParams(a=1, b=2))
+                    Mid().foo(FooParams(a=3, b=4))
+                    Child().foo(FooParams(a=5, b=6))
+                """.trimIndent(),
+                actionId
+            )
+        }
+    }
 }
