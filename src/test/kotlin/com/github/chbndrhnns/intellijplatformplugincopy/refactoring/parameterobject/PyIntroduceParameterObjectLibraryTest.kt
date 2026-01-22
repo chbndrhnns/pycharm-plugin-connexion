@@ -38,7 +38,7 @@ class PyIntroduceParameterObjectLibraryTest : TestBase() {
             vLibFile.contentsToByteArray().toString(Charsets.UTF_8).indexOf("library_function")
         )
 
-        val intention = myFixture.availableIntentions.find { it.text == "BetterPy: Introduce parameter object" }
+        val intention = myFixture.availableIntentions.find { it.text == INTRODUCE_PARAMETER_OBJECT_INTENTION_TEXT }
         assertNull("Intention should NOT be available in library", intention)
     }
 }

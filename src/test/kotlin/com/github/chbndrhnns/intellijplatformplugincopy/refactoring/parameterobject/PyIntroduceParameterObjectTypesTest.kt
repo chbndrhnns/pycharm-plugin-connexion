@@ -29,7 +29,7 @@ class PyIntroduceParameterObjectTypesTest : TestBase() {
                 def process(params: ProcessParams):
                     print(params.val, params.count)
                 """.trimIndent(),
-                "com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.IntroduceParameterObjectRefactoringAction"
+                INTRODUCE_PARAMETER_OBJECT_ACTION_ID
             )
         }
     }
@@ -58,7 +58,7 @@ class PyIntroduceParameterObjectTypesTest : TestBase() {
                 def process(params: ProcessParams):
                     print(params.val, params.count)
                 """.trimIndent(),
-                "com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.IntroduceParameterObjectRefactoringAction"
+                INTRODUCE_PARAMETER_OBJECT_ACTION_ID
             )
         }
     }
@@ -90,7 +90,7 @@ class PyIntroduceParameterObjectTypesTest : TestBase() {
                 
                 class User: ...
                 """.trimIndent(),
-                "com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.IntroduceParameterObjectRefactoringAction"
+                INTRODUCE_PARAMETER_OBJECT_ACTION_ID
             )
         }
     }
@@ -126,7 +126,7 @@ class PyIntroduceParameterObjectTypesTest : TestBase() {
     
                 class User: ...
                 """.trimIndent(),
-                "com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.IntroduceParameterObjectRefactoringAction"
+                INTRODUCE_PARAMETER_OBJECT_ACTION_ID
             )
         }
     }

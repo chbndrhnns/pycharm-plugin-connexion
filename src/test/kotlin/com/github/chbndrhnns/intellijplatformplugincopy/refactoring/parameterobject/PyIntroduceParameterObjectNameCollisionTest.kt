@@ -34,7 +34,7 @@ class PyIntroduceParameterObjectNameCollisionTest : TestBase() {
                 def create_user(params: CreateUserParams1):
                     print(params.first_name, params.last_name)
                 """.trimIndent(),
-                "com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.IntroduceParameterObjectRefactoringAction"
+                INTRODUCE_PARAMETER_OBJECT_ACTION_ID
             )
         }
     }
@@ -65,7 +65,7 @@ class PyIntroduceParameterObjectNameCollisionTest : TestBase() {
                 def create_user(params: CreateUserParams1):
                     print(params.first_name, params.last_name)
                 """.trimIndent(),
-                "com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.IntroduceParameterObjectRefactoringAction"
+                INTRODUCE_PARAMETER_OBJECT_ACTION_ID
             )
         }
     }

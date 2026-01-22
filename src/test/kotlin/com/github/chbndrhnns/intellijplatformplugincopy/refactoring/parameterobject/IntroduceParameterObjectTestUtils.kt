@@ -3,6 +3,12 @@ package com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterob
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.UiInterceptors
 
+const val INTRODUCE_PARAMETER_OBJECT_ACTION_ID =
+    "com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.IntroduceParameterObjectRefactoringAction"
+const val INLINE_PARAMETER_OBJECT_ACTION_ID =
+    "com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.InlineParameterObjectRefactoringAction"
+const val INTRODUCE_PARAMETER_OBJECT_INTENTION_TEXT = "BetterPy: Introduce parameter object"
+
 fun withMockIntroduceParameterObjectDialog(
     configure: (IntroduceParameterObjectDialog) -> Unit = {},
     action: () -> Unit

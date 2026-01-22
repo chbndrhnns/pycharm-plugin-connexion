@@ -7,9 +7,9 @@ import fixtures.assertActionNotAvailable
 class PyParameterObjectSettingsTest : TestBase() {
 
     private val introduceActionId =
-        "com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.IntroduceParameterObjectRefactoringAction"
+        INTRODUCE_PARAMETER_OBJECT_ACTION_ID
     private val inlineActionId =
-        "com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.InlineParameterObjectRefactoringAction"
+        INLINE_PARAMETER_OBJECT_ACTION_ID
 
     fun testParameterObjectRefactoringDisabled_IntroduceNotAvailable() {
         withPluginSettings({ parameterObject.enableParameterObjectRefactoring = false }) {

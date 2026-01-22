@@ -35,7 +35,7 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
                 def main():
                     create_user(CreateUserParams(first_name="John"))
                 """.trimIndent(),
-                "com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.IntroduceParameterObjectRefactoringAction"
+                INTRODUCE_PARAMETER_OBJECT_ACTION_ID
             )
         }
     }
@@ -68,7 +68,7 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
                 
                 def main():
                     create_user(CreateUserParams(first_name="John", last_name="Doe"))""".trimIndent(),
-                "com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.IntroduceParameterObjectRefactoringAction"
+                INTRODUCE_PARAMETER_OBJECT_ACTION_ID
             )
         }
     }
@@ -106,7 +106,7 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
                 def main():
                     UserFactory.create_user(CreateUserParams(name="John", age=30))
                 """.trimIndent(),
-                "com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.IntroduceParameterObjectRefactoringAction"
+                INTRODUCE_PARAMETER_OBJECT_ACTION_ID
             )
         }
     }
@@ -143,7 +143,7 @@ class PyIntroduceParameterObjectHighPrioTest : TestBase() {
                 
                 def main():
                     Utils.helper(HelperParams(x=1, y=2))""".trimIndent(),
-                "com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.IntroduceParameterObjectRefactoringAction"
+                INTRODUCE_PARAMETER_OBJECT_ACTION_ID
             )
         }
     }

@@ -6,8 +6,7 @@ import fixtures.doRefactoringTest
 
 class PyIntroduceParameterObjectCasesTest : TestBase() {
 
-    private val actionId =
-        "com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.IntroduceParameterObjectRefactoringAction"
+    private val actionId = INTRODUCE_PARAMETER_OBJECT_ACTION_ID
 
     fun testAsyncFunction() {
         val expected = """

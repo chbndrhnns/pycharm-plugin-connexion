@@ -10,7 +10,7 @@ class IntroduceParameterObjectRefactoringActionTest : TestBase() {
     fun testActionIsRegistered() {
         val actionManager = ActionManager.getInstance()
         val action =
-            actionManager.getAction("com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.IntroduceParameterObjectRefactoringAction")
+            actionManager.getAction(INTRODUCE_PARAMETER_OBJECT_ACTION_ID)
         assertNotNull("Action should be registered in plugin.xml", action)
         assertTrue(
             "Registered action should be IntroduceParameterObjectRefactoringAction",

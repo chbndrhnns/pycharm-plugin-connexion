@@ -31,7 +31,7 @@ class PyInlineTypedDictTest : TestBase() {
             def main():
                 dist(x=1, y=2)
             """.trimIndent(),
-            "com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.InlineParameterObjectRefactoringAction",
+            INLINE_PARAMETER_OBJECT_ACTION_ID,
         )
     }
 }

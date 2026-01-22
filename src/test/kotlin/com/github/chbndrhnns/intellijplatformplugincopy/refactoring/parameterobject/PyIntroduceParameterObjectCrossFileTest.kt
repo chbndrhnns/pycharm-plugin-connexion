@@ -4,8 +4,7 @@ import fixtures.TestBase
 
 class PyIntroduceParameterObjectCrossFileTest : TestBase() {
 
-    private val actionId =
-        "com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.IntroduceParameterObjectRefactoringAction"
+    private val actionId = INTRODUCE_PARAMETER_OBJECT_ACTION_ID
 
     fun testIntroduceCrossFileImports() {
         // Create the client file that uses the function

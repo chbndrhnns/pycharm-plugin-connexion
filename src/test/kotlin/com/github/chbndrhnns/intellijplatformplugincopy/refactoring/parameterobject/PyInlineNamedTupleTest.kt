@@ -31,7 +31,7 @@ class PyInlineNamedTupleTest : TestBase() {
         def main():
             dist(1, 2)
             """.trimIndent(),
-            "com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.InlineParameterObjectRefactoringAction",
+            INLINE_PARAMETER_OBJECT_ACTION_ID,
         )
     }
 }

@@ -5,8 +5,7 @@ import fixtures.doRefactoringTest
 
 class PyInlineParameterObjectClassRemovalTest : TestBase() {
 
-    private val actionId =
-        "com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.InlineParameterObjectRefactoringAction"
+    private val actionId = INLINE_PARAMETER_OBJECT_ACTION_ID
 
     fun testInlineRemoveClassAfterAllUsagesRemoved() {
         myFixture.doRefactoringTest(

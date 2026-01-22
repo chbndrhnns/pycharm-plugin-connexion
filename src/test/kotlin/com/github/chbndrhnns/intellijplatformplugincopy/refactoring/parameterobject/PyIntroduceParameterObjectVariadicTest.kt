@@ -34,7 +34,7 @@ class PyIntroduceParameterObjectVariadicTest : TestBase() {
                 def main():
                     foo(FooParams(a=1, b=2), 3, 4)
                 """.trimIndent(),
-                "com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.IntroduceParameterObjectRefactoringAction"
+                INTRODUCE_PARAMETER_OBJECT_ACTION_ID
             )
         }
     }
@@ -68,7 +68,7 @@ class PyIntroduceParameterObjectVariadicTest : TestBase() {
                 def main():
                     foo(FooParams(a=1, b=2), x=3)
                 """.trimIndent(),
-                "com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.IntroduceParameterObjectRefactoringAction"
+                INTRODUCE_PARAMETER_OBJECT_ACTION_ID
             )
         }
     }
@@ -102,7 +102,7 @@ class PyIntroduceParameterObjectVariadicTest : TestBase() {
                 def main():
                     foo(FooParams(a=1, b=2))
                 """.trimIndent(),
-                "com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.IntroduceParameterObjectRefactoringAction"
+                INTRODUCE_PARAMETER_OBJECT_ACTION_ID
             )
         }
     }
@@ -136,7 +136,7 @@ class PyIntroduceParameterObjectVariadicTest : TestBase() {
                  def main():
                      foo(FooParams(a=1, b=2))
                  """.trimIndent(),
-                "com.github.chbndrhnns.intellijplatformplugincopy.refactoring.parameterobject.IntroduceParameterObjectRefactoringAction"
+                INTRODUCE_PARAMETER_OBJECT_ACTION_ID
             )
         }
     }
