@@ -1,6 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.core.pytest
 
-import com.jetbrains.python.codeInsight.imports.AddImportHelper
+import com.github.chbndrhnns.intellijplatformplugincopy.core.psi.PyImportService
 import com.jetbrains.python.psi.*
 
 object PytestParametrizeUtil {
@@ -55,12 +55,6 @@ object PytestParametrizeUtil {
     }
 
     fun ensurePytestImported(file: PyFile) {
-        AddImportHelper.addImportStatement(
-            file,
-            "pytest",
-            null,
-            AddImportHelper.ImportPriority.THIRD_PARTY,
-            null
-        )
+        PyImportService().ensureModuleImported(file, "pytest")
     }
 }

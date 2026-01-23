@@ -1,7 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.populate
 
+import com.github.chbndrhnns.intellijplatformplugincopy.core.psi.PyImportService
 import com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.shared.PyBuiltinNames
-import com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.wrap.PyImportService
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiNamedElement

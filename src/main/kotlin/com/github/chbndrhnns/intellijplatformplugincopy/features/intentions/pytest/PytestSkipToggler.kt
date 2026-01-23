@@ -1,12 +1,13 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.pytest
 
+import com.github.chbndrhnns.intellijplatformplugincopy.core.psi.PyImportService
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
 import com.intellij.util.ArrayUtilRt
-import com.jetbrains.python.codeInsight.imports.AddImportHelper
 import com.jetbrains.python.psi.*
 
 class PytestSkipToggler(private val generator: PyElementGenerator) {
+    private val importService = PyImportService()
 
     fun toggleOnFunction(function: PyFunction, file: PyFile) {
         toggleDecorator(function, file)
@@ -159,7 +160,7 @@ class PytestSkipToggler(private val generator: PyElementGenerator) {
     fun toggleOnParam(callExpression: PyCallExpression, file: PyFile) {
         val marksArg = callExpression.getKeywordArgument("marks")
         val skipMarker = "pytest.mark.skip"
-        AddImportHelper.addImportStatement(file, "pytest", null, AddImportHelper.ImportPriority.THIRD_PARTY, null)
+        importService.ensureModuleImported(file, "pytest")
 
         if (marksArg != null) {
             val items = if (marksArg is PyListLiteralExpression) {
@@ -209,7 +210,7 @@ class PytestSkipToggler(private val generator: PyElementGenerator) {
             return
         }
 
-        AddImportHelper.addImportStatement(file, "pytest", null, AddImportHelper.ImportPriority.THIRD_PARTY, null)
+        importService.ensureModuleImported(file, "pytest")
 
         if (element is PyFunction) {
             PyUtil.addDecorator(element, "@$skipMarker")
@@ -264,7 +265,7 @@ class PytestSkipToggler(private val generator: PyElementGenerator) {
                 items.add(skipMarker)
             }
 
-            AddImportHelper.addImportStatement(file, "pytest", null, AddImportHelper.ImportPriority.THIRD_PARTY, null)
+            importService.ensureModuleImported(file, "pytest")
 
             val newListText = "[" + items.joinToString(", ") + "]"
             val newAssignment = generator.createFromText(
@@ -276,7 +277,7 @@ class PytestSkipToggler(private val generator: PyElementGenerator) {
             return
         }
 
-        AddImportHelper.addImportStatement(file, "pytest", null, AddImportHelper.ImportPriority.THIRD_PARTY, null)
+        importService.ensureModuleImported(file, "pytest")
 
         val newAssignment = generator.createFromText(
             LanguageLevel.getLatest(),

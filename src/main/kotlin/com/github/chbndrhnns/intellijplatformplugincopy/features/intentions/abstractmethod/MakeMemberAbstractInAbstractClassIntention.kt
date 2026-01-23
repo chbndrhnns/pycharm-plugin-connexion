@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.abstractmethod
 
 import com.github.chbndrhnns.intellijplatformplugincopy.core.PluginConstants
+import com.github.chbndrhnns.intellijplatformplugincopy.core.psi.PyImportService
 import com.github.chbndrhnns.intellijplatformplugincopy.core.util.isOwnCode
 import com.github.chbndrhnns.intellijplatformplugincopy.featureflags.PluginSettingsState
 import com.intellij.codeInsight.intention.IntentionAction
@@ -141,12 +142,10 @@ private object MakeMemberAbstractUtils {
 
     private fun ensureImportAbc(file: PyFile) {
         if (hasImportAbc(file)) return
-        AddImportHelper.addImportStatement(
+        PyImportService().ensureModuleImported(
             file,
             "abc",
-            null,
-            AddImportHelper.ImportPriority.BUILTIN,
-            null,
+            AddImportHelper.ImportPriority.BUILTIN
         )
     }
 

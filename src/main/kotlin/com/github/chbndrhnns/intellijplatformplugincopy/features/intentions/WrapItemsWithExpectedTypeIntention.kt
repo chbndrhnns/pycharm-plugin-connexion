@@ -1,12 +1,12 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.features.intentions
 
 import com.github.chbndrhnns.intellijplatformplugincopy.core.PluginConstants
+import com.github.chbndrhnns.intellijplatformplugincopy.core.psi.PyImportService
 import com.github.chbndrhnns.intellijplatformplugincopy.core.util.isOwnCode
 import com.github.chbndrhnns.intellijplatformplugincopy.featureflags.PluginSettingsState
 import com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.shared.ExpectedCtor
 import com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.shared.ExpectedTypeInfo
 import com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.shared.PyTypeIntentions
-import com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.wrap.PyImportService
 import com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.wrap.PyWrapHeuristics
 import com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.wrap.WrapApplier
 import com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.wrap.WrapPreview

@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.features.refactoring.parameterobject
 
 import com.github.chbndrhnns.intellijplatformplugincopy.core.MyBundle
+import com.github.chbndrhnns.intellijplatformplugincopy.core.psi.PyImportService
 import com.github.chbndrhnns.intellijplatformplugincopy.features.refactoring.parameterobject.generator.ParameterObjectGeneratorFactory
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.command.WriteCommandAction
@@ -13,7 +14,6 @@ import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.PsiTreeUtil
-import com.jetbrains.python.codeInsight.imports.AddImportHelper
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.resolve.PyResolveContext
 import com.jetbrains.python.psi.search.PyOverridingMethodsSearch
@@ -27,6 +27,7 @@ class PyIntroduceParameterObjectProcessor(
     private val function: PyFunction,
     private val configSelector: ((List<PyNamedParameter>, String) -> IntroduceParameterObjectSettings?)? = null
 ) {
+    private val importService = PyImportService()
 
     private data class CallSiteUpdateInfo(
         val callExpression: PyCallExpression,
@@ -176,7 +177,7 @@ class PyIntroduceParameterObjectProcessor(
                         if (func.containingFile != rootFunction.containingFile) {
                             val funcFile = func.containingFile as? PyFile
                             if (funcFile != null) {
-                                AddImportHelper.addImport(dataclass, funcFile, func)
+                                importService.ensureImportedIfNeeded(funcFile, func, dataclass)
                             }
                         }
 
@@ -545,7 +546,7 @@ class PyIntroduceParameterObjectProcessor(
             if (updateInfo.needsDataclassImport) {
                 val usageFile = call.containingFile
                 if (usageFile is PyFile) {
-                    AddImportHelper.addImport(dataclass, usageFile, call)
+                    importService.ensureImportedIfNeeded(usageFile, call, dataclass)
                 }
             }
         }

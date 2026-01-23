@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.wrap
 
+import com.github.chbndrhnns.intellijplatformplugincopy.core.psi.PyImportService
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile

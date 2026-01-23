@@ -1,4 +1,4 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.wrap
+package com.github.chbndrhnns.intellijplatformplugincopy.core.psi
 
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNamedElement
@@ -18,6 +18,25 @@ import com.jetbrains.python.psi.types.TypeEvalContext
  * accepts the resolved symbol (when available).
  */
 class PyImportService {
+    /**
+     * Ensure a module-level import (e.g. ``import pytest``) exists in [file].
+     */
+    fun ensureModuleImported(
+        file: PyFile,
+        moduleName: String,
+        priority: AddImportHelper.ImportPriority = AddImportHelper.ImportPriority.THIRD_PARTY,
+    ) {
+        if (isImported(file, moduleName)) return
+
+        AddImportHelper.addImportStatement(
+            file,
+            moduleName,
+            null,
+            priority,
+            null
+        )
+    }
+
     /**
      * Ensure [element] is importable in [file]'s scope. Skips builtins and existing imports.
      *
