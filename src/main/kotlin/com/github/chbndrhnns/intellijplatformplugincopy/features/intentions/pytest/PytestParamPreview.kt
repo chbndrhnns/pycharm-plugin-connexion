@@ -1,6 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.pytest
 
-import com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.PytestParametrizeUtil
+import com.github.chbndrhnns.intellijplatformplugincopy.core.pytest.PytestParametrizeUtil
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
 import com.jetbrains.python.psi.PyCallExpression
 import com.jetbrains.python.psi.PyDecorator

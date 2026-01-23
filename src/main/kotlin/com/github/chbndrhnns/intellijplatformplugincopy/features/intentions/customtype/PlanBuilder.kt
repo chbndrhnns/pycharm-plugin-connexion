@@ -1,6 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.customtype
 
-import com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.PytestNaming
+import com.github.chbndrhnns.intellijplatformplugincopy.core.pytest.PytestNaming
 import com.intellij.openapi.editor.Editor
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.PyNames

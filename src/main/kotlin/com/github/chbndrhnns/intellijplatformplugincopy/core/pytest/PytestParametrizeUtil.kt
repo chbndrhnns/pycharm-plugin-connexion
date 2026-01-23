@@ -1,4 +1,4 @@
-package com.github.chbndrhnns.intellijplatformplugincopy.features.pytest
+package com.github.chbndrhnns.intellijplatformplugincopy.core.pytest
 
 import com.jetbrains.python.codeInsight.imports.AddImportHelper
 import com.jetbrains.python.psi.*

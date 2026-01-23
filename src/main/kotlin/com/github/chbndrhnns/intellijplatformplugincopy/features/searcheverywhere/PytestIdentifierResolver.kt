@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.features.searcheverywhere
 
+import com.github.chbndrhnns.intellijplatformplugincopy.core.pytest.PytestNodeIdUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiElement
@@ -17,7 +18,7 @@ class PytestIdentifierResolver(private val project: Project) {
 
     fun resolveAll(pattern: String): List<PsiElement> {
         val rawParts = StringUtil.split(pattern, "::")
-        val parts = normalizePytestNodeIdParts(rawParts)
+        val parts = PytestNodeIdUtil.normalizePytestNodeIdParts(rawParts)
         if (parts.isEmpty()) return emptyList()
 
         // Extract file path and elements (class, function)
@@ -63,7 +64,7 @@ class PytestIdentifierResolver(private val project: Project) {
             var currentElements: List<PsiElement> = listOf(pyFile)
 
             for (i in 1 until parts.size) {
-                val partName = stripParametrization(parts[i])
+                val partName = PytestNodeIdUtil.stripParametrization(parts[i])
                 val nextElements = mutableListOf<PsiElement>()
 
                 for (element in currentElements) {
@@ -118,40 +119,4 @@ class PytestIdentifierResolver(private val project: Project) {
         return matches
     }
 
-    private fun normalizePytestNodeIdParts(rawParts: List<String>): List<String> {
-        if (rawParts.isEmpty()) return emptyList()
-        if (rawParts.size == 1) return rawParts
-
-        val normalized = ArrayList<String>(rawParts.size + 2)
-        normalized.add(rawParts.first())
-
-        for (i in 1 until rawParts.size) {
-            normalized.addAll(splitContainerSegment(rawParts[i]))
-        }
-
-        return normalized
-    }
-
-    /**
-     * Pytest node ids are canonically separated by `::`.
-     *
-     * When `pytest-sugar` is active, the console may render the post-file container chain as a single
-     * dot-separated segment (e.g. `TestGetAll.test_returns_all`), while still keeping `::` between the
-     * file part and the container part.
-     */
-    private fun splitContainerSegment(rawSegment: String): List<String> {
-        val segmentWithoutParams = stripParametrization(rawSegment)
-        return segmentWithoutParams
-            .split('.')
-            .map { it.trim() }
-            .filter { it.isNotBlank() }
-    }
-
-    private fun stripParametrization(name: String): String {
-        val bracketIndex = name.indexOf('[')
-        if (bracketIndex > 0 && name.endsWith("]")) {
-            return name.substring(0, bracketIndex)
-        }
-        return name
-    }
 }

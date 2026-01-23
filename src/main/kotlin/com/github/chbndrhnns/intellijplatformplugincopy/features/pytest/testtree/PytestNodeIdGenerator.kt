@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.testtree
 
-import com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.PytestParametrizeUtil
+import com.github.chbndrhnns.intellijplatformplugincopy.core.pytest.PytestNodeIdUtil
+import com.github.chbndrhnns.intellijplatformplugincopy.core.pytest.PytestParametrizeUtil
 import com.intellij.execution.testframework.sm.runner.SMTestProxy
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
@@ -302,32 +303,12 @@ object PytestNodeIdGenerator {
                 break
             }
             // Normalize parameter format: convert (param) to [param] for pytest node IDs
-            val normalizedName = normalizeParameterFormat(name)
+            val normalizedName = PytestNodeIdUtil.normalizeParameterFormat(name)
             parts.add(0, normalizedName)
             current = current.parent
         }
 
         return parts
-    }
-
-    /**
-     * Normalizes parameter format in test names.
-     * Pytest node IDs use square brackets for parameters (e.g., test_[1]),
-     * but some proxy names may use parentheses (e.g., test_(1)).
-     * This converts parentheses format to square brackets format.
-     */
-    private fun normalizeParameterFormat(name: String): String {
-        // Match pattern: name(param) where param doesn't contain nested parentheses
-        // Convert to: name[param]
-        val parenStart = name.lastIndexOf('(')
-        val parenEnd = name.lastIndexOf(')')
-
-        if (parenStart > 0 && parenEnd == name.length - 1 && parenEnd > parenStart) {
-            val baseName = name.substring(0, parenStart)
-            val param = name.substring(parenStart + 1, parenEnd)
-            return "$baseName[$param]"
-        }
-        return name
     }
 
     /**

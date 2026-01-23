@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.testtree
 
-import com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.PytestNaming
+import com.github.chbndrhnns.intellijplatformplugincopy.core.pytest.PytestNaming
+import com.github.chbndrhnns.intellijplatformplugincopy.core.pytest.PytestNodeIdUtil
 import com.intellij.execution.testframework.sm.runner.SMTestProxy
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.TreePath
@@ -73,7 +74,7 @@ object TestTreeNodeFinder {
 
         val last = targetNodeId.substringAfterLast("::")
         // Heuristic: test functions/methods are leaves; test classes/modules are containers.
-        val baseName = last.substringBefore('[')
+        val baseName = PytestNodeIdUtil.stripParametrization(last)
         if (PytestNaming.isTestFunctionName(baseName)) return TargetKind.LEAF
 
         return TargetKind.CONTAINER

@@ -1,6 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.features.search
 
-import com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.PytestNaming
+import com.github.chbndrhnns.intellijplatformplugincopy.core.pytest.PytestNaming
 import com.jetbrains.python.psi.PyClass
 import com.jetbrains.python.psi.PyFunction
 

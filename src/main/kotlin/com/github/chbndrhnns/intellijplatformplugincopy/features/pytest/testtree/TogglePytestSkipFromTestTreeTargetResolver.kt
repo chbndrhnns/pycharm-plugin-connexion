@@ -1,6 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.testtree
 
-import com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.PytestNaming
+import com.github.chbndrhnns.intellijplatformplugincopy.core.pytest.PytestNaming
 import com.intellij.execution.testframework.sm.runner.SMTestProxy
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement

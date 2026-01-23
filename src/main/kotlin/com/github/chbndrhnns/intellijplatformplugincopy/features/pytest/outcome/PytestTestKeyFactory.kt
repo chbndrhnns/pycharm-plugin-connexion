@@ -1,5 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.outcome
 
+import com.github.chbndrhnns.intellijplatformplugincopy.core.pytest.PytestNodeIdUtil
+
 /**
  * Builds keys used by the "use actual outcome" flow.
  *
@@ -7,11 +9,6 @@ package com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.outcome
  */
 object PytestTestKeyFactory {
     fun fromTestProxy(locationUrl: String, metainfo: String?): String {
-        if (metainfo.isNullOrEmpty()) return locationUrl
-
-        val bracketStart = metainfo.indexOf('[')
-        if (bracketStart == -1) return locationUrl
-
-        return locationUrl + metainfo.substring(bracketStart)
+        return PytestNodeIdUtil.appendMetainfoSuffix(locationUrl, metainfo)
     }
 }

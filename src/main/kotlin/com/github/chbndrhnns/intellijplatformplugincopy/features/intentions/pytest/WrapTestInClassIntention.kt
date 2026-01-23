@@ -1,9 +1,9 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.pytest
 
 import com.github.chbndrhnns.intellijplatformplugincopy.core.PluginConstants
+import com.github.chbndrhnns.intellijplatformplugincopy.core.pytest.PytestNaming
 import com.github.chbndrhnns.intellijplatformplugincopy.core.util.isOwnCode
 import com.github.chbndrhnns.intellijplatformplugincopy.featureflags.PluginSettingsState
-import com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.PytestNaming
 import com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.testtree.PytestTestContextUtils
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo

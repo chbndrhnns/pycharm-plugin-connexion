@@ -1,6 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.customtype
 
-import com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.PytestParametrizeUtil
+import com.github.chbndrhnns.intellijplatformplugincopy.core.pytest.PytestParametrizeUtil
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.types.TypeEvalContext

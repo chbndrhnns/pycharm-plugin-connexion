@@ -1,7 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.pytest
 
+import com.github.chbndrhnns.intellijplatformplugincopy.core.pytest.PytestNaming
 import com.github.chbndrhnns.intellijplatformplugincopy.featureflags.PluginSettingsState
-import com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.PytestNaming
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiElement
