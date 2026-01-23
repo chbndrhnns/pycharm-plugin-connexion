@@ -25,7 +25,7 @@ class PyMockTypeCheckerExtension : PyTypeCheckerExtension {
                 // Check ancestors
                 val ancestors = specType.getAncestorTypes(context)
                 for (ancestor in ancestors) {
-                    if (ancestor.classQName == expected.classQName) {
+                    if (ancestor?.classQName == expected.classQName) {
                         return Optional.of(true)
                     }
                 }
