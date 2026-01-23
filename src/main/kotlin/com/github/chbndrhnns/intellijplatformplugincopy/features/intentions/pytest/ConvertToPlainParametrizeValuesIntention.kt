@@ -3,6 +3,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.pyt
 import com.github.chbndrhnns.intellijplatformplugincopy.core.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.core.util.isOwnCode
 import com.github.chbndrhnns.intellijplatformplugincopy.featureflags.PluginSettingsState
+import com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.PytestParametrizeUtil
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
@@ -64,47 +65,26 @@ class ConvertToPlainParametrizeValuesIntention : IntentionAction, HighPriorityAc
         }
 
     private fun isParametrizeDecorator(decorator: PyDecorator): Boolean {
-        val callee = decorator.callee as? PyQualifiedExpression ?: return false
-        val qName = callee.asQualifiedName()?.toString() ?: return false
-        return qName == "pytest.mark.parametrize" ||
-                qName == "_pytest.mark.parametrize" ||
-                qName.endsWith(".pytest.mark.parametrize")
+        return PytestParametrizeUtil.isParametrizeDecorator(decorator, allowBareName = false)
     }
 
     private fun findParameterValuesListArgument(argumentList: PyArgumentList): PyListLiteralExpression? {
-        // parametrize typically has 2 arguments: ("param_names", [values])
-        // We want the second argument which should be a list
-        val args = argumentList.arguments
-        if (args.size < 2) return null
-
-        val secondArg = args[1]
-        return secondArg as? PyListLiteralExpression
+        return PytestParametrizeUtil.findParameterValuesListArgument(argumentList)
     }
 
     private fun hasConvertiblePytestParamCalls(listExpr: PyListLiteralExpression): Boolean {
         return listExpr.elements.any { expr ->
             val callExpr = expr as? PyCallExpression ?: return@any false
-            isPytestParamCall(callExpr) && canConvertToPlain(callExpr)
+            PytestParametrizeUtil.isPytestParamCall(callExpr) && PytestParametrizeUtil.canConvertToPlain(callExpr)
         }
     }
 
     private fun isPytestParamCall(callExpr: PyCallExpression): Boolean {
-        val callee = callExpr.callee as? PyReferenceExpression ?: return false
-        val qName = callee.asQualifiedName()?.toString() ?: return false
-        return qName == "pytest.param" || qName.endsWith(".pytest.param")
+        return PytestParametrizeUtil.isPytestParamCall(callExpr)
     }
 
     private fun canConvertToPlain(callExpr: PyCallExpression): Boolean {
-        // Can only convert if there's exactly one positional argument and no keyword arguments
-        val args = callExpr.arguments
-        if (args.isEmpty()) return false
-
-        val hasKeywordArgs = args.any { it is PyKeywordArgument }
-        if (hasKeywordArgs) return false
-
-        // Check if there's only one positional argument
-        val positionalArgs = args.filterNot { it is PyKeywordArgument }
-        return positionalArgs.size == 1
+        return PytestParametrizeUtil.canConvertToPlain(callExpr)
     }
 
     private fun findTarget(editor: Editor, file: PyFile): Pair<PyDecorator, PyListLiteralExpression>? {
@@ -129,6 +109,6 @@ class ConvertToPlainParametrizeValuesIntention : IntentionAction, HighPriorityAc
 
     private fun findParametrizeDecorator(function: PyFunction): PyDecorator? {
         val decorators = function.decoratorList?.decorators ?: return null
-        return decorators.firstOrNull { isParametrizeDecorator(it) }
+        return decorators.firstOrNull { PytestParametrizeUtil.isParametrizeDecorator(it, allowBareName = false) }
     }
 }

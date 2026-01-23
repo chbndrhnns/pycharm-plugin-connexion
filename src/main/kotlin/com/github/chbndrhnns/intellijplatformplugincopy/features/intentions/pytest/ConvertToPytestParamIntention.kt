@@ -3,6 +3,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.pyt
 import com.github.chbndrhnns.intellijplatformplugincopy.core.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.core.util.isOwnCode
 import com.github.chbndrhnns.intellijplatformplugincopy.featureflags.PluginSettingsState
+import com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.PytestParametrizeUtil
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
@@ -10,7 +11,6 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
-import com.jetbrains.python.codeInsight.imports.AddImportHelper
 import com.jetbrains.python.psi.*
 
 /**
@@ -35,7 +35,7 @@ class ConvertToPytestParamIntention : IntentionAction, HighPriorityAction {
 
         val (_, listArg) = findTarget(editor, file) ?: return
 
-        ensurePytestImported(file)
+        PytestParametrizeUtil.ensurePytestImported(file)
 
         val generator = PyElementGenerator.getInstance(project)
 
@@ -44,7 +44,7 @@ class ConvertToPytestParamIntention : IntentionAction, HighPriorityAction {
 
         for (expr in listArg.elements) {
             // Skip if already a pytest.param() call
-            if (expr is PyCallExpression && isPytestParamCall(expr)) continue
+            if (expr is PyCallExpression && PytestParametrizeUtil.isPytestParamCall(expr)) continue
 
             // Wrap the value in pytest.param()
             val wrappedExpr = generator.createExpressionFromText(
@@ -68,34 +68,22 @@ class ConvertToPytestParamIntention : IntentionAction, HighPriorityAction {
         }
 
     private fun isParametrizeDecorator(decorator: PyDecorator): Boolean {
-        val callee = decorator.callee as? PyQualifiedExpression ?: return false
-        val qName = callee.asQualifiedName()?.toString() ?: return false
-        return qName == "pytest.mark.parametrize" ||
-                qName == "_pytest.mark.parametrize" ||
-                qName.endsWith(".pytest.mark.parametrize")
+        return PytestParametrizeUtil.isParametrizeDecorator(decorator, allowBareName = false)
     }
 
     private fun findParameterValuesListArgument(argumentList: PyArgumentList): PyListLiteralExpression? {
-        // parametrize typically has 2 arguments: ("param_names", [values])
-        // We want the second argument which should be a list
-        val args = argumentList.arguments
-        if (args.size < 2) return null
-
-        val secondArg = args[1]
-        return secondArg as? PyListLiteralExpression
+        return PytestParametrizeUtil.findParameterValuesListArgument(argumentList)
     }
 
     private fun hasPlainValues(listExpr: PyListLiteralExpression): Boolean {
         return listExpr.elements.any { expr ->
             // It's a plain value if it's not a pytest.param() call
-            !(expr is PyCallExpression && isPytestParamCall(expr))
+            !(expr is PyCallExpression && PytestParametrizeUtil.isPytestParamCall(expr))
         }
     }
 
     private fun isPytestParamCall(callExpr: PyCallExpression): Boolean {
-        val callee = callExpr.callee as? PyReferenceExpression ?: return false
-        val qName = callee.asQualifiedName()?.toString() ?: return false
-        return qName == "pytest.param" || qName.endsWith(".pytest.param")
+        return PytestParametrizeUtil.isPytestParamCall(callExpr)
     }
 
     private fun findTarget(editor: Editor, file: PyFile): Pair<PyDecorator, PyListLiteralExpression>? {
@@ -113,19 +101,8 @@ class ConvertToPytestParamIntention : IntentionAction, HighPriorityAction {
 
     internal companion object {
         fun isPytestParamCallStatic(callExpr: PyCallExpression): Boolean {
-            val callee = callExpr.callee as? PyReferenceExpression ?: return false
-            val qName = callee.asQualifiedName()?.toString() ?: return false
-            return qName == "pytest.param" || qName.endsWith(".pytest.param")
+            return PytestParametrizeUtil.isPytestParamCall(callExpr)
         }
     }
 
-    private fun ensurePytestImported(file: PyFile) {
-        AddImportHelper.addImportStatement(
-            file,
-            "pytest",
-            null,
-            AddImportHelper.ImportPriority.THIRD_PARTY,
-            null
-        )
-    }
 }

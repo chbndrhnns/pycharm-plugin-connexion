@@ -1,7 +1,11 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.pytest
 
+import com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.PytestParametrizeUtil
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
-import com.jetbrains.python.psi.*
+import com.jetbrains.python.psi.PyCallExpression
+import com.jetbrains.python.psi.PyDecorator
+import com.jetbrains.python.psi.PyFile
+import com.jetbrains.python.psi.PyListLiteralExpression
 
 /**
  * Builds lightweight intention previews (without mutating PSI) for pytest.param conversions.
@@ -62,7 +66,7 @@ object PytestParamPreview {
 
     private fun renderPytestParamWrappedList(listExpr: PyListLiteralExpression): String {
         val rendered = listExpr.elements.joinToString(", ") { expr ->
-            if (expr is PyCallExpression && isPytestParamCall(expr)) {
+            if (expr is PyCallExpression && PytestParametrizeUtil.isPytestParamCall(expr)) {
                 expr.text
             } else {
                 "pytest.param(${expr.text})"
@@ -85,21 +89,11 @@ object PytestParamPreview {
     }
 
     private fun isPytestParamCall(callExpr: PyCallExpression): Boolean {
-        val callee = callExpr.callee as? PyReferenceExpression ?: return false
-        val qName = callee.asQualifiedName()?.toString() ?: return false
-        return qName == "pytest.param" || qName.endsWith(".pytest.param")
+        return PytestParametrizeUtil.isPytestParamCall(callExpr)
     }
 
     private fun isConvertiblePytestParamCall(callExpr: PyCallExpression): Boolean {
         if (!isPytestParamCall(callExpr)) return false
-
-        val args = callExpr.arguments
-        if (args.isEmpty()) return false
-
-        val hasKeywordArgs = args.any { it is PyKeywordArgument }
-        if (hasKeywordArgs) return false
-
-        val positionalArgs = args.filterNot { it is PyKeywordArgument }
-        return positionalArgs.size == 1
+        return PytestParametrizeUtil.canConvertToPlain(callExpr)
     }
 }

@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.customtype
 
+import com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.PytestParametrizeUtil
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.types.TypeEvalContext
@@ -28,14 +29,14 @@ class PytestParametrizeHandler {
         val decoratorList = function.decoratorList ?: return null
 
         for (decorator in decoratorList.decorators) {
-            if (decorator.name != "parametrize") continue
+            if (!PytestParametrizeUtil.isParametrizeDecorator(decorator, allowBareName = true)) continue
 
             val args = decorator.argumentList?.arguments ?: continue
             if (args.size < 2) continue
 
             // Check if this parameter is in the parametrize list
             val namesArg = args[0]
-            val paramNames = extractParameterNames(namesArg) ?: continue
+            val paramNames = PytestParametrizeUtil.extractParameterNames(namesArg) ?: continue
             if (paramName !in paramNames) continue
 
             // Infer type from the values
@@ -78,14 +79,14 @@ class PytestParametrizeHandler {
         val decoratorList = function.decoratorList ?: return false
 
         for (decorator in decoratorList.decorators) {
-            if (decorator.name != "parametrize") continue
+            if (!PytestParametrizeUtil.isParametrizeDecorator(decorator, allowBareName = true)) continue
 
             val args = decorator.argumentList?.arguments ?: continue
             if (args.isEmpty()) continue
 
             // First argument should be the parameter name(s)
             val namesArg = args[0]
-            val paramNames = extractParameterNames(namesArg) ?: continue
+            val paramNames = PytestParametrizeUtil.extractParameterNames(namesArg) ?: continue
 
             // Check if our parameter is in the list
             if (paramName !in paramNames) continue
@@ -111,24 +112,6 @@ class PytestParametrizeHandler {
             }
         }
         return false
-    }
-
-    private fun extractParameterNames(namesArg: PyExpression): List<String>? {
-        return when (namesArg) {
-            is PyStringLiteralExpression -> {
-                namesArg.stringValue.split(',').map { it.trim() }
-            }
-
-            is PyListLiteralExpression -> {
-                namesArg.elements.mapNotNull { (it as? PyStringLiteralExpression)?.stringValue }
-            }
-
-            is PyTupleExpression -> {
-                namesArg.elements.mapNotNull { (it as? PyStringLiteralExpression)?.stringValue }
-            }
-
-            else -> null
-        }
     }
 
     private fun inferBuiltinTypeFromValues(

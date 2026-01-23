@@ -4,6 +4,7 @@ import com.github.chbndrhnns.intellijplatformplugincopy.core.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.core.util.isOwnCode
 import com.github.chbndrhnns.intellijplatformplugincopy.featureflags.PluginSettingsState
 import com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.PytestNaming
+import com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.PytestParametrizeUtil
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
@@ -12,8 +13,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.PyTokenTypes
-import com.jetbrains.python.codeInsight.imports.AddImportHelper
-import com.jetbrains.python.psi.*
+import com.jetbrains.python.psi.PyElementGenerator
+import com.jetbrains.python.psi.PyFile
+import com.jetbrains.python.psi.PyFunction
+import com.jetbrains.python.psi.PyUtil
 import com.jetbrains.python.psi.impl.PyPsiUtils
 
 class ParametrizePytestTestIntention : IntentionAction, HighPriorityAction {
@@ -54,23 +57,11 @@ class ParametrizePytestTestIntention : IntentionAction, HighPriorityAction {
 
     private fun isAlreadyParametrized(pyFunction: PyFunction): Boolean {
         val decorators = pyFunction.decoratorList?.decorators ?: return false
-        return decorators.any { decorator ->
-            val callee = decorator.callee as? PyQualifiedExpression
-            val qName = callee?.asQualifiedName()?.toString()
-            qName == "pytest.mark.parametrize" ||
-                    qName == "_pytest.mark.parametrize" ||
-                    qName?.endsWith(".pytest.mark.parametrize") == true
-        }
+        return decorators.any { PytestParametrizeUtil.isParametrizeDecorator(it, allowBareName = false) }
     }
 
     private fun ensurePytestImported(file: PyFile) {
-        AddImportHelper.addImportStatement(
-            file,
-            "pytest",
-            null,
-            AddImportHelper.ImportPriority.THIRD_PARTY,
-            null
-        )
+        PytestParametrizeUtil.ensurePytestImported(file)
     }
 
     private fun addFirstParameter(pyFunction: PyFunction, project: Project) {

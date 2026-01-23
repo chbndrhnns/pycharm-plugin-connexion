@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.testtree
 
+import com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.PytestParametrizeUtil
 import com.intellij.execution.testframework.sm.runner.SMTestProxy
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
@@ -160,11 +161,7 @@ object PytestNodeIdGenerator {
         val decorators = function.decoratorList?.decorators ?: return null
 
         val parametrizeDecorator = decorators.firstOrNull { decorator ->
-            val callee = decorator.callee as? PyQualifiedExpression
-            val qName = callee?.asQualifiedName()?.toString()
-            qName == "pytest.mark.parametrize" ||
-                    qName == "_pytest.mark.parametrize" ||
-                    qName?.endsWith(".pytest.mark.parametrize") == true
+            PytestParametrizeUtil.isParametrizeDecorator(decorator, allowBareName = false)
         } ?: return null
 
         val argList = parametrizeDecorator.argumentList ?: return null
