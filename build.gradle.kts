@@ -34,7 +34,7 @@ repositories {
 configurations.all {
     resolutionStrategy.eachDependency {
         if (requested.group == "com.jetbrains.intellij.java" && requested.name == "java-compiler-ant-tasks") {
-            useVersion("253.29346.240")
+            useVersion("253.29346.308")
         }
     }
 }
