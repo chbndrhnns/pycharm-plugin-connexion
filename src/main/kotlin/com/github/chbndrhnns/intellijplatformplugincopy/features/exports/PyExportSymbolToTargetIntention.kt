@@ -21,7 +21,10 @@ import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.PyNames
-import com.jetbrains.python.psi.*
+import com.jetbrains.python.psi.PyClass
+import com.jetbrains.python.psi.PyFile
+import com.jetbrains.python.psi.PyFunction
+import com.jetbrains.python.psi.PyTargetExpression
 import javax.swing.Icon
 
 class PyExportSymbolToTargetIntention : IntentionAction, HighPriorityAction, DumbAware, Iconable {
@@ -155,12 +158,9 @@ class PyExportSymbolToTargetIntention : IntentionAction, HighPriorityAction, Dum
     }
 
     private fun isAlreadyExported(file: PyFile, name: String): Boolean {
-        val dunderAll = file.findTopLevelAttribute(PyNames.ALL) ?: return false
-        val assignedValue = (dunderAll.parent as? PyAssignmentStatement)?.assignedValue
-        if (assignedValue is PySequenceExpression) {
-            return assignedValue.elements.any { (it as? PyStringLiteralExpression)?.stringValue == name }
-        }
-        return false
+        val assignment = findDunderAllAssignment(file) ?: return false
+        val exported = extractDunderAllNames(assignment) ?: return false
+        return name in exported
     }
 
     private fun exportToTarget(project: Project, targetFile: PyFile, name: String, sourceModule: PyFile) {

@@ -11,7 +11,9 @@ import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.PyNames
 import com.jetbrains.python.inspections.PyInspection
-import com.jetbrains.python.psi.*
+import com.jetbrains.python.psi.PyElementVisitor
+import com.jetbrains.python.psi.PyFile
+import com.jetbrains.python.psi.PyFromImportStatement
 
 /**
  * Inspection that suggests importing symbols from the public package export
@@ -147,15 +149,7 @@ class PyPrivateModuleImportInspection : PyInspection() {
     }
 
     private fun findDunderAllNames(file: PyFile): Collection<String>? {
-        val dunderAllAssignment = (file.findTopLevelAttribute(PyNames.ALL)?.parent as? PyAssignmentStatement)
-            ?: return emptyList()
-
-        return when (val value = dunderAllAssignment.assignedValue) {
-            null -> emptyList()
-            is PySequenceExpression -> value.elements
-                .mapNotNull { (it as? PyStringLiteralExpression)?.stringValue }
-
-            else -> null
-        }
+        val dunderAllAssignment = findDunderAllAssignment(file) ?: return emptyList()
+        return extractDunderAllNames(dunderAllAssignment)
     }
 }

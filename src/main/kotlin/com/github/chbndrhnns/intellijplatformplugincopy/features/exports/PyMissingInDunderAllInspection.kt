@@ -299,19 +299,5 @@ class PyMissingInDunderAllInspection : PyInspection() {
         private fun getNameIdentifier(element: PyElement): PsiElement? =
             if (element is PsiNameIdentifierOwner) element.nameIdentifier else element
 
-        private fun findDunderAllAssignment(file: PyFile): PyAssignmentStatement? {
-            val target = file.findTopLevelAttribute(PyNames.ALL)
-            return target?.parent as? PyAssignmentStatement
-        }
-
-        /**
-         * Extract exported names from a __all__ assignment.
-         * Returns {@code null} if the assignment value is not a simple list/tuple.
-         */
-        private fun extractDunderAllNames(assignment: PyAssignmentStatement): Set<String>? =
-            (assignment.assignedValue as? PySequenceExpression)
-                ?.elements
-                ?.mapNotNull { (it as? PyStringLiteralExpression)?.stringValue }
-                ?.toSet()
     }
 }

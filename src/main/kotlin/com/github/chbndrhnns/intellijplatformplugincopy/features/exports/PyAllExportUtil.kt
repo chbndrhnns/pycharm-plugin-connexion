@@ -11,6 +11,22 @@ import com.jetbrains.python.PyNames
 import com.jetbrains.python.documentation.docstrings.DocStringUtil
 import com.jetbrains.python.psi.*
 
+internal fun findDunderAllAssignment(file: PyFile): PyAssignmentStatement? {
+    val target = file.findTopLevelAttribute(PyNames.ALL)
+    return target?.parent as? PyAssignmentStatement
+}
+
+internal fun extractDunderAllNames(assignment: PyAssignmentStatement): Set<String>? {
+    return when (val value = assignment.assignedValue) {
+        null -> emptySet()
+        is PySequenceExpression -> value.elements
+            .mapNotNull { (it as? PyStringLiteralExpression)?.stringValue }
+            .toSet()
+
+        else -> null
+    }
+}
+
 /** Utility responsible for keeping a package's {@code __all__} and re-export
  * imports in sync when a symbol should be made public.
  *
@@ -258,8 +274,4 @@ object PyAllExportUtil {
             .mapNotNull { (it as? PyStringLiteralExpression)?.stringValue }
     }
 
-    private fun findDunderAllAssignment(file: PyFile): PyAssignmentStatement? {
-        val target = file.findTopLevelAttribute(PyNames.ALL)
-        return target?.parent as? PyAssignmentStatement
-    }
 }
