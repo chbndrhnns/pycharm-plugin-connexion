@@ -55,27 +55,8 @@ class PluginSettingsSnapshotTest : TestBase() {
             child.displayName to panel
         }
 
-        val registry = FeatureRegistry.instance()
-        val featureId = "jump-to-pytest-node-in-test-tree"
-
         // 1. Initial snapshot
         val initialSnapshot = buildCompleteSnapshot(mainConfigurable.displayName, mainPanel, childPanels)
-
-        // 2. Change state in registry (persistent state)
-        val originalValue = registry.isFeatureEnabled(featureId)
-        try {
-            registry.setFeatureEnabled(featureId, !originalValue)
-
-            // 3. Second snapshot - should be IDENTICAL because panel is bound to snapshot, not registry
-            val secondSnapshot = buildCompleteSnapshot(mainConfigurable.displayName, mainPanel, childPanels)
-            assertEquals(
-                "UI should not change when registry changes because it is bound to a snapshot baseline",
-                initialSnapshot,
-                secondSnapshot
-            )
-        } finally {
-            registry.setFeatureEnabled(featureId, originalValue)
-        }
 
         val expectedSnapshotUrl = this.javaClass.getResource("/settings_snapshot.txt")
         assertNotNull("Snapshot file not found", expectedSnapshotUrl)
@@ -87,6 +68,37 @@ class PluginSettingsSnapshotTest : TestBase() {
 //        java.io.File("src/test/resources/settings_snapshot.txt").writeText(actualSnapshot)
 
         assertEquals(expectedSnapshot, actualSnapshot)
+    }
+
+    fun testPluginSettingsUiDoesNotChangeAfterRegistryUpdate() {
+        val mainConfigurable = PluginSettingsConfigurable()
+        val mainPanel = mainConfigurable.createComponent() as DialogPanel
+        assertNotNull(mainPanel)
+        mainConfigurable.reset() // Load settings into UI
+
+        val childPanels = subConfigurables.map { child ->
+            val panel = child.createComponent() as DialogPanel
+            child.reset()
+            child.displayName to panel
+        }
+
+        val initialSnapshot = buildCompleteSnapshot(mainConfigurable.displayName, mainPanel, childPanels)
+
+        val registry = FeatureRegistry.instance()
+        val featureId = "jump-to-pytest-node-in-test-tree"
+        val originalValue = registry.isFeatureEnabled(featureId)
+        try {
+            registry.setFeatureEnabled(featureId, !originalValue)
+
+            val secondSnapshot = buildCompleteSnapshot(mainConfigurable.displayName, mainPanel, childPanels)
+            assertEquals(
+                "UI should not change when registry changes because it is bound to a snapshot baseline",
+                initialSnapshot,
+                secondSnapshot
+            )
+        } finally {
+            registry.setFeatureEnabled(featureId, originalValue)
+        }
     }
 
     private fun buildCompleteSnapshot(
