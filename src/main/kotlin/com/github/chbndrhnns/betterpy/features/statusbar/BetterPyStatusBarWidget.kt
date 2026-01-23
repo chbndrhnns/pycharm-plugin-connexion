@@ -9,6 +9,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ModuleRootEvent
+import com.intellij.openapi.roots.ModuleRootListener
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.ListPopup
 import com.intellij.openapi.ui.popup.PopupStep
@@ -17,13 +19,17 @@ import com.intellij.openapi.util.IconLoader
 import com.intellij.openapi.wm.*
 import com.intellij.ui.awt.RelativePoint
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.awt.Point
 import java.awt.event.MouseEvent
 import javax.swing.Icon
 
-class BetterPyStatusBarWidget(private val project: Project) : IconWidgetPresentation {
+class BetterPyStatusBarWidget(
+    private val project: Project,
+    scope: CoroutineScope
+) : IconWidgetPresentation {
 
     companion object {
         const val ID = "BetterPyStatusBarWidget"
@@ -35,6 +41,21 @@ class BetterPyStatusBarWidget(private val project: Project) : IconWidgetPresenta
     }
 
     private val iconState = MutableStateFlow(currentIcon())
+
+    init {
+        val connection = project.messageBus.connect()
+        connection.subscribe(ModuleRootListener.TOPIC, object : ModuleRootListener {
+            override fun rootsChanged(event: ModuleRootEvent) {
+                updateIcon()
+            }
+        })
+        val job = scope.coroutineContext[Job]
+        if (job == null) {
+            connection.disconnect()
+        } else {
+            job.invokeOnCompletion { connection.disconnect() }
+        }
+    }
 
     override fun icon(): Flow<Icon?> = iconState
 
@@ -145,7 +166,7 @@ class BetterPyStatusBarWidgetFactory : StatusBarWidgetFactory, WidgetPresentatio
         context: WidgetPresentationDataContext,
         scope: CoroutineScope
     ): WidgetPresentation {
-        return BetterPyStatusBarWidget(context.project)
+        return BetterPyStatusBarWidget(context.project, scope)
     }
 
     override fun disposeWidget(widget: StatusBarWidget) {

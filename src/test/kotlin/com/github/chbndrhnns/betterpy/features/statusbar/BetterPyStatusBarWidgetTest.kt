@@ -8,6 +8,9 @@ import com.intellij.openapi.options.ConfigurableGroup
 import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import fixtures.TestBase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import java.awt.Component
@@ -23,7 +26,7 @@ class BetterPyStatusBarWidgetTest : TestBase() {
 
     fun testTooltipTextWhenSupported() {
         // TestBase sets up a Python 3.11 SDK, so environment should be supported
-        val widget = BetterPyStatusBarWidget(project)
+        val widget = createWidget()
         val tooltip = runBlocking { widget.getTooltipText() }
         assertEquals("BetterPy", tooltip)
     }
@@ -52,19 +55,19 @@ class BetterPyStatusBarWidgetTest : TestBase() {
     }
 
     fun testWidgetIconIsNotNull() {
-        val widget = BetterPyStatusBarWidget(project)
+        val widget = createWidget()
         val icon = runBlocking { widget.icon().first() }
         assertNotNull("Widget icon should not be null", icon)
     }
 
     fun testWidgetClickConsumerIsNotNull() {
-        val widget = BetterPyStatusBarWidget(project)
+        val widget = createWidget()
         assertNotNull("Widget click consumer should not be null", widget.getClickConsumer())
     }
 
     fun testIsEnvironmentSupportedWithConfiguredSdk() {
         // TestBase sets up a Python 3.11 SDK, so this should return true
-        val widget = BetterPyStatusBarWidget(project)
+        val widget = createWidget()
         assertTrue(
             "Environment should be supported with Python 3.11 SDK configured by TestBase",
             widget.isEnvironmentSupported()
@@ -72,7 +75,7 @@ class BetterPyStatusBarWidgetTest : TestBase() {
     }
 
     fun testPopupActionsIncludeSettings() {
-        val widget = BetterPyStatusBarWidget(project)
+        val widget = createWidget()
         val actions = widget.getPopupActions()
         assertContainsElements(actions, "Settings")
         assertContainsElements(actions, "Copy Diagnostic Data")
@@ -82,7 +85,7 @@ class BetterPyStatusBarWidgetTest : TestBase() {
         // Ensure not muted initially
         PluginSettingsState.instance().unmute()
 
-        val widget = BetterPyStatusBarWidget(project)
+        val widget = createWidget()
         val actions = widget.getPopupActions()
         assertContainsElements(actions, "Disable all features")
         assertFalse(actions.contains("Enable all features"))
@@ -92,7 +95,7 @@ class BetterPyStatusBarWidgetTest : TestBase() {
         val settings = PluginSettingsState.instance()
         settings.mute()
         try {
-            val widget = BetterPyStatusBarWidget(project)
+            val widget = createWidget()
             val actions = widget.getPopupActions()
             assertContainsElements(actions, "Enable all features")
             assertFalse(actions.contains("Disable all features"))
@@ -105,7 +108,7 @@ class BetterPyStatusBarWidgetTest : TestBase() {
         val settings = PluginSettingsState.instance()
         settings.mute()
         try {
-            val widget = BetterPyStatusBarWidget(project)
+            val widget = createWidget()
             assertEquals("BetterPy (Muted)", runBlocking { widget.getTooltipText() })
             assertNotNull(runBlocking { widget.icon().first() })
         } finally {
@@ -116,7 +119,7 @@ class BetterPyStatusBarWidgetTest : TestBase() {
     fun testInvokeShowSettingsActionOpensPluginConfigurable() {
         val fakeShowSettingsUtil = FakeShowSettingsUtil()
 
-        val widget = BetterPyStatusBarWidget(project)
+        val widget = createWidget()
         widget.invokeShowSettingsAction(fakeShowSettingsUtil)
 
         assertEquals("Should open settings for current project", project, fakeShowSettingsUtil.lastProject)
@@ -125,6 +128,10 @@ class BetterPyStatusBarWidgetTest : TestBase() {
             PluginSettingsConfigurable::class.java,
             fakeShowSettingsUtil.lastConfigurableClass
         )
+    }
+
+    private fun createWidget(): BetterPyStatusBarWidget {
+        return BetterPyStatusBarWidget(project, CoroutineScope(SupervisorJob() + Dispatchers.Unconfined))
     }
 
     class FakeShowSettingsUtil : ShowSettingsUtil() {
