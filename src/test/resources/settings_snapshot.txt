@@ -3,8 +3,6 @@ DialogPanel
   MaturityFilterPanel
     Label: 'Filter by status:'
     MaturityFilterTag
-      Label: 'Stable'
-    MaturityFilterTag
       Label: 'Incubating'
     MaturityFilterTag
       Label: 'Deprecated'
