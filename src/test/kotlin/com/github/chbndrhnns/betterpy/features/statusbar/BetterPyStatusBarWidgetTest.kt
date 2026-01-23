@@ -8,6 +8,8 @@ import com.intellij.openapi.options.ConfigurableGroup
 import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import fixtures.TestBase
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import java.awt.Component
 import java.util.function.Consumer
 import java.util.function.Predicate
@@ -15,14 +17,14 @@ import java.util.function.Predicate
 class BetterPyStatusBarWidgetTest : TestBase() {
 
     fun testWidgetIdIsCorrect() {
-        val widget = BetterPyStatusBarWidget(project)
-        assertEquals(BetterPyStatusBarWidget.ID, widget.ID())
+        val factory = BetterPyStatusBarWidgetFactory()
+        assertEquals(BetterPyStatusBarWidget.ID, factory.id)
     }
 
     fun testTooltipTextWhenSupported() {
         // TestBase sets up a Python 3.11 SDK, so environment should be supported
         val widget = BetterPyStatusBarWidget(project)
-        val tooltip = widget.getTooltipText()
+        val tooltip = runBlocking { widget.getTooltipText() }
         assertEquals("BetterPy", tooltip)
     }
 
@@ -49,14 +51,10 @@ class BetterPyStatusBarWidgetTest : TestBase() {
         assertTrue("Min version string should not be empty", minVersion.isNotEmpty())
     }
 
-    fun testWidgetPresentationIsNotNull() {
-        val widget = BetterPyStatusBarWidget(project)
-        assertNotNull("Widget presentation should not be null", widget.getPresentation())
-    }
-
     fun testWidgetIconIsNotNull() {
         val widget = BetterPyStatusBarWidget(project)
-        assertNotNull("Widget icon should not be null", widget.getIcon())
+        val icon = runBlocking { widget.icon().first() }
+        assertNotNull("Widget icon should not be null", icon)
     }
 
     fun testWidgetClickConsumerIsNotNull() {
@@ -108,8 +106,8 @@ class BetterPyStatusBarWidgetTest : TestBase() {
         settings.mute()
         try {
             val widget = BetterPyStatusBarWidget(project)
-            assertEquals("BetterPy (Muted)", widget.getTooltipText())
-            assertNotNull(widget.getIcon())
+            assertEquals("BetterPy (Muted)", runBlocking { widget.getTooltipText() })
+            assertNotNull(runBlocking { widget.icon().first() })
         } finally {
             settings.unmute()
         }

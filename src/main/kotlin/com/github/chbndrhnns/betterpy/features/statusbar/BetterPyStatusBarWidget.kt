@@ -14,15 +14,16 @@ import com.intellij.openapi.ui.popup.ListPopup
 import com.intellij.openapi.ui.popup.PopupStep
 import com.intellij.openapi.ui.popup.util.BaseListPopupStep
 import com.intellij.openapi.util.IconLoader
-import com.intellij.openapi.wm.StatusBar
-import com.intellij.openapi.wm.StatusBarWidget
-import com.intellij.openapi.wm.StatusBarWidgetFactory
+import com.intellij.openapi.wm.*
 import com.intellij.ui.awt.RelativePoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import java.awt.Point
 import java.awt.event.MouseEvent
 import javax.swing.Icon
 
-class BetterPyStatusBarWidget(private val project: Project) : StatusBarWidget, StatusBarWidget.IconPresentation {
+class BetterPyStatusBarWidget(private val project: Project) : IconWidgetPresentation {
 
     companion object {
         const val ID = "BetterPyStatusBarWidget"
@@ -33,29 +34,11 @@ class BetterPyStatusBarWidget(private val project: Project) : StatusBarWidget, S
             IconLoader.getIcon("/icons/betterpy_statusbar_disabled.svg", BetterPyStatusBarWidget::class.java)
     }
 
-    private var statusBar: StatusBar? = null
+    private val iconState = MutableStateFlow(currentIcon())
 
-    override fun ID(): String = ID
+    override fun icon(): Flow<Icon?> = iconState
 
-    override fun install(statusBar: StatusBar) {
-        this.statusBar = statusBar
-    }
-
-    override fun dispose() {
-        statusBar = null
-    }
-
-    override fun getPresentation(): StatusBarWidget.WidgetPresentation = this
-
-    override fun getIcon(): Icon {
-        return if (!isEnvironmentSupported() || PluginSettingsState.instance().isMuted()) {
-            ICON_DISABLED
-        } else {
-            ICON
-        }
-    }
-
-    override fun getTooltipText(): String {
+    override suspend fun getTooltipText(): String {
         return if (!isEnvironmentSupported()) {
             "BetterPy (disabled: Python ${PythonVersionGuard.minVersionString()}+ required)"
         } else if (PluginSettingsState.instance().isMuted()) {
@@ -65,11 +48,9 @@ class BetterPyStatusBarWidget(private val project: Project) : StatusBarWidget, S
         }
     }
 
-    override fun getClickConsumer(): com.intellij.util.Consumer<MouseEvent> {
-        return com.intellij.util.Consumer { event ->
-            if (isEnvironmentSupported()) {
-                showPopup(event)
-            }
+    override fun getClickConsumer(): ((MouseEvent) -> Unit)? {
+        return { event ->
+            if (isEnvironmentSupported()) showPopup(event)
         }
     }
 
@@ -90,12 +71,12 @@ class BetterPyStatusBarWidget(private val project: Project) : StatusBarWidget, S
                 when (selectedValue) {
                     "Disable all features" -> {
                         PluginSettingsState.instance().mute()
-                        statusBar?.updateWidget(ID)
+                        updateIcon()
                     }
 
                     "Enable all features" -> {
                         PluginSettingsState.instance().unmute()
-                        statusBar?.updateWidget(ID)
+                        updateIcon()
                     }
                 }
                 return FINAL_CHOICE
@@ -110,6 +91,18 @@ class BetterPyStatusBarWidget(private val project: Project) : StatusBarWidget, S
             }
         }
         return JBPopupFactory.getInstance().createListPopup(step)
+    }
+
+    private fun updateIcon() {
+        iconState.value = currentIcon()
+    }
+
+    private fun currentIcon(): Icon {
+        return if (!isEnvironmentSupported() || PluginSettingsState.instance().isMuted()) {
+            ICON_DISABLED
+        } else {
+            ICON
+        }
     }
 
     internal fun getPopupActions(): List<String> {
@@ -140,7 +133,7 @@ class BetterPyStatusBarWidget(private val project: Project) : StatusBarWidget, S
     }
 }
 
-class BetterPyStatusBarWidgetFactory : StatusBarWidgetFactory {
+class BetterPyStatusBarWidgetFactory : StatusBarWidgetFactory, WidgetPresentationFactory {
 
     override fun getId(): String = BetterPyStatusBarWidget.ID
 
@@ -148,7 +141,12 @@ class BetterPyStatusBarWidgetFactory : StatusBarWidgetFactory {
 
     override fun isAvailable(project: Project): Boolean = true
 
-    override fun createWidget(project: Project): StatusBarWidget = BetterPyStatusBarWidget(project)
+    override fun createPresentation(
+        context: WidgetPresentationDataContext,
+        scope: CoroutineScope
+    ): WidgetPresentation {
+        return BetterPyStatusBarWidget(context.project)
+    }
 
     override fun disposeWidget(widget: StatusBarWidget) {
         // Widget disposal is handled by the widget itself
