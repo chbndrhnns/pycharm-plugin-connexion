@@ -26,7 +26,7 @@ Edit:
 
 Add imports:
 ```kotlin
-import com.github.chbndrhnns.intellijplatformplugincopy.features.search.PyTestDetection
+import com.github.chbndrhnns.betterpy.features.search.PyTestDetection
 ```
 
 Update `isAvailable` and add a small helper:

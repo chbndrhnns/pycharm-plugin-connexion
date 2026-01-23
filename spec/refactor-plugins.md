@@ -152,7 +152,7 @@ src/main/resources/META-INF/
 ```xml
 <!-- Plugin Configuration File -->
 <idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude">
-    <id>com.github.chbndrhnns.intellijplatformplugincopy</id>
+    <id>com.github.chbndrhnns.betterpycom.github.chbndrhnns.betterpy</id>
     <name>Python DDD Toolkit</name>
     <vendor>chbndrhnns</vendor>
 
@@ -178,7 +178,7 @@ src/main/resources/META-INF/
     <extensions defaultExtensionNs="com.intellij">
         <!-- Type Mismatch Intentions -->
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.WrapWithExpectedTypeIntention</className>
+            <className>com.github.chbndrhnns.betterpy.features.intentions.WrapWithExpectedTypeIntention</className>
             <category>Type mismatch</category>
         </intentionAction>
         <!-- ... more intentions ... -->

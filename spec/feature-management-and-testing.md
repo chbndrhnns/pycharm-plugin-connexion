@@ -55,7 +55,7 @@ tasks.register("generateBuildConfig") {
     doLast {
         outputDir.get().asFile.mkdirs()
         File(outputDir.get().asFile, "BuildConfig.kt").writeText("""
-            package com.github.chbndrhnns.intellijplatformplugincopy
+            package com.github.chbndrhnns.betterpy
             object BuildConfig {
                 const val IS_DEVELOPMENT = $isDevelopmentBuild
             }
@@ -79,7 +79,7 @@ Use the plugin version to determine the build type:
 object BuildInfo {
     val isDevelopment: Boolean by lazy {
         val version = PluginManagerCore.getPlugin(
-            PluginId.getId("com.github.chbndrhnns.intellijplatformplugincopy")
+            PluginId.getId("com.github.chbndrhnns.betterpy")
         )?.version ?: "0.0.0"
         // Development versions might use -SNAPSHOT, -dev, or specific patterns
         version.contains("-dev") || version.contains("-SNAPSHOT") || version == "0.0.1"
@@ -274,7 +274,7 @@ Create a custom annotation that mirrors `FeatureMaturity`:
 // src/test/kotlin/fixtures/TestMaturity.kt
 package fixtures
 
-import com.github.chbndrhnns.intellijplatformplugincopy.featureflags.FeatureMaturity
+import com.github.chbndrhnns.betterpy.featureflags.FeatureMaturity
 
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)

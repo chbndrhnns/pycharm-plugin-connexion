@@ -1,6 +1,6 @@
 package fixtures
 
-import com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.WrapWithExpectedTypeIntentionHooks
+import com.github.chbndrhnns.betterpy.features.intentions.WrapWithExpectedTypeIntentionHooks
 
 /**
  * Sets up a [FakePopupHost] for the duration of [block].

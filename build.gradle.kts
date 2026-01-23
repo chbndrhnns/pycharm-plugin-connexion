@@ -175,7 +175,7 @@ tasks.register<Exec>("generateFeatureDocs") {
     workingDir = projectDir
     commandLine(
         "./gradlew", "test",
-        "--tests", "com.github.chbndrhnns.intellijplatformplugincopy.featureflags.GenerateFeatureDocsTest",
+        "--tests", "com.github.chbndrhnns.betterpy.featureflags.GenerateFeatureDocsTest",
         "-PrunDocGenTest=true"
     )
 }

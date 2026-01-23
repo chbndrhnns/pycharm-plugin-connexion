@@ -1,6 +1,6 @@
 package fixtures
 
-import com.github.chbndrhnns.intellijplatformplugincopy.featureflags.PluginSettingsState
+import com.github.chbndrhnns.betterpy.featureflags.PluginSettingsState
 import com.jetbrains.python.inspections.PyTypeCheckerInspection
 
 abstract class TestBase : MyPlatformTestCase() {

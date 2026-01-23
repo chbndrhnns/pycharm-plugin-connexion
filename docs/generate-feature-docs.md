@@ -83,7 +83,7 @@ class GenerateFeatureDocsAction : AnAction("Generate Feature Docs") {
 
 2. Open the Kotlin scratch file or use **Evaluate Expression** in the debugger:
    ```kotlin
-   com.github.chbndrhnns.intellijplatformplugincopy.featureflags.FeatureDocumentationGenerator.generateMarkdown()
+   com.github.chbndrhnns.betterpy.featureflags.FeatureDocumentationGenerator.generateMarkdown()
    ```
 
 ## Output Examples
@@ -172,4 +172,5 @@ To ensure your features appear in the generated documentation, annotate them in 
 var enableMyFeature: Boolean = true
 ```
 
-See [FeatureMetadata.kt](../src/main/kotlin/com/github/chbndrhnns/intellijplatformplugincopy/settings/FeatureMetadata.kt) for all available annotation parameters.
+See [FeatureMetadata.kt](../src/main/kotlin/com/github/chbndrhnns/betterpy/settings/FeatureMetadata.kt) for all
+available annotation parameters.

@@ -1,4 +1,4 @@
 <intentionDescription>
     <descriptionDirectoryName>UnwrapItemsToExpectedTypeIntention</descriptionDirectoryName>
-    <instance>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.UnwrapItemsToExpectedTypeIntention</instance>
+    <instance>com.github.chbndrhnns.betterpy.features.intentions.UnwrapItemsToExpectedTypeIntention</instance>
 </intentionDescription>

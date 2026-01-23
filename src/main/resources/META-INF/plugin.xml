@@ -1,6 +1,6 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <id>com.github.chbndrhnns.intellijplatformplugincopy</id>
+    <id>com.github.chbndrhnns.betterpy</id>
     <name>BetterPy</name>
     <vendor>chbndrhnns</vendor>
 
@@ -26,89 +26,92 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.testtree.JumpToPytestNodeInTestTreeIntention</className>
+            <className>com.github.chbndrhnns.betterpy.features.pytest.testtree.JumpToPytestNodeInTestTreeIntention
+            </className>
             <category>BetterPy</category>
         </intentionAction>
         <completion.contributor language="Python"
-                                implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.features.completion.PyExpectedTypeCompletionContributor"/>
+                                implementationClass="com.github.chbndrhnns.betterpy.features.completion.PyExpectedTypeCompletionContributor"/>
         <completion.contributor language="Python"
-                                implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.features.completion.PyNamedArgumentFromScopeCompletionContributor"/>
+                                implementationClass="com.github.chbndrhnns.betterpy.features.completion.PyNamedArgumentFromScopeCompletionContributor"/>
         <completion.contributor language="Python"
-                                implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.features.completion.PyMockPatchObjectAttributeCompletionContributor"/>
+                                implementationClass="com.github.chbndrhnns.betterpy.features.completion.PyMockPatchObjectAttributeCompletionContributor"/>
         <psi.referenceContributor language="Python"
-                                  implementation="com.github.chbndrhnns.intellijplatformplugincopy.core.psi.PyMockPatchReferenceContributor"/>
+                                  implementation="com.github.chbndrhnns.betterpy.core.psi.PyMockPatchReferenceContributor"/>
         <psi.referenceContributor language="Python"
-                                  implementation="com.github.chbndrhnns.intellijplatformplugincopy.core.psi.PyNewTypeTypeVarReferenceContributor"/>
+                                  implementation="com.github.chbndrhnns.betterpy.core.psi.PyNewTypeTypeVarReferenceContributor"/>
         <psi.referenceContributor language="Python"
-                                  implementation="com.github.chbndrhnns.intellijplatformplugincopy.core.psi.PyFilterWarningsReferenceContributor"/>
+                                  implementation="com.github.chbndrhnns.betterpy.core.psi.PyFilterWarningsReferenceContributor"/>
 
         <psi.referenceContributor language="JSON"
-                                  implementation="com.github.chbndrhnns.intellijplatformplugincopy.features.connexion.ConnexionJsonReferenceContributor"/>
+                                  implementation="com.github.chbndrhnns.betterpy.features.connexion.ConnexionJsonReferenceContributor"/>
 
         <localInspection language="JSON"
-                         implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.features.connexion.ConnexionJsonInspection"
+                         implementationClass="com.github.chbndrhnns.betterpy.features.connexion.ConnexionJsonInspection"
                          displayName="BetterPy: Unresolved Connexion reference"
                          groupName="Connexion"
                          enabledByDefault="true"
                          level="ERROR"/>
 
         <localInspection language="Python"
-                         implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.features.inspections.PyMockUnresolvedReferenceInspection"
+                         implementationClass="com.github.chbndrhnns.betterpy.features.inspections.PyMockUnresolvedReferenceInspection"
                          displayName="BetterPy: Unresolved Mock spec reference"
                          groupName="Python"
                          enabledByDefault="true"
                          level="ERROR"/>
 
         <localInspection language="Python"
-                         implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.features.inspections.PyMockReturnAssignmentInspection"
+                         implementationClass="com.github.chbndrhnns.betterpy.features.inspections.PyMockReturnAssignmentInspection"
                          displayName="BetterPy: Invalid return_value assignment on Mock"
                          groupName="Python"
                          enabledByDefault="true"
                          level="WARNING"/>
 
         <localInspection language="Python"
-                         implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.features.inspections.PyMockPatchObjectAttributeInspection"
+                         implementationClass="com.github.chbndrhnns.betterpy.features.inspections.PyMockPatchObjectAttributeInspection"
                          displayName="BetterPy: Unresolved patch.object attribute"
                          groupName="Python"
                          enabledByDefault="true"
                          level="ERROR"/>
 
         <localInspection language="Python"
-                         implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.features.inspections.PyMockPatchUnresolvedReferenceInspection"
+                         implementationClass="com.github.chbndrhnns.betterpy.features.inspections.PyMockPatchUnresolvedReferenceInspection"
                          displayName="BetterPy: Unresolved patch target"
                          groupName="Python"
                          enabledByDefault="true"
                          level="ERROR"/>
 
         <codeInsight.lineMarkerProvider language="Python"
-                                        implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.features.connexion.ConnexionPythonLineMarkerProvider"/>
+                                        implementationClass="com.github.chbndrhnns.betterpy.features.connexion.ConnexionPythonLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="JSON"
-                                        implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.features.connexion.ConnexionJsonLineMarkerProvider"/>
+                                        implementationClass="com.github.chbndrhnns.betterpy.features.connexion.ConnexionJsonLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="Python"
-                                        implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.features.refactoring.parameterobject.ParameterObjectLineMarkerProvider"/>
+                                        implementationClass="com.github.chbndrhnns.betterpy.features.refactoring.parameterobject.ParameterObjectLineMarkerProvider"/>
 
-        <definitionsScopedSearch implementation="com.github.chbndrhnns.intellijplatformplugincopy.features.search.PyProtocolDefinitionsSearchExecutor"/>
+        <definitionsScopedSearch
+                implementation="com.github.chbndrhnns.betterpy.features.search.PyProtocolDefinitionsSearchExecutor"/>
 
         <!-- Protocol implementation search index and cache -->
-        <fileBasedIndex implementation="com.github.chbndrhnns.intellijplatformplugincopy.core.index.PyClassMembersFileIndex"/>
-        <fileBasedIndex implementation="com.github.chbndrhnns.intellijplatformplugincopy.core.index.PyLambdaFileIndex"/>
-        <psi.treeChangeListener implementation="com.github.chbndrhnns.intellijplatformplugincopy.bootstrap.listeners.ProtocolCacheInvalidationListener"/>
+        <fileBasedIndex implementation="com.github.chbndrhnns.betterpy.core.index.PyClassMembersFileIndex"/>
+        <fileBasedIndex implementation="com.github.chbndrhnns.betterpy.core.index.PyLambdaFileIndex"/>
+        <psi.treeChangeListener
+                implementation="com.github.chbndrhnns.betterpy.bootstrap.listeners.ProtocolCacheInvalidationListener"/>
 
         <lang.psiStructureViewFactory language="Python"
-                                      implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.features.structureView.MyPythonStructureViewFactory"
+                                      implementationClass="com.github.chbndrhnns.betterpy.features.structureView.MyPythonStructureViewFactory"
                                       order="first"/>
 
-        <navbar implementation="com.github.chbndrhnns.intellijplatformplugincopy.features.navbar.PyNavBarModelExtension"/>
+        <navbar implementation="com.github.chbndrhnns.betterpy.features.navbar.PyNavBarModelExtension"/>
 
         <applicationService
-                serviceImplementation="com.github.chbndrhnns.intellijplatformplugincopy.featureflags.PluginSettingsState"/>
+                serviceImplementation="com.github.chbndrhnns.betterpy.featureflags.PluginSettingsState"/>
 
         <projectService
                 serviceInterface="com.intellij.testIntegration.TestFailedLineManager"
-                serviceImplementation="com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.outcome.PyTestFailedLineManager"/>
+                serviceImplementation="com.github.chbndrhnns.betterpy.features.pytest.outcome.PyTestFailedLineManager"/>
 
         <localInspection language="Python"
-                         implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.outcome.PyTestFailedLineInspection"
+                         implementationClass="com.github.chbndrhnns.betterpy.features.pytest.outcome.PyTestFailedLineInspection"
                          displayName="BetterPy: Test failed line"
                          groupName="Python"
                          enabledByDefault="true"
@@ -116,184 +119,204 @@
                          shortName="PyTestFailedLineInspection"/>
 
         <runLineMarkerContributor language="Python"
-                                  implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.features.run.PyPackageRunLineMarkerContributor"/>
+                                  implementationClass="com.github.chbndrhnns.betterpy.features.run.PyPackageRunLineMarkerContributor"/>
 
-        <gotoTargetPresentationProvider implementation="com.github.chbndrhnns.intellijplatformplugincopy.features.navigation.PyGotoTargetPresentationProvider"/>
+        <gotoTargetPresentationProvider
+                implementation="com.github.chbndrhnns.betterpy.features.navigation.PyGotoTargetPresentationProvider"/>
 
         <notificationGroup id="BetterPy" displayType="BALLOON" isLogByDefault="true"/>
         <notificationGroup id="BetterPy Notifications" displayType="BALLOON" isLogByDefault="true"/>
 
         <statusBarWidgetFactory id="BetterPyStatusBarWidget"
-                                implementation="com.github.chbndrhnns.intellijplatformplugincopy.features.statusbar.BetterPyStatusBarWidgetFactory"/>
+                                implementation="com.github.chbndrhnns.betterpy.features.statusbar.BetterPyStatusBarWidgetFactory"/>
 
         <postStartupActivity
-                implementation="com.github.chbndrhnns.intellijplatformplugincopy.bootstrap.startup.PythonVersionStartupActivity"/>
+                implementation="com.github.chbndrhnns.betterpy.bootstrap.startup.PythonVersionStartupActivity"/>
 
         <postStartupActivity
-                implementation="com.github.chbndrhnns.intellijplatformplugincopy.featureflags.IncubatingFeatureNotifier"/>
+                implementation="com.github.chbndrhnns.betterpy.featureflags.IncubatingFeatureNotifier"/>
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.WrapWithExpectedTypeIntention
+            <className>com.github.chbndrhnns.betterpy.features.intentions.WrapWithExpectedTypeIntention
             </className>
             <category>Type mismatch</category>
         </intentionAction>
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.WrapItemsWithExpectedTypeIntention
+            <className>com.github.chbndrhnns.betterpy.features.intentions.WrapItemsWithExpectedTypeIntention
             </className>
             <category>Type mismatch</category>
         </intentionAction>
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.UnwrapToExpectedTypeIntention
+            <className>com.github.chbndrhnns.betterpy.features.intentions.UnwrapToExpectedTypeIntention
             </className>
             <category>Type mismatch</category>
         </intentionAction>
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.UnwrapItemsToExpectedTypeIntention
+            <className>com.github.chbndrhnns.betterpy.features.intentions.UnwrapItemsToExpectedTypeIntention
             </className>
             <category>Type mismatch</category>
         </intentionAction>
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.populate.PopulateArgumentsIntention
+            <className>com.github.chbndrhnns.betterpy.features.intentions.populate.PopulateArgumentsIntention
             </className>
             <category>Arguments</category>
         </intentionAction>
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.ToggleTypeAliasIntention</className>
+            <className>com.github.chbndrhnns.betterpy.features.intentions.ToggleTypeAliasIntention</className>
             <category>Refactorings</category>
         </intentionAction>
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.exports.PyExportSymbolToTargetIntention</className>
+            <className>com.github.chbndrhnns.betterpy.features.exports.PyExportSymbolToTargetIntention</className>
             <category>Refactorings</category>
         </intentionAction>
 
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.AddSelfParameterIntention</className>
+            <className>com.github.chbndrhnns.betterpy.features.intentions.AddSelfParameterIntention</className>
             <category>Refactorings</category>
         </intentionAction>
 
         <!-- Deprecated populate intentions removed -->
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.visibility.PyChangeVisibilityIntention
+            <className>com.github.chbndrhnns.betterpy.features.intentions.visibility.PyChangeVisibilityIntention
             </className>
             <category>Visibility</category>
         </intentionAction>
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.optional.MakeParameterOptionalIntention</className>
+            <className>com.github.chbndrhnns.betterpy.features.intentions.optional.MakeParameterOptionalIntention
+            </className>
             <category>Type hint</category>
         </intentionAction>
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.optional.MakeParameterMandatoryIntention</className>
+            <className>com.github.chbndrhnns.betterpy.features.intentions.optional.MakeParameterMandatoryIntention
+            </className>
             <category>Type hint</category>
         </intentionAction>
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.signature.StripSignatureTypeAnnotationsIntention</className>
+            <className>
+                com.github.chbndrhnns.betterpy.features.intentions.signature.StripSignatureTypeAnnotationsIntention
+            </className>
             <category>Type hint</category>
         </intentionAction>
 
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.dictAccess.PyDictAccessIntention</className>
+            <className>com.github.chbndrhnns.betterpy.features.intentions.dictAccess.PyDictAccessIntention</className>
             <category>Dictionaries</category>
         </intentionAction>
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.protocol.CallableToProtocolIntention</className>
+            <className>com.github.chbndrhnns.betterpy.features.intentions.protocol.CallableToProtocolIntention
+            </className>
             <category>Type hint</category>
         </intentionAction>
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.dictAccess.PyTryExceptToDictGetIntention</className>
+            <className>com.github.chbndrhnns.betterpy.features.intentions.dictAccess.PyTryExceptToDictGetIntention
+            </className>
             <category>Dictionaries</category>
         </intentionAction>
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.dictAccess.PyDictGetToTryExceptIntention</className>
+            <className>com.github.chbndrhnns.betterpy.features.intentions.dictAccess.PyDictGetToTryExceptIntention
+            </className>
             <category>Dictionaries</category>
         </intentionAction>
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.exceptions.AddExceptionCaptureIntention</className>
+            <className>com.github.chbndrhnns.betterpy.features.intentions.exceptions.AddExceptionCaptureIntention
+            </className>
             <category>Exceptions</category>
         </intentionAction>
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.abstractmethod.ImplementAbstractMethodInChildClassesIntention</className>
+            <className>
+                com.github.chbndrhnns.betterpy.features.intentions.abstractmethod.ImplementAbstractMethodInChildClassesIntention
+            </className>
             <category>Refactorings</category>
         </intentionAction>
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.exceptions.WrapExceptionsWithParenthesesIntention</className>
+            <className>
+                com.github.chbndrhnns.betterpy.features.intentions.exceptions.WrapExceptionsWithParenthesesIntention
+            </className>
             <category>Exceptions</category>
         </intentionAction>
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.localvariable.CreateLocalVariableIntention</className>
+            <className>com.github.chbndrhnns.betterpy.features.intentions.localvariable.CreateLocalVariableIntention
+            </className>
             <category>Create local variable</category>
         </intentionAction>
 
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.pytest.TogglePytestSkipIntention</className>
+            <className>com.github.chbndrhnns.betterpy.features.intentions.pytest.TogglePytestSkipIntention</className>
             <category>Test</category>
         </intentionAction>
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.pytest.ParametrizePytestTestIntention</className>
+            <className>com.github.chbndrhnns.betterpy.features.intentions.pytest.ParametrizePytestTestIntention
+            </className>
             <category>Test</category>
         </intentionAction>
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.pytest.ConvertToPytestParamIntention</className>
+            <className>com.github.chbndrhnns.betterpy.features.intentions.pytest.ConvertToPytestParamIntention
+            </className>
             <category>Test</category>
         </intentionAction>
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.pytest.ConvertToPlainParametrizeValuesIntention</className>
+            <className>
+                com.github.chbndrhnns.betterpy.features.intentions.pytest.ConvertToPlainParametrizeValuesIntention
+            </className>
             <category>Test</category>
         </intentionAction>
 
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.exports.PyUnexportSymbolIntention</className>
+            <className>com.github.chbndrhnns.betterpy.features.intentions.exports.PyUnexportSymbolIntention</className>
             <category>Refactorings</category>
         </intentionAction>
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.pytest.WrapTestInClassIntention</className>
+            <className>com.github.chbndrhnns.betterpy.features.intentions.pytest.WrapTestInClassIntention</className>
             <category>Test</category>
         </intentionAction>
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.pytest.MoveTestToClassIntention</className>
+            <className>com.github.chbndrhnns.betterpy.features.intentions.pytest.MoveTestToClassIntention</className>
             <category>Test</category>
         </intentionAction>
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.abstractmethod.MakeMemberAbstractInAbstractClassIntention</className>
+            <className>
+                com.github.chbndrhnns.betterpy.features.intentions.abstractmethod.MakeMemberAbstractInAbstractClassIntention
+            </className>
             <category>Abstract methods</category>
         </intentionAction>
 
         <applicationConfigurable
                 displayName="BetterPy"
-                id="com.github.chbndrhnns.intellijplatformplugincopy.featureflags"
-                instance="com.github.chbndrhnns.intellijplatformplugincopy.featureflags.PluginSettingsConfigurable"/>
+                id="com.github.chbndrhnns.betterpy.featureflags"
+                instance="com.github.chbndrhnns.betterpy.featureflags.PluginSettingsConfigurable"/>
 
         <applicationConfigurable
-                parentId="com.github.chbndrhnns.intellijplatformplugincopy.featureflags"
+                parentId="com.github.chbndrhnns.betterpy.featureflags"
                 displayName="Parameter Object Refactoring"
-                id="com.github.chbndrhnns.intellijplatformplugincopy.featureflags.parameterobject"
-                instance="com.github.chbndrhnns.intellijplatformplugincopy.featureflags.ParameterObjectConfigurable"/>
+                id="com.github.chbndrhnns.betterpy.featureflags.parameterobject"
+                instance="com.github.chbndrhnns.betterpy.featureflags.ParameterObjectConfigurable"/>
 
 
         <localInspection
@@ -304,7 +327,7 @@
                 groupName="Python"
                 enabledByDefault="true"
                 level="WARNING"
-                implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.features.exports.PyMissingInDunderAllInspection"/>
+                implementationClass="com.github.chbndrhnns.betterpy.features.exports.PyMissingInDunderAllInspection"/>
 
         <localInspection
                 language="Python"
@@ -314,7 +337,7 @@
                 groupName="Python"
                 enabledByDefault="true"
                 level="WARNING"
-                implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.features.exports.PyPrivateModuleImportInspection"/>
+                implementationClass="com.github.chbndrhnns.betterpy.features.exports.PyPrivateModuleImportInspection"/>
 
         <localInspection
                 language="Python"
@@ -324,7 +347,7 @@
                 groupName="Python"
                 enabledByDefault="true"
                 level="WARNING"
-                implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.features.inspections.PyDataclassMissingInspection"/>
+                implementationClass="com.github.chbndrhnns.betterpy.features.inspections.PyDataclassMissingInspection"/>
 
         <localInspection
                 language="Python"
@@ -334,7 +357,7 @@
                 groupName="Python"
                 enabledByDefault="true"
                 level="WARNING"
-                implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.features.inspections.PyAbstractMethodNotImplementedInChildInspection"/>
+                implementationClass="com.github.chbndrhnns.betterpy.features.inspections.PyAbstractMethodNotImplementedInChildInspection"/>
 
         <localInspection
                 language="Python"
@@ -344,7 +367,7 @@
                 groupName="Python"
                 enabledByDefault="true"
                 level="WEAK WARNING"
-                implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.features.inspections.PyConstantShouldBeFinalInspection"/>
+                implementationClass="com.github.chbndrhnns.betterpy.features.inspections.PyConstantShouldBeFinalInspection"/>
 
         <localInspection
                 language="Python"
@@ -354,7 +377,7 @@
                 groupName="Python"
                 enabledByDefault="true"
                 level="WARNING"
-                implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.features.inspections.PyShadowingStdlibModuleInspection"/>
+                implementationClass="com.github.chbndrhnns.betterpy.features.inspections.PyShadowingStdlibModuleInspection"/>
 
         <localInspection
                 language="Python"
@@ -364,7 +387,7 @@
                 groupName="Python"
                 enabledByDefault="true"
                 level="ERROR"
-                implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.features.inspections.PyUnresolvedReferenceAsErrorInspection"/>
+                implementationClass="com.github.chbndrhnns.betterpy.features.inspections.PyUnresolvedReferenceAsErrorInspection"/>
 
         <localInspection
                 language="Python"
@@ -374,57 +397,59 @@
                 groupName="Python"
                 enabledByDefault="true"
                 level="WARNING"
-                implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.features.imports.PyStrictSourceRootImportInspection"/>
+                implementationClass="com.github.chbndrhnns.betterpy.features.imports.PyStrictSourceRootImportInspection"/>
 
         <renamePsiElementProcessor
-                implementation="com.github.chbndrhnns.intellijplatformplugincopy.features.refactoring.PyShadowingStdlibRenameProcessor"
+                implementation="com.github.chbndrhnns.betterpy.features.refactoring.PyShadowingStdlibRenameProcessor"
                 order="first"/>
 
         <usageFilteringRuleProvider
-                implementation="com.github.chbndrhnns.intellijplatformplugincopy.features.usages.PyTypeAnnotationFilteringRuleProvider"/>
+                implementation="com.github.chbndrhnns.betterpy.features.usages.PyTypeAnnotationFilteringRuleProvider"/>
 
-        <consoleFilterProvider implementation="com.github.chbndrhnns.intellijplatformplugincopy.features.testing.PyMessageFilterProvider"/>
+        <consoleFilterProvider
+                implementation="com.github.chbndrhnns.betterpy.features.testing.PyMessageFilterProvider"/>
 
         <searchEverywhereContributor
-                implementation="com.github.chbndrhnns.intellijplatformplugincopy.features.searcheverywhere.PytestIdentifierContributor$Factory"/>
+                implementation="com.github.chbndrhnns.betterpy.features.searcheverywhere.PytestIdentifierContributor$Factory"/>
 
         <intentionAction>
-            <className>com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.outcome.ReplaceExpectedWithActualIntention</className>
+            <className>com.github.chbndrhnns.betterpy.features.pytest.outcome.ReplaceExpectedWithActualIntention
+            </className>
             <category>Test</category>
         </intentionAction>
 
         <daemon.intentionActionFilter
-                implementation="com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.suppressor.SuppressSuggestedRefactoringIntentionActionFilter"/>
+                implementation="com.github.chbndrhnns.betterpy.features.intentions.suppressor.SuppressSuggestedRefactoringIntentionActionFilter"/>
 
         <daemon.intentionActionFilter
-                implementation="com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.suppressor.RenameToSelfFilter"/>
+                implementation="com.github.chbndrhnns.betterpy.features.intentions.suppressor.RenameToSelfFilter"/>
 
         <lang.documentationProvider language="Python"
-                                    implementationClass="com.github.chbndrhnns.intellijplatformplugincopy.features.documentation.DataclassQuickInfoProvider"
+                                    implementationClass="com.github.chbndrhnns.betterpy.features.documentation.DataclassQuickInfoProvider"
                                     order="first"/>
     </extensions>
 
     <extensions defaultExtensionNs="Pythonid">
         <canonicalPathProvider
-                implementation="com.github.chbndrhnns.intellijplatformplugincopy.features.imports.SourceRootPrefixProvider"/>
+                implementation="com.github.chbndrhnns.betterpy.features.imports.SourceRootPrefixProvider"/>
         <canonicalPathProvider
-                implementation="com.github.chbndrhnns.intellijplatformplugincopy.features.imports.SpecificImportPathProvider"/>
+                implementation="com.github.chbndrhnns.betterpy.features.imports.SpecificImportPathProvider"/>
         <importCandidateProvider
-                implementation="com.github.chbndrhnns.intellijplatformplugincopy.features.imports.RelativeImportCandidateProvider"/>
+                implementation="com.github.chbndrhnns.betterpy.features.imports.RelativeImportCandidateProvider"/>
         <importCandidateProvider
-                implementation="com.github.chbndrhnns.intellijplatformplugincopy.features.imports.HideTransientImportProvider"/>
+                implementation="com.github.chbndrhnns.betterpy.features.imports.HideTransientImportProvider"/>
     </extensions>
 
     <projectListeners>
-        <listener class="com.github.chbndrhnns.intellijplatformplugincopy.bootstrap.listeners.PythonVersionCheckerListener"
+        <listener class="com.github.chbndrhnns.betterpy.bootstrap.listeners.PythonVersionCheckerListener"
                   topic="com.intellij.openapi.roots.ModuleRootListener"/>
-        <listener class="com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.outcome.TestFailureListener"
+        <listener class="com.github.chbndrhnns.betterpy.features.pytest.outcome.TestFailureListener"
                   topic="com.intellij.execution.testframework.sm.runner.SMTRunnerEventsListener"/>
     </projectListeners>
 
     <actions>
-        <action id="com.github.chbndrhnns.intellijplatformplugincopy.features.actions.CopyPackageContentAction"
-                class="com.github.chbndrhnns.intellijplatformplugincopy.features.actions.CopyPackageContentAction"
+        <action id="com.github.chbndrhnns.betterpy.features.actions.CopyPackageContentAction"
+                class="com.github.chbndrhnns.betterpy.features.actions.CopyPackageContentAction"
                 text="BetterPy: Copy Package Content"
                 description="Copies the content of all files in the selected directory to the clipboard">
 
@@ -440,66 +465,66 @@
         </action>
 
 
-        <action id="com.github.chbndrhnns.intellijplatformplugincopy.features.refactoring.parameterobject.IntroduceParameterObjectRefactoringAction"
-                class="com.github.chbndrhnns.intellijplatformplugincopy.features.refactoring.parameterobject.IntroduceParameterObjectRefactoringAction"
+        <action id="com.github.chbndrhnns.betterpy.features.refactoring.parameterobject.IntroduceParameterObjectRefactoringAction"
+                class="com.github.chbndrhnns.betterpy.features.refactoring.parameterobject.IntroduceParameterObjectRefactoringAction"
                 text="BetterPy: Introduce Parameter Object..."
                 description="Introduces a parameter object for the current function">
             <add-to-group group-id="RefactoringMenu" anchor="last"/>
         </action>
 
-        <action id="com.github.chbndrhnns.intellijplatformplugincopy.features.refactoring.parameterobject.InlineParameterObjectRefactoringAction"
-                class="com.github.chbndrhnns.intellijplatformplugincopy.features.refactoring.parameterobject.InlineParameterObjectRefactoringAction"
+        <action id="com.github.chbndrhnns.betterpy.features.refactoring.parameterobject.InlineParameterObjectRefactoringAction"
+                class="com.github.chbndrhnns.betterpy.features.refactoring.parameterobject.InlineParameterObjectRefactoringAction"
                 text="BetterPy: Inline Parameter Object..."
                 description="Inlines a parameter object back into individual parameters">
             <add-to-group group-id="RefactoringMenu" anchor="last"/>
         </action>
 
-        <action id="com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.pytest.WrapTestInClassRefactoringAction"
-                class="com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.pytest.WrapTestInClassRefactoringAction"
+        <action id="com.github.chbndrhnns.betterpy.features.intentions.pytest.WrapTestInClassRefactoringAction"
+                class="com.github.chbndrhnns.betterpy.features.intentions.pytest.WrapTestInClassRefactoringAction"
                 text="BetterPy: Wrap Test in Class..."
                 description="Wraps a module-level pytest test function inside a test class">
             <add-to-group group-id="RefactoringMenu" anchor="last"/>
         </action>
 
-        <action id="com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.pytest.MoveTestToClassRefactoringAction"
-                class="com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.pytest.MoveTestToClassRefactoringAction"
+        <action id="com.github.chbndrhnns.betterpy.features.intentions.pytest.MoveTestToClassRefactoringAction"
+                class="com.github.chbndrhnns.betterpy.features.intentions.pytest.MoveTestToClassRefactoringAction"
                 text="BetterPy: Move Test to Another Class..."
                 description="Moves a test method to another class (new or existing)">
             <add-to-group group-id="RefactoringMenu" anchor="last"/>
         </action>
 
-        <action id="com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.customtype.IntroduceCustomTypeRefactoringAction"
-                class="com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.customtype.IntroduceCustomTypeRefactoringAction"
+        <action id="com.github.chbndrhnns.betterpy.features.intentions.customtype.IntroduceCustomTypeRefactoringAction"
+                class="com.github.chbndrhnns.betterpy.features.intentions.customtype.IntroduceCustomTypeRefactoringAction"
                 text="BetterPy: Introduce Custom Type..."
                 description="Introduces a custom type from a stdlib type annotation">
             <add-to-group group-id="RefactoringMenu" anchor="last"/>
         </action>
 
-        <action id="com.github.chbndrhnns.intellijplatformplugincopy.features.actions.CopyBuildNumberAction"
-                class="com.github.chbndrhnns.intellijplatformplugincopy.features.actions.CopyBuildNumberAction"
+        <action id="com.github.chbndrhnns.betterpy.features.actions.CopyBuildNumberAction"
+                class="com.github.chbndrhnns.betterpy.features.actions.CopyBuildNumberAction"
                 text="BetterPy: Copy Build Number"
                 description="Copies the current IDE build number to the clipboard">
             <add-to-group group-id="HelpMenu" anchor="last"/>
         </action>
-        <action id="com.github.chbndrhnns.intellijplatformplugincopy.features.actions.CopyDiagnosticDataAction"
-                class="com.github.chbndrhnns.intellijplatformplugincopy.features.actions.CopyDiagnosticDataAction"
+        <action id="com.github.chbndrhnns.betterpy.features.actions.CopyDiagnosticDataAction"
+                class="com.github.chbndrhnns.betterpy.features.actions.CopyDiagnosticDataAction"
                 text="BetterPy: Copy Diagnostic Data"
                 description="Copies plugin version and IDE build number to the clipboard">
             <add-to-group group-id="HelpMenu" anchor="last"/>
         </action>
-        <action id="com.github.chbndrhnns.intellijplatformplugincopy.features.actions.RebuildClassMembersIndexAction"
-                class="com.github.chbndrhnns.intellijplatformplugincopy.features.actions.RebuildClassMembersIndexAction"
+        <action id="com.github.chbndrhnns.betterpy.features.actions.RebuildClassMembersIndexAction"
+                class="com.github.chbndrhnns.betterpy.features.actions.RebuildClassMembersIndexAction"
                 text="BetterPy: Rebuild Python Class Members Index"
                 description="Triggers a rebuild of the Python class members index used for Protocol implementation search">
         </action>
         <action id="MyPlugin.CopyBlockWithDependenciesAction"
-                class="com.github.chbndrhnns.intellijplatformplugincopy.features.actions.CopyBlockWithDependenciesAction"
+                class="com.github.chbndrhnns.betterpy.features.actions.CopyBlockWithDependenciesAction"
                 text="BetterPy: Copy with Dependencies">
             <add-to-group group-id="Copy.Paste.Special" anchor="last"/>
         </action>
 
         <action id="MyPlugin.CopyPytestNodeIdFromEditorAction"
-                class="com.github.chbndrhnns.intellijplatformplugincopy.features.actions.CopyPytestNodeIdFromEditorAction"
+                class="com.github.chbndrhnns.betterpy.features.actions.CopyPytestNodeIdFromEditorAction"
                 text="BetterPy: Copy Pytest Node ID">
             <add-to-group group-id="Copy.Paste.Special" anchor="last"/>
         </action>
@@ -507,18 +532,18 @@
         <group id="MyPlugin.CopySpecialGroup" text="BetterPy: Copy Special" popup="true">
             <add-to-group group-id="TestTreePopupMenu" anchor="last"/>
             <action id="MyPlugin.CopyPytestNodeIds"
-                    class="com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.testtree.CopyPytestNodeIdAction"
+                    class="com.github.chbndrhnns.betterpy.features.pytest.testtree.CopyPytestNodeIdAction"
                     text="BetterPy: Copy Pytest Node IDs"/>
             <action id="MyPlugin.CopyFQNs"
-                    class="com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.testtree.CopyFQNAction"
+                    class="com.github.chbndrhnns.betterpy.features.pytest.testtree.CopyFQNAction"
                     text="BetterPy: Copy FQNs"/>
             <action id="MyPlugin.CopyStacktrace"
-                    class="com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.testtree.CopyStacktraceAction"
+                    class="com.github.chbndrhnns.betterpy.features.pytest.testtree.CopyStacktraceAction"
                     text="BetterPy: Copy Stacktrace"/>
         </group>
 
         <action id="MyPlugin.TogglePytestSkipFromTestTree"
-                class="com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.testtree.TogglePytestSkipFromTestTreeAction"
+                class="com.github.chbndrhnns.betterpy.features.pytest.testtree.TogglePytestSkipFromTestTreeAction"
                 text="BetterPy: Toggle Pytest Skip"
                 description="Toggles pytest skip marker for the selected test node (function/class/module)">
             <add-to-group group-id="TestTreePopupMenu" anchor="last"/>
@@ -526,14 +551,14 @@
 
 
         <action id="MyPlugin.JumpToPytestNodeInTestTree"
-                class="com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.testtree.JumpToPytestNodeInTestTreeAction"
+                class="com.github.chbndrhnns.betterpy.features.pytest.testtree.JumpToPytestNodeInTestTreeAction"
                 text="BetterPy: Jump to Test Tree Node"
                 description="Selects the corresponding pytest node in the active test tree">
             <add-to-group group-id="EditorPopupMenu.GoTo" anchor="after" relative-to-action="FindUsages"/>
         </action>
 
         <action id="Connexion.GoToOpenApiOperation"
-                class="com.github.chbndrhnns.intellijplatformplugincopy.features.connexion.GoToOpenApiOperationAction"
+                class="com.github.chbndrhnns.betterpy.features.connexion.GoToOpenApiOperationAction"
                 text="BetterPy: Go to OpenAPI Operation"
                 description="Navigate to OpenAPI declaration">
             <add-to-group group-id="EditorPopupMenu.GoTo" anchor="after" relative-to-action="FindUsages"/>
@@ -541,14 +566,15 @@
     </actions>
     <extensions defaultExtensionNs="Pythonid">
         <pythonDocumentationQuickInfoProvider
-            implementation="com.github.chbndrhnns.intellijplatformplugincopy.features.documentation.DataclassQuickInfoProvider"
+                implementation="com.github.chbndrhnns.betterpy.features.documentation.DataclassQuickInfoProvider"
             order="first"/>
-        <typeProvider implementation="com.github.chbndrhnns.intellijplatformplugincopy.features.type.PyMockTypeProvider"
+        <typeProvider implementation="com.github.chbndrhnns.betterpy.features.type.PyMockTypeProvider"
                       order="first"/>
-        <typeCheckerExtension implementation="com.github.chbndrhnns.intellijplatformplugincopy.features.type.PyMockTypeCheckerExtension"/>
+        <typeCheckerExtension implementation="com.github.chbndrhnns.betterpy.features.type.PyMockTypeCheckerExtension"/>
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
-        <gotoDeclarationHandler implementation="com.github.chbndrhnns.intellijplatformplugincopy.features.navigation.PyMockPatchObjectGotoDeclarationHandler"/>
+        <gotoDeclarationHandler
+                implementation="com.github.chbndrhnns.betterpy.features.navigation.PyMockPatchObjectGotoDeclarationHandler"/>
     </extensions>
 
 </idea-plugin>
