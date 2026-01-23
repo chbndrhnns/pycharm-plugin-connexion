@@ -1,7 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.features.search
 
+import com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.PytestNaming
 import com.jetbrains.python.psi.PyClass
-import com.jetbrains.python.psi.PyDecorator
 import com.jetbrains.python.psi.PyFunction
 
 /**
@@ -17,8 +17,7 @@ object PyTestDetection {
      * - Class name starting with "test_" (e.g., test_my_class - less common but possible)
      */
     fun isTestClass(pyClass: PyClass): Boolean {
-        val name = pyClass.name ?: return false
-        return name.startsWith("Test") || name.startsWith("test_")
+        return PytestNaming.isTestClass(pyClass, allowLowercasePrefix = true)
     }
 
     /**
@@ -27,17 +26,10 @@ object PyTestDetection {
      * - Function name starting with "test_" (e.g., test_my_function)
      */
     fun isTestFunction(pyFunction: PyFunction): Boolean {
-        val name = pyFunction.name ?: return false
-        return name.startsWith("test_")
+        return PytestNaming.isTestFunction(pyFunction)
     }
 
     fun isPytestFixture(pyFunction: PyFunction): Boolean {
-        val decorators = pyFunction.decoratorList?.decorators ?: return false
-        return decorators.any { it.isPytestFixtureDecorator() }
-    }
-
-    private fun PyDecorator.isPytestFixtureDecorator(): Boolean {
-        val qualifiedName = qualifiedName?.toString() ?: return false
-        return qualifiedName == "pytest.fixture" || qualifiedName.endsWith(".fixture") || qualifiedName == "fixture"
+        return PytestNaming.isPytestFixture(pyFunction)
     }
 }

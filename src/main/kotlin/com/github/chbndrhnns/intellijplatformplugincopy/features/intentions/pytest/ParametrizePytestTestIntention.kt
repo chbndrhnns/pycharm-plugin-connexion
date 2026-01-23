@@ -3,6 +3,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.pyt
 import com.github.chbndrhnns.intellijplatformplugincopy.core.PluginConstants
 import com.github.chbndrhnns.intellijplatformplugincopy.core.util.isOwnCode
 import com.github.chbndrhnns.intellijplatformplugincopy.featureflags.PluginSettingsState
+import com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.PytestNaming
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
@@ -30,7 +31,7 @@ class ParametrizePytestTestIntention : IntentionAction, HighPriorityAction {
         val pyFunction = PsiTreeUtil.getParentOfType(element, PyFunction::class.java) ?: return false
 
         val name = pyFunction.name ?: return false
-        if (!name.startsWith("test_")) return false
+        if (!PytestNaming.isTestFunctionName(name)) return false
 
         return !isAlreadyParametrized(pyFunction)
     }

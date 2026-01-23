@@ -2,6 +2,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.vis
 
 import com.github.chbndrhnns.intellijplatformplugincopy.core.util.isOwnCode
 import com.github.chbndrhnns.intellijplatformplugincopy.featureflags.PluginSettingsState
+import com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.PytestNaming
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
@@ -43,10 +44,10 @@ abstract class PyToggleVisibilityIntention : IntentionAction, HighPriorityAction
         if (file.name == "conftest.py") return false
 
         // Ignore test functions
-        if (symbol is PyFunction && name.startsWith("test_")) return false
+        if (symbol is PyFunction && PytestNaming.isTestFunctionName(name)) return false
 
         // Ignore test classes
-        if (symbol is PyClass && name.startsWith("Test_")) return false
+        if (symbol is PyClass && PytestNaming.isTestClassName(name, allowLowercasePrefix = false)) return false
 
         if (isDunder(name)) return false
 

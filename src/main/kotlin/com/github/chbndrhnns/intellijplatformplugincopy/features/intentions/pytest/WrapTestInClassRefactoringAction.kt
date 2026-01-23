@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.pytest
 
 import com.github.chbndrhnns.intellijplatformplugincopy.featureflags.PluginSettingsState
+import com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.PytestNaming
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiElement
@@ -39,7 +40,7 @@ class WrapTestInClassRefactoringAction : PyBaseRefactoringAction() {
 
         // Check if it's a test function
         val name = function.name ?: return false
-        return name.startsWith("test_")
+        return PytestNaming.isTestFunctionName(name)
     }
 
     override fun isEnabledOnElementsOutsideEditor(elements: Array<out PsiElement>): Boolean {

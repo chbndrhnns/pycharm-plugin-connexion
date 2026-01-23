@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.outcome
 
+import com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.PytestNaming
 import com.intellij.openapi.diagnostic.Logger
 
 /**
@@ -97,7 +98,7 @@ object PytestStacktraceParser {
         // If we have package.module.function, the module is the second-to-last part
         // If we have module.function or module.Class.method, the module is the first part
 
-        val moduleName = parts.find { it.startsWith("test_") } ?: parts[0]
+        val moduleName = parts.find { PytestNaming.isTestFunctionName(it) } ?: parts[0]
 
         val fileName = "$moduleName.py"
         LOG.debug("PytestStacktraceParser.extractFileNameFromLocationUrl: extracted fileName='$fileName'")

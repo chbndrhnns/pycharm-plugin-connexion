@@ -1,10 +1,10 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.customtype
 
+import com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.PytestNaming
 import com.intellij.openapi.editor.Editor
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.PyNames
 import com.jetbrains.python.psi.*
-
 import com.jetbrains.python.psi.types.TypeEvalContext
 
 /**
@@ -136,6 +136,7 @@ class PlanBuilder(
         name ?: return false
 
         if (name in IGNORED_EXACT_SYMBOL_NAMES) return true
+        if (PytestNaming.isTestFunctionName(name)) return true
 
         return IGNORED_SYMBOL_NAME_PREFIXES.any { prefix -> name.startsWith(prefix) }
     }
@@ -162,7 +163,6 @@ class PlanBuilder(
 
         private val IGNORED_SYMBOL_NAME_PREFIXES = listOf(
             "_",       // private / internal
-            "test_",  // pytest-style tests
         )
     }
 }

@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.features.intentions.pytest
 
+import com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.PytestNaming
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
@@ -140,6 +141,6 @@ sealed class WrapTestInClassSettings {
 fun findTestClassesInFile(file: PyFile): List<PyClass> {
     return file.topLevelClasses.filter { pyClass ->
         val name = pyClass.name ?: return@filter false
-        name.startsWith("Test") || name.endsWith("Test")
+        PytestNaming.isTestClassName(name, allowLowercasePrefix = false) || name.endsWith("Test")
     }
 }

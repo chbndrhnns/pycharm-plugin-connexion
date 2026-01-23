@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.outcome
 
+import com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.PytestNaming
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -53,7 +54,7 @@ class UseActualOutcomeUseCase(
             return false
         }
 
-        if (!name.startsWith("test_")) {
+        if (!PytestNaming.isTestFunctionName(name)) {
             LOG.debug("UseActualOutcomeUseCase.isAvailable: function name '$name' does not start with 'test_', returning false")
             return false
         }

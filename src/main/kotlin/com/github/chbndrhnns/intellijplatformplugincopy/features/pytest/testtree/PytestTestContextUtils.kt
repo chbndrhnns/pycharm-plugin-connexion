@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.testtree
 
+import com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.PytestNaming
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.PyClass
@@ -22,20 +23,17 @@ object PytestTestContextUtils {
     }
 
     fun isTestFile(file: PyFile): Boolean {
-        val name = file.name
-        return name.startsWith("test_") || name.endsWith("_test.py")
+        return PytestNaming.isTestFile(file)
     }
 
     fun isTestFunction(function: PyFunction): Boolean {
-        val name = function.name ?: return false
-        if (name.startsWith("test_")) return true
+        if (PytestNaming.isTestFunction(function)) return true
 
         val clazz = PsiTreeUtil.getParentOfType(function, PyClass::class.java, false)
         return clazz != null && isTestClass(clazz)
     }
 
     fun isTestClass(clazz: PyClass): Boolean {
-        val name = clazz.name ?: return false
-        return name.startsWith("Test")
+        return PytestNaming.isTestClass(clazz, allowLowercasePrefix = false)
     }
 }

@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.testtree
 
+import com.github.chbndrhnns.intellijplatformplugincopy.features.pytest.PytestNaming
 import com.intellij.execution.testframework.sm.runner.SMTestProxy
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
@@ -62,13 +63,13 @@ object TogglePytestSkipFromTestTreeTargetResolver {
             return Target.Module(file)
         }
 
-        if (name.startsWith("Test")) {
+        if (PytestNaming.isTestClassName(name, allowLowercasePrefix = false)) {
             val clazz = PsiTreeUtil.getParentOfType(leafElement, PyClass::class.java, false) ?: return null
             if (!PytestTestContextUtils.isTestClass(clazz)) return null
             return Target.Clazz(clazz, file)
         }
 
-        if (name.startsWith("test_")) {
+        if (PytestNaming.isTestFunctionName(name)) {
             val function = PsiTreeUtil.getParentOfType(leafElement, PyFunction::class.java, false) ?: return null
             if (!PytestTestContextUtils.isTestFunction(function)) return null
             return Target.Function(function, file)
