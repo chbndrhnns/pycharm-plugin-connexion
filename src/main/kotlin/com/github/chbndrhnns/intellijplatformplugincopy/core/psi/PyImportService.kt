@@ -2,6 +2,7 @@ package com.github.chbndrhnns.intellijplatformplugincopy.core.psi
 
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNamedElement
+import com.intellij.psi.PsiParserFacade
 import com.intellij.psi.util.QualifiedName
 import com.jetbrains.python.codeInsight.dataflow.scope.ScopeUtil
 import com.jetbrains.python.codeInsight.imports.AddImportHelper
@@ -35,6 +36,57 @@ class PyImportService {
             priority,
             null
         )
+    }
+
+    /**
+     * Ensure a `from <module> import <name>` import exists in [file].
+     */
+    fun ensureFromImport(file: PyFile, moduleName: String, name: String) {
+        val existingFromImport = file.statements
+            .filterIsInstance<PyFromImportStatement>()
+            .firstOrNull { it.importSourceQName?.toString() == moduleName }
+
+        if (existingFromImport != null) {
+            if (existingFromImport.importElements.any { it.importedQName?.lastComponent == name }) return
+
+            val generator = PyElementGenerator.getInstance(file.project)
+            val languageLevel = LanguageLevel.forElement(file)
+            val newImport = generator.createFromText(
+                languageLevel,
+                PyFromImportStatement::class.java,
+                "from $moduleName import $name",
+            )
+            val newElement = newImport.importElements.firstOrNull() ?: return
+            val last = existingFromImport.importElements.lastOrNull()
+            if (last != null) {
+                existingFromImport.addAfter(newElement, last)
+            } else {
+                existingFromImport.add(newElement)
+            }
+            return
+        }
+
+        val generator = PyElementGenerator.getInstance(file.project)
+        val languageLevel = LanguageLevel.forElement(file)
+        val newImport = generator.createFromText(
+            languageLevel,
+            PyFromImportStatement::class.java,
+            "from $moduleName import $name",
+        )
+
+        val imports = file.importBlock
+        if (imports.isNotEmpty()) {
+            val lastImport = imports.last()
+            file.addAfter(newImport, lastImport)
+            file.addAfter(PsiParserFacade.getInstance(file.project).createWhiteSpaceFromText("\n"), lastImport)
+        } else {
+            val firstStatement = file.statements.firstOrNull()
+            if (firstStatement != null) {
+                file.addBefore(newImport, firstStatement)
+            } else {
+                file.add(newImport)
+            }
+        }
     }
 
     /**

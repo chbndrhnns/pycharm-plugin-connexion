@@ -43,7 +43,7 @@ class PyMissingInDunderAllInspection : PyInspection() {
         if (!PythonVersionGuard.isSatisfied(holder.project)) {
             return object : PyElementVisitor() {}
         }
-        val settings = PluginSettingsState.Companion.instance().state
+        val settings = PluginSettingsState.instance().state
         if (!settings.enablePyMissingInDunderAllInspection) {
             // Return a no-op visitor when the inspection is disabled in settings.
             return object : PyElementVisitor() {}
@@ -57,20 +57,6 @@ class PyMissingInDunderAllInspection : PyInspection() {
         // Suppression needed: session parameter required by IntelliJ inspection API but not used here
         @Suppress("unused") private val session: LocalInspectionToolSession,
     ) : PyElementVisitor() {
-
-        companion object {
-            /**
-             * Hardcoded allowlists for symbols that should not be required to
-             * appear in __all__.
-             *
-             * First step: keep it simple and prefix‑based so that we can later
-             * move this into configurable settings if needed.
-             */
-            private val ALLOWLISTED_MODULE_NAME_PREFIXES = listOf("test_", "tests_")
-            private val ALLOWLISTED_EXACT_MODULE_NAMES = setOf("tests")
-            private val ALLOWLISTED_FUNCTION_NAME_PREFIXES = listOf("test_")
-            private val ALLOWLISTED_CLASS_NAME_PREFIXES = listOf("Test")
-        }
 
         override fun visitPyFile(node: PyFile) {
             super.visitPyFile(node)
@@ -152,8 +138,8 @@ class PyMissingInDunderAllInspection : PyInspection() {
                     if (dunderAllNames.contains(name)) continue
 
                     // Respect existing allowlists (e.g. test_ helpers)
-                    if (ALLOWLISTED_FUNCTION_NAME_PREFIXES.any { name.startsWith(it) }) continue
-                    if (ALLOWLISTED_CLASS_NAME_PREFIXES.any { name.startsWith(it) }) continue
+                    if (ExportAllowlist.isAllowlistedFunctionName(name)) continue
+                    if (ExportAllowlist.isAllowlistedClassName(name)) continue
 
                     val anchor = importElement.asNameElement ?: importElement
                     holder.registerProblem(
@@ -284,16 +270,10 @@ class PyMissingInDunderAllInspection : PyInspection() {
         }
 
         private fun isAllowlistedName(name: String): Boolean =
-            name in ALLOWLISTED_EXACT_MODULE_NAMES ||
-                    ALLOWLISTED_MODULE_NAME_PREFIXES.any { name.startsWith(it) }
+            ExportAllowlist.isAllowlistedModuleName(name)
 
         private fun isAllowlistedSymbol(element: PyElement): Boolean {
-            val name = (element as? PsiNameIdentifierOwner)?.name ?: return false
-            return when (element) {
-                is PyFunction -> ALLOWLISTED_FUNCTION_NAME_PREFIXES.any { name.startsWith(it) }
-                is PyClass -> ALLOWLISTED_CLASS_NAME_PREFIXES.any { name.startsWith(it) }
-                else -> false
-            }
+            return ExportAllowlist.isAllowlistedSymbol(element)
         }
 
         private fun getNameIdentifier(element: PyElement): PsiElement? =

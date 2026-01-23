@@ -150,50 +150,6 @@ private object MakeMemberAbstractUtils {
     }
 
     private fun ensureFromAbcImportAbstractMethod(file: PyFile) {
-        // Try to extend an existing `from abc import ...` statement.
-        val fromAbc = file.statements
-            .filterIsInstance<PyFromImportStatement>()
-            .firstOrNull { it.importSourceQName?.toString() == "abc" }
-
-        if (fromAbc != null) {
-            val importedNames = fromAbc.importElements.mapNotNull { it.importedQName?.lastComponent }
-            if (!importedNames.contains("abstractmethod")) {
-                val generator = PyElementGenerator.getInstance(file.project)
-                val languageLevel = LanguageLevel.forElement(file)
-                val newImport = generator.createFromText(
-                    languageLevel,
-                    PyFromImportStatement::class.java,
-                    "from abc import abstractmethod",
-                )
-                val newElement = newImport.importElements.firstOrNull()
-                if (newElement != null) {
-                    val last = fromAbc.importElements.lastOrNull()
-                    if (last != null) {
-                        fromAbc.addAfter(newElement, last)
-                    } else {
-                        fromAbc.add(newElement)
-                    }
-                }
-            }
-            return
-        }
-
-        // No existing `from abc import ...` – create it.
-        val generator = PyElementGenerator.getInstance(file.project)
-        val languageLevel = LanguageLevel.forElement(file)
-        val newStmt = generator.createFromText(
-            languageLevel,
-            PyFromImportStatement::class.java,
-            "from abc import abstractmethod",
-        )
-
-        // Place it near other imports if possible.
-        val anchor = PsiTreeUtil.findChildrenOfType(file, PyImportStatementBase::class.java)
-            .firstOrNull()
-        if (anchor != null) {
-            file.addBefore(newStmt, anchor)
-        } else {
-            file.addBefore(newStmt, file.firstChild)
-        }
+        PyImportService().ensureFromImport(file, "abc", "abstractmethod")
     }
 }
