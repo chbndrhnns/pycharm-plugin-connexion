@@ -61,7 +61,6 @@ class PyIntroduceParameterObjectCrossFileTest : TestBase() {
         val expectedClientContent = """
             from utils import create_user, CreateUserParams
 
-
             def main():
                 create_user(CreateUserParams(first_name="John", last_name="Doe"))
             """.trimIndent()
