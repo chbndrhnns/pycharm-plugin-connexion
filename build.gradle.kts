@@ -133,6 +133,9 @@ intellijPlatform {
 changelog {
     groups.empty()
     repositoryUrl = providers.gradleProperty("pluginRepositoryUrl")
+    // Support CalVer format: YYYY.MM.PATCH or YYYY.MM.PATCH-channel.build (extracts from [version] format)
+    headerParserRegex.set("""\d{4}\.\d{1,2}\.\d+(-\w+\.\w+)?""".toRegex())
+    version.set(providers.gradleProperty("pluginVersion"))
 }
 
 // Configure Gradle Kover Plugin - read more: https://github.com/Kotlin/kotlinx-kover#configuration
