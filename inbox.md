@@ -2,6 +2,9 @@
 
 ## Pending Issues
 
+- [ ] fix: Introduce parameter object: Only add Any import if required
+- [ ] fix: Unsupported python version popup: Include BetterPy prefix
+- [ ] fix: Unsupported python version popup: Only show for python projects
 - [ ] fix: Only make parameter object available via refactoring menu
 - [ ] fix: Move to class should keep async/sync statement
 - [ ] fix: In patch, we should allow references to declarations sites
