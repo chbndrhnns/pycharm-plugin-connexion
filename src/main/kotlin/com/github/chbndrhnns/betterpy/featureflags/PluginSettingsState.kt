@@ -167,6 +167,21 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
 
         // ---- Pytest Intentions ----
         @Feature(
+            id = "advanced-pytest-fixtures",
+            displayName = "Advanced pytest fixture features",
+            description = "Adds navigation, hierarchy, and override support for pytest fixtures",
+            category = FeatureCategory.PYTEST,
+            maturity = FeatureMaturity.INCUBATING,
+            loggingCategories = [
+                "com.github.chbndrhnns.betterpy.features.pytest.fixture",
+            ],
+            youtrackIssues = [
+                "PY-81495",
+            ]
+        )
+        var enableAdvancedPytestFixtureFeatures: Boolean = true,
+
+        @Feature(
             id = "toggle-pytest-skip",
             displayName = "Toggle pytest skip",
             description = "Adds or removes @pytest.mark.skip decorator from a test",

@@ -24,9 +24,7 @@ class FeatureLoggingService {
     fun copyLoggingCategoriesToClipboard(feature: FeatureRegistry.FeatureInfo) {
         if (feature.loggingCategories.isEmpty()) return
 
-        val formattedCategories = feature.loggingCategories.joinToString("\n") { category ->
-            "$category:trace:separate"
-        }
+        val formattedCategories = formatLoggingCategories(feature.loggingCategories)
 
         val selection = StringSelection(formattedCategories)
         Toolkit.getDefaultToolkit().systemClipboard.setContents(selection, selection)
@@ -36,6 +34,12 @@ class FeatureLoggingService {
                 feature.loggingCategories.joinToString(", ")
             }"
         )
+    }
+
+    internal fun formatLoggingCategories(categories: List<String>): String {
+        return categories.joinToString("\n") { category ->
+            "$category:trace:separate"
+        }
     }
 
     companion object {

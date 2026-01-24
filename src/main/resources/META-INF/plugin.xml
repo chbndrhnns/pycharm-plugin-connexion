@@ -42,6 +42,8 @@
                                   implementation="com.github.chbndrhnns.betterpy.core.psi.PyNewTypeTypeVarReferenceContributor"/>
         <psi.referenceContributor language="Python"
                                   implementation="com.github.chbndrhnns.betterpy.core.psi.PyFilterWarningsReferenceContributor"/>
+        <psi.referenceContributor language="Python"
+                                  implementation="com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureReferenceContributor"/>
 
         <psi.referenceContributor language="JSON"
                                   implementation="com.github.chbndrhnns.betterpy.features.connexion.ConnexionJsonReferenceContributor"/>
@@ -86,14 +88,22 @@
         <codeInsight.lineMarkerProvider language="JSON"
                                         implementationClass="com.github.chbndrhnns.betterpy.features.connexion.ConnexionJsonLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="Python"
+                                        implementationClass="com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="Python"
                                         implementationClass="com.github.chbndrhnns.betterpy.features.refactoring.parameterobject.ParameterObjectLineMarkerProvider"/>
+        <codeInsight.gotoSuper language="Python"
+                               implementationClass="com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureGotoSuperHandler"
+                               order="first"/>
 
         <definitionsScopedSearch
                 implementation="com.github.chbndrhnns.betterpy.features.search.PyProtocolDefinitionsSearchExecutor"/>
+        <definitionsScopedSearch
+                implementation="com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureImplementationSearch"/>
 
         <!-- Protocol implementation search index and cache -->
         <fileBasedIndex implementation="com.github.chbndrhnns.betterpy.core.index.PyClassMembersFileIndex"/>
         <fileBasedIndex implementation="com.github.chbndrhnns.betterpy.core.index.PyLambdaFileIndex"/>
+        <fileBasedIndex implementation="com.github.chbndrhnns.betterpy.core.index.PytestFixtureFileIndex"/>
         <psi.treeChangeListener
                 implementation="com.github.chbndrhnns.betterpy.bootstrap.listeners.ProtocolCacheInvalidationListener"/>
 
@@ -123,6 +133,10 @@
 
         <gotoTargetPresentationProvider
                 implementation="com.github.chbndrhnns.betterpy.features.navigation.PyGotoTargetPresentationProvider"/>
+
+        <codeInsight.overrideMethod language="Python"
+                                    implementationClass="com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureOverrideMethodsHandler"
+                                    order="first"/>
 
         <notificationGroup id="BetterPy" displayType="BALLOON" isLogByDefault="true"/>
         <notificationGroup id="BetterPy Notifications" displayType="BALLOON" isLogByDefault="true"/>
@@ -427,6 +441,11 @@
         <lang.documentationProvider language="Python"
                                     implementationClass="com.github.chbndrhnns.betterpy.features.documentation.DataclassQuickInfoProvider"
                                     order="first"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="Pythonid">
+        <pySuperMethodsSearch
+                implementation="com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureSuperMethodsSearchExecutor"/>
     </extensions>
 
     <extensions defaultExtensionNs="Pythonid">
