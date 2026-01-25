@@ -760,6 +760,25 @@ DialogPanel
   </body>
 </html>
 '
+  CheckBox: [x] 'Pytest fixture scope inspection'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Reports fixtures that narrow the scope compared to parent fixtures
+  </body>
+</html>
+'
   CheckBox: [x] 'Shadowing stdlib module inspection'
   TextField: '<html>
   <head>

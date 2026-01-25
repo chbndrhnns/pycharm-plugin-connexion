@@ -710,6 +710,17 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         )
         var enablePyTestFailedLineInspection: Boolean = true,
 
+        @Feature(
+            id = "pytest-fixture-scope-inspection",
+            displayName = "Pytest fixture scope inspection",
+            description = "Reports fixtures that narrow the scope compared to parent fixtures",
+            category = FeatureCategory.INSPECTIONS,
+            loggingCategories = [
+                "com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureScopeInspection"
+            ]
+        )
+        var enablePytestFixtureScopeInspection: Boolean = true,
+
         /**
          * Snapshotted state before "Mute All" was activated.
          * If non-null, it means the plugin is currently in "Mute All" mode.

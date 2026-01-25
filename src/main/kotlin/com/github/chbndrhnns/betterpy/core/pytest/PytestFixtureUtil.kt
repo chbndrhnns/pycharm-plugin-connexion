@@ -9,6 +9,21 @@ import com.jetbrains.python.psi.PyStringLiteralExpression
  * Utilities for identifying and working with pytest fixtures.
  */
 object PytestFixtureUtil {
+    enum class PytestFixtureScope(val value: String, val order: Int) {
+        FUNCTION("function", 0),
+        CLASS("class", 1),
+        MODULE("module", 2),
+        PACKAGE("package", 3),
+        SESSION("session", 4);
+
+        companion object {
+            fun fromValue(value: String): PytestFixtureScope? {
+                val normalized = value.trim().lowercase()
+                return values().firstOrNull { it.value == normalized }
+            }
+        }
+    }
+
 
     /**
      * Check if a decorator is a pytest fixture decorator.
@@ -73,6 +88,31 @@ object PytestFixtureUtil {
 
         // Default to function name
         return function.name
+    }
+
+    /**
+     * Get the fixture scope for a function.
+     * Returns "function" if no scope is specified.
+     */
+    fun getFixtureScope(function: PyFunction): PytestFixtureScope? {
+        if (!isFixtureFunction(function)) return null
+
+        val fixtureDecorator = function.decoratorList?.decorators?.firstOrNull { isFixtureDecorator(it) }
+            ?: return null
+
+        val argumentList = fixtureDecorator.argumentList
+        if (argumentList != null) {
+            val scopeArg = argumentList.getKeywordArgument("scope")
+            if (scopeArg != null) {
+                val valueExpr = scopeArg.valueExpression
+                if (valueExpr is PyStringLiteralExpression) {
+                    return PytestFixtureScope.fromValue(valueExpr.stringValue)
+                }
+                return null
+            }
+        }
+
+        return PytestFixtureScope.FUNCTION
     }
 
     /**
