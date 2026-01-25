@@ -425,6 +425,10 @@
                 implementation="com.github.chbndrhnns.betterpy.features.refactoring.PyShadowingStdlibRenameProcessor"
                 order="first"/>
 
+        <renamePsiElementProcessor
+                implementation="com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureRenameProcessor"
+                order="first"/>
+
         <usageFilteringRuleProvider
                 implementation="com.github.chbndrhnns.betterpy.features.usages.PyTypeAnnotationFilteringRuleProvider"/>
 
