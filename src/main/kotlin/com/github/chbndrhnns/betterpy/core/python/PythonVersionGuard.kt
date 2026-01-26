@@ -1,6 +1,8 @@
 package com.github.chbndrhnns.betterpy.core.python
 
+import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.psi.PsiElement
 import com.jetbrains.python.psi.LanguageLevel
 import com.jetbrains.python.psi.PyFile
@@ -17,13 +19,14 @@ object PythonVersionGuard {
 
     fun isSatisfied(project: Project?): Boolean {
         if (project == null) return false
-        val pythonModule = com.intellij.openapi.module.ModuleManager.getInstance(project)
-            .modules
-            .firstOrNull { PythonSdkUtil.findPythonSdk(it) != null }
-            ?: return false
-        val sdk = PythonSdkUtil.findPythonSdk(pythonModule) ?: return false
+        val sdk = findPythonSdk(project) ?: return false
         val level = LanguageLevel.fromPythonVersion(sdk.versionString ?: return false) ?: return false
         return level.isAtLeast(minLevel)
+    }
+
+    fun hasPythonSdk(project: Project?): Boolean {
+        if (project == null) return false
+        return findPythonSdk(project) != null
     }
 
     /**
@@ -34,5 +37,13 @@ object PythonVersionGuard {
         val file = element.containingFile as? PyFile ?: return false
         val level = file.languageLevel
         return level.isAtLeast(minLevel)
+    }
+
+    private fun findPythonSdk(project: Project): Sdk? {
+        val pythonModule = ModuleManager.getInstance(project)
+            .modules
+            .firstOrNull { PythonSdkUtil.findPythonSdk(it) != null }
+            ?: return null
+        return PythonSdkUtil.findPythonSdk(pythonModule)
     }
 }
