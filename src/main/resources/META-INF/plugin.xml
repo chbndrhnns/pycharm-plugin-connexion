@@ -588,6 +588,20 @@
             <add-to-group group-id="EditorPopupMenu.GoTo" anchor="after" relative-to-action="FindUsages"/>
         </action>
 
+        <action id="com.github.chbndrhnns.betterpy.features.pytest.fixture.NewPytestTestAction"
+                class="com.github.chbndrhnns.betterpy.features.pytest.fixture.NewPytestTestAction"
+                text="pytest test"
+                description="Creates a new pytest test in the current scope">
+            <add-to-group group-id="GenerateGroup" anchor="last"/>
+        </action>
+
+        <action id="com.github.chbndrhnns.betterpy.features.pytest.fixture.NewPytestFixtureAction"
+                class="com.github.chbndrhnns.betterpy.features.pytest.fixture.NewPytestFixtureAction"
+                text="pytest fixture"
+                description="Creates a new pytest fixture in the current scope">
+            <add-to-group group-id="GenerateGroup" anchor="last"/>
+        </action>
+
         <action id="Connexion.GoToOpenApiOperation"
                 class="com.github.chbndrhnns.betterpy.features.connexion.GoToOpenApiOperationAction"
                 text="BetterPy: Go to OpenAPI Operation"

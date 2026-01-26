@@ -414,6 +414,25 @@ DialogPanel
   </body>
 </html>
 '
+  CheckBox: [x] 'New pytest members'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Adds Generate menu actions for new pytest tests and fixtures
+  </body>
+</html>
+'
   CheckBox: [x] 'Convert pytest.param'
   TextField: '<html>
   <head>
