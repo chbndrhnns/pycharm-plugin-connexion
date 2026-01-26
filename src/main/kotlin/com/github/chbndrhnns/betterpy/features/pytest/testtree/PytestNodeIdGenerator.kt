@@ -342,16 +342,42 @@ object PytestNodeIdGenerator {
             return relativePath
         }
 
+        // Merge parameter parts (e.g. "test_new", "(1)" -> "test_new[1]")
+        val mergedParts = mergeParameterParts(filteredParts).toMutableList()
+
         // Replace the leaf name with metainfo if available (to handle [params])
-        if (filteredParts.isNotEmpty() && !metainfo.isNullOrEmpty()) {
-            val leafName = filteredParts.last()
+        if (mergedParts.isNotEmpty() && !metainfo.isNullOrEmpty()) {
+            val leafName = mergedParts.last()
             // Only replace if metainfo starts with the leaf name (e.g., test_foo[param] starts with test_foo)
             if (metainfo.startsWith(leafName)) {
-                filteredParts[filteredParts.lastIndex] = metainfo
+                mergedParts[mergedParts.lastIndex] = metainfo
             }
         }
 
-        return "$relativePath::${filteredParts.joinToString("::")}"
+        return "$relativePath::${mergedParts.joinToString("::")}"
+    }
+
+    private fun mergeParameterParts(parts: List<String>): List<String> {
+        if (parts.isEmpty()) return parts
+        val result = mutableListOf<String>()
+
+        for (part in parts) {
+            if (result.isNotEmpty()) {
+                if (part.startsWith("(") && part.endsWith(")")) {
+                    val previous = result.removeAt(result.lastIndex)
+                    val param = part.substring(1, part.length - 1)
+                    result.add("$previous[$param]")
+                    continue
+                }
+                if (part.startsWith("[") && part.endsWith("]")) {
+                    val previous = result.removeAt(result.lastIndex)
+                    result.add("$previous$part")
+                    continue
+                }
+            }
+            result.add(part)
+        }
+        return result
     }
 
     /**
