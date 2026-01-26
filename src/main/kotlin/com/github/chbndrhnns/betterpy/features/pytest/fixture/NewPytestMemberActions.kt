@@ -31,12 +31,15 @@ class NewPytestTestAction : AnAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     override fun update(e: AnActionEvent) {
-        e.presentation.isEnabledAndVisible = PytestMemberActionsFeatureToggle.isEnabled() && resolveContext(e) != null
+        val context = resolveContext(e)
+        val isConftest = context?.file?.name == "conftest.py"
+        e.presentation.isEnabledAndVisible = PytestMemberActionsFeatureToggle.isEnabled() && context != null && !isConftest
     }
 
     override fun actionPerformed(e: AnActionEvent) {
         if (!PytestMemberActionsFeatureToggle.isEnabled()) return
         val context = resolveContext(e) ?: return
+        if (context.file.name == "conftest.py") return
         val anchor = findAnchorStatement(
             context.targetClass?.statementList?.statements?.toList(),
             context.file.statements.toList(),

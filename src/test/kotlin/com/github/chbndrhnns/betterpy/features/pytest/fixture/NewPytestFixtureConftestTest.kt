@@ -25,6 +25,23 @@ class NewPytestFixtureConftestTest : TestBase() {
         assertTrue("Action should be visible in conftest.py", event.presentation.isEnabledAndVisible)
     }
 
+    fun testNewPytestTestActionHiddenInConftest() {
+        PluginSettingsState.instance().state.enableNewPytestMemberActions = true
+
+        myFixture.configureByText(
+            "conftest.py",
+            """
+            <caret>
+            """.trimIndent()
+        )
+
+        val action = NewPytestTestAction()
+        val event = TestActionEvent.createTestEvent(action, editorDataContext())
+        action.update(event)
+
+        assertFalse("New Test Action should be hidden in conftest.py", event.presentation.isEnabledAndVisible)
+    }
+
     private fun editorDataContext() = SimpleDataContext.builder()
         .add(CommonDataKeys.PROJECT, project)
         .add(CommonDataKeys.EDITOR, myFixture.editor)
