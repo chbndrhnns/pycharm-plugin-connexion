@@ -2,6 +2,7 @@
 
 ## Pending Issues
 
+- [ ] fix: For pytest fixture hierarchy, do not check if signature matches parent
 - [ ] fix: Introduce custom type needs to wrap usage sites
 - [ ] fix: Rename fixture should rename all edges, not only upwards
 - [ ] fix: Logger should distinguish between packages and classes
