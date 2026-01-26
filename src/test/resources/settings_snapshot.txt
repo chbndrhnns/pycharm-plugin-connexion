@@ -390,244 +390,6 @@ DialogPanel
 </html>
 '
   
-    Label: 'Pytest'
-    JSeparator
-  CheckBox: [x] 'Advanced pytest fixture features'
-  MaturityTagLabel
-    Label: 'Incubating'
-  Button: 'PY-81495'
-  TextField: '<html>
-  <head>
-    <style type="text/css">
-      <!--
-        a { color: #589df6 }
-        a:link { color: #589df6 }
-        a:visited { color: #800080 }
-        a:hover { color: #589df6 }
-        a:active { color: #f00000 }
-      -->
-    </style>
-    
-  </head>
-  <body>
-    Adds navigation, hierarchy, and override support for pytest fixtures
-  </body>
-</html>
-'
-  CheckBox: [x] 'Convert pytest.param'
-  TextField: '<html>
-  <head>
-    <style type="text/css">
-      <!--
-        a { color: #589df6 }
-        a:link { color: #589df6 }
-        a:visited { color: #800080 }
-        a:hover { color: #589df6 }
-        a:active { color: #f00000 }
-      -->
-    </style>
-    
-  </head>
-  <body>
-    Converts between different pytest parameter formats
-  </body>
-</html>
-'
-  CheckBox: [x] 'Create pytest fixtures from parameters'
-  MaturityTagLabel
-    Label: 'Incubating'
-  TextField: '<html>
-  <head>
-    <style type="text/css">
-      <!--
-        a { color: #589df6 }
-        a:link { color: #589df6 }
-        a:visited { color: #800080 }
-        a:hover { color: #589df6 }
-        a:active { color: #f00000 }
-      -->
-    </style>
-    
-  </head>
-  <body width="560">
-    Offers a quick fix to generate pytest fixtures for unresolved fixture 
-    parameters
-  </body>
-</html>
-'
-  CheckBox: [x] 'Jump to pytest node in test tree'
-  TextField: '<html>
-  <head>
-    <style type="text/css">
-      <!--
-        a { color: #589df6 }
-        a:link { color: #589df6 }
-        a:visited { color: #800080 }
-        a:hover { color: #589df6 }
-        a:active { color: #f00000 }
-      -->
-    </style>
-    
-  </head>
-  <body>
-    Navigates to the corresponding node in the test tree view
-  </body>
-</html>
-'
-  CheckBox: [x] 'New pytest members'
-  TextField: '<html>
-  <head>
-    <style type="text/css">
-      <!--
-        a { color: #589df6 }
-        a:link { color: #589df6 }
-        a:visited { color: #800080 }
-        a:hover { color: #589df6 }
-        a:active { color: #f00000 }
-      -->
-    </style>
-    
-  </head>
-  <body>
-    Adds Generate menu actions for new pytest tests and fixtures
-  </body>
-</html>
-'
-  CheckBox: [x] 'Parametrize pytest test'
-  TextField: '<html>
-  <head>
-    <style type="text/css">
-      <!--
-        a { color: #589df6 }
-        a:link { color: #589df6 }
-        a:visited { color: #800080 }
-        a:hover { color: #589df6 }
-        a:active { color: #f00000 }
-      -->
-    </style>
-    
-  </head>
-  <body>
-    Converts a test function to use @pytest.mark.parametrize
-  </body>
-</html>
-'
-  CheckBox: [x] 'Mock type provider'
-  TextField: '<html>
-  <head>
-    <style type="text/css">
-      <!--
-        a { color: #589df6 }
-        a:link { color: #589df6 }
-        a:visited { color: #800080 }
-        a:hover { color: #589df6 }
-        a:active { color: #f00000 }
-      -->
-    </style>
-    
-  </head>
-  <body>
-    Provides type information for unittest.mock objects
-  </body>
-</html>
-'
-  CheckBox: [x] 'Surround with pytest.raises()'
-  TextField: '<html>
-  <head>
-    <style type="text/css">
-      <!--
-        a { color: #589df6 }
-        a:link { color: #589df6 }
-        a:visited { color: #800080 }
-        a:hover { color: #589df6 }
-        a:active { color: #f00000 }
-      -->
-    </style>
-    
-  </head>
-  <body>
-    Wraps a statement with pytest.raises() in test contexts
-  </body>
-</html>
-'
-  CheckBox: [x] 'Toggle pytest skip from test tree'
-  TextField: '<html>
-  <head>
-    <style type="text/css">
-      <!--
-        a { color: #589df6 }
-        a:link { color: #589df6 }
-        a:visited { color: #800080 }
-        a:hover { color: #589df6 }
-        a:active { color: #f00000 }
-      -->
-    </style>
-    
-  </head>
-  <body>
-    Adds or removes @pytest.mark.skip from the test tree context menu
-  </body>
-</html>
-'
-  CheckBox: [x] 'Toggle pytest skip'
-  TextField: '<html>
-  <head>
-    <style type="text/css">
-      <!--
-        a { color: #589df6 }
-        a:link { color: #589df6 }
-        a:visited { color: #800080 }
-        a:hover { color: #589df6 }
-        a:active { color: #f00000 }
-      -->
-    </style>
-    
-  </head>
-  <body>
-    Adds or removes @pytest.mark.skip decorator from a test
-  </body>
-</html>
-'
-  CheckBox: [x] 'Use actual test outcome'
-  TextField: '<html>
-  <head>
-    <style type="text/css">
-      <!--
-        a { color: #589df6 }
-        a:link { color: #589df6 }
-        a:visited { color: #800080 }
-        a:hover { color: #589df6 }
-        a:active { color: #f00000 }
-      -->
-    </style>
-    
-  </head>
-  <body width="560">
-    Replaces assertion expected values with the actual value from the last 
-    failed test run
-  </body>
-</html>
-'
-  CheckBox: [x] 'Wrap test in class'
-  TextField: '<html>
-  <head>
-    <style type="text/css">
-      <!--
-        a { color: #589df6 }
-        a:link { color: #589df6 }
-        a:visited { color: #800080 }
-        a:hover { color: #589df6 }
-        a:active { color: #f00000 }
-      -->
-    </style>
-    
-  </head>
-  <body>
-    Wraps a test function in a test class
-  </body>
-</html>
-'
-  
     Label: 'Inspections'
     JSeparator
   CheckBox: [x] 'Abstract method not implemented inspection'
@@ -1650,3 +1412,254 @@ DialogPanel
   Label: 'Default parameter object base type:'
   ComboBox
     Button: ''
+
+=== Pytest ===
+DialogPanel
+  MaturityFilterPanel
+    Label: 'Filter by status:'
+    MaturityFilterTag
+      Label: 'Incubating'
+    MaturityFilterTag
+      Label: 'Deprecated'
+  SearchTextField
+    TextField: ''
+      Button: ''
+      Label: ' '
+  
+    Label: 'Pytest'
+    JSeparator
+  CheckBox: [x] 'Advanced pytest fixture features'
+  MaturityTagLabel
+    Label: 'Incubating'
+  Button: 'PY-81495'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Adds navigation, hierarchy, and override support for pytest fixtures
+  </body>
+</html>
+'
+  CheckBox: [x] 'Convert pytest.param'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Converts between different pytest parameter formats
+  </body>
+</html>
+'
+  CheckBox: [x] 'Create pytest fixtures from parameters'
+  MaturityTagLabel
+    Label: 'Incubating'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body width="560">
+    Offers a quick fix to generate pytest fixtures for unresolved fixture 
+    parameters
+  </body>
+</html>
+'
+  CheckBox: [x] 'Jump to pytest node in test tree'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Navigates to the corresponding node in the test tree view
+  </body>
+</html>
+'
+  CheckBox: [x] 'New pytest members'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Adds Generate menu actions for new pytest tests and fixtures
+  </body>
+</html>
+'
+  CheckBox: [x] 'Parametrize pytest test'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Converts a test function to use @pytest.mark.parametrize
+  </body>
+</html>
+'
+  CheckBox: [x] 'Mock type provider'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Provides type information for unittest.mock objects
+  </body>
+</html>
+'
+  CheckBox: [x] 'Surround with pytest.raises()'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Wraps a statement with pytest.raises() in test contexts
+  </body>
+</html>
+'
+  CheckBox: [x] 'Toggle pytest skip from test tree'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Adds or removes @pytest.mark.skip from the test tree context menu
+  </body>
+</html>
+'
+  CheckBox: [x] 'Toggle pytest skip'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Adds or removes @pytest.mark.skip decorator from a test
+  </body>
+</html>
+'
+  CheckBox: [x] 'Use actual test outcome'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body width="560">
+    Replaces assertion expected values with the actual value from the last 
+    failed test run
+  </body>
+</html>
+'
+  CheckBox: [x] 'Wrap test in class'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Wraps a test function in a test class
+  </body>
+</html>
+'

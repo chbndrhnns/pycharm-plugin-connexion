@@ -27,6 +27,9 @@ class PluginSettingsConfigurable : BoundConfigurable("BetterPy"), SearchableConf
             val featuresByCategory = registry.getVisibleFeaturesByCategories()
 
             FeatureCategory.entries.forEach { category ->
+                if (category == FeatureCategory.PYTEST) {
+                    return@forEach
+                }
                 val features = featuresByCategory[category] ?: return@forEach
                 if (features.isEmpty()) return@forEach
 

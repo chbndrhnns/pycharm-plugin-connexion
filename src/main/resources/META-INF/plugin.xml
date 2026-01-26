@@ -349,6 +349,12 @@
                 id="com.github.chbndrhnns.betterpy.featureflags.parameterobject"
                 instance="com.github.chbndrhnns.betterpy.featureflags.ParameterObjectConfigurable"/>
 
+        <applicationConfigurable
+                parentId="com.github.chbndrhnns.betterpy.featureflags"
+                displayName="Pytest"
+                id="com.github.chbndrhnns.betterpy.featureflags.pytest"
+                instance="com.github.chbndrhnns.betterpy.featureflags.PytestConfigurable"/>
+
 
         <localInspection
                 language="Python"
