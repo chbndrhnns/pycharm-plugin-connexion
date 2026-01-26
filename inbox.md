@@ -107,12 +107,12 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## In Progress Tasks
 
-- [ ] fix: Should not delegate to normal override dialog if outside of class scope
 - [ ] feat: Block list: Do not allow names from typing or collections.abc.
 - [ ] refactor: Performance (spec/performance.md)
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Should not delegate to normal override dialog if outside of class scope
 - [x] fix: Override fixture should be put UNDER import block
 - [x] feat: Add new -> fixture command
 - [x] feat: Add new -> test command
