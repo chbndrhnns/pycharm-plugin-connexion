@@ -125,7 +125,7 @@ private fun resolveContext(e: AnActionEvent): PytestInsertionContext? {
     val caretOffset = editor.caretModel.offset
     val elementAtCaret = findElementAtOrNear(psiFile, caretOffset) ?: psiFile
     val isTestContext = PytestTestContextUtils.isInTestContext(elementAtCaret)
-    val isTestFile = PytestTestContextUtils.isTestFile(psiFile)
+    val isTestFile = PytestTestContextUtils.isTestFile(psiFile) || psiFile.name == "conftest.py"
     if (!isTestContext && !isTestFile) return null
     val targetClass = findTargetClass(psiFile, elementAtCaret, caretOffset, editor)
     val moduleSeparator = computeModuleSeparator(psiFile, elementAtCaret, caretOffset, targetClass == null)
