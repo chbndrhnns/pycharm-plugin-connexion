@@ -120,6 +120,42 @@ class PytestFixtureOverrideMethodsHandlerTest : TestBase() {
         )
     }
 
+    fun testOverrideFixtureCreatesNoOpBodyWithFixtureParam() {
+        myFixture.addFileToProject(
+            "conftest.py", """
+            import pytest
+            
+            @pytest.fixture
+            def my_fixture(dep):
+                return 1
+            
+            @pytest.fixture
+            def dep():
+                ...
+        """.trimIndent()
+        )
+
+        myFixture.configureByText(
+            "test_noop_override.py", """
+            <caret>
+        """.trimIndent()
+        )
+
+        val handler = PytestFixtureOverrideMethodsHandler()
+        handler.invoke(project, myFixture.editor, myFixture.file)
+
+        checkResult(
+            """
+            |import pytest
+            |
+            |
+            |@pytest.fixture
+            |def my_fixture(my_fixture, dep):
+            |    return my_fixture
+            """
+        )
+    }
+
     fun testOverrideFixtureInNestedClass() {
         myFixture.configureByText(
             "test_nested.py", """
@@ -214,17 +250,25 @@ class PytestFixtureOverrideMethodsHandlerTest : TestBase() {
         val handler = PytestFixtureOverrideMethodsHandler()
         handler.invoke(project, myFixture.editor, myFixture.file)
 
-        val testClass =
-            PsiTreeUtil.findChildrenOfType(myFixture.file, PyClass::class.java).firstOrNull { it.name == "TestBla" }
-        assertNotNull("Should find TestBla class", testClass)
-
-        val fixture = testClass!!.findMethodByName("foo", false, null)
-        assertNotNull("Should create class fixture override", fixture)
-        assertTrue("Should copy decorator parameters", fixture!!.text.contains("scope=\"module\""))
-        assertTrue("Should copy return annotation", fixture.text.contains("-> int"))
-
-        val firstStatement = testClass.statementList.statements.firstOrNull()
-        assertTrue("Fixture should be inserted at caret", firstStatement is PyFunction)
+        checkResult(
+            """
+            import pytest
+            
+            @pytest.fixture(scope="module")
+            def foo() -> int:
+                pass
+            
+            class TestBla:
+                
+                
+                @pytest.fixture(scope="module")
+                def foo(self, foo) -> int:
+                    return foo
+            
+                def test_(self):
+                    pass
+            """.trimIndent()
+        )
     }
 
     fun testPopupShowsFqnForModuleFixtureAndNoDefaultOverride() {
@@ -320,5 +364,13 @@ class PytestFixtureOverrideMethodsHandlerTest : TestBase() {
                 ?: className
         }
         return classFqn ?: fileModule ?: "unknown"
+    }
+
+    private fun checkResult(expected: String) {
+        var normalized = expected.trimMargin()
+        if (!normalized.endsWith("\n") && myFixture.file.text.endsWith("\n")) {
+            normalized += "\n"
+        }
+        assertEquals(normalized, myFixture.file.text)
     }
 }

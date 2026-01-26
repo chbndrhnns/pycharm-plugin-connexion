@@ -124,9 +124,7 @@ class PytestFixtureOverrideMethodsHandler : LanguageCodeInsightActionHandler {
         targetClass: PyClass?,
         link: FixtureLink
     ) {
-        val generator = PyElementGenerator.getInstance(project)
-        val newFunction = link.fixtureFunction.copy() as PyFunction
-        ensureSelfParameter(generator, newFunction, targetClass)
+        val newFunction = buildFixtureOverride(project, targetClass, link)
 
         if (log.isDebugEnabled) {
             log.debug(
@@ -169,24 +167,61 @@ class PytestFixtureOverrideMethodsHandler : LanguageCodeInsightActionHandler {
         return statements.firstOrNull { it.textRange.startOffset >= caretOffset }
     }
 
-    private fun ensureSelfParameter(
-        generator: PyElementGenerator,
-        function: PyFunction,
-        targetClass: PyClass?
-    ) {
-        if (targetClass == null) return
-        val params = function.parameterList
-        val parameters = params.parameters
-        if (parameters.isEmpty()) {
-            params.addParameter(generator.createParameter("self"))
-            return
+    private fun buildFixtureOverride(
+        project: Project,
+        targetClass: PyClass?,
+        link: FixtureLink
+    ): PyFunction {
+        val generator = PyElementGenerator.getInstance(project)
+        val original = link.fixtureFunction
+        val paramsText = buildFixtureParameterText(original, targetClass, link.fixtureName)
+        val decoratorsText = original.decoratorList?.decorators
+            ?.joinToString("\n") { it.text.trimStart() }
+            ?.let { "$it\n" }
+            ?: ""
+        val asyncPrefix = if (original.isAsync) "async " else ""
+        val annotationText = original.annotation?.text?.trim()?.removePrefix("->")?.trim()
+        val returnAnnotation = annotationText?.takeIf { it.isNotEmpty() }?.let { " -> $it" } ?: ""
+        val functionText = buildString {
+            append(decoratorsText)
+            append(asyncPrefix)
+            append("def ")
+            append(original.name ?: link.fixtureName)
+            append("(")
+            append(paramsText)
+            append(")")
+            append(returnAnnotation)
+            append(":\n    return ")
+            append(link.fixtureName)
         }
-        val first = parameters.first()
-        if (first.name == "self" || first.name == "cls") return
-        val selfParam = generator.createParameter("self")
-        params.addBefore(selfParam, first)
-        val comma = generator.createComma().psi
-        params.addBefore(comma, first)
+        return generator.createFromText(
+            LanguageLevel.forElement(original),
+            PyFunction::class.java,
+            functionText
+        )
+    }
+
+    private fun buildFixtureParameterText(
+        original: PyFunction,
+        targetClass: PyClass?,
+        fixtureName: String
+    ): String {
+        val originalParams = original.parameterList.parameters.map { it.text.trim() }.toMutableList()
+        val result = mutableListOf<String>()
+        if (targetClass != null) {
+            val first = originalParams.firstOrNull()
+            if (first == "self" || first == "cls") {
+                result.add(first)
+                originalParams.removeAt(0)
+            } else {
+                result.add("self")
+            }
+        }
+        if (fixtureName !in result) {
+            result.add(fixtureName)
+        }
+        originalParams.filter { it != fixtureName }.forEach { result.add(it) }
+        return result.joinToString(", ")
     }
 
     private fun ensureFixtureImports(file: PyFile, function: PyFunction) {
