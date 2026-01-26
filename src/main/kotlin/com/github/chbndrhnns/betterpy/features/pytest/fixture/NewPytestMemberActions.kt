@@ -61,7 +61,7 @@ class NewPytestTestAction : AnAction() {
             if (context.targetClass != null) {
                 ensureSelfParameter(generator, newFunction)
             }
-            insertFunction(
+            val inserted = insertFunction(
                 context.project,
                 target,
                 anchor,
@@ -71,6 +71,20 @@ class NewPytestTestAction : AnAction() {
                 context.useCaretInsertion,
                 context.editor
             )
+
+            if (inserted != null && context.editor != null) {
+                val nameIdentifier = inserted.nameIdentifier
+                if (nameIdentifier != null) {
+                    val functionName = nameIdentifier.text
+                    val startOffset = nameIdentifier.textRange.startOffset
+                    val endOffset = nameIdentifier.textRange.endOffset
+
+                    val selectStart = if (functionName.startsWith("test_")) startOffset + 5 else startOffset
+
+                    context.editor.caretModel.moveToOffset(endOffset)
+                    context.editor.selectionModel.setSelection(selectStart, endOffset)
+                }
+            }
         }, context.file)
     }
 }
@@ -106,7 +120,7 @@ class NewPytestFixtureAction : AnAction() {
             if (context.targetClass != null) {
                 ensureSelfParameter(generator, newFunction)
             }
-            insertFunction(
+            val inserted = insertFunction(
                 context.project,
                 target,
                 anchor,
@@ -117,6 +131,17 @@ class NewPytestFixtureAction : AnAction() {
                 context.editor
             )
             PyImportService().ensureModuleImported(context.file, "pytest")
+
+            if (inserted != null && context.editor != null) {
+                val nameIdentifier = inserted.nameIdentifier
+                if (nameIdentifier != null) {
+                    val startOffset = nameIdentifier.textRange.startOffset
+                    val endOffset = nameIdentifier.textRange.endOffset
+
+                    context.editor.caretModel.moveToOffset(endOffset)
+                    context.editor.selectionModel.setSelection(startOffset, endOffset)
+                }
+            }
         }, context.file)
     }
 }
@@ -246,7 +271,7 @@ private fun insertFunction(
     moduleSeparator: String,
     useCaretInsertion: Boolean,
     editor: Editor?
-) {
+): PyFunction? {
     val parserFacade = PsiParserFacade.getInstance(project)
     if (anchor != null) {
         if (anchor is PsiWhiteSpace && target is PyFile) {
@@ -257,26 +282,26 @@ private fun insertFunction(
             if (beforeText.isNotEmpty()) {
                 target.addBefore(parserFacade.createWhiteSpaceFromText(beforeText), anchor)
             }
-            target.addBefore(function, anchor)
+            val inserted = target.addBefore(function, anchor) as? PyFunction
             if (afterText.isNotEmpty()) {
                 target.addBefore(parserFacade.createWhiteSpaceFromText(afterText), anchor)
             }
             anchor.delete()
-            return
+            return inserted
         }
-        val inserted = target.addBefore(function, anchor)
+        val inserted = target.addBefore(function, anchor) as? PyFunction
         target.addAfter(parserFacade.createWhiteSpaceFromText("\n\n"), inserted)
         if (anchor is PsiWhiteSpace) {
             anchor.delete()
         }
-        return
+        return inserted
     }
 
     if (target is PyFile && useCaretInsertion && editor != null) {
         val document = editor.document
         document.insertString(caretOffset, function.text)
         PsiDocumentManager.getInstance(project).commitDocument(document)
-        return
+        return PsiTreeUtil.getParentOfType(target.findElementAt(caretOffset), PyFunction::class.java)
     }
 
     val lastStatement = when (target) {
@@ -285,7 +310,7 @@ private fun insertFunction(
         else -> null
     }
     if (lastStatement != null) {
-        val inserted = target.addAfter(function, lastStatement)
+        val inserted = target.addAfter(function, lastStatement) as? PyFunction
         val separator = if (target is PyFile) moduleSeparator else "\n\n"
         val sibling = lastStatement.nextSibling
         if (sibling is PsiWhiteSpace) {
@@ -294,13 +319,14 @@ private fun insertFunction(
             target.addBefore(parserFacade.createWhiteSpaceFromText(separator), inserted)
         }
         if (target is PyStatementList) {
-            val trailing = PsiTreeUtil.nextLeaf(inserted, false)
+            val trailing = PsiTreeUtil.nextLeaf(inserted!!, false)
             if (trailing is PsiWhiteSpace && trailing.text.isBlank()) {
                 trailing.delete()
             }
         }
+        return inserted
     } else {
-        target.add(function)
+        return target.add(function) as? PyFunction
     }
 }
 

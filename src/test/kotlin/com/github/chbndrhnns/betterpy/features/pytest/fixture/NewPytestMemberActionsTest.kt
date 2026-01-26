@@ -318,6 +318,85 @@ class NewPytestMemberActionsTest : TestBase() {
         )
     }
 
+    fun testNewPytestTestSelections() {
+        PluginSettingsState.instance().state.enableNewPytestMemberActions = true
+        myFixture.configureByText(
+            "test_sample.py",
+            """
+            def test_existing():
+                pass
+            <caret>
+            """.trimIndent()
+        )
+
+        val action = NewPytestTestAction()
+        val event = TestActionEvent.createTestEvent(action, editorDataContext())
+
+        action.update(event)
+        assertTrue(event.presentation.isEnabledAndVisible)
+        action.actionPerformed(event)
+
+        checkResult(
+            """
+            def test_existing():
+                pass
+            def test_new():
+                pass
+            """
+        )
+
+        val editor = myFixture.editor
+        val selectionModel = editor.selectionModel
+        val selectedText = selectionModel.selectedText
+        
+        assertEquals("new", selectedText)
+        
+        val offset = editor.caretModel.offset
+        val document = editor.document
+        val textAfterCaret = document.charsSequence.subSequence(offset, offset + 1).toString()
+        assertEquals("(", textAfterCaret)
+    }
+
+    fun testNewPytestFixtureSelections() {
+        PluginSettingsState.instance().state.enableNewPytestMemberActions = true
+        myFixture.configureByText(
+            "test_sample.py",
+            """
+            import pytest
+            
+            <caret>
+            """.trimIndent()
+        )
+
+        val action = NewPytestFixtureAction()
+        val event = TestActionEvent.createTestEvent(action, editorDataContext())
+
+        action.update(event)
+        assertTrue(event.presentation.isEnabledAndVisible)
+        action.actionPerformed(event)
+
+        checkResult(
+            """
+            import pytest
+            
+            @pytest.fixture
+            def new_fixture():
+                pass
+            """
+        )
+
+        val editor = myFixture.editor
+        val selectionModel = editor.selectionModel
+        val selectedText = selectionModel.selectedText
+        
+        assertEquals("new_fixture", selectedText)
+        
+        val offset = editor.caretModel.offset
+        val document = editor.document
+        val textAfterCaret = document.charsSequence.subSequence(offset, offset + 1).toString()
+        assertEquals("(", textAfterCaret)
+    }
+
     private fun editorDataContext() = SimpleDataContext.builder()
         .add(CommonDataKeys.PROJECT, project)
         .add(CommonDataKeys.EDITOR, myFixture.editor)
