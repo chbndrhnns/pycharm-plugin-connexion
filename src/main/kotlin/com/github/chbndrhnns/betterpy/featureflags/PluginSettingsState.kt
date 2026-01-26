@@ -214,6 +214,14 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enableConvertPytestParamIntention: Boolean = true,
 
         @Feature(
+            id = "surround-with-pytest-raises",
+            displayName = "Surround with pytest.raises()",
+            description = "Wraps a statement with pytest.raises() in test contexts",
+            category = FeatureCategory.PYTEST
+        )
+        var enableSurroundWithPytestRaisesIntention: Boolean = true,
+
+        @Feature(
             id = "mock-type-provider",
             displayName = "Mock type provider",
             description = "Provides type information for unittest.mock objects",

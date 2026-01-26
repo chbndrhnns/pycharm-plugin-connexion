@@ -44,6 +44,8 @@
                                   implementation="com.github.chbndrhnns.betterpy.core.psi.PyFilterWarningsReferenceContributor"/>
         <psi.referenceContributor language="Python"
                                   implementation="com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureReferenceContributor"/>
+        <lang.surroundDescriptor language="Python"
+                                 implementationClass="com.github.chbndrhnns.betterpy.features.pytest.surround.PytestSurroundDescriptor"/>
 
         <psi.referenceContributor language="JSON"
                                   implementation="com.github.chbndrhnns.betterpy.features.connexion.ConnexionJsonReferenceContributor"/>
