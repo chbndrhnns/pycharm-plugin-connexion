@@ -2,6 +2,9 @@ package com.github.chbndrhnns.betterpy.features.pytest.fixture
 
 import com.github.chbndrhnns.betterpy.core.pytest.PytestFixtureUtil
 import com.github.chbndrhnns.betterpy.core.pytest.PytestNaming
+import com.github.chbndrhnns.betterpy.featureflags.PluginSettingsState
+import com.intellij.codeInspection.LocalQuickFix
+import com.intellij.codeInspection.LocalQuickFixProvider
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.TextRange
 import com.intellij.patterns.PlatformPatterns
@@ -131,7 +134,9 @@ class UsefixturesStringReferenceProvider : PsiReferenceProvider() {
 class PytestFixtureReference(
     element: PyNamedParameter,
     private val fixtureName: String
-) : PsiReferenceBase<PyNamedParameter>(element, TextRange(0, element.textLength), false), PsiPolyVariantReference {
+) : PsiReferenceBase<PyNamedParameter>(element, TextRange(0, element.textLength), false),
+    PsiPolyVariantReference,
+    LocalQuickFixProvider {
 
     override fun resolve(): PsiElement? {
         val results = multiResolve(false)
@@ -156,6 +161,23 @@ class PytestFixtureReference(
     override fun getVariants(): Array<Any> {
         // Could provide completion variants here
         return emptyArray()
+    }
+
+    override fun getQuickFixes(): Array<LocalQuickFix> {
+        if (!PytestFixtureFeatureToggle.isEnabled()) {
+            return emptyArray()
+        }
+        if (!PluginSettingsState.instance().state.enableCreatePytestFixtureFromParameter) {
+            return emptyArray()
+        }
+        if (multiResolve(false).isNotEmpty()) {
+            return emptyArray()
+        }
+        val function = PsiTreeUtil.getParentOfType(element, PyFunction::class.java) ?: return emptyArray()
+        if (!PytestFixtureUtil.isFixtureFunction(function)) {
+            return emptyArray()
+        }
+        return arrayOf(CreateFixtureFromParameterQuickFix(fixtureName))
     }
 }
 

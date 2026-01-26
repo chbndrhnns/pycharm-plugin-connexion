@@ -433,6 +433,28 @@ DialogPanel
   </body>
 </html>
 '
+  CheckBox: [x] 'Create pytest fixtures from parameters'
+  MaturityTagLabel
+    Label: 'Incubating'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body width="560">
+    Offers a quick fix to generate pytest fixtures for unresolved fixture 
+    parameters
+  </body>
+</html>
+'
   CheckBox: [x] 'Jump to pytest node in test tree'
   TextField: '<html>
   <head>

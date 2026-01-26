@@ -308,6 +308,13 @@
             <category>Test</category>
         </intentionAction>
 
+        <intentionAction>
+            <className>
+                com.github.chbndrhnns.betterpy.features.pytest.fixture.CreateFixtureFromParameterIntention
+            </className>
+            <category>Test</category>
+        </intentionAction>
+
 
         <intentionAction>
             <className>com.github.chbndrhnns.betterpy.features.intentions.exports.PyUnexportSymbolIntention</className>

@@ -182,6 +182,15 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enableAdvancedPytestFixtureFeatures: Boolean = true,
 
         @Feature(
+            id = "create-pytest-fixtures-from-parameters",
+            displayName = "Create pytest fixtures from parameters",
+            description = "Offers a quick fix to generate pytest fixtures for unresolved fixture parameters",
+            category = FeatureCategory.PYTEST,
+            maturity = FeatureMaturity.INCUBATING
+        )
+        var enableCreatePytestFixtureFromParameter: Boolean = true,
+
+        @Feature(
             id = "new-pytest-members",
             displayName = "New pytest members",
             description = "Adds Generate menu actions for new pytest tests and fixtures",

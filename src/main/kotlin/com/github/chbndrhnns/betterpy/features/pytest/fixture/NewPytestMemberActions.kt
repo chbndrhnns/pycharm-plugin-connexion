@@ -1,7 +1,11 @@
 package com.github.chbndrhnns.betterpy.features.pytest.fixture
 
+import com.github.chbndrhnns.betterpy.core.PluginConstants
 import com.github.chbndrhnns.betterpy.core.psi.PyImportService
+import com.github.chbndrhnns.betterpy.core.pytest.PytestFixtureUtil
 import com.github.chbndrhnns.betterpy.features.pytest.testtree.PytestTestContextUtils
+import com.intellij.codeInspection.LocalQuickFix
+import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -369,6 +373,71 @@ private fun ensureSelfParameter(generator: PyElementGenerator, function: PyFunct
     params.addBefore(selfParam, first)
     val comma = generator.createComma().psi
     params.addBefore(comma, first)
+}
+
+class CreateFixtureFromParameterQuickFix(private val fixtureName: String) : LocalQuickFix {
+    override fun getFamilyName(): String = PluginConstants.ACTION_PREFIX + "Create pytest fixture '$fixtureName'"
+
+    override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
+        val parameter = descriptor.psiElement as? PyNamedParameter
+            ?: PsiTreeUtil.getParentOfType(descriptor.psiElement, PyNamedParameter::class.java)
+            ?: return
+        createFixtureFromParameter(project, parameter, fixtureName, isPreview = false)
+    }
+}
+
+internal fun createFixtureFromParameter(
+    project: Project,
+    parameter: PyNamedParameter,
+    fixtureName: String,
+    isPreview: Boolean
+) {
+    if (!PytestFixtureFeatureToggle.isEnabled()) return
+    if (!com.github.chbndrhnns.betterpy.featureflags.PluginSettingsState.instance().state
+            .enableCreatePytestFixtureFromParameter
+    ) {
+        return
+    }
+    val function = PsiTreeUtil.getParentOfType(parameter, PyFunction::class.java) ?: return
+    if (!PytestFixtureUtil.isFixtureFunction(function)) return
+    val file = function.containingFile as? PyFile ?: return
+    val targetClass = PsiTreeUtil.getParentOfType(function, PyClass::class.java)
+    val caretOffset = parameter.textRange.startOffset
+    val anchor = function
+    val target = targetClass?.statementList ?: file
+    val moduleSeparator = computeModuleSeparator(file, parameter, caretOffset, targetClass == null)
+
+    val executionBlock = Runnable {
+        val generator = PyElementGenerator.getInstance(project)
+        val functionText = "@pytest.fixture\ndef $fixtureName():\n    pass"
+        val newFunction = generator.createFromText(
+            LanguageLevel.forElement(file),
+            PyFunction::class.java,
+            functionText
+        )
+        if (targetClass != null) {
+            ensureSelfParameter(generator, newFunction)
+        }
+        insertFunction(
+            project,
+            target,
+            anchor,
+            newFunction,
+            caretOffset,
+            moduleSeparator,
+            false,
+            null
+        )
+        PyImportService().ensureModuleImported(file, "pytest")
+    }
+
+    if (isPreview) {
+        com.intellij.codeInsight.intention.preview.IntentionPreviewUtils.write<RuntimeException> {
+            executionBlock.run()
+        }
+    } else {
+        WriteCommandAction.runWriteCommandAction(project, "Create Pytest Fixture", null, executionBlock, file)
+    }
 }
 
  
