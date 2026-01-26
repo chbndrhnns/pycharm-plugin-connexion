@@ -66,7 +66,7 @@ class PytestFixtureFileIndex : ScalarIndexExtension<String>() {
 
     override fun getKeyDescriptor(): KeyDescriptor<String> = EnumeratorStringDescriptor.INSTANCE
 
-    override fun getVersion(): Int = 1
+    override fun getVersion(): Int = 2
 
     /**
      * Input filter that only accepts Python files in project source content.
@@ -79,7 +79,9 @@ class PytestFixtureFileIndex : ScalarIndexExtension<String>() {
                 if (vFile.fileType != PythonFileType.INSTANCE) return false
                 val project = file.project ?: return false
                 val fileIndex = ProjectFileIndex.getInstance(project)
-                return fileIndex.isInSourceContent(vFile) && !fileIndex.isInLibrary(vFile)
+                return fileIndex.isInContent(vFile) &&
+                        !fileIndex.isInLibrary(vFile) &&
+                        !fileIndex.isExcluded(vFile)
             }
         }
     }
