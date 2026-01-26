@@ -58,6 +58,63 @@ class PytestFixtureImplementationSearchTest : TestBase() {
         })
     }
 
+    fun testShowImplementationsForModuleFixtureIncludesNestedClass() {
+        myFixture.configureByText(
+            "test_nested_module.py", """
+            import pytest
+            
+            @pytest.fixture
+            def my_fi<caret>xture():
+                return "module"
+            
+            class TestOuter:
+                @pytest.fixture
+                def my_fixture(self):
+                    return "outer"
+            
+                class TestInner:
+                    @pytest.fixture
+                    def my_fixture(self):
+                        return "inner"
+        """.trimIndent()
+        )
+
+        val source = myFixture.elementAtCaret as PyFunction
+        val targets = DefinitionsScopedSearch.search(source).findAll()
+
+        assertTrue("Should include TestOuter.my_fixture", targets.any {
+            it is PyFunction && it.name == "my_fixture" && it.containingClass?.name == "TestOuter"
+        })
+        assertTrue("Should include TestInner.my_fixture", targets.any {
+            it is PyFunction && it.name == "my_fixture" && it.containingClass?.name == "TestInner"
+        })
+    }
+
+    fun testShowImplementationsForClassFixtureIncludesNestedClass() {
+        myFixture.configureByText(
+            "test_nested_class.py", """
+            import pytest
+            
+            class TestOuter:
+                @pytest.fixture
+                def my_fi<caret>xture(self):
+                    return "outer"
+            
+                class TestInner:
+                    @pytest.fixture
+                    def my_fixture(self):
+                        return "inner"
+        """.trimIndent()
+        )
+
+        val source = myFixture.elementAtCaret as PyFunction
+        val targets = DefinitionsScopedSearch.search(source).findAll()
+
+        assertTrue("Should include TestInner.my_fixture", targets.any {
+            it is PyFunction && it.name == "my_fixture" && it.containingClass?.name == "TestInner"
+        })
+    }
+
     fun testShowImplementationsForConftestFixture() {
         myFixture.addFileToProject(
             "subdir/conftest.py", """
@@ -76,6 +133,16 @@ class PytestFixtureImplementationSearchTest : TestBase() {
             @pytest.fixture
             def my_fixture():
                 return "module"
+            
+            class TestOuter:
+                @pytest.fixture
+                def my_fixture(self):
+                    return "class"
+            
+                class TestInner:
+                    @pytest.fixture
+                    def my_fixture(self):
+                        return "inner"
         """.trimIndent()
         )
 
@@ -102,6 +169,16 @@ class PytestFixtureImplementationSearchTest : TestBase() {
             it is PyFunction &&
                     it.name == "my_fixture" &&
                     it.containingFile.name == "test_example.py"
+        })
+        assertTrue("Should include subdir test class fixture", targets.any {
+            it is PyFunction &&
+                    it.name == "my_fixture" &&
+                    it.containingClass?.name == "TestOuter"
+        })
+        assertTrue("Should include subdir nested test class fixture", targets.any {
+            it is PyFunction &&
+                    it.name == "my_fixture" &&
+                    it.containingClass?.name == "TestInner"
         })
     }
 

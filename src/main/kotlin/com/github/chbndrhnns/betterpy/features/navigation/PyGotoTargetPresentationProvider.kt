@@ -4,6 +4,7 @@ import com.github.chbndrhnns.betterpy.featureflags.PluginSettingsState
 import com.intellij.codeInsight.navigation.GotoTargetPresentationProvider
 import com.intellij.platform.backend.presentation.TargetPresentation
 import com.intellij.psi.PsiElement
+import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.PyNames
 import com.jetbrains.python.psi.PyClass
 import com.jetbrains.python.psi.PyFunction
@@ -25,8 +26,8 @@ class PyGotoTargetPresentationProvider : GotoTargetPresentationProvider {
         val cls = element.containingClass
         val name = element.name ?: PyNames.UNNAMED_ELEMENT
         val classFqn = cls?.let {
-            val className = it.name ?: PyNames.UNNAMED_ELEMENT
-            canonicalName(it, className) ?: moduleName(it)?.let { module -> "$module.$className" } ?: className
+            val classChain = buildClassChain(it)
+            moduleName(it)?.let { module -> "$module.$classChain" } ?: classChain
         }
         val fqn =
             canonicalName(element, name) ?: classFqn?.let { "$it.$name" } ?: moduleName(element)?.let { "$it.$name" }
@@ -40,8 +41,9 @@ class PyGotoTargetPresentationProvider : GotoTargetPresentationProvider {
 
     private fun presentationForClass(element: PyClass): TargetPresentation {
         val name = element.name ?: PyNames.UNNAMED_ELEMENT
-        val fqn = canonicalName(element, name) ?: moduleName(element)?.let { "$it.$name" }
-        val text = fqn ?: name
+        val classChain = buildClassChain(element)
+        val fqn = canonicalName(element, name) ?: moduleName(element)?.let { "$it.$classChain" }
+        val text = fqn ?: classChain
 
         return TargetPresentation.builder(text)
             .locationText(QualifiedNameFinder.findShortestImportableName(element, element.containingFile.virtualFile))
@@ -52,8 +54,8 @@ class PyGotoTargetPresentationProvider : GotoTargetPresentationProvider {
         val name = element.name ?: PyNames.UNNAMED_ELEMENT
         val containingClass = element.containingClass
         val classFqn = containingClass?.let {
-            val className = it.name ?: PyNames.UNNAMED_ELEMENT
-            canonicalName(it, className) ?: moduleName(it)?.let { module -> "$module.$className" } ?: className
+            val classChain = buildClassChain(it)
+            moduleName(it)?.let { module -> "$module.$classChain" } ?: classChain
         }
         val fqn =
             canonicalName(element, name) ?: classFqn?.let { "$it.$name" } ?: moduleName(element)?.let { "$it.$name" }
@@ -68,6 +70,16 @@ class PyGotoTargetPresentationProvider : GotoTargetPresentationProvider {
     private fun canonicalName(element: PsiElement, expectedName: String): String? {
         val candidate = QualifiedNameFinder.findCanonicalImportPath(element, null)?.toString() ?: return null
         return if (candidate == expectedName || candidate.endsWith(".$expectedName")) candidate else null
+    }
+
+    private fun buildClassChain(cls: PyClass): String {
+        val classNames = mutableListOf<String>()
+        var current: PyClass? = cls
+        while (current != null) {
+            classNames.add(current.name ?: PyNames.UNNAMED_ELEMENT)
+            current = PsiTreeUtil.getParentOfType(current, PyClass::class.java, true)
+        }
+        return classNames.asReversed().joinToString(".")
     }
 
     private fun moduleName(element: PsiElement): String? {

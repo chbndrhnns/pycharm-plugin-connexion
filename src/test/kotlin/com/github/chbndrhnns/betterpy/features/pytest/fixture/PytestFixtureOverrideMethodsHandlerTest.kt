@@ -355,15 +355,53 @@ class PytestFixtureOverrideMethodsHandlerTest : TestBase() {
         )
     }
 
+    fun testPopupShowsFqnForNestedClassFixture() {
+        myFixture.configureByText(
+            "test_nested.py", """
+            import pytest
+            
+            class TestBla:
+                class TestInner:
+                    @pytest.fixture
+                    def foo(self):
+                        return 1
+        """.trimIndent()
+        )
+
+        val innerClass = PsiTreeUtil.findChildrenOfType(myFixture.file, PyClass::class.java)
+            .firstOrNull { it.name == "TestInner" }
+        assertNotNull("Should find inner class", innerClass)
+        val fixture = innerClass!!.findMethodByName("foo", false, null)
+        assertNotNull("Should find nested class fixture", fixture)
+
+        val handler = PytestFixtureOverrideMethodsHandler()
+        val candidates = listOf(FixtureLink(fixture!!, "foo"))
+        val displayTexts = handler.buildPopupDisplayTexts(candidates, null)
+        val expectedContainer = expectedFixtureContainer(fixture)
+
+        assertTrue(
+            "Popup should include nested class container for fixture",
+            displayTexts.contains("foo ($expectedContainer)")
+        )
+    }
+
     private fun expectedFixtureContainer(function: PyFunction): String {
         val fileModule = QualifiedNameFinder.findCanonicalImportPath(function.containingFile, null)?.toString()
         val classFqn = function.containingClass?.let { cls ->
-            val className = cls.name ?: "class"
-            QualifiedNameFinder.findCanonicalImportPath(cls, null)?.toString()
-                ?: fileModule?.let { "$it.$className" }
-                ?: className
+            val classChain = buildClassChain(cls)
+            fileModule?.let { "$it.$classChain" } ?: classChain
         }
         return classFqn ?: fileModule ?: "unknown"
+    }
+
+    private fun buildClassChain(cls: PyClass): String {
+        val classNames = mutableListOf<String>()
+        var current: PyClass? = cls
+        while (current != null) {
+            classNames.add(current.name ?: "class")
+            current = PsiTreeUtil.getParentOfType(current, PyClass::class.java, true)
+        }
+        return classNames.asReversed().joinToString(".")
     }
 
     private fun checkResult(expected: String) {

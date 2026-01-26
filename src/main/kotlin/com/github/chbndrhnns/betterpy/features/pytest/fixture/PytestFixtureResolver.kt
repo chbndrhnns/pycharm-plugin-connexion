@@ -259,6 +259,7 @@ object PytestFixtureResolver {
                     LOG.debug("PytestFixtureResolver.findOverridingFixtures: fixtureName='$fixtureName', scope=class")
                 }
                 result.addAll(findSubclassFixtureOverrides(containingClass, fixtureName))
+                result.addAll(findNestedClassFixtureOverrides(containingClass, fixtureName))
             }
             // Module fixture: find overrides in classes in same module and in conftest descendants
             containingFile != null && containingFile.name != "conftest.py" -> {
@@ -327,10 +328,29 @@ object PytestFixtureResolver {
         return result
     }
 
+    private fun findNestedClassFixtureOverrides(baseClass: PyClass, fixtureName: String): List<FixtureLink> {
+        val result = mutableListOf<FixtureLink>()
+        val nestedClasses = PsiTreeUtil.findChildrenOfType(baseClass, PyClass::class.java)
+        for (nestedClass in nestedClasses) {
+            if (nestedClass == baseClass) continue
+            for (method in nestedClass.methods) {
+                if (!PytestFixtureUtil.isFixtureFunction(method)) {
+                    continue
+                }
+                val name = PytestFixtureUtil.getFixtureName(method)
+                if (name == fixtureName) {
+                    result.add(FixtureLink(method, fixtureName))
+                }
+            }
+        }
+        return result
+    }
+
     private fun findClassFixturesInModule(file: PyFile, fixtureName: String): List<FixtureLink> {
         val result = mutableListOf<FixtureLink>()
 
-        for (cls in file.topLevelClasses) {
+        val classes = PsiTreeUtil.findChildrenOfType(file, PyClass::class.java)
+        for (cls in classes) {
             for (method in cls.methods) {
                 if (!PytestFixtureUtil.isFixtureFunction(method)) {
                     continue
@@ -361,7 +381,14 @@ object PytestFixtureResolver {
                 continue
             }
             if (candidate.extension == "py") {
-                collectFixturesFromFile(conftestFile, candidate, fixtureName, result, restrictToTestFiles = true)
+                collectFixturesFromFile(
+                    conftestFile,
+                    candidate,
+                    fixtureName,
+                    result,
+                    restrictToTestFiles = true,
+                    includeClassFixtures = true
+                )
             }
         }
 
@@ -373,7 +400,8 @@ object PytestFixtureResolver {
         virtualFile: VirtualFile,
         fixtureName: String,
         result: MutableList<FixtureLink>,
-        restrictToTestFiles: Boolean = false
+        restrictToTestFiles: Boolean = false,
+        includeClassFixtures: Boolean = false
     ) {
         val psiFile = originFile.manager.findFile(virtualFile) as? PyFile ?: return
         if (restrictToTestFiles && !PytestNaming.isTestFile(psiFile)) return
@@ -384,6 +412,19 @@ object PytestFixtureResolver {
             val name = PytestFixtureUtil.getFixtureName(function)
             if (name == fixtureName) {
                 result.add(FixtureLink(function, fixtureName))
+            }
+        }
+        if (!includeClassFixtures) return
+        val classes = PsiTreeUtil.findChildrenOfType(psiFile, PyClass::class.java)
+        for (cls in classes) {
+            for (method in cls.methods) {
+                if (!PytestFixtureUtil.isFixtureFunction(method)) {
+                    continue
+                }
+                val name = PytestFixtureUtil.getFixtureName(method)
+                if (name == fixtureName) {
+                    result.add(FixtureLink(method, fixtureName))
+                }
             }
         }
     }

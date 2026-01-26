@@ -302,13 +302,21 @@ class PytestFixtureOverrideMethodsHandler : LanguageCodeInsightActionHandler {
         val fileModule = moduleName(function.containingFile)
 
         val classFqn = function.containingClass?.let { cls ->
-            val className = cls.name ?: PyNames.UNNAMED_ELEMENT
-            QualifiedNameFinder.findCanonicalImportPath(cls, null)?.toString()
-                ?: fileModule?.let { "$it.$className" }
-                ?: className
+            val classChain = buildClassChain(cls)
+            fileModule?.let { "$it.$classChain" } ?: classChain
         }
 
         return classFqn ?: fileModule
+    }
+
+    private fun buildClassChain(cls: PyClass): String {
+        val classNames = mutableListOf<String>()
+        var current: PyClass? = cls
+        while (current != null) {
+            classNames.add(current.name ?: PyNames.UNNAMED_ELEMENT)
+            current = PsiTreeUtil.getParentOfType(current, PyClass::class.java, true)
+        }
+        return classNames.asReversed().joinToString(".")
     }
 
     private fun moduleName(file: PsiFile?): String? {

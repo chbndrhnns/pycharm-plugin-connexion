@@ -85,4 +85,25 @@ class PyGotoImplementationPresentationTest : TestBase() {
         assertNotNull(presentation)
         assertEquals("a.Base.execute", presentation!!.presentableText)
     }
+
+    fun testGotoImplementationPresentationForNestedClassMethod() {
+        myFixture.configureByText(
+            "test_a.py",
+            """
+            class TestBla:
+                class TestInner:
+                    def fo<caret>o(self):
+                        pass
+            """.trimIndent()
+        )
+
+        val provider =
+            GotoTargetPresentationProvider.EP_NAME.extensionList.find { it is PyGotoTargetPresentationProvider }
+        val functions = PsiTreeUtil.findChildrenOfType(myFixture.file, PyFunction::class.java)
+        val innerFoo = functions.find { it.name == "foo" }!!
+
+        val presentation = provider!!.getTargetPresentation(innerFoo, false)
+        assertNotNull(presentation)
+        assertEquals("test_a.TestBla.TestInner.foo", presentation!!.presentableText)
+    }
 }
