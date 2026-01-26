@@ -23,7 +23,11 @@ data class FixtureLink(
     val fixtureFunction: PyFunction,
     val fixtureName: String,
     val importElement: PsiElement? = null
-)
+) {
+    override fun toString(): String {
+        return "FixtureLink(fixtureName='$fixtureName')"
+    }
+}
 
 /**
  * Resolves pytest fixtures following pytest's precedence rules:
