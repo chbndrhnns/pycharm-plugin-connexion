@@ -56,11 +56,11 @@ class PyGotoImplementationPresentationTest : TestBase() {
 
         val presentation1 = provider!!.getTargetPresentation(impl1, false)
         assertNotNull(presentation1)
-        assertEquals("Impl1.execute", presentation1!!.presentableText)
+        assertEquals("a.Impl1.execute", presentation1!!.presentableText)
 
         val presentation2 = provider.getTargetPresentation(impl2, false)
         assertNotNull(presentation2)
-        assertEquals("Impl2.execute", presentation2!!.presentableText)
+        assertEquals("a.Impl2.execute", presentation2!!.presentableText)
     }
 
     fun testGotoImplementationPresentationWithDifferentMethodNames() {
@@ -83,6 +83,6 @@ class PyGotoImplementationPresentationTest : TestBase() {
 
         val presentation = provider!!.getTargetPresentation(execute, true)
         assertNotNull(presentation)
-        assertEquals("execute", presentation!!.presentableText)
+        assertEquals("a.Base.execute", presentation!!.presentableText)
     }
 }

@@ -167,6 +167,29 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
 
         // ---- Pytest Intentions ----
         @Feature(
+            id = "advanced-pytest-fixtures",
+            displayName = "Advanced pytest fixture features",
+            description = "Adds navigation, hierarchy, and override support for pytest fixtures",
+            category = FeatureCategory.PYTEST,
+            maturity = FeatureMaturity.INCUBATING,
+            loggingCategories = [
+                "com.github.chbndrhnns.betterpy.features.pytest.fixture",
+            ],
+            youtrackIssues = [
+                "PY-81495",
+            ]
+        )
+        var enableAdvancedPytestFixtureFeatures: Boolean = true,
+
+        @Feature(
+            id = "new-pytest-members",
+            displayName = "New pytest members",
+            description = "Adds Generate menu actions for new pytest tests and fixtures",
+            category = FeatureCategory.PYTEST
+        )
+        var enableNewPytestMemberActions: Boolean = true,
+
+        @Feature(
             id = "toggle-pytest-skip",
             displayName = "Toggle pytest skip",
             description = "Adds or removes @pytest.mark.skip decorator from a test",
@@ -189,6 +212,14 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
             category = FeatureCategory.PYTEST
         )
         var enableConvertPytestParamIntention: Boolean = true,
+
+        @Feature(
+            id = "surround-with-pytest-raises",
+            displayName = "Surround with pytest.raises()",
+            description = "Wraps a statement with pytest.raises() in test contexts",
+            category = FeatureCategory.PYTEST
+        )
+        var enableSurroundWithPytestRaisesIntention: Boolean = true,
 
         @Feature(
             id = "mock-type-provider",
@@ -694,6 +725,17 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
             ]
         )
         var enablePyTestFailedLineInspection: Boolean = true,
+
+        @Feature(
+            id = "pytest-fixture-scope-inspection",
+            displayName = "Pytest fixture scope inspection",
+            description = "Reports fixtures that narrow the scope compared to parent fixtures",
+            category = FeatureCategory.INSPECTIONS,
+            loggingCategories = [
+                "com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureScopeInspection"
+            ]
+        )
+        var enablePytestFixtureScopeInspection: Boolean = true,
 
         /**
          * Snapshotted state before "Mute All" was activated.

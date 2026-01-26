@@ -392,6 +392,28 @@ DialogPanel
   
     Label: 'Pytest'
     JSeparator
+  CheckBox: [x] 'Advanced pytest fixture features'
+  MaturityTagLabel
+    Label: 'Incubating'
+  Button: 'PY-81495'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Adds navigation, hierarchy, and override support for pytest fixtures
+  </body>
+</html>
+'
   CheckBox: [x] 'Convert pytest.param'
   TextField: '<html>
   <head>
@@ -430,6 +452,25 @@ DialogPanel
   </body>
 </html>
 '
+  CheckBox: [x] 'New pytest members'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Adds Generate menu actions for new pytest tests and fixtures
+  </body>
+</html>
+'
   CheckBox: [x] 'Parametrize pytest test'
   TextField: '<html>
   <head>
@@ -465,6 +506,25 @@ DialogPanel
   </head>
   <body>
     Provides type information for unittest.mock objects
+  </body>
+</html>
+'
+  CheckBox: [x] 'Surround with pytest.raises()'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Wraps a statement with pytest.raises() in test contexts
   </body>
 </html>
 '
@@ -735,6 +795,25 @@ DialogPanel
   </head>
   <body>
     Marks the line where a pytest test failed
+  </body>
+</html>
+'
+  CheckBox: [x] 'Pytest fixture scope inspection'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Reports fixtures that narrow the scope compared to parent fixtures
   </body>
 </html>
 '

@@ -42,6 +42,10 @@
                                   implementation="com.github.chbndrhnns.betterpy.core.psi.PyNewTypeTypeVarReferenceContributor"/>
         <psi.referenceContributor language="Python"
                                   implementation="com.github.chbndrhnns.betterpy.core.psi.PyFilterWarningsReferenceContributor"/>
+        <psi.referenceContributor language="Python"
+                                  implementation="com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureReferenceContributor"/>
+        <lang.surroundDescriptor language="Python"
+                                 implementationClass="com.github.chbndrhnns.betterpy.features.pytest.surround.PytestSurroundDescriptor"/>
 
         <psi.referenceContributor language="JSON"
                                   implementation="com.github.chbndrhnns.betterpy.features.connexion.ConnexionJsonReferenceContributor"/>
@@ -86,14 +90,22 @@
         <codeInsight.lineMarkerProvider language="JSON"
                                         implementationClass="com.github.chbndrhnns.betterpy.features.connexion.ConnexionJsonLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="Python"
+                                        implementationClass="com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="Python"
                                         implementationClass="com.github.chbndrhnns.betterpy.features.refactoring.parameterobject.ParameterObjectLineMarkerProvider"/>
+        <codeInsight.gotoSuper language="Python"
+                               implementationClass="com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureGotoSuperHandler"
+                               order="first"/>
 
         <definitionsScopedSearch
                 implementation="com.github.chbndrhnns.betterpy.features.search.PyProtocolDefinitionsSearchExecutor"/>
+        <definitionsScopedSearch
+                implementation="com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureImplementationSearch"/>
 
         <!-- Protocol implementation search index and cache -->
         <fileBasedIndex implementation="com.github.chbndrhnns.betterpy.core.index.PyClassMembersFileIndex"/>
         <fileBasedIndex implementation="com.github.chbndrhnns.betterpy.core.index.PyLambdaFileIndex"/>
+        <fileBasedIndex implementation="com.github.chbndrhnns.betterpy.core.index.PytestFixtureFileIndex"/>
         <psi.treeChangeListener
                 implementation="com.github.chbndrhnns.betterpy.bootstrap.listeners.ProtocolCacheInvalidationListener"/>
 
@@ -118,11 +130,23 @@
                          level="WARNING"
                          shortName="PyTestFailedLineInspection"/>
 
+        <localInspection language="Python"
+                         implementationClass="com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureScopeInspection"
+                         displayName="BetterPy: Pytest fixture scope"
+                         groupName="Python"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         shortName="PytestFixtureScopeInspection"/>
+
         <runLineMarkerContributor language="Python"
                                   implementationClass="com.github.chbndrhnns.betterpy.features.run.PyPackageRunLineMarkerContributor"/>
 
         <gotoTargetPresentationProvider
                 implementation="com.github.chbndrhnns.betterpy.features.navigation.PyGotoTargetPresentationProvider"/>
+
+        <codeInsight.overrideMethod language="Python"
+                                    implementationClass="com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureOverrideMethodsHandler"
+                                    order="first"/>
 
         <notificationGroup id="BetterPy" displayType="BALLOON" isLogByDefault="true"/>
         <notificationGroup id="BetterPy Notifications" displayType="BALLOON" isLogByDefault="true"/>
@@ -403,6 +427,10 @@
                 implementation="com.github.chbndrhnns.betterpy.features.refactoring.PyShadowingStdlibRenameProcessor"
                 order="first"/>
 
+        <renamePsiElementProcessor
+                implementation="com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureRenameProcessor"
+                order="first"/>
+
         <usageFilteringRuleProvider
                 implementation="com.github.chbndrhnns.betterpy.features.usages.PyTypeAnnotationFilteringRuleProvider"/>
 
@@ -427,6 +455,11 @@
         <lang.documentationProvider language="Python"
                                     implementationClass="com.github.chbndrhnns.betterpy.features.documentation.DataclassQuickInfoProvider"
                                     order="first"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="Pythonid">
+        <pySuperMethodsSearch
+                implementation="com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureSuperMethodsSearchExecutor"/>
     </extensions>
 
     <extensions defaultExtensionNs="Pythonid">
@@ -555,6 +588,20 @@
                 text="BetterPy: Jump to Test Tree Node"
                 description="Selects the corresponding pytest node in the active test tree">
             <add-to-group group-id="EditorPopupMenu.GoTo" anchor="after" relative-to-action="FindUsages"/>
+        </action>
+
+        <action id="com.github.chbndrhnns.betterpy.features.pytest.fixture.NewPytestTestAction"
+                class="com.github.chbndrhnns.betterpy.features.pytest.fixture.NewPytestTestAction"
+                text="pytest test"
+                description="Creates a new pytest test in the current scope">
+            <add-to-group group-id="GenerateGroup" anchor="last"/>
+        </action>
+
+        <action id="com.github.chbndrhnns.betterpy.features.pytest.fixture.NewPytestFixtureAction"
+                class="com.github.chbndrhnns.betterpy.features.pytest.fixture.NewPytestFixtureAction"
+                text="pytest fixture"
+                description="Creates a new pytest fixture in the current scope">
+            <add-to-group group-id="GenerateGroup" anchor="last"/>
         </action>
 
         <action id="Connexion.GoToOpenApiOperation"

@@ -5,24 +5,73 @@ import com.intellij.codeInsight.navigation.GotoTargetPresentationProvider
 import com.intellij.platform.backend.presentation.TargetPresentation
 import com.intellij.psi.PsiElement
 import com.jetbrains.python.PyNames
+import com.jetbrains.python.psi.PyClass
 import com.jetbrains.python.psi.PyFunction
+import com.jetbrains.python.psi.PyTargetExpression
 import com.jetbrains.python.psi.resolve.QualifiedNameFinder
 
 class PyGotoTargetPresentationProvider : GotoTargetPresentationProvider {
     override fun getTargetPresentation(element: PsiElement, differentNames: Boolean): TargetPresentation? {
         if (!PluginSettingsState.instance().state.enablePyGotoTargetPresentation) return null
-        if (element !is PyFunction) return null
+        return when (element) {
+            is PyFunction -> presentationForFunction(element, differentNames)
+            is PyClass -> presentationForClass(element)
+            is PyTargetExpression -> presentationForAttribute(element)
+            else -> null
+        }
+    }
+
+    private fun presentationForFunction(element: PyFunction, differentNames: Boolean): TargetPresentation {
         val cls = element.containingClass
         val name = element.name ?: PyNames.UNNAMED_ELEMENT
+        val classFqn = cls?.let {
+            val className = it.name ?: PyNames.UNNAMED_ELEMENT
+            canonicalName(it, className) ?: moduleName(it)?.let { module -> "$module.$className" } ?: className
+        }
+        val fqn =
+            canonicalName(element, name) ?: classFqn?.let { "$it.$name" } ?: moduleName(element)?.let { "$it.$name" }
 
-        // Logic: if all results are named 'foo',
-        // we make the searchable text 'ClassName.foo'
-        val text = if (!differentNames && cls != null) "${cls.name}.$name" else name
+        val text = fqn ?: if (!differentNames && cls != null) "${cls.name}.$name" else name
+
+        return TargetPresentation.builder(text).containerText(if (fqn == null) cls?.name else null)
+            .locationText(QualifiedNameFinder.findShortestImportableName(element, element.containingFile.virtualFile))
+            .icon(element.getIcon(0)).presentation()
+    }
+
+    private fun presentationForClass(element: PyClass): TargetPresentation {
+        val name = element.name ?: PyNames.UNNAMED_ELEMENT
+        val fqn = canonicalName(element, name) ?: moduleName(element)?.let { "$it.$name" }
+        val text = fqn ?: name
 
         return TargetPresentation.builder(text)
-            .containerText(cls?.name)
+            .locationText(QualifiedNameFinder.findShortestImportableName(element, element.containingFile.virtualFile))
+            .icon(element.getIcon(0)).presentation()
+    }
+
+    private fun presentationForAttribute(element: PyTargetExpression): TargetPresentation {
+        val name = element.name ?: PyNames.UNNAMED_ELEMENT
+        val containingClass = element.containingClass
+        val classFqn = containingClass?.let {
+            val className = it.name ?: PyNames.UNNAMED_ELEMENT
+            canonicalName(it, className) ?: moduleName(it)?.let { module -> "$module.$className" } ?: className
+        }
+        val fqn =
+            canonicalName(element, name) ?: classFqn?.let { "$it.$name" } ?: moduleName(element)?.let { "$it.$name" }
+        val text = fqn ?: name
+
+        return TargetPresentation.builder(text).containerText(if (fqn == null) containingClass?.name else null)
             .locationText(QualifiedNameFinder.findShortestImportableName(element, element.containingFile.virtualFile))
             .icon(element.getIcon(0))
             .presentation()
+    }
+
+    private fun canonicalName(element: PsiElement, expectedName: String): String? {
+        val candidate = QualifiedNameFinder.findCanonicalImportPath(element, null)?.toString() ?: return null
+        return if (candidate == expectedName || candidate.endsWith(".$expectedName")) candidate else null
+    }
+
+    private fun moduleName(element: PsiElement): String? {
+        val file = element.containingFile ?: return null
+        return QualifiedNameFinder.findCanonicalImportPath(file, null)?.toString()
     }
 }

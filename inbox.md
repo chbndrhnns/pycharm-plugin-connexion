@@ -2,6 +2,12 @@
 
 ## Pending Issues
 
+- [ ] fix: Rename fixture should rename all edges, not only upwards
+- [ ] fix: Logger should distinguish between packages and classes
+- [ ] fix: Add test which reads all logging-related classes and marks invalid
+- [ ] fix: Override fixture should be put UNDER import block
+- [ ] fix: copy package content should only copy files visible in the tree (not pyc)
+- [ ] fix: copy package content seems to be missing recent changes, uncommitted?
 - [ ] fix: Introduce parameter object: Only add Any import if required
 - [ ] fix: Unsupported python version popup: Include BetterPy prefix
 - [ ] fix: Unsupported python version popup: Only show for python projects
@@ -34,9 +40,20 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Pending Features
 
+- [ ] feat: Copy annotations from parent
+- [ ] feat: https://youtrack.jetbrains.com/issue/PY-66243/Refactor-Inline-for-pytest-fixtures
+- [ ] feat: https://youtrack.jetbrains.com/issue/PY-60973/Detect-invalid-fixture-names
+- [ ] feat: https://youtrack.jetbrains.com/issue/PY-66245/Does-not-render-documentation-for-pytest-fixtures
+- [ ] feat: https://youtrack.jetbrains.com/issue/PY-53176/Renaming-fixture-does-not-work-from-inside-of-test-method
+- [ ] 
+  feat: https://youtrack.jetbrains.com/issue/PY-60483/Differentiate-between-tests-and-fixtures-in-file-structure-view
+- [ ] feat: https://youtrack.jetbrains.com/issue/PY-56186/Support-Push-Down-Up-for-pytest-fixtures
+- [ ] feat: https://youtrack.jetbrains.com/issue/PY-55931/Add-quickfix-Convert-between-fixture-injection-variants
+- [ ] feat: https://youtrack.jetbrains.com/issue/PY-56268/Go-to-type-declaration-does-not-work-for-fixture-arguments
+- [ ] feat: Exclude testing usages in code vision,
+  cf. https://www.reddit.com/r/pycharm/comments/1qjo39g/how_to_exclude_test_usages_from_pycharms_code/
 - [ ] feat: Add quick enable/disable to status bar menu
 - [ ] feat: Qualify imports using last segment, available on import statements
-- [ ] feat: Class-like hierachy (based on directory structure) for pytest fixtures, check types
 - [ ] feat: Convert bunch of assert statements to dict and vice versa
 - [ ] feat: Go to declaration in new tab
 - [ ] feat: Re-run test with debug logging (add --log-cli-level=DEBUG in temporary run config)
@@ -92,6 +109,9 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Add new -> fixture command
+- [x] feat: Add new -> test command
+- [x] feat: Class-like hierachy (based on directory structure) for pytest fixtures, check types
 - [x] feat: Render quick doc for pydantic/dataclass, showing inherited members, as well
 - [x] feat: Move: Warn if test exists in target class already
 - [x] fix: replace FQN popup should also include declaration site suggestions

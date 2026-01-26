@@ -64,8 +64,12 @@ class PluginSettingsSnapshotTest : TestBase() {
         val expectedSnapshot = expectedSnapshotUrl!!.readText().replace("\r\n", "\n").trim()
         val actualSnapshot = initialSnapshot.replace("\r\n", "\n").trim()
 
-        // Uncomment to update snapshot
-//        java.io.File("src/test/resources/settings_snapshot.txt").writeText(actualSnapshot)
+        if (System.getProperty("betterpy.updateSnapshot") == "true" ||
+            System.getenv("BETTERPY_UPDATE_SNAPSHOT") == "true"
+        ) {
+            java.io.File("src/test/resources/settings_snapshot.txt").writeText(actualSnapshot)
+            return
+        }
 
         assertEquals(expectedSnapshot, actualSnapshot)
     }
