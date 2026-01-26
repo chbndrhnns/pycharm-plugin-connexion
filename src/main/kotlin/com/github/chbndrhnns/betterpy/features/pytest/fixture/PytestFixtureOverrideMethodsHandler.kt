@@ -139,7 +139,16 @@ class PytestFixtureOverrideMethodsHandler : LanguageCodeInsightActionHandler {
 
             val caretOffset = editor.caretModel.offset
             val classStatements = targetClass?.statementList?.statements?.toList()
-            val anchor = findAnchorStatement(classStatements, file.statements.toList(), caretOffset)
+            val anchor = if (targetClass == null) {
+                val lastImport = file.importBlock.lastOrNull()
+                if (lastImport != null && caretOffset <= lastImport.textRange.endOffset) {
+                    file.statements.firstOrNull { it.textRange.startOffset > lastImport.textRange.endOffset }
+                } else {
+                    findAnchorStatement(null, file.statements.toList(), caretOffset)
+                }
+            } else {
+                findAnchorStatement(classStatements, file.statements.toList(), caretOffset)
+            }
             val target = targetClass?.statementList ?: file
 
             if (anchor != null) {

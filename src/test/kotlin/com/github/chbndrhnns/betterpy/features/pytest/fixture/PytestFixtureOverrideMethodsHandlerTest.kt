@@ -4,6 +4,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.PyClass
 import com.jetbrains.python.psi.PyFile
 import com.jetbrains.python.psi.PyFunction
+import com.jetbrains.python.psi.PyImportStatement
 import com.jetbrains.python.psi.resolve.QualifiedNameFinder
 import com.jetbrains.python.psi.types.TypeEvalContext
 import fixtures.TestBase
@@ -85,6 +86,38 @@ class PytestFixtureOverrideMethodsHandlerTest : TestBase() {
         val fixture = derivedClass!!.findMethodByName("my_fixture", false, null)
         assertNotNull("Should create class fixture override", fixture)
         assertTrue("Fixture should include self parameter", fixture!!.parameterList.text.contains("self"))
+    }
+
+    fun testOverrideFixtureInsertsImportsBeforeFixtureAtTopOfFile() {
+        myFixture.addFileToProject(
+            "conftest.py", """
+            import pytest
+            
+            @pytest.fixture
+            def my_fixture():
+                return 1
+        """.trimIndent()
+        )
+
+        myFixture.configureByText(
+            "test_import_order.py", """
+            <caret>
+        """.trimIndent()
+        )
+
+        val handler = PytestFixtureOverrideMethodsHandler()
+        handler.invoke(project, myFixture.editor, myFixture.file)
+
+        val file = myFixture.file as PyFile
+        val fixture = file.findTopLevelFunction("my_fixture")
+        val importStatement = file.importBlock.filterIsInstance<PyImportStatement>().firstOrNull()
+
+        assertNotNull("Should insert pytest import", importStatement)
+        assertNotNull("Should create module fixture override", fixture)
+        assertTrue(
+            "Import should be before fixture",
+            importStatement!!.textRange.startOffset < fixture!!.textRange.startOffset
+        )
     }
 
     fun testOverrideFixtureInNestedClass() {
