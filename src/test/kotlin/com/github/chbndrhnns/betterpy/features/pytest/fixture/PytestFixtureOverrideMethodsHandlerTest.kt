@@ -23,8 +23,9 @@ class PytestFixtureOverrideMethodsHandlerTest : TestBase() {
 
         myFixture.configureByText(
             "test_module.py", """
+            <caret>
             def test_something():
-                pa<caret>ss
+                pass
         """.trimIndent()
         )
 
@@ -55,20 +56,24 @@ class PytestFixtureOverrideMethodsHandlerTest : TestBase() {
                     return 1
             
             class TestDerived(BaseTest):
-                pa<caret>ss
+                pass
+                <caret>
         """.trimIndent()
         )
 
         val caretOffset = myFixture.editor.caretModel.offset
         val caretElement = myFixture.file.findElementAt(caretOffset) ?: myFixture.file
         assertNotNull("Caret element should exist", caretElement)
-        assertNotNull(
-            "Caret should be inside TestDerived",
-            PsiTreeUtil.getParentOfType(caretElement, PyClass::class.java, false)
-        )
+        
+        val targetClass = com.jetbrains.python.codeInsight.override.PyOverrideImplementUtil
+            .getContextClass(myFixture.editor, myFixture.file)
+        assertNotNull("Caret should be inside TestDerived (context class)", targetClass)
+        assertEquals("TestDerived", targetClass?.name)
+
         val handler = PytestFixtureOverrideMethodsHandler()
-        val candidates = PytestFixtureOverrideUtil.collectOverridableFixtures(
-            caretElement,
+        val candidates = PytestFixtureOverrideUtil.collectOverridableFixturesInClass(
+            targetClass!!,
+            myFixture.file as PyFile,
             TypeEvalContext.codeAnalysis(project, myFixture.file)
         )
         assertTrue("Expected base fixture candidate", candidates.any { it.fixtureName == "my_fixture" })
@@ -98,7 +103,8 @@ class PytestFixtureOverrideMethodsHandlerTest : TestBase() {
                     return 2
 
                 class Inner(BaseTest):
-                    pa<caret>ss
+                    <caret>
+                    pass
         """.trimIndent()
         )
 
@@ -203,8 +209,9 @@ class PytestFixtureOverrideMethodsHandlerTest : TestBase() {
             "test_module.py", """
             import pytest
 
+            <caret>
             def test_something():
-                pa<caret>ss
+                pass
         """.trimIndent()
         )
 
@@ -241,17 +248,18 @@ class PytestFixtureOverrideMethodsHandlerTest : TestBase() {
                     return 1
             
             class TestDerived(BaseTest):
-                pa<caret>ss
+                pass
+                <caret>
         """.trimIndent()
         )
 
         val caretOffset = myFixture.editor.caretModel.offset
-        val caretElement = myFixture.file.findElementAt(caretOffset) ?: myFixture.file
         val targetClass = com.jetbrains.python.codeInsight.override.PyOverrideImplementUtil
             .getContextClass(myFixture.editor, myFixture.file)
         assertNotNull("Should resolve context class for popup", targetClass)
-        val candidates = PytestFixtureOverrideUtil.collectOverridableFixtures(
-            caretElement,
+        val candidates = PytestFixtureOverrideUtil.collectOverridableFixturesInClass(
+            targetClass!!,
+            myFixture.file as PyFile,
             TypeEvalContext.codeAnalysis(project, myFixture.file)
         )
 

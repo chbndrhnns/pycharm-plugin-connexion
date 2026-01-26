@@ -11,6 +11,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiParserFacade
+import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.ui.SimpleListCellRenderer
 import com.jetbrains.python.PyNames
 import com.jetbrains.python.codeInsight.override.PyOverrideImplementUtil
@@ -18,7 +19,6 @@ import com.jetbrains.python.codeInsight.override.PyOverrideMethodsHandler
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.resolve.QualifiedNameFinder
 import com.jetbrains.python.psi.types.TypeEvalContext
-import org.jetbrains.annotations.TestOnly
 
 class PytestFixtureOverrideMethodsHandler : LanguageCodeInsightActionHandler {
     private val delegate = PyOverrideMethodsHandler()
@@ -29,13 +29,17 @@ class PytestFixtureOverrideMethodsHandler : LanguageCodeInsightActionHandler {
             return delegate.isValidFor(editor, file)
         }
         val pyFile = file as? PyFile ?: return delegate.isValidFor(editor, file)
-        val element = pyFile.findElementAt(editor.caretModel.offset) ?: pyFile
         if (!isPytestOverrideContext(pyFile)) {
             return delegate.isValidFor(editor, file)
         }
 
+        if (!isValidCaretPosition(editor, pyFile)) {
+            return delegate.isValidFor(editor, file)
+        }
+
+        val element = pyFile.findElementAt(editor.caretModel.offset) ?: pyFile
         val context = TypeEvalContext.codeAnalysis(pyFile.project, pyFile)
-        val caretClass = com.intellij.psi.util.PsiTreeUtil.getParentOfType(element, PyClass::class.java, false)
+        val caretClass = PsiTreeUtil.getParentOfType(element, PyClass::class.java, false)
         val targetClass = caretClass ?: PyOverrideImplementUtil.getContextClass(editor, pyFile)
         val candidates = if (targetClass != null) {
             PytestFixtureOverrideUtil.collectOverridableFixturesInClass(targetClass, pyFile, context)
@@ -53,13 +57,17 @@ class PytestFixtureOverrideMethodsHandler : LanguageCodeInsightActionHandler {
             return delegate.invoke(project, editor, file)
         }
         val pyFile = file as? PyFile ?: return delegate.invoke(project, editor, file)
-        val element = pyFile.findElementAt(editor.caretModel.offset) ?: pyFile
         if (!isPytestOverrideContext(pyFile)) {
             return delegate.invoke(project, editor, file)
         }
 
+        if (!isValidCaretPosition(editor, pyFile)) {
+            return delegate.invoke(project, editor, file)
+        }
+
+        val element = pyFile.findElementAt(editor.caretModel.offset) ?: pyFile
         val context = TypeEvalContext.codeAnalysis(project, pyFile)
-        val caretClass = com.intellij.psi.util.PsiTreeUtil.getParentOfType(element, PyClass::class.java, false)
+        val caretClass = PsiTreeUtil.getParentOfType(element, PyClass::class.java, false)
         val targetClass = caretClass ?: PyOverrideImplementUtil.getContextClass(editor, pyFile)
         val candidates = if (targetClass != null) {
             PytestFixtureOverrideUtil.collectOverridableFixturesInClass(targetClass, pyFile, context)
@@ -221,7 +229,6 @@ class PytestFixtureOverrideMethodsHandler : LanguageCodeInsightActionHandler {
         }
     }
 
-    @TestOnly
     internal fun buildPopupDisplayTexts(
         candidates: List<FixtureLink>,
         targetClass: PyClass?
@@ -264,5 +271,24 @@ class PytestFixtureOverrideMethodsHandler : LanguageCodeInsightActionHandler {
         file ?: return null
         return QualifiedNameFinder.findCanonicalImportPath(file, null)?.toString()
             ?: file.name.removeSuffix(".py")
+    }
+
+    internal fun isValidCaretPosition(editor: Editor, file: PyFile): Boolean {
+        val offset = editor.caretModel.offset
+        val document = editor.document
+        val lineNumber = document.getLineNumber(offset)
+        val lineStart = document.getLineStartOffset(lineNumber)
+        val lineEnd = document.getLineEndOffset(lineNumber)
+        val lineText = document.getText(com.intellij.openapi.util.TextRange(lineStart, lineEnd))
+
+        if (lineText.trim().isNotEmpty()) {
+            return false
+        }
+
+        val element = file.findElementAt(offset) ?: file
+        if (PsiTreeUtil.getParentOfType(element, PyFunction::class.java) != null) {
+            return false
+        }
+        return true
     }
 }
