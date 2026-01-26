@@ -163,6 +163,10 @@ class PytestFixtureReference(
         return emptyArray()
     }
 
+    override fun handleElementRename(newElementName: String): PsiElement {
+        return element.setName(newElementName)
+    }
+
     override fun getQuickFixes(): Array<LocalQuickFix> {
         if (!PytestFixtureFeatureToggle.isEnabled()) {
             return emptyArray()

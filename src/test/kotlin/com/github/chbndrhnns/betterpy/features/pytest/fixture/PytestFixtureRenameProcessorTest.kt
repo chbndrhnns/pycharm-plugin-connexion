@@ -1,6 +1,8 @@
 package com.github.chbndrhnns.betterpy.features.pytest.fixture
 
+import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.PyFunction
+import com.jetbrains.python.psi.PyNamedParameter
 import fixtures.TestBase
 
 class PytestFixtureRenameProcessorTest : TestBase() {
@@ -190,6 +192,164 @@ class PytestFixtureRenameProcessorTest : TestBase() {
             @pytest.fixture
             def renamed_fixture():
                 return "module"
+        """.trimIndent(), true
+        )
+    }
+
+    fun testRenameFromTestParameterRenamesLinkedFixturesAndArguments() {
+        myFixture.addFileToProject(
+            "conftest.py", """
+            import pytest
+
+            @pytest.fixture
+            def oldname():
+                pass
+        """.trimIndent()
+        )
+
+        myFixture.addFileToProject(
+            "test_b.py", """
+            import pytest
+
+            @pytest.fixture
+            def oldname(oldname):
+                return oldname
+
+            def test_(oldname):
+                assert oldname
+        """.trimIndent()
+        )
+
+        myFixture.configureByText(
+            "test_a.py", """
+            import pytest
+
+            @pytest.fixture
+            def oldname(oldname):
+                return oldname
+
+            def test_(old<caret>name):
+                assert oldname
+        """.trimIndent()
+        )
+
+        val parameter = PsiTreeUtil.findChildrenOfType(myFixture.file, PyNamedParameter::class.java)
+            .firstOrNull { it.textRange.contains(myFixture.caretOffset) }
+            ?: error("Expected caret on a fixture parameter")
+        myFixture.renameElement(parameter, "newname")
+
+        myFixture.checkResult(
+            "conftest.py", """
+            import pytest
+
+            @pytest.fixture
+            def newname():
+                pass
+        """.trimIndent(), true
+        )
+
+        myFixture.checkResult(
+            "test_a.py", """
+            import pytest
+
+            @pytest.fixture
+            def newname(newname):
+                return newname
+
+            def test_(newname):
+                assert newname
+        """.trimIndent(), true
+        )
+
+        myFixture.checkResult(
+            "test_b.py", """
+            import pytest
+
+            @pytest.fixture
+            def newname(newname):
+                return newname
+
+            def test_(newname):
+                assert newname
+        """.trimIndent(), true
+        )
+    }
+
+    fun testRenameFromFixtureParameterRenamesLinkedFixturesAndArguments() {
+        myFixture.addFileToProject(
+            "conftest.py", """
+            import pytest
+
+            @pytest.fixture
+            def base():
+                return "root"
+        """.trimIndent()
+        )
+
+        myFixture.addFileToProject(
+            "test_b.py", """
+            import pytest
+
+            @pytest.fixture
+            def base(base):
+                return base
+
+            def test_(base):
+                assert base
+        """.trimIndent()
+        )
+
+        myFixture.configureByText(
+            "test_a.py", """
+            import pytest
+
+            @pytest.fixture
+            def base(ba<caret>se):
+                return base
+
+            def test_(base):
+                assert base
+        """.trimIndent()
+        )
+
+        val parameter = PsiTreeUtil.findChildrenOfType(myFixture.file, PyNamedParameter::class.java)
+            .firstOrNull { it.textRange.contains(myFixture.caretOffset) }
+            ?: error("Expected caret on a fixture parameter")
+        myFixture.renameElement(parameter, "renamed")
+
+        myFixture.checkResult(
+            "conftest.py", """
+            import pytest
+
+            @pytest.fixture
+            def renamed():
+                return "root"
+        """.trimIndent(), true
+        )
+
+        myFixture.checkResult(
+            "test_a.py", """
+            import pytest
+
+            @pytest.fixture
+            def renamed(renamed):
+                return renamed
+
+            def test_(renamed):
+                assert renamed
+        """.trimIndent(), true
+        )
+
+        myFixture.checkResult(
+            "test_b.py", """
+            import pytest
+
+            @pytest.fixture
+            def renamed(renamed):
+                return renamed
+
+            def test_(renamed):
+                assert renamed
         """.trimIndent(), true
         )
     }
