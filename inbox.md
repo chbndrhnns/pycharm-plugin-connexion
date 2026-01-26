@@ -42,6 +42,7 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Pending Features
 
+- [ ] feat: In __all__, offer to delete item + import
 - [ ] feat: Copy annotations from parent
 - [ ] feat: https://youtrack.jetbrains.com/issue/PY-66243/Refactor-Inline-for-pytest-fixtures
 - [ ] feat: https://youtrack.jetbrains.com/issue/PY-60973/Detect-invalid-fixture-names
