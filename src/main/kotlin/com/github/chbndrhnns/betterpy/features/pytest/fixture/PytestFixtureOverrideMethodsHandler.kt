@@ -89,6 +89,7 @@ class PytestFixtureOverrideMethodsHandler : LanguageCodeInsightActionHandler {
         JBPopupFactory.getInstance()
             .createPopupChooserBuilder(items)
             .setTitle("Override Pytest Fixture")
+            .setNamerForFiltering { item -> item.displayText }
             .setItemChosenCallback { item ->
                 when (item) {
                     is PopupItem.Fixture -> insertFixtureAtCaret(project, editor, pyFile, targetClass, item.link)
@@ -241,13 +242,12 @@ class PytestFixtureOverrideMethodsHandler : LanguageCodeInsightActionHandler {
     }
 
     private fun formatFixtureDisplayText(link: FixtureLink): String {
-        val fqn = fixtureFqn(link)
-        return if (fqn != null) "${link.fixtureName} ($fqn)" else link.fixtureName
+        val container = fixtureContainer(link)
+        return if (container != null) "${link.fixtureName} ($container)" else link.fixtureName
     }
 
-    private fun fixtureFqn(link: FixtureLink): String? {
+    private fun fixtureContainer(link: FixtureLink): String? {
         val function = link.fixtureFunction
-        val functionName = function.name ?: link.fixtureName
         val fileModule = moduleName(function.containingFile)
 
         val classFqn = function.containingClass?.let { cls ->
@@ -257,9 +257,7 @@ class PytestFixtureOverrideMethodsHandler : LanguageCodeInsightActionHandler {
                 ?: className
         }
 
-        return classFqn?.let { "$it.$functionName" }
-            ?: fileModule?.let { "$it.$functionName" }
-            ?: QualifiedNameFinder.findCanonicalImportPath(function, null)?.toString()
+        return classFqn ?: fileModule
     }
 
     private fun moduleName(file: PsiFile?): String? {

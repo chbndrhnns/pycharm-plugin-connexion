@@ -218,11 +218,11 @@ class PytestFixtureOverrideMethodsHandlerTest : TestBase() {
         val handler = PytestFixtureOverrideMethodsHandler()
         val displayTexts = handler.buildPopupDisplayTexts(candidates, null)
         val fixture = candidates.first { it.fixtureName == "my_fixture" }.fixtureFunction
-        val expectedFqn = expectedFixtureFqn(fixture)
+        val expectedContainer = expectedFixtureContainer(fixture)
 
         assertTrue(
-            "Popup should include module FQN for fixture",
-            displayTexts.contains("my_fixture ($expectedFqn)")
+            "Popup should include module container for fixture",
+            displayTexts.contains("my_fixture ($expectedContainer)")
         )
         assertFalse(
             "Popup should not include default override outside classes",
@@ -258,11 +258,11 @@ class PytestFixtureOverrideMethodsHandlerTest : TestBase() {
         val handler = PytestFixtureOverrideMethodsHandler()
         val displayTexts = handler.buildPopupDisplayTexts(candidates, targetClass)
         val fixture = candidates.first { it.fixtureName == "my_fixture" }.fixtureFunction
-        val expectedFqn = expectedFixtureFqn(fixture)
+        val expectedContainer = expectedFixtureContainer(fixture)
 
         assertTrue(
-            "Popup should include class FQN for fixture",
-            displayTexts.contains("my_fixture ($expectedFqn)")
+            "Popup should include class container for fixture",
+            displayTexts.contains("my_fixture ($expectedContainer)")
         )
         assertTrue(
             "Popup should include default override inside classes",
@@ -270,8 +270,7 @@ class PytestFixtureOverrideMethodsHandlerTest : TestBase() {
         )
     }
 
-    private fun expectedFixtureFqn(function: PyFunction): String {
-        val functionName = function.name ?: "fixture"
+    private fun expectedFixtureContainer(function: PyFunction): String {
         val fileModule = QualifiedNameFinder.findCanonicalImportPath(function.containingFile, null)?.toString()
         val classFqn = function.containingClass?.let { cls ->
             val className = cls.name ?: "class"
@@ -279,8 +278,6 @@ class PytestFixtureOverrideMethodsHandlerTest : TestBase() {
                 ?: fileModule?.let { "$it.$className" }
                 ?: className
         }
-        return classFqn?.let { "$it.$functionName" }
-            ?: fileModule?.let { "$it.$functionName" }
-            ?: functionName
+        return classFqn ?: fileModule ?: "unknown"
     }
 }
