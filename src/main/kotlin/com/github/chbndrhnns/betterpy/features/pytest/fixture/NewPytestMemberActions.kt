@@ -93,7 +93,6 @@ class NewPytestFixtureAction : AnAction() {
         val name = generateUniqueName("new_fixture", existingNames)
 
         WriteCommandAction.runWriteCommandAction(context.project, "New Pytest Fixture", null, {
-            PyImportService().ensureModuleImported(context.file, "pytest")
             val generator = PyElementGenerator.getInstance(context.project)
             val functionText = "@pytest.fixture\ndef $name():\n    pass"
             val newFunction = generator.createFromText(
@@ -114,6 +113,7 @@ class NewPytestFixtureAction : AnAction() {
                 context.useCaretInsertion,
                 context.editor
             )
+            PyImportService().ensureModuleImported(context.file, "pytest")
         }, context.file)
     }
 }
