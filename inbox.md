@@ -2,12 +2,12 @@
 
 ## Pending Issues
 
+- [ ] fix: Should not delegate to normal override dialog if outside of class scope
 - [ ] fix: For pytest fixture hierarchy, do not check if signature matches parent
 - [ ] fix: Introduce custom type needs to wrap usage sites
 - [ ] fix: Rename fixture should rename all edges, not only upwards
 - [ ] fix: Logger should distinguish between packages and classes
 - [ ] fix: Add test which reads all logging-related classes and marks invalid
-- [ ] fix: Override fixture should be put UNDER import block
 - [ ] fix: copy package content should only copy files visible in the tree (not pyc)
 - [ ] fix: copy package content seems to be missing recent changes, uncommitted?
 - [ ] fix: Introduce parameter object: Only add Any import if required
@@ -108,6 +108,7 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## In Progress Tasks
 
+- [ ] fix: Override fixture should be put UNDER import block
 - [ ] feat: Block list: Do not allow names from typing or collections.abc.
 - [ ] refactor: Performance (spec/performance.md)
 
