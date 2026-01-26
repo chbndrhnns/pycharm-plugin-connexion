@@ -138,6 +138,14 @@
                          level="WARNING"
                          shortName="PytestFixtureScopeInspection"/>
 
+        <localInspection language="Python"
+                         implementationClass="com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureUninjectedReferenceInspection"
+                         displayName="BetterPy: Pytest fixture uninjected reference"
+                         groupName="Python"
+                         enabledByDefault="true"
+                         level="ERROR"
+                         shortName="PytestFixtureUninjectedReferenceInspection"/>
+
         <runLineMarkerContributor language="Python"
                                   implementationClass="com.github.chbndrhnns.betterpy.features.run.PyPackageRunLineMarkerContributor"/>
 

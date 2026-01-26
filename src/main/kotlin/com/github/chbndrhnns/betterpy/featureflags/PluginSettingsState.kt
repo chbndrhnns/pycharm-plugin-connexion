@@ -746,6 +746,17 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         )
         var enablePytestFixtureScopeInspection: Boolean = true,
 
+        @Feature(
+            id = "pytest-fixture-uninjected-reference-inspection",
+            displayName = "Pytest fixture uninjected reference inspection",
+            description = "Reports fixture references inside tests/fixtures that are not declared as parameters",
+            category = FeatureCategory.INSPECTIONS,
+            loggingCategories = [
+                "com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureUninjectedReferenceInspection"
+            ]
+        )
+        var enablePytestFixtureUninjectedReferenceInspection: Boolean = true,
+
         /**
          * Snapshotted state before "Mute All" was activated.
          * If non-null, it means the plugin is currently in "Mute All" mode.
