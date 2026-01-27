@@ -112,6 +112,7 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Copy annotations from parent
 - [x] fix: Rename fixture should rename all edges, not only upwards
 - [x] fix: Should not delegate to normal override dialog if outside of class scope
 - [x] fix: Override fixture should be put UNDER import block
