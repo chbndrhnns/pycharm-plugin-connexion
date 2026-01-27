@@ -160,8 +160,17 @@ class PytestFixtureRenameProcessor : RenamePsiElementProcessor() {
         val searchHelper = PsiSearchHelper.getInstance(project)
         searchHelper.processElementsWithWord(
             { element, _ ->
+                val elementFile = element.containingFile ?: return@processElementsWithWord true
+                if (!elementFile.viewProvider.isPhysical) return@processElementsWithWord true
+                val elementVFile = elementFile.virtualFile
+                if (elementVFile == null || !elementVFile.isInLocalFileSystem) return@processElementsWithWord true
                 val parameter = PsiTreeUtil.getParentOfType(element, PyNamedParameter::class.java, false)
                     ?: return@processElementsWithWord true
+                if (!parameter.isValid || !parameter.isPhysical) return@processElementsWithWord true
+                val parameterFile = parameter.containingFile ?: return@processElementsWithWord true
+                if (!parameterFile.viewProvider.isPhysical) return@processElementsWithWord true
+                val parameterVFile = parameterFile.virtualFile
+                if (parameterVFile == null || !parameterVFile.isInLocalFileSystem) return@processElementsWithWord true
                 if (parameter.name != fixtureName) return@processElementsWithWord true
                 if (!isFixtureParameter(parameter)) return@processElementsWithWord true
                 val context = TypeEvalContext.codeAnalysis(project, parameter.containingFile)

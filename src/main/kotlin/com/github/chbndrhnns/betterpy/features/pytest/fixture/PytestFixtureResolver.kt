@@ -4,6 +4,7 @@ import com.github.chbndrhnns.betterpy.core.index.PytestFixtureFileIndex
 import com.github.chbndrhnns.betterpy.core.pytest.PytestFixtureUtil
 import com.github.chbndrhnns.betterpy.core.pytest.PytestNaming
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
@@ -371,6 +372,7 @@ object PytestFixtureResolver {
         val virtualFile = conftestFile.virtualFile ?: return result
         val parentDir = virtualFile.parent ?: return result
         val project = conftestFile.project
+        if (DumbService.isDumb(project)) return result
         val scope = GlobalSearchScopesCore.directoryScope(project, parentDir, true)
         val candidateFiles = PytestFixtureFileIndex.findFilesWithFixture(fixtureName, project, scope)
 

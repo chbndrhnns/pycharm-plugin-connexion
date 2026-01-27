@@ -134,8 +134,7 @@ class UsefixturesStringReferenceProvider : PsiReferenceProvider() {
 class PytestFixtureReference(
     element: PyNamedParameter,
     private val fixtureName: String
-) : PsiReferenceBase<PyNamedParameter>(element, TextRange(0, element.textLength), false),
-    PsiPolyVariantReference,
+) : PsiPolyVariantReferenceBase<PyNamedParameter>(element, TextRange(0, element.textLength), false),
     LocalQuickFixProvider {
 
     override fun resolve(): PsiElement? {
@@ -192,7 +191,7 @@ class PytestFixtureStringReference(
     element: PyStringLiteralExpression,
     rangeInElement: TextRange,
     private val fixtureName: String
-) : PsiReferenceBase<PyStringLiteralExpression>(element, rangeInElement, false), PsiPolyVariantReference {
+) : PsiPolyVariantReferenceBase<PyStringLiteralExpression>(element, rangeInElement, false) {
 
     override fun resolve(): PsiElement? {
         val results = multiResolve(false)

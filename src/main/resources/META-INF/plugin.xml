@@ -44,6 +44,8 @@
                                   implementation="com.github.chbndrhnns.betterpy.core.psi.PyFilterWarningsReferenceContributor"/>
         <psi.referenceContributor language="Python"
                                   implementation="com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureReferenceContributor"/>
+        <findUsagesHandlerFactory
+                implementation="com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureFindUsagesHandlerFactory"/>
         <lang.surroundDescriptor language="Python"
                                  implementationClass="com.github.chbndrhnns.betterpy.features.pytest.surround.PytestSurroundDescriptor"/>
 
