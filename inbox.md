@@ -4,7 +4,6 @@
 
 - [ ] fix: For pytest fixture hierarchy, do not check if signature matches parent
 - [ ] fix: Introduce custom type needs to wrap usage sites
-- [ ] fix: Rename fixture should rename all edges, not only upwards
 - [ ] fix: Logger should distinguish between packages and classes
 - [ ] fix: Add test which reads all logging-related classes and marks invalid
 - [ ] fix: copy package content should only copy files visible in the tree (not pyc)
@@ -113,6 +112,7 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Rename fixture should rename all edges, not only upwards
 - [x] fix: Should not delegate to normal override dialog if outside of class scope
 - [x] fix: Override fixture should be put UNDER import block
 - [x] feat: Add new -> fixture command
