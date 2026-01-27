@@ -41,6 +41,7 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Pending Features
 
+- [ ] feat: pytest fixtures: Add rename option to rename not in hierarchy
 - [ ] feat: Copy special should offer copy single node id/reference (no children)
 - [ ] feat: In __all__, offer to delete item + import
 - [ ] feat: Copy annotations from parent
