@@ -2,6 +2,7 @@
 
 ## Pending Issues
 
+- [ ] fix: make private does not consider class hierarchy
 - [ ] fix: For pytest fixture hierarchy, do not check if signature matches parent
 - [ ] fix: Introduce custom type needs to wrap usage sites
 - [ ] fix: Logger should distinguish between packages and classes
