@@ -236,6 +236,13 @@
             <category>Refactorings</category>
         </intentionAction>
 
+        <intentionAction>
+            <className>
+                com.github.chbndrhnns.betterpy.features.intentions.annotations.CopyMethodAnnotationsFromParentIntention
+            </className>
+            <category>Refactorings</category>
+        </intentionAction>
+
         <!-- Deprecated populate intentions removed -->
 
         <intentionAction>
@@ -432,6 +439,16 @@
                 enabledByDefault="true"
                 level="WARNING"
                 implementationClass="com.github.chbndrhnns.betterpy.features.inspections.PyAbstractMethodNotImplementedInChildInspection"/>
+
+        <localInspection
+                language="Python"
+                shortName="PyOverriddenMethodMissingTypeAnnotationsInspection"
+                displayName="BetterPy: Overridden method missing type annotations"
+                groupPath="Python"
+                groupName="Python"
+                enabledByDefault="true"
+                level="WEAK WARNING"
+                implementationClass="com.github.chbndrhnns.betterpy.features.inspections.PyOverriddenMethodMissingTypeAnnotationsInspection"/>
 
         <localInspection
                 language="Python"

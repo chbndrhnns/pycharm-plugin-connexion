@@ -354,6 +354,25 @@ DialogPanel
   </body>
 </html>
 '
+  CheckBox: [x] 'Copy method annotations from parent'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Copies type annotations from a parent method to its overrides
+  </body>
+</html>
+'
   CheckBox: [x] 'Dict access conversion'
   TextField: '<html>
   <head>
@@ -547,6 +566,25 @@ DialogPanel
   </head>
   <body>
     Reports missing dataclass decorator or field definitions
+  </body>
+</html>
+'
+  CheckBox: [x] 'Overridden method missing type annotations inspection'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Reports overrides missing type annotations present in parent methods
   </body>
 </html>
 '

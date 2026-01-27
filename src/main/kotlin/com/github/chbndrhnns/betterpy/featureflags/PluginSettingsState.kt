@@ -79,6 +79,10 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         @Feature("add-self-parameter")
         var enableAddSelfParameterIntention: Boolean = FeatureDefaults.defaultEnabled("add-self-parameter"),
 
+        @Feature("copy-method-annotations-from-parent")
+        var enableCopyMethodAnnotationsFromParentIntention: Boolean =
+            FeatureDefaults.defaultEnabled("copy-method-annotations-from-parent"),
+
         // ---- Abstract Method Intentions ----
         @Feature("implement-abstract-method-in-child-classes")
         var enableImplementAbstractMethodInChildClassesIntention: Boolean = FeatureDefaults.defaultEnabled("implement-abstract-method-in-child-classes"),
@@ -129,6 +133,10 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
 
         @Feature("abstract-method-not-implemented-inspection")
         var enableAbstractMethodNotImplementedInspection: Boolean = FeatureDefaults.defaultEnabled("abstract-method-not-implemented-inspection"),
+
+        @Feature("overridden-method-missing-type-annotations-inspection")
+        var enableOverriddenMethodMissingTypeAnnotationsInspection: Boolean =
+            FeatureDefaults.defaultEnabled("overridden-method-missing-type-annotations-inspection"),
 
         @Feature("constant-final-inspection")
         var enableConstantFinalInspection: Boolean = FeatureDefaults.defaultEnabled("constant-final-inspection"),

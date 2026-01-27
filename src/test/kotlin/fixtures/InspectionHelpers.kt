@@ -2,6 +2,7 @@ package fixtures
 
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
+import com.intellij.ui.UiInterceptors
 
 /**
  * Helper to execute a basic inspection test on a single file.
@@ -18,8 +19,13 @@ fun CodeInsightTestFixture.doInspectionTest(
     fixFamilyName: String? = null,
     expectedResultFile: String? = null,
     checkHighlighting: Boolean = true,
-    checkWeakWarnings: Boolean = false
+    checkWeakWarnings: Boolean = false,
+    dialogOk: Boolean = false
 ) {
+    if (dialogOk) {
+        UiInterceptors.register(DialogOkInterceptor())
+    }
+
     configureByFile(testFile)
     enableInspections(inspection)
     if (checkHighlighting) {
