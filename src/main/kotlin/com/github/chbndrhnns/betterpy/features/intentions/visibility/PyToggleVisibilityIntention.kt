@@ -18,11 +18,14 @@ import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.refactoring.RefactoringFactory
+import com.intellij.refactoring.rename.RenameProcessor
 import com.intellij.util.Processor
 import com.jetbrains.python.psi.PyClass
 import com.jetbrains.python.psi.PyFunction
 import com.jetbrains.python.psi.PyTargetExpression
+import com.jetbrains.python.psi.search.PyClassInheritorsSearch
+import com.jetbrains.python.psi.search.PySuperMethodsSearch
+import com.jetbrains.python.psi.types.TypeEvalContext
 import javax.swing.Icon
 
 /**
@@ -104,14 +107,57 @@ abstract class PyToggleVisibilityIntention : IntentionAction, HighPriorityAction
     protected abstract fun calcNewName(name: String): String?
 
     protected open fun performRename(project: Project, element: PsiNamedElement, newName: String) {
-        val factory = RefactoringFactory.getInstance(project)
-        val rename = factory.createRename(element, newName, false, false)
-
-        if (shouldShowPreview(element, newName)) {
-            rename.isPreviewUsages = true
+        val targets = if (element is PyFunction) {
+            collectHierarchyMethods(element)
+        } else {
+            listOf(element)
         }
 
-        rename.run()
+        val firstTarget = targets.first()
+        val processor = RenameProcessor(project, firstTarget, newName, shouldShowPreview(element, newName), false)
+        for (i in 1 until targets.size) {
+            processor.addElement(targets[i], newName)
+        }
+
+        processor.run()
+    }
+
+    private fun collectHierarchyMethods(function: PyFunction): List<PsiNamedElement> {
+        val name = function.name ?: return listOf(function)
+        val project = function.project
+        val context = TypeEvalContext.codeAnalysis(project, function.containingFile)
+
+        val allMethods = mutableSetOf<PyFunction>()
+        val queue = mutableListOf(function)
+        val visited = mutableSetOf(function)
+
+        while (queue.isNotEmpty()) {
+            val current = queue.removeAt(0)
+            allMethods.add(current)
+
+            // Search UP
+            PySuperMethodsSearch.search(current, true, context).forEach { superMethod ->
+                if (superMethod is PyFunction && visited.add(superMethod)) {
+                    queue.add(superMethod)
+                }
+            }
+
+            // Search DOWN
+            val currentClass = current.containingClass
+            if (currentClass != null) {
+                PyClassInheritorsSearch.search(currentClass, true).forEach { inheritor ->
+                    inheritor.findMethodByName(name, false, context)?.let { overridingMethod ->
+                        if (overridingMethod.containingClass?.isEquivalentTo(inheritor) == true) {
+                            if (visited.add(overridingMethod)) {
+                                queue.add(overridingMethod)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return allMethods.toList()
     }
 
     protected open fun shouldShowPreview(element: PsiNamedElement, newName: String): Boolean {
