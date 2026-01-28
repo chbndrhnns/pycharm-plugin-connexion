@@ -10,8 +10,6 @@
 - [ ] fix: Introduce parameter object: Only add Any import if required
 - [ ] fix: Unsupported python version popup: Include BetterPy prefix
 - [ ] fix: Unsupported python version popup: Only show for python projects
-- [ ] fix: Only make parameter object available via refactoring menu
-- [ ] fix: Move to class should keep async/sync statement
 - [ ] fix: In patch, we should allow references to declarations sites
 - [ ] fix: When sorting navbar items, ignore the async keyword
 - [ ] fix: Wrap with builtin type callable in these cases:
@@ -111,6 +109,8 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Only make parameter object available via refactoring menu
+- [x] fix: Move to class should keep async/sync statement
 - [x] fix: make private does not consider class hierarchy
 - [x] feat: Copy annotations from parent
 - [x] fix: Rename fixture should rename all edges, not only upwards
