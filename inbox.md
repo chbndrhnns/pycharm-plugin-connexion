@@ -59,7 +59,8 @@ do(frozenset({<caret>1, 2, 3}))
 - [ ] feat: Search in changed files only
 - [ ] feat: Prefer relative imports also when using move refactoring, blocked
   by https://youtrack.jetbrains.com/issue/PY-86616/PyMoveModuleMembersProcessor-does-not-emit-events
-- [ ] refactor: Use `PythonDependenciesManager` if public
+- [ ] refactor: Use `PythonDependenciesManager` if
+  public, https://youtrack.jetbrains.com/issue/PY-86636/Make-PythonDependenciesManager-availabe-for-plugins
 - [ ] refactor: Do not use reflection to filter import suggestions
 - [ ] feat: Discover if pydantic v2 is installed and show parameter object option only in this case
 - [ ] feat: If callable is expected, complete without parens
