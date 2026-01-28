@@ -7,11 +7,9 @@ import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
 import com.intellij.codeInsight.intention.preview.IntentionPreviewUtils
-import com.intellij.icons.AllIcons
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Iconable
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.PsiNamedElement
@@ -26,14 +24,11 @@ import com.jetbrains.python.psi.PyTargetExpression
 import com.jetbrains.python.psi.search.PyClassInheritorsSearch
 import com.jetbrains.python.psi.search.PySuperMethodsSearch
 import com.jetbrains.python.psi.types.TypeEvalContext
-import javax.swing.Icon
 
 /**
  * Shared utilities for visibility intentions working on Python symbols.
  */
-abstract class PyToggleVisibilityIntention : IntentionAction, HighPriorityAction, Iconable {
-
-    override fun getIcon(@Iconable.IconFlags flags: Int): Icon = AllIcons.Actions.IntentionBulb
+abstract class PyToggleVisibilityIntention : IntentionAction, HighPriorityAction {
 
     override fun startInWriteAction(): Boolean = false
 
