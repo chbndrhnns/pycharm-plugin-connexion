@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -28,13 +29,14 @@ class CopyPackageContentAction : AnAction() {
         val root = fileIndex.getContentRootForFile(selectedFile) ?: project.basePath?.let {
             LocalFileSystem.getInstance().findFileByPath(it)
         }
+        val fileTypeManager = FileTypeManager.getInstance()
 
         val filesToCopy = mutableListOf<VirtualFile>()
 
         // Recursively collect all files
         VfsUtilCore.visitChildrenRecursively(selectedFile, object : VirtualFileVisitor<Unit>() {
             override fun visitFile(file: VirtualFile): Boolean {
-                if (!file.isDirectory) {
+                if (!file.isDirectory && isVisibleInProjectTree(file, fileIndex, fileTypeManager)) {
                     filesToCopy.add(file)
                 }
                 return true
@@ -92,5 +94,19 @@ class CopyPackageContentAction : AnAction() {
 
     override fun getActionUpdateThread(): ActionUpdateThread {
         return ActionUpdateThread.BGT
+    }
+
+    private fun isVisibleInProjectTree(
+        file: VirtualFile,
+        fileIndex: com.intellij.openapi.roots.ProjectFileIndex,
+        fileTypeManager: FileTypeManager
+    ): Boolean {
+        if (fileTypeManager.isFileIgnored(file)) {
+            return false
+        }
+        if (fileIndex.isExcluded(file)) {
+            return false
+        }
+        return fileIndex.isInContent(file)
     }
 }
