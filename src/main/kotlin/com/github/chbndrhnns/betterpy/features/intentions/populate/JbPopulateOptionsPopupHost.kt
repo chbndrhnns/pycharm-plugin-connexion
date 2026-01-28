@@ -38,6 +38,9 @@ class JbPopulateOptionsPopupHost : PopulateOptionsPopupHost {
             isEnabled = localsAvailable
             horizontalAlignment = SwingConstants.LEFT
         }
+        val constructorsBox = JBCheckBox("Use constructors", initial.useConstructors).apply {
+            horizontalAlignment = SwingConstants.LEFT
+        }
 
         val previewArea = com.intellij.ui.components.JBTextArea(4, 40).apply {
             isEditable = false
@@ -53,7 +56,8 @@ class JbPopulateOptionsPopupHost : PopulateOptionsPopupHost {
             return PopulateOptions(
                 mode = mode,
                 recursive = recursiveBox.isSelected && recursiveAvailable,
-                useLocalScope = localsBox.isSelected && localsAvailable
+                useLocalScope = localsBox.isSelected && localsAvailable,
+                useConstructors = constructorsBox.isSelected
             )
         }
 
@@ -68,6 +72,7 @@ class JbPopulateOptionsPopupHost : PopulateOptionsPopupHost {
             add(requiredButton)
             add(recursiveBox)
             add(localsBox)
+            add(constructorsBox)
         }
 
         val populateButton = JButton("Populate")
@@ -102,6 +107,7 @@ class JbPopulateOptionsPopupHost : PopulateOptionsPopupHost {
         requiredButton.addActionListener(updateListener)
         recursiveBox.addActionListener(updateListener)
         localsBox.addActionListener(updateListener)
+        constructorsBox.addActionListener(updateListener)
 
         updatePreview()
         popup.showInBestPositionFor(editor)

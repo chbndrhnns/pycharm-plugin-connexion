@@ -1,9 +1,6 @@
 package com.github.chbndrhnns.betterpy.features.intentions.populate
 
-import fixtures.TestBase
-import fixtures.assertIntentionAvailable
-import fixtures.assertIntentionNotAvailable
-import fixtures.withPopulatePopupSelection
+import fixtures.*
 
 class PopulateArgumentsIntentionTest : TestBase() {
 
@@ -204,6 +201,137 @@ class PopulateArgumentsIntentionTest : TestBase() {
                 
                 """.trimIndent()
             )
+        }
+    }
+
+    fun testPopulate_UsesConstructorsForBuiltins() {
+        val optionsHost = FakePopulateOptionsPopupHost(
+            selectedOptions = PopulateOptions(
+                mode = PopulateMode.ALL,
+                recursive = false,
+                useLocalScope = false,
+                useConstructors = true
+            )
+        )
+        PopulateArgumentsIntentionHooks.optionsPopupHost = optionsHost
+        try {
+            myFixture.configureByText(
+                "a.py",
+                """
+                def foo(x: int, y: str):
+                    pass
+
+                foo(<caret>)
+                """.trimIndent()
+            )
+
+            myFixture.doHighlighting()
+            val intention = myFixture.findSingleIntention("BetterPy: Populate arguments...")
+            myFixture.launchAction(intention)
+
+            myFixture.checkResult(
+                """
+                def foo(x: int, y: str):
+                    pass
+
+                foo(x=int(), y=str())
+                
+                """.trimIndent()
+            )
+        } finally {
+            PopulateArgumentsIntentionHooks.optionsPopupHost = null
+        }
+    }
+
+    fun testPopulate_UsesConstructorsForBuiltinSubclass() {
+        val optionsHost = FakePopulateOptionsPopupHost(
+            selectedOptions = PopulateOptions(
+                mode = PopulateMode.ALL,
+                recursive = false,
+                useLocalScope = false,
+                useConstructors = true
+            )
+        )
+        PopulateArgumentsIntentionHooks.optionsPopupHost = optionsHost
+        try {
+            myFixture.configureByText(
+                "a.py",
+                """
+                class MyInt(int):
+                    pass
+
+                def foo(x: MyInt):
+                    pass
+
+                foo(<caret>)
+                """.trimIndent()
+            )
+
+            myFixture.doHighlighting()
+            val intention = myFixture.findSingleIntention("BetterPy: Populate arguments...")
+            myFixture.launchAction(intention)
+
+            myFixture.checkResult(
+                """
+                class MyInt(int):
+                    pass
+
+                def foo(x: MyInt):
+                    pass
+
+                foo(x=MyInt())
+                
+                """.trimIndent()
+            )
+        } finally {
+            PopulateArgumentsIntentionHooks.optionsPopupHost = null
+        }
+    }
+
+    fun testPopulate_ConstructorsSkipRequiredArgs() {
+        val optionsHost = FakePopulateOptionsPopupHost(
+            selectedOptions = PopulateOptions(
+                mode = PopulateMode.ALL,
+                recursive = false,
+                useLocalScope = false,
+                useConstructors = true
+            )
+        )
+        PopulateArgumentsIntentionHooks.optionsPopupHost = optionsHost
+        try {
+            myFixture.configureByText(
+                "a.py",
+                """
+                class NeedsArg:
+                    def __init__(self, value):
+                        self.value = value
+
+                def foo(x: NeedsArg):
+                    pass
+
+                foo(<caret>)
+                """.trimIndent()
+            )
+
+            myFixture.doHighlighting()
+            val intention = myFixture.findSingleIntention("BetterPy: Populate arguments...")
+            myFixture.launchAction(intention)
+
+            myFixture.checkResult(
+                """
+                class NeedsArg:
+                    def __init__(self, value):
+                        self.value = value
+
+                def foo(x: NeedsArg):
+                    pass
+
+                foo(x=...)
+                
+                """.trimIndent()
+            )
+        } finally {
+            PopulateArgumentsIntentionHooks.optionsPopupHost = null
         }
     }
 

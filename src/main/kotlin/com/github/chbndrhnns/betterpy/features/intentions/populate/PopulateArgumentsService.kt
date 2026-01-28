@@ -230,12 +230,22 @@ class PopulateArgumentsService {
                             generator,
                             languageLevel,
                             file,
-                            unionSelections
+                            unionSelections,
+                            options.useConstructors
                         )
                     )
                 }
             } else {
-                valueGenerator.generateValue(type, context, 0, generator, languageLevel, file, unionSelections)
+                valueGenerator.generateValue(
+                    type,
+                    context,
+                    0,
+                    generator,
+                    languageLevel,
+                    file,
+                    unionSelections,
+                    options.useConstructors
+                )
             }
 
             // If we only have a leaf "..." or a generated alias, ensure we have the correct import

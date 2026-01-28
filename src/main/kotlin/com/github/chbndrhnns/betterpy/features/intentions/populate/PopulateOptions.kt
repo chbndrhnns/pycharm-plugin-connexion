@@ -20,8 +20,15 @@ enum class PopulateMode {
 data class PopulateOptions(
     val mode: PopulateMode = PopulateMode.ALL,
     val recursive: Boolean = false,
-    val useLocalScope: Boolean = false
+    val useLocalScope: Boolean = false,
+    val useConstructors: Boolean = false
 ) {
+    constructor(mode: PopulateMode, recursive: Boolean, useLocalScope: Boolean) : this(
+        mode = mode,
+        recursive = recursive,
+        useLocalScope = useLocalScope,
+        useConstructors = false
+    )
     /**
      * Returns a human-readable label for display in the popup chooser.
      */

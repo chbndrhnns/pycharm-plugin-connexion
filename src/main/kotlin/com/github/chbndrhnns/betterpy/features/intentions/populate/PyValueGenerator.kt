@@ -7,6 +7,7 @@ import com.intellij.psi.util.QualifiedName
 import com.jetbrains.python.PyNames
 import com.jetbrains.python.codeInsight.controlflow.ScopeOwner
 import com.jetbrains.python.psi.*
+import com.jetbrains.python.psi.impl.PyBuiltinCache
 import com.jetbrains.python.psi.resolve.PyResolveUtil
 import com.jetbrains.python.psi.types.*
 
@@ -24,7 +25,8 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
         generator: PyElementGenerator,
         languageLevel: LanguageLevel,
         scopeOwner: ScopeOwner,
-        unionSelections: Map<String, String> = emptyMap()
+        unionSelections: Map<String, String> = emptyMap(),
+        useConstructors: Boolean = false
     ): GenerationResult {
         if (depth > MAX_RECURSION_DEPTH || type == null) return defaultResult()
 
@@ -36,7 +38,8 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
                 generator,
                 languageLevel,
                 scopeOwner,
-                unionSelections
+                unionSelections,
+                useConstructors
             )
 
             is PyTupleType -> generateTupleValue(
@@ -46,7 +49,8 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
                 generator,
                 languageLevel,
                 scopeOwner,
-                unionSelections
+                unionSelections,
+                useConstructors
             )
 
             is PyCollectionType -> generateCollectionValue(
@@ -56,7 +60,8 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
                 generator,
                 languageLevel,
                 scopeOwner,
-                unionSelections
+                unionSelections,
+                useConstructors
             )
 
             is PyClassType -> generateClassTypeValue(
@@ -66,7 +71,8 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
                 generator,
                 languageLevel,
                 scopeOwner,
-                unionSelections
+                unionSelections,
+                useConstructors
             )
             is PyClassLikeType -> generateAliasLikeValue(type, context, scopeOwner)
             else -> defaultResult()
@@ -80,13 +86,23 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
         generator: PyElementGenerator,
         languageLevel: LanguageLevel,
         scopeOwner: ScopeOwner,
-        unionSelections: Map<String, String>
+        unionSelections: Map<String, String>,
+        useConstructors: Boolean
     ): GenerationResult {
         val elements = type.elementTypes
         if (elements.isEmpty()) return GenerationResult("()", emptySet())
 
         val results = elements.map {
-            generateValue(it, context, depth + 1, generator, languageLevel, scopeOwner, unionSelections)
+            generateValue(
+                it,
+                context,
+                depth + 1,
+                generator,
+                languageLevel,
+                scopeOwner,
+                unionSelections,
+                useConstructors
+            )
         }
         
         val imports = results.flatMap { it.imports }.toSet()
@@ -106,7 +122,8 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
         generator: PyElementGenerator,
         languageLevel: LanguageLevel,
         scopeOwner: ScopeOwner,
-        unionSelections: Map<String, String>
+        unionSelections: Map<String, String>,
+        useConstructors: Boolean
     ): GenerationResult {
         val pyClass = type.pyClass
         if (isDataclassClass(pyClass)) {
@@ -117,7 +134,8 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
                 generator,
                 languageLevel,
                 scopeOwner,
-                unionSelections
+                unionSelections,
+                useConstructors
             )
         }
 
@@ -125,9 +143,15 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
         val aliasResult = generateAliasFromClassType(type, context, scopeOwner)
         if (aliasResult != null) return aliasResult
 
-        // For builtin types (int, str, float, bool, etc.), return ellipsis placeholder
+        val hasRequiredArgs = hasRequiredConstructorArgs(pyClass, context)
+
+        // For builtin types (int, str, float, bool, etc.), prefer constructors when enabled.
         val name = pyClass.name
-        if (name != null && PyBuiltinNames.isBuiltin(name)) {
+        if (name != null && isBuiltinOrSubclass(pyClass, context, scopeOwner)) {
+            return if (useConstructors) GenerationResult("$name()", emptySet()) else defaultResult()
+        }
+
+        if (useConstructors && hasRequiredArgs) {
             return defaultResult()
         }
 
@@ -177,6 +201,28 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
         return defaultResult()
     }
 
+    private fun hasRequiredConstructorArgs(pyClass: PyClass, context: TypeEvalContext): Boolean {
+        val init = pyClass.findInitOrNew(true, context) ?: return false
+        val callable = context.getType(init) as? PyCallableType ?: return false
+        val params = callable.getParameters(context) ?: return false
+        return params.any { param ->
+            !param.isSelf &&
+                    !param.isPositionalContainer &&
+                    !param.isKeywordContainer &&
+                    !param.hasDefaultValue()
+        }
+    }
+
+    private fun isBuiltinOrSubclass(pyClass: PyClass, context: TypeEvalContext, scopeOwner: ScopeOwner): Boolean {
+        val cache = PyBuiltinCache.getInstance(scopeOwner)
+        if (cache.isBuiltin(pyClass)) return true
+        for (name in PyBuiltinNames.names()) {
+            val builtin = cache.getClass(name) ?: continue
+            if (pyClass.isSubclass(builtin, context)) return true
+        }
+        return false
+    }
+
     private fun generateCollectionValue(
         type: PyCollectionType,
         context: TypeEvalContext,
@@ -184,7 +230,8 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
         generator: PyElementGenerator,
         languageLevel: LanguageLevel,
         scopeOwner: ScopeOwner,
-        unionSelections: Map<String, String>
+        unionSelections: Map<String, String>,
+        useConstructors: Boolean
     ): GenerationResult {
         val normalized = type.name?.let(::normalizeName) ?: return defaultResult()
         
@@ -196,16 +243,43 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
              if (keyType == null && valType == null) return defaultResult()
 
             val keyResult =
-                generateValue(keyType, context, depth + 1, generator, languageLevel, scopeOwner, unionSelections)
+                generateValue(
+                    keyType,
+                    context,
+                    depth + 1,
+                    generator,
+                    languageLevel,
+                    scopeOwner,
+                    unionSelections,
+                    useConstructors
+                )
             val valResult =
-                generateValue(valType, context, depth + 1, generator, languageLevel, scopeOwner, unionSelections)
+                generateValue(
+                    valType,
+                    context,
+                    depth + 1,
+                    generator,
+                    languageLevel,
+                    scopeOwner,
+                    unionSelections,
+                    useConstructors
+                )
              
              return GenerationResult("{${keyResult.text}: ${valResult.text}}", keyResult.imports + valResult.imports)
         }
 
         val elemType = type.elementTypes.firstOrNull() ?: return defaultResult()
         val elemResult =
-            generateValue(elemType, context, depth + 1, generator, languageLevel, scopeOwner, unionSelections)
+            generateValue(
+                elemType,
+                context,
+                depth + 1,
+                generator,
+                languageLevel,
+                scopeOwner,
+                unionSelections,
+                useConstructors
+            )
         
         val text = when (normalized) {
             "list" -> "[${elemResult.text}]"
@@ -223,7 +297,8 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
         generator: PyElementGenerator,
         languageLevel: LanguageLevel,
         scopeOwner: ScopeOwner,
-        unionSelections: Map<String, String>
+        unionSelections: Map<String, String>,
+        useConstructors: Boolean
     ): GenerationResult {
         val members = normalizeUnionMembers(type)
         if (members.isEmpty()) return defaultResult()
@@ -237,7 +312,16 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
 
         // Union member selection happens here; chooser overrides flow via unionSelections.
         return chosen?.let {
-            generateValue(it, context, depth, generator, languageLevel, scopeOwner, unionSelections)
+            generateValue(
+                it,
+                context,
+                depth,
+                generator,
+                languageLevel,
+                scopeOwner,
+                unionSelections,
+                useConstructors
+            )
         } ?: defaultResult()
     }
 
@@ -248,7 +332,8 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
         generator: PyElementGenerator,
         languageLevel: LanguageLevel,
         scopeOwner: ScopeOwner,
-        unionSelections: Map<String, String>
+        unionSelections: Map<String, String>,
+        useConstructors: Boolean
     ): GenerationResult {
         val className = pyClass.name ?: return defaultResult()
         val call = generator.createExpressionFromText(languageLevel, "$className()") as? PyCallExpression
@@ -259,7 +344,16 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
 
         for (field in fieldExtractor.extractDataclassFields(pyClass, context)) {
             val fieldResult =
-                generateValue(field.type, context, depth + 1, generator, languageLevel, scopeOwner, unionSelections)
+                generateValue(
+                    field.type,
+                    context,
+                    depth + 1,
+                    generator,
+                    languageLevel,
+                    scopeOwner,
+                    unionSelections,
+                    useConstructors
+                )
             var valueText = fieldResult.text
 
             // If a leaf fell back to ellipsis and the annotation is alias-like (a resolvable symbol),

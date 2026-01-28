@@ -15,4 +15,6 @@ object PyBuiltinNames {
      * Returns true if the given name (case-insensitive) is a Python builtin type name.
      */
     fun isBuiltin(name: String): Boolean = name.lowercase() in BUILTIN_NAMES
+
+    fun names(): Set<String> = BUILTIN_NAMES
 }
