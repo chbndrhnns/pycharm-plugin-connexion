@@ -17,7 +17,7 @@ class PyIntroduceParameterObjectTypesTest : TestBase() {
                 """.trimIndent(),
                 """
                 from dataclasses import dataclass
-                from typing import Union, Any
+                from typing import Union
                 
                 
                 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -46,12 +46,39 @@ class PyIntroduceParameterObjectTypesTest : TestBase() {
                 """.trimIndent(),
                 """
                 from dataclasses import dataclass
-                from typing import Annotated, Any
+                from typing import Annotated
                 
                 
                 @dataclass(frozen=True, slots=True, kw_only=True)
                 class ProcessParams:
                     val: Annotated[int, "meta"]
+                    count: int
+                
+                
+                def process(params: ProcessParams):
+                    print(params.val, params.count)
+                """.trimIndent(),
+                INTRODUCE_PARAMETER_OBJECT_ACTION_ID
+            )
+        }
+    }
+
+    fun testAnyTypeAddsImport() {
+        withMockIntroduceParameterObjectDialog {
+            myFixture.doRefactoringTest(
+                "a.py",
+                """
+                def pro<caret>cess(val: Any, count: int):
+                    print(val, count)
+                """.trimIndent(),
+                """
+                from dataclasses import dataclass
+                from typing import Any
+                
+                
+                @dataclass(frozen=True, slots=True, kw_only=True)
+                class ProcessParams:
+                    val: Any
                     count: int
                 
                 
@@ -75,7 +102,6 @@ class PyIntroduceParameterObjectTypesTest : TestBase() {
                 """.trimIndent(),
                 """
                 from dataclasses import dataclass
-                from typing import Any
                 
                 
                 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -111,7 +137,6 @@ class PyIntroduceParameterObjectTypesTest : TestBase() {
                 from __future__ import annotations
     
                 from dataclasses import dataclass
-                from typing import Any
     
     
                 @dataclass(frozen=True, slots=True, kw_only=True)

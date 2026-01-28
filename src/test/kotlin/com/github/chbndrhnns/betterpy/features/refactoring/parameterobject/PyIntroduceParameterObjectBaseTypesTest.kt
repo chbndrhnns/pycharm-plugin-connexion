@@ -39,7 +39,6 @@ class PyIntroduceParameterObjectBaseTypesTest : TestBase() {
         myFixture.checkResult(
             """
             from dataclasses import dataclass
-            from typing import Any
             
             
             @dataclass(frozen=True, slots=True, kw_only=True)
@@ -86,7 +85,7 @@ class PyIntroduceParameterObjectBaseTypesTest : TestBase() {
 
         myFixture.checkResult(
             """
-            from typing import NamedTuple, Any
+            from typing import NamedTuple
             
             
             class MyFuncParams(NamedTuple):
@@ -99,6 +98,52 @@ class PyIntroduceParameterObjectBaseTypesTest : TestBase() {
             
             
             my_func(MyFuncParams(name="John", age=30))
+            """.trimIndent() + "\n"
+        )
+    }
+
+    fun testNamedTupleBaseTypeWithAny() {
+        myFixture.configureByText(
+            "namedtuple_any_test.py",
+            """
+            def my_func(value: Any, age: int):
+                print(value, age)
+                
+            my_func("John", 30)
+            """
+        )
+
+        val function = PsiTreeUtil.findChildrenOfType(myFixture.file, PyFunction::class.java).first()
+
+        val processor = PyIntroduceParameterObjectProcessor(function) { allParams, defaultName ->
+            IntroduceParameterObjectSettings(
+                selectedParameters = allParams,
+                className = defaultName,
+                parameterName = "params",
+                baseType = ParameterObjectBaseType.NAMED_TUPLE,
+                generateFrozen = false,
+                generateSlots = false,
+                generateKwOnly = false
+            )
+        }
+
+        processor.run()
+
+        myFixture.checkResult(
+            """
+            from typing import NamedTuple, Any
+            
+            
+            class MyFuncParams(NamedTuple):
+                value: Any
+                age: int
+            
+            
+            def my_func(params: MyFuncParams):
+                print(params.value, params.age)
+            
+            
+            my_func(MyFuncParams(value="John", age=30))
             """.trimIndent() + "\n"
         )
     }
@@ -132,7 +177,7 @@ class PyIntroduceParameterObjectBaseTypesTest : TestBase() {
 
         myFixture.checkResult(
             """
-            from typing import TypedDict, Any
+            from typing import TypedDict
             
             
             class MyFuncParams(TypedDict):
@@ -178,8 +223,6 @@ class PyIntroduceParameterObjectBaseTypesTest : TestBase() {
 
         myFixture.checkResult(
             """
-            from typing import Any
-            
             from pydantic import BaseModel
             
             
@@ -226,8 +269,6 @@ class PyIntroduceParameterObjectBaseTypesTest : TestBase() {
 
         myFixture.checkResult(
             """
-            from typing import Any
-            
             from pydantic import BaseModel
             
             
@@ -274,7 +315,7 @@ class PyIntroduceParameterObjectBaseTypesTest : TestBase() {
 
         myFixture.checkResult(
             """
-            from typing import NamedTuple, Any
+            from typing import NamedTuple
             
             
             class MyFuncParams(NamedTuple):

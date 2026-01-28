@@ -13,6 +13,8 @@ import com.jetbrains.python.psi.*
  */
 class NamedTupleGenerator : ParameterObjectGenerator {
 
+    private var needsAny = false
+
     override fun generateClass(
         project: Project,
         languageLevel: LanguageLevel,
@@ -22,6 +24,7 @@ class NamedTupleGenerator : ParameterObjectGenerator {
         generateSlots: Boolean,
         generateKwOnly: Boolean
     ): PyClass {
+        needsAny = false
         val generator = PyElementGenerator.getInstance(project)
 
         // Create class inheriting from NamedTuple
@@ -42,9 +45,11 @@ class NamedTupleGenerator : ParameterObjectGenerator {
             file, "typing", "NamedTuple", null, AddImportHelper.ImportPriority.BUILTIN, anchor
         )
 
-        AddImportHelper.addOrUpdateFromImportStatement(
-            file, "typing", "Any", null, AddImportHelper.ImportPriority.BUILTIN, anchor
-        )
+        if (needsAny) {
+            AddImportHelper.addOrUpdateFromImportStatement(
+                file, "typing", "Any", null, AddImportHelper.ImportPriority.BUILTIN, anchor
+            )
+        }
     }
 
     private fun addFields(
@@ -58,8 +63,16 @@ class NamedTupleGenerator : ParameterObjectGenerator {
         statementList.statements.firstOrNull()?.delete()
 
         for (p in params) {
-            val ann = p.annotationValue
-            val typeText = ann ?: "Any"
+            val ann = p.annotation?.value
+            val typeText = if (ann != null) {
+                if (annotationUsesUnqualifiedAny(ann)) {
+                    needsAny = true
+                }
+                ann.text
+            } else {
+                needsAny = true
+                "Any"
+            }
 
             // Text generation for each field (e.g., name: str = "default")
             val fieldText = StringBuilder().apply {

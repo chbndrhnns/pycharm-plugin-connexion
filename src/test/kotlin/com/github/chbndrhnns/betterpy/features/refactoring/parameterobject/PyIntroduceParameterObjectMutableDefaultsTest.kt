@@ -17,7 +17,6 @@ class PyIntroduceParameterObjectMutableDefaultsTest : TestBase() {
                 """.trimIndent(),
                 """
                 from dataclasses import dataclass, field
-                from typing import Any
                 
                 
                 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -43,7 +42,6 @@ class PyIntroduceParameterObjectMutableDefaultsTest : TestBase() {
                 """.trimIndent(),
                 """
                 from dataclasses import dataclass, field
-                from typing import Any
                 
                 
                 @dataclass(frozen=True, slots=True, kw_only=True)

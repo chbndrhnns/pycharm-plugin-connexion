@@ -14,6 +14,7 @@ import com.jetbrains.python.psi.*
 class TypedDictGenerator : ParameterObjectGenerator {
 
     private var importsNotRequired = false
+    private var needsAny = false
 
     override fun generateClass(
         project: Project,
@@ -25,6 +26,7 @@ class TypedDictGenerator : ParameterObjectGenerator {
         generateKwOnly: Boolean
     ): PyClass {
         importsNotRequired = false
+        needsAny = false
         val generator = PyElementGenerator.getInstance(project)
 
         // Create class inheriting from TypedDict
@@ -45,9 +47,11 @@ class TypedDictGenerator : ParameterObjectGenerator {
             file, "typing", "TypedDict", null, AddImportHelper.ImportPriority.BUILTIN, anchor
         )
 
-        AddImportHelper.addOrUpdateFromImportStatement(
-            file, "typing", "Any", null, AddImportHelper.ImportPriority.BUILTIN, anchor
-        )
+        if (needsAny) {
+            AddImportHelper.addOrUpdateFromImportStatement(
+                file, "typing", "Any", null, AddImportHelper.ImportPriority.BUILTIN, anchor
+            )
+        }
 
         if (importsNotRequired) {
             AddImportHelper.addOrUpdateFromImportStatement(
@@ -67,8 +71,16 @@ class TypedDictGenerator : ParameterObjectGenerator {
         statementList.statements.firstOrNull()?.delete()
 
         for (p in params) {
-            val ann = p.annotationValue
-            var typeText = ann ?: "Any"
+            val ann = p.annotation?.value
+            var typeText = if (ann != null) {
+                if (annotationUsesUnqualifiedAny(ann)) {
+                    needsAny = true
+                }
+                ann.text
+            } else {
+                needsAny = true
+                "Any"
+            }
 
             if (p.defaultValue != null) {
                 typeText = "NotRequired[$typeText]"

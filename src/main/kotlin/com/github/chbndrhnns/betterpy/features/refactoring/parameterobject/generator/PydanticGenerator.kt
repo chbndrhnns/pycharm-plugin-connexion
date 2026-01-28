@@ -14,6 +14,7 @@ import com.jetbrains.python.psi.*
 class PydanticGenerator : ParameterObjectGenerator {
 
     private var importsField = false
+    private var needsAny = false
 
     override fun generateClass(
         project: Project,
@@ -25,6 +26,7 @@ class PydanticGenerator : ParameterObjectGenerator {
         generateKwOnly: Boolean
     ): PyClass {
         importsField = false
+        needsAny = false
         val generator = PyElementGenerator.getInstance(project)
 
         // Create class inheriting from BaseModel
@@ -56,9 +58,11 @@ class PydanticGenerator : ParameterObjectGenerator {
             )
         }
 
-        AddImportHelper.addOrUpdateFromImportStatement(
-            file, "typing", "Any", null, AddImportHelper.ImportPriority.BUILTIN, anchor
-        )
+        if (needsAny) {
+            AddImportHelper.addOrUpdateFromImportStatement(
+                file, "typing", "Any", null, AddImportHelper.ImportPriority.BUILTIN, anchor
+            )
+        }
     }
 
     private fun addFields(
@@ -72,8 +76,16 @@ class PydanticGenerator : ParameterObjectGenerator {
         statementList.statements.firstOrNull()?.delete()
 
         for (p in params) {
-            val ann = p.annotationValue
-            val typeText = ann ?: "Any"
+            val ann = p.annotation?.value
+            val typeText = if (ann != null) {
+                if (annotationUsesUnqualifiedAny(ann)) {
+                    needsAny = true
+                }
+                ann.text
+            } else {
+                needsAny = true
+                "Any"
+            }
             val defaultValue = p.defaultValue
 
             // Text generation for each field (e.g., name: str = "default")

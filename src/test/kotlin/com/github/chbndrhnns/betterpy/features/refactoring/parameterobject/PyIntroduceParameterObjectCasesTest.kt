@@ -102,7 +102,7 @@ class PyIntroduceParameterObjectCasesTest : TestBase() {
                 """.trimIndent(),
                 """
                 from dataclasses import dataclass
-                from typing import overload, Any
+                from typing import overload
     
     
                 @dataclass(frozen=True, slots=True, kw_only=True)

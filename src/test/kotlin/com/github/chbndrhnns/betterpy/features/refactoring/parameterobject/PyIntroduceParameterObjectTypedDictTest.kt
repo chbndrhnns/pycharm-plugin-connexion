@@ -21,7 +21,7 @@ class PyIntroduceParameterObjectTypedDictTest : TestBase() {
                     create_<caret>user("John")
                 """.trimIndent(),
                 """
-                from typing import TypedDict, Any, NotRequired
+                from typing import TypedDict, NotRequired
                 
                 
                 class CreateUserParams(TypedDict):
