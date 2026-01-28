@@ -47,7 +47,6 @@ do(frozenset({<caret>1, 2, 3}))
 - [ ] feat: https://youtrack.jetbrains.com/issue/PY-56268/Go-to-type-declaration-does-not-work-for-fixture-arguments
 - [ ] feat: Exclude testing usages in code vision,
   cf. https://www.reddit.com/r/pycharm/comments/1qjo39g/how_to_exclude_test_usages_from_pycharms_code/
-- [ ] feat: Add quick enable/disable to status bar menu
 - [ ] feat: Qualify imports using last segment, available on import statements
 - [ ] feat: Convert bunch of assert statements to dict and vice versa
 - [ ] feat: Go to declaration in new tab
@@ -104,6 +103,7 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Add quick enable/disable to status bar menu
 - [x] fix: Introduce parameter object: Only add Any import if required
 - [x] fix: Unsupported python version popup: Include BetterPy prefix
 - [x] fix: Unsupported python version popup: Only show for python projects
