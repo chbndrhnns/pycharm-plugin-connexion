@@ -1,41 +1,15 @@
 package com.github.chbndrhnns.betterpy.features.intentions.populate
 
-import com.github.chbndrhnns.betterpy.features.intentions.shared.PopupHost
-import com.intellij.openapi.editor.Editor
+import fixtures.FakePopulateOptionsPopupHost
 import fixtures.TestBase
 
 class PopulateArgumentsLocalTest : TestBase() {
 
     fun testPopulateWithLocalVariablesFillsRequiredAndOptionalWhenMatched() {
-        val popupHost = object : PopupHost {
-            override fun <T> showChooser(
-                editor: Editor,
-                title: String,
-                items: List<T>,
-                render: (T) -> String,
-                onChosen: (T) -> Unit
-            ) {
-                // Find the option for local variables
-                val item = items.find { render(it).contains("local") }
-                if (item != null) {
-                    onChosen(item)
-                } else {
-                    fail("Option with 'local' not found in chooser. Available: ${items.map { render(it) }}")
-                }
-            }
-
-            override fun <T> showChooserWithGreying(
-                editor: Editor,
-                title: String,
-                items: List<T>,
-                render: (T) -> String,
-                isGreyedOut: (T) -> Boolean,
-                onChosen: (T) -> Unit
-            ) {
-                showChooser(editor, title, items, render, onChosen)
-            }
-        }
-        PopulateArgumentsIntentionHooks.popupHost = popupHost
+        val optionsHost = FakePopulateOptionsPopupHost(
+            selectedOptions = PopulateOptions(PopulateMode.REQUIRED_ONLY, recursive = false, useLocalScope = true)
+        )
+        PopulateArgumentsIntentionHooks.optionsPopupHost = optionsHost
 
         myFixture.configureByText(
             "a.py",
@@ -62,34 +36,10 @@ class PopulateArgumentsLocalTest : TestBase() {
     }
 
     fun testPopulateWithLocalVariablesDoesNotFillOptionalWhenNoMatch() {
-        val popupHost = object : PopupHost {
-            override fun <T> showChooser(
-                editor: Editor,
-                title: String,
-                items: List<T>,
-                render: (T) -> String,
-                onChosen: (T) -> Unit
-            ) {
-                val item = items.find { render(it).contains("local") }
-                if (item != null) {
-                    onChosen(item)
-                } else {
-                    fail("Option with 'local' not found in chooser. Available: ${items.map { render(it) }}")
-                }
-            }
-
-            override fun <T> showChooserWithGreying(
-                editor: Editor,
-                title: String,
-                items: List<T>,
-                render: (T) -> String,
-                isGreyedOut: (T) -> Boolean,
-                onChosen: (T) -> Unit
-            ) {
-                showChooser(editor, title, items, render, onChosen)
-            }
-        }
-        PopulateArgumentsIntentionHooks.popupHost = popupHost
+        val optionsHost = FakePopulateOptionsPopupHost(
+            selectedOptions = PopulateOptions(PopulateMode.REQUIRED_ONLY, recursive = false, useLocalScope = true)
+        )
+        PopulateArgumentsIntentionHooks.optionsPopupHost = optionsHost
 
         myFixture.configureByText(
             "a.py",
@@ -115,35 +65,10 @@ class PopulateArgumentsLocalTest : TestBase() {
     }
 
     fun testPopulateUsesImportAliasForClass() {
-        val popupHost = object : PopupHost {
-            override fun <T> showChooser(
-                editor: Editor,
-                title: String,
-                items: List<T>,
-                render: (T) -> String,
-                onChosen: (T) -> Unit
-            ) {
-                // Find "All arguments"
-                val item = items.find { render(it) == "All arguments" }
-                if (item != null) {
-                    onChosen(item)
-                } else {
-                    fail("Option 'All arguments' not found.")
-                }
-            }
-
-            override fun <T> showChooserWithGreying(
-                editor: Editor,
-                title: String,
-                items: List<T>,
-                render: (T) -> String,
-                isGreyedOut: (T) -> Boolean,
-                onChosen: (T) -> Unit
-            ) {
-                showChooser(editor, title, items, render, onChosen)
-            }
-        }
-        PopulateArgumentsIntentionHooks.popupHost = popupHost
+        val optionsHost = FakePopulateOptionsPopupHost(
+            selectedOptions = PopulateOptions(PopulateMode.ALL, recursive = false, useLocalScope = false)
+        )
+        PopulateArgumentsIntentionHooks.optionsPopupHost = optionsHost
 
         myFixture.configureByText(
             "a.py",
@@ -165,30 +90,10 @@ class PopulateArgumentsLocalTest : TestBase() {
     }
 
     fun testPopulateUsesModuleAlias() {
-        val popupHost = object : PopupHost {
-            override fun <T> showChooser(
-                editor: Editor,
-                title: String,
-                items: List<T>,
-                render: (T) -> String,
-                onChosen: (T) -> Unit
-            ) {
-                val item = items.find { render(it) == "All arguments" }!!
-                onChosen(item)
-            }
-
-            override fun <T> showChooserWithGreying(
-                editor: Editor,
-                title: String,
-                items: List<T>,
-                render: (T) -> String,
-                isGreyedOut: (T) -> Boolean,
-                onChosen: (T) -> Unit
-            ) {
-                showChooser(editor, title, items, render, onChosen)
-            }
-        }
-        PopulateArgumentsIntentionHooks.popupHost = popupHost
+        val optionsHost = FakePopulateOptionsPopupHost(
+            selectedOptions = PopulateOptions(PopulateMode.ALL, recursive = false, useLocalScope = false)
+        )
+        PopulateArgumentsIntentionHooks.optionsPopupHost = optionsHost
 
         myFixture.configureByText(
             "a.py",
@@ -210,7 +115,7 @@ class PopulateArgumentsLocalTest : TestBase() {
     }
 
     override fun tearDown() {
-        PopulateArgumentsIntentionHooks.popupHost = null
+        PopulateArgumentsIntentionHooks.optionsPopupHost = null
         super.tearDown()
     }
 }

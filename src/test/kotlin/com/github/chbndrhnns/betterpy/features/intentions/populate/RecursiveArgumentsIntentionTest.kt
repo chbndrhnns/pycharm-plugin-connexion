@@ -246,7 +246,7 @@ class RecursiveArgumentsIntentionTest : TestBase() {
     }
 
     fun testUnionChooser_SelectsMember() {
-        withPopulatePopupSelections(indices = listOf(2, 1)) { fake ->
+        withPopulatePopupSelections(optionsIndex = 2, unionIndices = listOf(1)) { _, unionFake ->
             myFixture.doIntentionTest(
                 "a.py",
                 """
@@ -287,7 +287,7 @@ class RecursiveArgumentsIntentionTest : TestBase() {
                 "BetterPy: Populate arguments..."
             )
 
-            assertEquals("Select union type for v", fake.lastTitle)
+            assertEquals("Select union type for v", unionFake.lastTitle)
         }
     }
 }

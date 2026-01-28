@@ -25,6 +25,7 @@ import javax.swing.Icon
  */
 object PopulateArgumentsIntentionHooks {
     var popupHost: PopupHost? = null
+    var optionsPopupHost: PopulateOptionsPopupHost? = null
 }
 
 /**
@@ -66,23 +67,25 @@ class PopulateArgumentsIntention : IntentionAction, HighPriorityAction, DumbAwar
 
         if (!service.isAvailable(call, ctx)) return
 
-        // Determine available options based on whether recursive is applicable
-        val options = if (service.isRecursiveApplicable(call, ctx)) {
-            PopulateOptions.ALL_OPTIONS
-        } else {
-            PopulateOptions.NON_RECURSIVE_OPTIONS
-        }
+        val recursiveAvailable = service.isRecursiveApplicable(call, ctx)
+        val initial = PopulateOptions(
+            mode = PopulateMode.ALL,
+            recursive = recursiveAvailable,
+            useLocalScope = false
+        )
 
-        val popupHost = PopulateArgumentsIntentionHooks.popupHost ?: JbPopupHost()
-        popupHost.showChooser(
+        val optionsHost = PopulateArgumentsIntentionHooks.optionsPopupHost ?: JbPopulateOptionsPopupHost()
+        val unionPopupHost = PopulateArgumentsIntentionHooks.popupHost ?: JbPopupHost()
+        optionsHost.showOptions(
             editor = editor,
             title = "Populate arguments",
-            items = options,
-            render = { it.label() },
+            recursiveAvailable = recursiveAvailable,
+            localsAvailable = true,
+            initial = initial,
             onChosen = { chosen ->
                 val missing = service.missingParametersFor(call, chosen, ctx)
-                if (missing.isEmpty()) return@showChooser
-                service.chooseUnionMembers(editor, popupHost, missing, ctx) { unionSelections ->
+                if (missing.isEmpty()) return@showOptions
+                service.chooseUnionMembers(editor, unionPopupHost, missing, ctx) { unionSelections ->
                     // The chooser callback runs outside the original intention command.
                     // Wrap PSI modifications into a write command to satisfy the platform contract.
                     WriteCommandAction.runWriteCommandAction(project, text, null, Runnable {
