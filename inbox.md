@@ -2,8 +2,6 @@
 
 ## Pending Issues
 
-- [ ] fix: make private does not consider class hierarchy
-- [ ] fix: For pytest fixture hierarchy, do not check if signature matches parent
 - [ ] fix: Introduce custom type needs to wrap usage sites
 - [ ] fix: Logger should distinguish between packages and classes
 - [ ] fix: Add test which reads all logging-related classes and marks invalid
@@ -113,6 +111,7 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Completed Tasks (newest first)
 
+- [x] fix: make private does not consider class hierarchy
 - [x] feat: Copy annotations from parent
 - [x] fix: Rename fixture should rename all edges, not only upwards
 - [x] fix: Should not delegate to normal override dialog if outside of class scope
