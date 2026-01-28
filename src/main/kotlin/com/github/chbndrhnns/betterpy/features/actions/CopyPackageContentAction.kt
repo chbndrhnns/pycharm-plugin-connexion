@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.roots.ProjectRootManager
@@ -23,6 +24,9 @@ class CopyPackageContentAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val selectedFile = e.getData(CommonDataKeys.VIRTUAL_FILE) ?: return
+
+        // Save all documents to ensure disk content is up-to-date
+        FileDocumentManager.getInstance().saveAllDocuments()
 
         // Determine the root for relative path calculation (e.g., Content Root or Project Root)
         val fileIndex = ProjectRootManager.getInstance(project).fileIndex

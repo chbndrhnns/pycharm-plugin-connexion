@@ -4,6 +4,7 @@ import com.github.chbndrhnns.betterpy.featureflags.PluginSettingsState
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext
+import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.testFramework.TestActionEvent
 import fixtures.TestBase
 
@@ -56,5 +57,31 @@ class CopyPackageContentActionTest : TestBase() {
 
         action.update(event)
         assertTrue("Action should be enabled for single file", event.presentation.isEnabledAndVisible)
+    }
+
+    fun testCopyUnsavedChanges() {
+        val action = CopyPackageContentAction()
+        val virtualFile = myFixture.addFileToProject("unsaved.py", "original content").virtualFile
+
+        // Open file and modify it in the editor without saving to disk
+        myFixture.openFileInEditor(virtualFile)
+        myFixture.type("\nadded content")
+
+        val dataContext = SimpleDataContext.builder()
+            .add(CommonDataKeys.PROJECT, project)
+            .add(CommonDataKeys.VIRTUAL_FILE, virtualFile)
+            .build()
+        val event = TestActionEvent.createTestEvent(action, dataContext)
+
+        action.actionPerformed(event)
+
+        val copiedText =
+            CopyPasteManager.getInstance().getContents<String>(java.awt.datatransfer.DataFlavor.stringFlavor)
+
+        assertNotNull(copiedText)
+        assertTrue(
+            "Copied text should contain 'added content'. Was: $copiedText",
+            copiedText!!.contains("added content")
+        )
     }
 }
