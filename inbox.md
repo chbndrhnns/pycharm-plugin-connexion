@@ -5,10 +5,7 @@
 - [ ] fix: Introduce custom type needs to wrap usage sites
 - [ ] fix: Logger should distinguish between packages and classes
 - [ ] fix: Add test which reads all logging-related classes and marks invalid
-- [ ] fix: copy package content seems to be missing recent changes, uncommitted?
 - [ ] fix: Introduce parameter object: Only add Any import if required
-- [ ] fix: Unsupported python version popup: Include BetterPy prefix
-- [ ] fix: Unsupported python version popup: Only show for python projects
 - [ ] fix: In patch, we should allow references to declarations sites
 - [ ] fix: When sorting navbar items, ignore the async keyword
 - [ ] fix: Wrap with builtin type callable in these cases:
@@ -108,6 +105,9 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Unsupported python version popup: Include BetterPy prefix
+- [x] fix: Unsupported python version popup: Only show for python projects
+- [x] fix: copy package content seems to be missing recent changes, uncommitted?
 - [x] fix: copy package content should only copy files visible in the tree (not pyc)
 - [x] fix: Only make parameter object available via refactoring menu
 - [x] fix: Move to class should keep async/sync statement
