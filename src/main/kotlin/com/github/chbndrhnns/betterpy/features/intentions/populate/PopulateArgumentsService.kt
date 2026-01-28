@@ -150,6 +150,10 @@ class PopulateArgumentsService {
         chooseNext(0)
     }
 
+    fun hasUnionChoices(missing: List<PyCallableParameter>, context: TypeEvalContext): Boolean {
+        return collectUnionChoiceRequests(missing, context).isNotEmpty()
+    }
+
     fun buildPreviewText(
         project: Project,
         file: PyFile,

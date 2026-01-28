@@ -199,6 +199,12 @@
             </className>
             <category>Arguments</category>
         </intentionAction>
+        <intentionAction>
+            <className>
+                com.github.chbndrhnns.betterpy.features.intentions.populate.PopulateArgumentsRecursiveFromLocalsIntention
+            </className>
+            <category>Arguments</category>
+        </intentionAction>
 
         <intentionAction>
             <className>com.github.chbndrhnns.betterpy.features.intentions.ToggleTypeAliasIntention</className>

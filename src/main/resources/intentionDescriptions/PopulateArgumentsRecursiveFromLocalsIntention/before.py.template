@@ -1,0 +1,14 @@
+from dataclasses import dataclass
+
+@dataclass
+class B:
+    x: int
+
+@dataclass
+class A:
+    b: B
+    name: str
+
+b = B(x=1)
+name = "hi"
+a = A(<caret>)
