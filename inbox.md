@@ -89,7 +89,6 @@ do(frozenset({<caret>1, 2, 3}))
 - [ ] feat: quick fix to remove unresolved import from __all__
 - [ ] feat: Turn into type checking import
 - [ ] roots: adopt when moving files
-- [ ] feat: populate union (docs/populate/populate-union.md)
 - [ ] Copy pydantic mock?
 - [ ] feat: Wrap default/default_factory after introducing custom type in dataclass/pydantic
 - [ ] feat: Convert fn to lambda
@@ -104,6 +103,7 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Completed Tasks (newest first)
 
+- [x] feat: populate union (docs/populate/populate-union.md)
 - [x] feat: Add quick enable/disable to status bar menu
 - [x] fix: Introduce parameter object: Only add Any import if required
 - [x] fix: Unsupported python version popup: Include BetterPy prefix

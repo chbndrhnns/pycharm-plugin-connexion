@@ -18,6 +18,7 @@ class JbPopulateOptionsPopupHost : PopulateOptionsPopupHost {
         recursiveAvailable: Boolean,
         localsAvailable: Boolean,
         initial: PopulateOptions,
+        previewProvider: (PopulateOptions) -> String?,
         onChosen: (PopulateOptions) -> Unit
     ) {
         val allButton = JBRadioButton("All arguments", initial.mode == PopulateMode.ALL)
@@ -38,6 +39,29 @@ class JbPopulateOptionsPopupHost : PopulateOptionsPopupHost {
             horizontalAlignment = SwingConstants.LEFT
         }
 
+        val previewArea = com.intellij.ui.components.JBTextArea(4, 40).apply {
+            isEditable = false
+            font = java.awt.Font(java.awt.Font.MONOSPACED, java.awt.Font.PLAIN, 12)
+        }
+        val previewPanel = JPanel(BorderLayout()).apply {
+            add(javax.swing.JLabel("Preview:"), BorderLayout.NORTH)
+            add(javax.swing.JScrollPane(previewArea), BorderLayout.CENTER)
+        }
+
+        fun currentOptions(): PopulateOptions {
+            val mode = if (allButton.isSelected) PopulateMode.ALL else PopulateMode.REQUIRED_ONLY
+            return PopulateOptions(
+                mode = mode,
+                recursive = recursiveBox.isSelected && recursiveAvailable,
+                useLocalScope = localsBox.isSelected && localsAvailable
+            )
+        }
+
+        fun updatePreview() {
+            val preview = previewProvider(currentOptions())
+            previewArea.text = preview ?: "No preview available."
+        }
+
         val content = JPanel().apply {
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
             add(allButton)
@@ -54,7 +78,8 @@ class JbPopulateOptionsPopupHost : PopulateOptionsPopupHost {
         }
 
         val wrapper = JPanel(BorderLayout()).apply {
-            add(content, BorderLayout.CENTER)
+            add(content, BorderLayout.NORTH)
+            add(previewPanel, BorderLayout.CENTER)
             add(buttonPanel, BorderLayout.SOUTH)
         }
 
@@ -67,17 +92,18 @@ class JbPopulateOptionsPopupHost : PopulateOptionsPopupHost {
             .createPopup()
 
         populateButton.addActionListener {
-            val mode = if (allButton.isSelected) PopulateMode.ALL else PopulateMode.REQUIRED_ONLY
-            val chosen = PopulateOptions(
-                mode = mode,
-                recursive = recursiveBox.isSelected && recursiveAvailable,
-                useLocalScope = localsBox.isSelected && localsAvailable
-            )
-            onChosen(chosen)
+            onChosen(currentOptions())
             popup.closeOk(null)
         }
         cancelButton.addActionListener { popup.cancel() }
 
+        val updateListener = java.awt.event.ActionListener { updatePreview() }
+        allButton.addActionListener(updateListener)
+        requiredButton.addActionListener(updateListener)
+        recursiveBox.addActionListener(updateListener)
+        localsBox.addActionListener(updateListener)
+
+        updatePreview()
         popup.showInBestPositionFor(editor)
     }
 }

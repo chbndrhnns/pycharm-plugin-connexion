@@ -20,6 +20,7 @@ class FakePopulateOptionsPopupHost(
         recursiveAvailable: Boolean,
         localsAvailable: Boolean,
         initial: PopulateOptions,
+        previewProvider: (PopulateOptions) -> String?,
         onChosen: (PopulateOptions) -> Unit
     ) {
         lastTitle = title
@@ -27,6 +28,7 @@ class FakePopulateOptionsPopupHost(
         lastRecursiveAvailable = recursiveAvailable
         lastLocalsAvailable = localsAvailable
         lastInitial = initial
+        previewProvider(selectedOptions)
         onChosen(selectedOptions)
     }
 }

@@ -12,6 +12,7 @@ interface PopulateOptionsPopupHost {
         recursiveAvailable: Boolean,
         localsAvailable: Boolean,
         initial: PopulateOptions,
+        previewProvider: (PopulateOptions) -> String?,
         onChosen: (PopulateOptions) -> Unit
     )
 }

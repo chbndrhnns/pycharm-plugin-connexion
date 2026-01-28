@@ -3,6 +3,7 @@ package com.github.chbndrhnns.betterpy.features.intentions.populate
 import com.github.chbndrhnns.betterpy.core.psi.PyImportService
 import com.github.chbndrhnns.betterpy.features.intentions.shared.PopupHost
 import com.github.chbndrhnns.betterpy.features.intentions.shared.PyBuiltinNames
+import com.intellij.codeInsight.intention.preview.IntentionPreviewUtils
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiNamedElement
@@ -147,6 +148,24 @@ class PopulateArgumentsService {
         }
 
         chooseNext(0)
+    }
+
+    fun buildPreviewText(
+        project: Project,
+        file: PyFile,
+        editor: Editor,
+        options: PopulateOptions
+    ): String? {
+        val previewFile = file.copy() as? PyFile ?: return null
+        val previewCall = callFinder.findCallExpression(editor, previewFile) ?: return null
+        val previewContext = TypeEvalContext.codeAnalysis(project, previewFile)
+
+        IntentionPreviewUtils.write<RuntimeException> {
+            populateArguments(project, previewFile, previewCall, options, previewContext)
+        }
+
+        val updatedCall = callFinder.findCallExpression(editor, previewFile) ?: previewCall
+        return updatedCall.text
     }
 
     private fun populateRecursively(

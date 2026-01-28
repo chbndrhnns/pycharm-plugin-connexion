@@ -82,6 +82,9 @@ class PopulateArgumentsIntention : IntentionAction, HighPriorityAction, DumbAwar
             recursiveAvailable = recursiveAvailable,
             localsAvailable = true,
             initial = initial,
+            previewProvider = { option ->
+                service.buildPreviewText(project, pyFile, editor, option)
+            },
             onChosen = { chosen ->
                 val missing = service.missingParametersFor(call, chosen, ctx)
                 if (missing.isEmpty()) return@showOptions
