@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.betterpy.features.intentions.populate
 
 import com.github.chbndrhnns.betterpy.core.psi.PyImportService
+import com.github.chbndrhnns.betterpy.features.intentions.shared.PopupHost
 import com.github.chbndrhnns.betterpy.features.intentions.shared.PyBuiltinNames
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -12,6 +13,8 @@ import com.jetbrains.python.codeInsight.dataflow.scope.ScopeUtil
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.resolve.PyResolveUtil
 import com.jetbrains.python.psi.types.PyCallableParameter
+import com.jetbrains.python.psi.types.PyType
+import com.jetbrains.python.psi.types.PyUnionType
 import com.jetbrains.python.psi.types.TypeEvalContext
 
 /**
@@ -69,9 +72,37 @@ class PopulateArgumentsService {
         file: PyFile,
         call: PyCallExpression,
         options: PopulateOptions,
-        context: TypeEvalContext
+        context: TypeEvalContext,
+        unionSelections: Map<String, String> = emptyMap()
     ) {
-        val missing = if (options.useLocalScope) {
+        val missing = missingParametersFor(call, options, context)
+        if (missing.isEmpty()) return
+
+        val generator = PyElementGenerator.getInstance(project)
+        val argumentList = call.argumentList ?: return
+        val languageLevel = LanguageLevel.forElement(file)
+
+        // Always use the recursive generator which handles both nested dataclasses and leaf alias wrapping.
+        populateRecursively(
+            project,
+            file,
+            call,
+            argumentList,
+            missing,
+            context,
+            generator,
+            languageLevel,
+            options,
+            unionSelections
+        )
+    }
+
+    fun missingParametersFor(
+        call: PyCallExpression,
+        options: PopulateOptions,
+        context: TypeEvalContext
+    ): List<PyCallableParameter> {
+        return if (options.useLocalScope) {
             // In locals-mode we may also fill optional/defaulted params, but only when a local match exists.
             getMissingParameters(call, context)
         } else {
@@ -80,14 +111,42 @@ class PopulateArgumentsService {
                 PopulateMode.REQUIRED_ONLY -> getMissingRequiredParameters(call, context)
             }
         }
-        if (missing.isEmpty()) return
+    }
 
-        val generator = PyElementGenerator.getInstance(project)
-        val argumentList = call.argumentList ?: return
-        val languageLevel = LanguageLevel.forElement(file)
+    fun chooseUnionMembers(
+        editor: Editor,
+        popupHost: PopupHost,
+        missing: List<PyCallableParameter>,
+        context: TypeEvalContext,
+        onComplete: (Map<String, String>) -> Unit
+    ) {
+        val requests = collectUnionChoiceRequests(missing, context)
+        if (requests.isEmpty()) {
+            onComplete(emptyMap())
+            return
+        }
 
-        // Always use the recursive generator which handles both nested dataclasses and leaf alias wrapping.
-        populateRecursively(project, file, call, argumentList, missing, context, generator, languageLevel, options)
+        val selections = mutableMapOf<String, String>()
+
+        fun chooseNext(index: Int) {
+            if (index >= requests.size) {
+                onComplete(selections)
+                return
+            }
+            val request = requests[index]
+            popupHost.showChooser(
+                editor = editor,
+                title = "Select union type for ${request.paramName}",
+                items = request.options,
+                render = { valueGenerator.renderUnionChoiceLabel(it) },
+                onChosen = { chosen ->
+                    selections[request.signature] = valueGenerator.renderTypeName(chosen)
+                    chooseNext(index + 1)
+                }
+            )
+        }
+
+        chooseNext(0)
     }
 
     private fun populateRecursively(
@@ -99,7 +158,8 @@ class PopulateArgumentsService {
         context: TypeEvalContext,
         generator: PyElementGenerator,
         languageLevel: LanguageLevel,
-        options: PopulateOptions
+        options: PopulateOptions,
+        unionSelections: Map<String, String>
     ) {
         val calleeClass: PyClass? = (call.callee as? PyReferenceExpression)
             ?.reference
@@ -139,10 +199,20 @@ class PopulateArgumentsService {
                     return@mapNotNull null
                 } else {
                     // Required param with no local match: fall back to generated value, but never use ellipsis.
-                    sanitizeNoEllipsis(valueGenerator.generateValue(type, context, 0, generator, languageLevel, file))
+                    sanitizeNoEllipsis(
+                        valueGenerator.generateValue(
+                            type,
+                            context,
+                            0,
+                            generator,
+                            languageLevel,
+                            file,
+                            unionSelections
+                        )
+                    )
                 }
             } else {
-                valueGenerator.generateValue(type, context, 0, generator, languageLevel, file)
+                valueGenerator.generateValue(type, context, 0, generator, languageLevel, file, unionSelections)
             }
 
             // If we only have a leaf "..." or a generated alias, ensure we have the correct import
@@ -217,4 +287,29 @@ class PopulateArgumentsService {
             call.argumentList?.let { CodeStyleManager.getInstance(project).reformat(it) }
         }
     }
+
+    private fun collectUnionChoiceRequests(
+        missing: List<PyCallableParameter>,
+        context: TypeEvalContext
+    ): List<UnionChoiceRequest> {
+        return missing.mapNotNull { param ->
+            val name = param.name ?: return@mapNotNull null
+            val union = param.getType(context) as? PyUnionType ?: return@mapNotNull null
+            val members = valueGenerator.normalizeUnionMembers(union)
+            val ranked = valueGenerator.rankUnionMembers(members)
+            val nonNone = ranked.filterNot { valueGenerator.isNoneType(it) }
+            if (nonNone.size <= 1) return@mapNotNull null
+            UnionChoiceRequest(
+                paramName = name,
+                signature = valueGenerator.unionSignature(members),
+                options = ranked
+            )
+        }
+    }
+
+    internal data class UnionChoiceRequest(
+        val paramName: String,
+        val signature: String,
+        val options: List<PyType>
+    )
 }

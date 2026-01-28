@@ -1,9 +1,6 @@
 package com.github.chbndrhnns.betterpy.features.intentions.populate
 
-import fixtures.TestBase
-import fixtures.assertIntentionNotAvailable
-import fixtures.doIntentionTest
-import fixtures.withPopulatePopupSelection
+import fixtures.*
 
 class RecursiveArgumentsIntentionTest : TestBase() {
 
@@ -246,5 +243,51 @@ class RecursiveArgumentsIntentionTest : TestBase() {
             """,
             "Populate arguments"
         )
+    }
+
+    fun testUnionChooser_SelectsMember() {
+        withPopulatePopupSelections(indices = listOf(2, 1)) { fake ->
+            myFixture.doIntentionTest(
+                "a.py",
+                """
+                from dataclasses import dataclass
+
+                @dataclass
+                class A:
+                    a: int
+
+                @dataclass
+                class B:
+                    b: int
+
+                @dataclass
+                class C:
+                    v: A | B
+
+                c = C(<caret>)
+                """,
+                """
+                from dataclasses import dataclass
+
+                @dataclass
+                class A:
+                    a: int
+
+                @dataclass
+                class B:
+                    b: int
+
+                @dataclass
+                class C:
+                    v: A | B
+
+                c = C(v=B(b=...))
+
+                """,
+                "BetterPy: Populate arguments..."
+            )
+
+            assertEquals("Select union type for v", fake.lastTitle)
+        }
     }
 }

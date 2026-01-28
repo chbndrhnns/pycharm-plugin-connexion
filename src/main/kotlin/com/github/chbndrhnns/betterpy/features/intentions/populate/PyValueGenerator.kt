@@ -23,15 +23,51 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
         depth: Int,
         generator: PyElementGenerator,
         languageLevel: LanguageLevel,
-        scopeOwner: ScopeOwner
+        scopeOwner: ScopeOwner,
+        unionSelections: Map<String, String> = emptyMap()
     ): GenerationResult {
         if (depth > MAX_RECURSION_DEPTH || type == null) return defaultResult()
 
         return when (type) {
-            is PyUnionType -> generateUnionValue(type, context, depth, generator, languageLevel, scopeOwner)
-            is PyTupleType -> generateTupleValue(type, context, depth, generator, languageLevel, scopeOwner)
-            is PyCollectionType -> generateCollectionValue(type, context, depth, generator, languageLevel, scopeOwner)
-            is PyClassType -> generateClassTypeValue(type, context, depth, generator, languageLevel, scopeOwner)
+            is PyUnionType -> generateUnionValue(
+                type,
+                context,
+                depth,
+                generator,
+                languageLevel,
+                scopeOwner,
+                unionSelections
+            )
+
+            is PyTupleType -> generateTupleValue(
+                type,
+                context,
+                depth,
+                generator,
+                languageLevel,
+                scopeOwner,
+                unionSelections
+            )
+
+            is PyCollectionType -> generateCollectionValue(
+                type,
+                context,
+                depth,
+                generator,
+                languageLevel,
+                scopeOwner,
+                unionSelections
+            )
+
+            is PyClassType -> generateClassTypeValue(
+                type,
+                context,
+                depth,
+                generator,
+                languageLevel,
+                scopeOwner,
+                unionSelections
+            )
             is PyClassLikeType -> generateAliasLikeValue(type, context, scopeOwner)
             else -> defaultResult()
         }
@@ -43,13 +79,14 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
         depth: Int,
         generator: PyElementGenerator,
         languageLevel: LanguageLevel,
-        scopeOwner: ScopeOwner
+        scopeOwner: ScopeOwner,
+        unionSelections: Map<String, String>
     ): GenerationResult {
         val elements = type.elementTypes
         if (elements.isEmpty()) return GenerationResult("()", emptySet())
 
         val results = elements.map {
-            generateValue(it, context, depth + 1, generator, languageLevel, scopeOwner)
+            generateValue(it, context, depth + 1, generator, languageLevel, scopeOwner, unionSelections)
         }
         
         val imports = results.flatMap { it.imports }.toSet()
@@ -68,11 +105,20 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
         depth: Int,
         generator: PyElementGenerator,
         languageLevel: LanguageLevel,
-        scopeOwner: ScopeOwner
+        scopeOwner: ScopeOwner,
+        unionSelections: Map<String, String>
     ): GenerationResult {
         val pyClass = type.pyClass
         if (isDataclassClass(pyClass)) {
-            return generateDataclassValue(pyClass, context, depth, generator, languageLevel, scopeOwner)
+            return generateDataclassValue(
+                pyClass,
+                context,
+                depth,
+                generator,
+                languageLevel,
+                scopeOwner,
+                unionSelections
+            )
         }
 
         // Try alias logic first (e.g. NewType)
@@ -137,7 +183,8 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
         depth: Int,
         generator: PyElementGenerator,
         languageLevel: LanguageLevel,
-        scopeOwner: ScopeOwner
+        scopeOwner: ScopeOwner,
+        unionSelections: Map<String, String>
     ): GenerationResult {
         val normalized = type.name?.let(::normalizeName) ?: return defaultResult()
         
@@ -147,15 +194,18 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
              val valType = type.elementTypes.getOrNull(1)
              // If generic dict without args, fallback
              if (keyType == null && valType == null) return defaultResult()
-             
-             val keyResult = generateValue(keyType, context, depth + 1, generator, languageLevel, scopeOwner)
-             val valResult = generateValue(valType, context, depth + 1, generator, languageLevel, scopeOwner)
+
+            val keyResult =
+                generateValue(keyType, context, depth + 1, generator, languageLevel, scopeOwner, unionSelections)
+            val valResult =
+                generateValue(valType, context, depth + 1, generator, languageLevel, scopeOwner, unionSelections)
              
              return GenerationResult("{${keyResult.text}: ${valResult.text}}", keyResult.imports + valResult.imports)
         }
 
         val elemType = type.elementTypes.firstOrNull() ?: return defaultResult()
-        val elemResult = generateValue(elemType, context, depth + 1, generator, languageLevel, scopeOwner)
+        val elemResult =
+            generateValue(elemType, context, depth + 1, generator, languageLevel, scopeOwner, unionSelections)
         
         val text = when (normalized) {
             "list" -> "[${elemResult.text}]"
@@ -172,14 +222,23 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
         depth: Int,
         generator: PyElementGenerator,
         languageLevel: LanguageLevel,
-        scopeOwner: ScopeOwner
+        scopeOwner: ScopeOwner,
+        unionSelections: Map<String, String>
     ): GenerationResult {
-        // Prefer a dataclass alternative inside a union
-        val member = type.members.firstOrNull { m ->
-            (m as? PyClassType)?.pyClass?.let { isDataclassClass(it) } == true
-        } ?: return defaultResult()
+        val members = normalizeUnionMembers(type)
+        if (members.isEmpty()) return defaultResult()
 
-        return generateValue(member, context, depth, generator, languageLevel, scopeOwner)
+        val signature = unionSignature(members)
+        val preferredName = unionSelections[signature]
+        val ranked = rankUnionMembers(members)
+        val chosen = preferredName?.let { name ->
+            ranked.firstOrNull { renderTypeName(it) == name }
+        } ?: pickDefaultUnionMember(ranked)
+
+        // Union member selection happens here; chooser overrides flow via unionSelections.
+        return chosen?.let {
+            generateValue(it, context, depth, generator, languageLevel, scopeOwner, unionSelections)
+        } ?: defaultResult()
     }
 
     private fun generateDataclassValue(
@@ -188,7 +247,8 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
         depth: Int,
         generator: PyElementGenerator,
         languageLevel: LanguageLevel,
-        scopeOwner: ScopeOwner
+        scopeOwner: ScopeOwner,
+        unionSelections: Map<String, String>
     ): GenerationResult {
         val className = pyClass.name ?: return defaultResult()
         val call = generator.createExpressionFromText(languageLevel, "$className()") as? PyCallExpression
@@ -198,7 +258,8 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
         val requiredImports = linkedSetOf<PsiNamedElement>(pyClass)
 
         for (field in fieldExtractor.extractDataclassFields(pyClass, context)) {
-            val fieldResult = generateValue(field.type, context, depth + 1, generator, languageLevel, scopeOwner)
+            val fieldResult =
+                generateValue(field.type, context, depth + 1, generator, languageLevel, scopeOwner, unionSelections)
             var valueText = fieldResult.text
 
             // If a leaf fell back to ellipsis and the annotation is alias-like (a resolvable symbol),
@@ -265,6 +326,89 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
     }
 
     // --- Utilities -------------------------------------------------------------------------------
+
+    internal fun normalizeUnionMembers(union: PyUnionType): List<PyType> {
+        val flattened = mutableListOf<PyType>()
+        fun flatten(t: PyType) {
+            if (t is PyUnionType) {
+                t.members.filterNotNull().forEach { member -> flatten(member) }
+            } else {
+                flattened.add(t)
+            }
+        }
+        flatten(union)
+
+        val seen = mutableSetOf<String>()
+        return flattened.filter { member ->
+            val key = renderTypeName(member)
+            if (seen.contains(key)) false else {
+                seen.add(key)
+                true
+            }
+        }
+    }
+
+    internal fun unionSignature(members: List<PyType>): String {
+        return members.map(::renderTypeName).sorted().joinToString("|")
+    }
+
+    internal fun renderTypeName(type: PyType): String {
+        if (isNoneType(type)) return "None"
+        val classQName = (type as? PyClassType)?.classQName ?: (type as? PyClassLikeType)?.classQName
+        return classQName ?: type.name ?: type.toString()
+    }
+
+    internal fun renderUnionChoiceLabel(type: PyType): String {
+        val name = type.name ?: renderTypeName(type)
+        val qName = (type as? PyClassType)?.classQName ?: (type as? PyClassLikeType)?.classQName
+        return if (!qName.isNullOrBlank() && qName != name) "$name ($qName)" else name
+    }
+
+    internal fun rankUnionMembers(members: List<PyType>): List<PyType> {
+        return members.sortedWith(compareBy({ kindOrder.indexOf(kindOf(it)) }, { renderTypeName(it) }))
+    }
+
+    internal fun isNoneType(type: PyType): Boolean {
+        return type.name == "None" || type.name == "NoneType"
+    }
+
+    private fun pickDefaultUnionMember(members: List<PyType>): PyType? {
+        val nonNone = members.filterNot(::isNoneType)
+        return if (nonNone.isNotEmpty()) nonNone.first() else members.firstOrNull()
+    }
+
+    private enum class Kind {
+        DATA_MODEL,
+        COLLECTION,
+        CLASS,
+        PRIMITIVE,
+        LITERAL,
+        ANYLIKE,
+        NONE
+    }
+
+    private fun kindOf(type: PyType): Kind {
+        return when {
+            isNoneType(type) -> Kind.NONE
+            type is PyClassType && isDataclassClass(type.pyClass) -> Kind.DATA_MODEL
+            type is PyCollectionType && type.elementTypes.isNotEmpty() -> Kind.COLLECTION
+            type is PyClassType || type is PyClassLikeType -> Kind.CLASS
+            type.name in setOf("str", "int", "float", "bool", "bytes") -> Kind.PRIMITIVE
+            type.name?.startsWith("Literal") == true -> Kind.LITERAL
+            type.name in setOf("Any", "Never", "NoReturn") -> Kind.ANYLIKE
+            else -> Kind.CLASS
+        }
+    }
+
+    private val kindOrder = listOf(
+        Kind.DATA_MODEL,
+        Kind.COLLECTION,
+        Kind.CLASS,
+        Kind.PRIMITIVE,
+        Kind.LITERAL,
+        Kind.ANYLIKE,
+        Kind.NONE
+    )
 
     private fun normalizeName(name: String): String {
         // normalize `List`/`Set` to builtin lowercase to reduce branching

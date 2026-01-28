@@ -80,11 +80,15 @@ class PopulateArgumentsIntention : IntentionAction, HighPriorityAction, DumbAwar
             items = options,
             render = { it.label() },
             onChosen = { chosen ->
-                // The chooser callback runs outside the original intention command.
-                // Wrap PSI modifications into a write command to satisfy the platform contract.
-                WriteCommandAction.runWriteCommandAction(project, text, null, Runnable {
-                    service.populateArguments(project, pyFile, call, chosen, ctx)
-                }, pyFile)
+                val missing = service.missingParametersFor(call, chosen, ctx)
+                if (missing.isEmpty()) return@showChooser
+                service.chooseUnionMembers(editor, popupHost, missing, ctx) { unionSelections ->
+                    // The chooser callback runs outside the original intention command.
+                    // Wrap PSI modifications into a write command to satisfy the platform contract.
+                    WriteCommandAction.runWriteCommandAction(project, text, null, Runnable {
+                        service.populateArguments(project, pyFile, call, chosen, ctx, unionSelections)
+                    }, pyFile)
+                }
             }
         )
     }

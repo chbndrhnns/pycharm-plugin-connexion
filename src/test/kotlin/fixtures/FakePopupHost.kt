@@ -2,12 +2,14 @@ package fixtures
 
 import com.github.chbndrhnns.betterpy.features.intentions.shared.PopupHost
 import com.intellij.openapi.editor.Editor
+import java.util.*
 
 class FakePopupHost : PopupHost {
     var lastTitle: String? = null
     var lastLabels: List<String> = emptyList()
     var greyedOutIndices: Set<Int> = emptySet()
     var selectedIndex: Int = 0
+    val selectionQueue: ArrayDeque<Int> = ArrayDeque()
 
     override fun <T> showChooser(
         editor: Editor,
@@ -20,7 +22,8 @@ class FakePopupHost : PopupHost {
         lastLabels = items.map(render)
         greyedOutIndices = emptySet()
         if (items.isNotEmpty()) {
-            val idx = selectedIndex.coerceIn(0, items.size - 1)
+            val chosenIndex = selectionQueue.pollFirst() ?: selectedIndex
+            val idx = chosenIndex.coerceIn(0, items.size - 1)
             onChosen(items[idx])
         }
     }
@@ -40,7 +43,8 @@ class FakePopupHost : PopupHost {
         }
         greyedOutIndices = items.indices.filter { isGreyedOut(items[it]) }.toSet()
         if (items.isNotEmpty()) {
-            val idx = selectedIndex.coerceIn(0, items.size - 1)
+            val chosenIndex = selectionQueue.pollFirst() ?: selectedIndex
+            val idx = chosenIndex.coerceIn(0, items.size - 1)
             onChosen(items[idx])
         }
     }
