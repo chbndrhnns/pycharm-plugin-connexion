@@ -2,7 +2,6 @@
 
 ## Pending Issues
 
-- [ ] fix: Descriptors for CreateFixtureFromParameterIntention
 - [ ] fix: Introduce custom type needs to wrap usage sites
 - [ ] fix: Logger should distinguish between packages and classes
 - [ ] fix: Add test which reads all logging-related classes and marks invalid
@@ -33,10 +32,7 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Pending Features
 
-- [ ] feat: Convert to f-string if {} is present
 - [ ] feat: For unresolved logger, offer to add logging skeleton on top
-- [ ] feat: create assignment for statement
-- [ ] feat: Capture unused arguments in _
 - [ ] feat: pytest fixtures: Add rename option to rename not in hierarchy
 - [ ] feat: Copy special should offer copy single node id/reference (no children)
 - [ ] feat: In __all__, offer to delete item + import
@@ -50,13 +46,10 @@ do(frozenset({<caret>1, 2, 3}))
 - [ ] feat: https://youtrack.jetbrains.com/issue/PY-56186/Support-Push-Down-Up-for-pytest-fixtures
 - [ ] feat: https://youtrack.jetbrains.com/issue/PY-55931/Add-quickfix-Convert-between-fixture-injection-variants
 - [ ] feat: https://youtrack.jetbrains.com/issue/PY-56268/Go-to-type-declaration-does-not-work-for-fixture-arguments
-- [ ] feat: Exclude testing usages in code vision,
-  cf. https://www.reddit.com/r/pycharm/comments/1qjo39g/how_to_exclude_test_usages_from_pycharms_code/
 - [ ] feat: Qualify imports using last segment, available on import statements
 - [ ] feat: Convert bunch of assert statements to dict and vice versa
 - [ ] feat: Go to declaration in new tab
 - [ ] feat: Re-run test with debug logging (add --log-cli-level=DEBUG in temporary run config)
-- [ ] feat: Render links to classes in output, like `<class 'src.core.mycore.domain.MyRoute'>
 - [ ] feat: Find usages in current file
 - [ ] feat: Add surround with... pytest.raises()
 - [ ] feat: Add field to dataclass/typeddict/pydantic if missing
@@ -78,10 +71,8 @@ do(frozenset({<caret>1, 2, 3}))
 - [ ] feat: pytest param: treat text as ref
 - [ ] feat: When suggesting the expected type and it is an inner class, reference it using outer_class.inner_class
   syntax, recursively
-- [ ] feat: "Choose implementation" should search in class names, as well.
 - [ ] feat: Ignore third-party packages in import suggestions
 - [ ] feat: Treat unresolved references as errors
-- [ ] feat: Wrap with pytest.raises()
 - [ ] feat: Move symbol to top level (or one scope up?)
 - [ ] feat: Add pytest nodes to separate view in search everywhere (currently, `pytest` seems not respected)
 - [ ] feat: When implementing abstract method, present dialog to choose or show edits
@@ -103,11 +94,20 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## In Progress Tasks
 
+- [-] feat: Exclude testing usages in code vision,
+- [-] feat: Render links to classes in output, like `<class 'src.core.mycore.domain.MyRoute'>`
+  cf. https://www.reddit.com/r/pycharm/comments/1qjo39g/how_to_exclude_test_usages_from_pycharms_code/
 - [ ] feat: Block list: Do not allow names from typing or collections.abc.
-- [ ] refactor: Performance (spec/performance.md)
 
 ## Completed Tasks (newest first)
 
+- [x] feat: "Choose implementation" should search in class names, as well.
+- [x] feat: Wrap with pytest.raises()
+- [x] refactor: Performance (spec/performance.md)
+- [x] feat: create assignment for statement
+- [x] feat: Capture unused arguments in _
+- [x] feat: Convert to f-string if {} is present
+- [x] fix: Descriptors for CreateFixtureFromParameterIntention
 - [x] feat: populate union (docs/populate/populate-union.md)
 - [x] feat: Add quick enable/disable to status bar menu
 - [x] fix: Introduce parameter object: Only add Any import if required
