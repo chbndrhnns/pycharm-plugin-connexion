@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.betterpy.features.usages
 
+import com.intellij.openapi.components.service
 import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.usages.UsageInfo2UsageAdapter
@@ -42,6 +43,7 @@ class PyTestUsageFilteringRuleTest : TestBase() {
                 val usageInfos = myFixture.findUsages(targetElement!!)
                 val usages = usageInfos.map { UsageInfo2UsageAdapter(it) }
 
+                project.service<PyTestUsageFilteringStateService>().showOnlyTestUsages = true
                 val rule = PyTestUsageFilteringRule(project)
                 val visibilityByFile = usages.associate { usage ->
                     val fileName = usage.element?.containingFile?.name ?: "<null>"

@@ -545,6 +545,13 @@
                 icon="AllIcons.Nodes.Type">
         </action>
 
+        <action id="Python.ShowOnlyTestUsages"
+                class="com.github.chbndrhnns.betterpy.features.usages.PyShowOnlyTestUsagesAction"
+                text="BetterPy: Show Test Usages Only"
+                description="Hide usages outside test sources"
+                icon="AllIcons.Nodes.Test">
+        </action>
+
         <action id="com.github.chbndrhnns.betterpy.features.refactoring.parameterobject.IntroduceParameterObjectRefactoringAction"
                 class="com.github.chbndrhnns.betterpy.features.refactoring.parameterobject.IntroduceParameterObjectRefactoringAction"
                 text="BetterPy: Introduce Parameter Object..."
