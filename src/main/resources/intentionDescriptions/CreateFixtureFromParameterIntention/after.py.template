@@ -1,0 +1,11 @@
+import pytest
+
+
+@pytest.fixture
+def api_client(user):
+    return user
+
+
+@pytest.fixture
+def user():
+    pass
