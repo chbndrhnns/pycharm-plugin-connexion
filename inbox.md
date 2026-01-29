@@ -2,6 +2,7 @@
 
 ## Pending Issues
 
+- [ ] fix: Descriptors for CreateFixtureFromParameterIntention
 - [ ] fix: Introduce custom type needs to wrap usage sites
 - [ ] fix: Logger should distinguish between packages and classes
 - [ ] fix: Add test which reads all logging-related classes and marks invalid
@@ -32,6 +33,9 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Pending Features
 
+- [ ] feat: Convert to f-string if {} is present
+- [ ] feat: For unresolved logger, offer to add logging skeleton on top
+- [ ] feat: create assignment for statement
 - [ ] feat: Capture unused arguments in _
 - [ ] feat: pytest fixtures: Add rename option to rename not in hierarchy
 - [ ] feat: Copy special should offer copy single node id/reference (no children)
