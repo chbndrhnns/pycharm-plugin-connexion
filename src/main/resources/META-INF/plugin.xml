@@ -309,6 +309,13 @@
             <category>Create local variable</category>
         </intentionAction>
 
+        <intentionAction>
+            <className>
+                com.github.chbndrhnns.betterpy.features.intentions.localvariable.AssignStatementToVariableIntention
+            </className>
+            <category>Create local variable</category>
+        </intentionAction>
+
 
         <intentionAction>
             <className>com.github.chbndrhnns.betterpy.features.intentions.pytest.TogglePytestSkipIntention</className>

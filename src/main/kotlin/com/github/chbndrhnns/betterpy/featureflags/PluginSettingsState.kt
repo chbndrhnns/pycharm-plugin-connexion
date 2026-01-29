@@ -89,6 +89,14 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enableCreateLocalVariableIntention: Boolean = true,
 
         @Feature(
+            id = "assign-statement-to-variable",
+            displayName = "Assign statement to variable",
+            description = "Assigns a statement expression to a new local variable",
+            category = FeatureCategory.ARGUMENTS
+        )
+        var enableAssignStatementToVariableIntention: Boolean = true,
+
+        @Feature(
             id = "capture-unused-parameters",
             displayName = "Capture unused parameters",
             description = "Assigns unused parameters to '_' in a single statement",

@@ -94,6 +94,25 @@ DialogPanel
   
     Label: 'Parameter  Argument'
     JSeparator
+  CheckBox: [x] 'Assign statement to variable'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Assigns a statement expression to a new local variable
+  </body>
+</html>
+'
   CheckBox: [x] 'Capture unused parameters'
   TextField: '<html>
   <head>
