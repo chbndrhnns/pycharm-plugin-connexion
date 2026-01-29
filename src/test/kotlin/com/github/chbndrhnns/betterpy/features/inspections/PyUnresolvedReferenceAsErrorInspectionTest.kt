@@ -394,4 +394,16 @@ class PyUnresolvedReferenceAsErrorInspectionTest : TestBase() {
         myFixture.enableInspections(PyUnresolvedReferenceAsErrorInspection::class.java)
         myFixture.checkHighlighting(true, false, false)
     }
+
+    fun testLambdaParameterNotFlagged() {
+        myFixture.configureByText(
+            "test.py",
+            """
+            def test_():
+                assert lambda x: x
+            """.trimIndent()
+        )
+        myFixture.enableInspections(PyUnresolvedReferenceAsErrorInspection::class.java)
+        myFixture.checkHighlighting(true, false, false)
+    }
 }

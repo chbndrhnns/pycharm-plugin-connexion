@@ -12,6 +12,7 @@ import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElementVisitor
+import com.intellij.psi.util.parentOfType
 import com.jetbrains.python.inspections.PyInspection
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.types.PyClassType
@@ -54,6 +55,10 @@ class PyUnresolvedReferenceAsErrorInspection : PyInspection() {
 
                     // Skip dunder symbols (special module-level attributes like __name__, __file__, etc.)
                     if (name != null && isDunderSymbol(name)) {
+                        return
+                    }
+
+                    if (isLambdaParameterReference(node)) {
                         return
                     }
 
@@ -215,6 +220,15 @@ class PyUnresolvedReferenceAsErrorInspection : PyInspection() {
      */
     private fun isDunderSymbol(name: String): Boolean {
         return name.startsWith("__") && name.endsWith("__") && name.length > 4
+    }
+
+    private fun isLambdaParameterReference(node: PyReferenceExpression): Boolean {
+        val name = node.name ?: return false
+        val lambda = node.parentOfType<PyLambdaExpression>() ?: return false
+        val parameters = lambda.parameterList.parameters
+            .asSequence()
+            .filterIsInstance<PyNamedParameter>()
+        return parameters.any { it.name == name }
     }
 
     /**
