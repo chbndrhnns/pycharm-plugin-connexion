@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.betterpy.features.intentions.wrap
 
+import com.github.chbndrhnns.betterpy.core.python.PyProtocolUtil
 import com.github.chbndrhnns.betterpy.features.intentions.shared.CtorMatch
 import com.github.chbndrhnns.betterpy.features.intentions.shared.ExpectedCtor
 import com.github.chbndrhnns.betterpy.features.intentions.shared.PyTypeIntentions
@@ -9,7 +10,6 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.types.PyClassType
 import com.jetbrains.python.psi.types.TypeEvalContext
-import com.jetbrains.python.codeInsight.typing.isProtocol as builtInIsProtocol
 
 /**
  * Small collection of heuristics used by the wrap intention.
@@ -41,13 +41,7 @@ object PyWrapHeuristics {
      */
     fun isProtocol(symbol: PsiNamedElement?, context: TypeEvalContext): Boolean {
         val pyClass = symbol as? PyClass ?: return false
-        val classType = context.getType(pyClass) as? PyClassType
-
-        if (classType != null && builtInIsProtocol(classType, context)) {
-            return true
-        }
-
-        return pyClass.getAncestorClasses(context).any { it.name == "Protocol" }
+        return PyProtocolUtil.isProtocol(pyClass, context)
     }
 
     /**

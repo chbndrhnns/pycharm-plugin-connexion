@@ -230,7 +230,11 @@ class DataclassQuickInfoProvider : AbstractDocumentationProvider(), PythonDocume
             "order" to params.order,
             "frozen" to params.frozen,
             "slots" to params.slots
-        ).filter { it.second }
+        ).filter {
+            @Suppress("SimplifyBooleanWithConstants")
+            // REFACTOR: For compatibility with 261 builds, check other options!
+            it.second == true
+        }
 
         if (options.isNotEmpty()) {
             html.append("  ${options.joinToString(", ") { it.first }}")

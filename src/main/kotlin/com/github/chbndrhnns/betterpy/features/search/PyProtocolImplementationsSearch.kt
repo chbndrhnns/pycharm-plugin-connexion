@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.betterpy.features.search
 
 import com.github.chbndrhnns.betterpy.core.index.PyClassMembersFileIndex
+import com.github.chbndrhnns.betterpy.core.python.PyProtocolUtil
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiManager
@@ -14,7 +15,6 @@ import com.jetbrains.python.psi.types.PyCallableType
 import com.jetbrains.python.psi.types.PyClassType
 import com.jetbrains.python.psi.types.TypeEvalContext
 import java.util.concurrent.ConcurrentHashMap
-import com.jetbrains.python.codeInsight.typing.isProtocol as builtInIsProtocol
 
 object PyProtocolImplementationsSearch {
 
@@ -41,15 +41,7 @@ object PyProtocolImplementationsSearch {
      * for test/mock environments where typing.Protocol may not be available.
      */
     fun isProtocol(pyClass: PyClass, context: TypeEvalContext): Boolean {
-        val classType = context.getType(pyClass) as? PyClassType
-
-        // Try PyCharm's built-in check first (works at runtime with real typing.Protocol)
-        if (classType != null && builtInIsProtocol(classType, context)) {
-            return true
-        }
-
-        // Fallback for test/mock environments where typing.Protocol is not available
-        return pyClass.getAncestorClasses(context).any { it.name == "Protocol" }
+        return PyProtocolUtil.isProtocol(pyClass, context)
     }
 
     /**

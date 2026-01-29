@@ -46,12 +46,8 @@ internal object ExpectedTypeInfo {
         }
 
         val base = info.type?.let { firstNonNoneMember(it) }
-
-        if (base is PyClassType) {
-            val name = base.shortOrQualifiedTail()
-            return if (isTooGenericCtorName(name)) null else name
-        }
-        return null
+        val name = ctorNameForType(base)
+        return if (isTooGenericCtorName(name)) null else name
     }
 
     fun canonicalCtorName(element: PyTypedElement, ctx: TypeEvalContext): String? {
@@ -62,11 +58,14 @@ internal object ExpectedTypeInfo {
         val t = TypeNameRenderer.getAnnotatedType(element, ctx) ?: ctx.getType(element)
         if (t != null) {
             val base = firstNonNoneMember(t) ?: return null
-            if (base is PyClassType) {
-                val name = base.shortOrQualifiedTail()
+            val name = ctorNameForType(base)
+            if (name != null) {
                 return if (isNonCtorName(name)) null else name
             }
-            return null
+        }
+        if (element is PyReferenceExpression) {
+            val name = element.name
+            return if (isNonCtorName(name)) null else name
         }
         return null
     }
@@ -106,6 +105,14 @@ internal object ExpectedTypeInfo {
 
     private fun PyClassType.shortOrQualifiedTail(): String? =
         this.name ?: this.classQName?.substringAfterLast('.')
+
+    private fun ctorNameForType(type: PyType?): String? {
+        return when (type) {
+            is PyClassType -> type.shortOrQualifiedTail()
+            is PyClassLikeType -> type.name ?: type.classQName?.substringAfterLast('.')
+            else -> null
+        }
+    }
 
     private fun doGetExpectedTypeInfo(expr: PyExpression, ctx: TypeEvalContext): TypeInfo? {
         val parent = expr.parent

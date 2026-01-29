@@ -505,13 +505,14 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
     )
 
     private fun normalizeName(name: String): String {
+        val base = name.substringAfterLast('.').substringBefore('[')
         // normalize `List`/`Set` to builtin lowercase to reduce branching
-        return when (name) {
+        return when (base) {
             "List", "list" -> "list"
             "Set", "set" -> PyNames.SET
             "Tuple", "tuple" -> PyNames.TUPLE
             "Dict", "dict" -> PyNames.DICT
-            else -> name
+            else -> base
         }
     }
 

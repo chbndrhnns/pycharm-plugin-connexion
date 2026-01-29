@@ -9,6 +9,7 @@ import com.intellij.psi.PsiElementVisitor
 import com.jetbrains.python.inspections.PyInspection
 import com.jetbrains.python.psi.PyAssignmentStatement
 import com.jetbrains.python.psi.PyElementVisitor
+import com.jetbrains.python.psi.PyFunction
 import com.jetbrains.python.psi.PyQualifiedExpression
 import com.jetbrains.python.psi.types.PyTypeChecker
 import com.jetbrains.python.psi.types.TypeEvalContext
@@ -42,17 +43,30 @@ class PyMockReturnAssignmentInspection : PyInspection() {
                             if (qualifier != null) {
                                 val context = TypeEvalContext.codeAnalysis(node.project, node.containingFile)
                                 val qualifierType = context.getType(qualifier)
-                                if (qualifierType is PyMockType && qualifierType.isCallable) {
-                                    val expectedReturnType = qualifierType.getReturnType(context)
-                                    val assignedType = context.getType(value)
 
-                                    if (expectedReturnType != null && assignedType != null) {
-                                        if (!PyTypeChecker.match(expectedReturnType, assignedType, context)) {
-                                            holder.registerProblem(
-                                                value,
-                                                "Expected type '${expectedReturnType.name}', got '${assignedType.name}' instead"
-                                            )
-                                        }
+                                val expectedReturnType = when {
+                                    qualifierType is PyMockType && qualifierType.isCallable -> qualifierType.getReturnType(
+                                        context
+                                    )
+
+                                    else -> {
+                                        val baseQualifier = (qualifier as? PyQualifiedExpression)?.qualifier
+                                        val baseType = baseQualifier?.let { context.getType(it) }
+                                        if (baseType is PyMockType) {
+                                            val resolved = qualifier?.reference?.resolve()
+                                            if (resolved is PyFunction) context.getReturnType(resolved) else null
+                                        } else null
+                                    }
+                                }
+
+                                val assignedType = context.getType(value)
+
+                                if (expectedReturnType != null && assignedType != null) {
+                                    if (!PyTypeChecker.match(expectedReturnType, assignedType, context)) {
+                                        holder.registerProblem(
+                                            value,
+                                            "Expected type '${expectedReturnType.name}', got '${assignedType.name}' instead"
+                                        )
                                     }
                                 }
                             }

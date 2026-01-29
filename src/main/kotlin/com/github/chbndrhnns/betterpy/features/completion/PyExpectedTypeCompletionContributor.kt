@@ -10,11 +10,9 @@ import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.ProcessingContext
 import com.jetbrains.python.PythonLanguage
+import com.jetbrains.python.codeInsight.controlflow.ScopeOwner
 import com.jetbrains.python.codeInsight.dataflow.scope.ScopeUtil
-import com.jetbrains.python.psi.LanguageLevel
-import com.jetbrains.python.psi.PyElementGenerator
-import com.jetbrains.python.psi.PyExpression
-import com.jetbrains.python.psi.PyReferenceExpression
+import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.impl.PyBuiltinCache
 import com.jetbrains.python.psi.types.*
 
@@ -65,7 +63,14 @@ class PyExpectedTypeCompletionContributor : CompletionContributor() {
                             val scopeOwner = ScopeUtil.getScopeOwner(position)
 
                             val generatedValue = if (scopeOwner != null) {
-                                valueGenerator.generateValue(
+                                generateFromAnnotation(
+                                    typeInfo.annotationExpr,
+                                    type,
+                                    typeEvalContext,
+                                    generator,
+                                    languageLevel,
+                                    scopeOwner
+                                ) ?: valueGenerator.generateValue(
                                     type,
                                     typeEvalContext,
                                     0,
@@ -116,5 +121,54 @@ class PyExpectedTypeCompletionContributor : CompletionContributor() {
         if (name.startsWith("Literal[")) return true
 
         return false
+    }
+
+    private fun generateFromAnnotation(
+        annotationExpr: PyTypedElement?,
+        type: PyType,
+        context: TypeEvalContext,
+        generator: PyElementGenerator,
+        languageLevel: LanguageLevel,
+        scopeOwner: ScopeOwner
+    ): PyValueGenerator.GenerationResult? {
+        val subscription = annotationExpr as? PySubscriptionExpression ?: return null
+        if (type !is PyClassType && type !is PyCollectionType) return null
+
+        val baseName = (subscription.operand as? PyQualifiedExpression)?.name
+            ?: (subscription.operand as? PyReferenceExpression)?.name
+            ?: return null
+
+        val normalized = baseName.lowercase()
+        if (normalized != "list" && normalized != "set" && normalized != "tuple") return null
+
+        val indexExpr = subscription.indexExpression ?: return null
+        val elementExpr = if (normalized == "tuple" && indexExpr is PyTupleExpression) {
+            indexExpr.elements.firstOrNull()
+        } else indexExpr
+
+        val elementType = elementExpr?.let { context.getType(it) } ?: return null
+        val elementResult = valueGenerator.generateValue(
+            elementType,
+            context,
+            0,
+            generator,
+            languageLevel,
+            scopeOwner
+        )
+
+        val elementText = if (elementResult.text == "...") {
+            val ctorName = elementExpr?.let { ExpectedTypeInfo.canonicalCtorName(it, context) }
+            ctorName?.let { "$it()" } ?: return null
+        } else {
+            elementResult.text
+        }
+
+        val text = when (normalized) {
+            "list" -> "[$elementText]"
+            "set" -> "{$elementText}"
+            "tuple" -> "($elementText)"
+            else -> return null
+        }
+        return PyValueGenerator.GenerationResult(text, elementResult.imports)
     }
 }
