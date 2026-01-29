@@ -4,7 +4,8 @@ import com.github.chbndrhnns.betterpy.features.refactoring.parameterobject.Param
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
-import com.intellij.openapi.components.service
+import com.intellij.openapi.components.serviceOrNull
+import com.intellij.openapi.diagnostic.Logger
 
 /**
  * Persistent settings state for the plugin.
@@ -849,7 +850,14 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
     }
 
     companion object {
+        private val LOG = Logger.getInstance(PluginSettingsState::class.java)
+
         @JvmStatic
-        fun instance(): PluginSettingsState = service()
+        fun instance(): PluginSettingsState {
+            return serviceOrNull<PluginSettingsState>() ?: run {
+                LOG.warn("PluginSettingsState service unavailable; using default state")
+                PluginSettingsState()
+            }
+        }
     }
 }
