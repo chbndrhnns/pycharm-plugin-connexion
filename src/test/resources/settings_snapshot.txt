@@ -1303,6 +1303,25 @@ DialogPanel
   </body>
 </html>
 '
+  CheckBox: [x] 'Test usage filtering'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Adds a Find Usages filter to show only test usages
+  </body>
+</html>
+'
   CheckBox: [x] 'Type annotation usage filtering'
   TextField: '<html>
   <head>

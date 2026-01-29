@@ -668,6 +668,14 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enableTypeAnnotationUsageFilteringRule: Boolean = true,
 
         @Feature(
+            id = "test-usage-filtering",
+            displayName = "Test usage filtering",
+            description = "Adds a Find Usages filter to show only test usages",
+            category = FeatureCategory.FILTERS
+        )
+        var enableTestUsageFilteringRule: Boolean = true,
+
+        @Feature(
             id = "message-console-filter",
             displayName = "Message console filter",
             description = "Filters and formats Python messages in the console",

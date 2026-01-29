@@ -479,6 +479,8 @@
 
         <usageFilteringRuleProvider
                 implementation="com.github.chbndrhnns.betterpy.features.usages.PyTypeAnnotationFilteringRuleProvider"/>
+        <usageFilteringRuleProvider
+                implementation="com.github.chbndrhnns.betterpy.features.usages.PyTestUsageFilteringRuleProvider"/>
 
         <consoleFilterProvider
                 implementation="com.github.chbndrhnns.betterpy.features.testing.PyMessageFilterProvider"/>
@@ -542,7 +544,6 @@
                 description="Show references occurring within type hints"
                 icon="AllIcons.Nodes.Type">
         </action>
-
 
         <action id="com.github.chbndrhnns.betterpy.features.refactoring.parameterobject.IntroduceParameterObjectRefactoringAction"
                 class="com.github.chbndrhnns.betterpy.features.refactoring.parameterobject.IntroduceParameterObjectRefactoringAction"
