@@ -94,6 +94,25 @@ DialogPanel
   
     Label: 'Parameter  Argument'
     JSeparator
+  CheckBox: [x] 'Capture unused parameters'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Assigns unused parameters to '_' in a single statement
+  </body>
+</html>
+'
   CheckBox: [x] 'Create local variable'
   TextField: '<html>
   <head>

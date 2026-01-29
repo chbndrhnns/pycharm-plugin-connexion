@@ -87,6 +87,14 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         )
         var enableCreateLocalVariableIntention: Boolean = true,
 
+        @Feature(
+            id = "capture-unused-parameters",
+            displayName = "Capture unused parameters",
+            description = "Assigns unused parameters to '_' in a single statement",
+            category = FeatureCategory.ARGUMENTS
+        )
+        var enableCaptureUnusedParametersIntention: Boolean = true,
+
         // ---- Code Structure Intentions ----
         @Feature(
             id = "dict-access",
