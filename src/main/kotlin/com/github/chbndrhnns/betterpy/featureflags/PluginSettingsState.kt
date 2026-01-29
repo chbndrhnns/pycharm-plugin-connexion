@@ -106,6 +106,14 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enableDictAccessIntention: Boolean = true,
 
         @Feature(
+            id = "convert-to-f-string",
+            displayName = "Convert to f-string",
+            description = "Adds an f-string prefix when a string contains interpolation identifiers",
+            category = FeatureCategory.CODE_STRUCTURE
+        )
+        var enableConvertToFStringIntention: Boolean = true,
+
+        @Feature(
             id = "change-visibility",
             displayName = "Change visibility",
             description = "Changes the visibility of a symbol (public/protected/private)",

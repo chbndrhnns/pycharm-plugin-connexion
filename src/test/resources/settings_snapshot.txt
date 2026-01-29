@@ -272,6 +272,25 @@ DialogPanel
   </body>
 </html>
 '
+  CheckBox: [x] 'Convert to f-string'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body width="560">
+    Adds an f-string prefix when a string contains interpolation identifiers
+  </body>
+</html>
+'
   CheckBox: [x] 'Dict access conversion'
   TextField: '<html>
   <head>

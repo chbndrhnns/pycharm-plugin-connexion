@@ -217,6 +217,11 @@
         </intentionAction>
 
         <intentionAction>
+            <className>com.github.chbndrhnns.betterpy.features.intentions.ConvertToFStringIntention</className>
+            <category>Refactorings</category>
+        </intentionAction>
+
+        <intentionAction>
             <className>com.github.chbndrhnns.betterpy.features.exports.PyExportSymbolToTargetIntention</className>
             <category>Refactorings</category>
         </intentionAction>
