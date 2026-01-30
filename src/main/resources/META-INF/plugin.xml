@@ -599,6 +599,12 @@
                 description="Copies plugin version and IDE build number to the clipboard">
             <add-to-group group-id="HelpMenu" anchor="last"/>
         </action>
+        <action id="com.github.chbndrhnns.betterpy.features.actions.ToggleIncubatingFeaturesAction"
+                class="com.github.chbndrhnns.betterpy.features.actions.ToggleIncubatingFeaturesAction"
+                text="BetterPy: Toggle Incubating Features"
+                description="Temporarily toggles all incubating features (resets on restart)">
+            <add-to-group group-id="HelpMenu" anchor="last"/>
+        </action>
         <action id="com.github.chbndrhnns.betterpy.features.actions.RebuildClassMembersIndexAction"
                 class="com.github.chbndrhnns.betterpy.features.actions.RebuildClassMembersIndexAction"
                 text="BetterPy: Rebuild Python Class Members Index"

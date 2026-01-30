@@ -804,7 +804,13 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
          * Snapshotted state before "Mute All" was activated.
          * If non-null, it means the plugin is currently in "Mute All" mode.
          */
-        var originalState: State? = null
+        var originalState: State? = null,
+
+        /**
+         * Snapshotted state before the incubating feature toggle was activated.
+         * If non-null, it means incubating features are temporarily toggled.
+         */
+        var incubatingState: State? = null
     )
 
     private var myState = State()
@@ -813,12 +819,17 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
 
     override fun loadState(state: State) {
         myState = state
+        if (isIncubatingOverrideActive()) {
+            restoreIncubatingState()
+        }
         if (isMuted()) {
             unmute()
         }
     }
 
     fun isMuted(): Boolean = myState.originalState != null
+
+    fun isIncubatingOverrideActive(): Boolean = myState.incubatingState != null
 
     fun mute() {
         if (isMuted()) return
@@ -879,6 +890,29 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
     fun unmute() {
         if (!isMuted()) return
         myState.originalState?.let {
+            myState = it
+        }
+    }
+
+    fun toggleIncubatingFeatures() {
+        if (isIncubatingOverrideActive()) {
+            restoreIncubatingState()
+            LOG.info("Incubating feature overrides restored.")
+            return
+        }
+
+        val backup = myState.copy(incubatingState = null)
+        myState.incubatingState = backup
+
+        val registry = FeatureRegistry.instance()
+        registry.getIncubatingFeatures().forEach { feature ->
+            feature.setEnabled(!feature.isEnabled())
+        }
+        LOG.info("Incubating feature overrides activated.")
+    }
+
+    private fun restoreIncubatingState() {
+        myState.incubatingState?.let {
             myState = it
         }
     }

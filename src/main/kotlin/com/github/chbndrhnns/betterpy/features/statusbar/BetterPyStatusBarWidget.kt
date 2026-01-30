@@ -41,6 +41,8 @@ class BetterPyStatusBarWidget(
     }
 
     private val iconState = MutableStateFlow(currentIcon())
+    private val toggleIncubatingActionId =
+        "com.github.chbndrhnns.betterpy.features.actions.ToggleIncubatingFeaturesAction"
 
     init {
         val connection = project.messageBus.connect()
@@ -60,9 +62,10 @@ class BetterPyStatusBarWidget(
     override fun icon(): Flow<Icon?> = iconState
 
     override suspend fun getTooltipText(): String {
+        val settings = PluginSettingsState.instance()
         return if (!isEnvironmentSupported()) {
             "BetterPy (disabled: Python ${PythonVersionGuard.minVersionString()}+ required)"
-        } else if (PluginSettingsState.instance().isMuted()) {
+        } else if (settings.isMuted()) {
             "BetterPy (Muted)"
         } else {
             "BetterPy"
@@ -84,12 +87,16 @@ class BetterPyStatusBarWidget(
     }
 
     private fun createPopup(): ListPopup {
-        val step = object : BaseListPopupStep<String>("BetterPy", getPopupActions()) {
-            private var lastSelectedValue: String? = null
+        val step = object : BaseListPopupStep<PopupAction>("BetterPy", getPopupActions()) {
+            private var lastSelectedValue: PopupAction? = null
 
-            override fun onChosen(selectedValue: String?, finalChoice: Boolean): PopupStep<*>? {
+            override fun isSelectable(value: PopupAction?): Boolean = value?.enabled == true
+
+            override fun getTextFor(value: PopupAction): String = value.label
+
+            override fun onChosen(selectedValue: PopupAction?, finalChoice: Boolean): PopupStep<*>? {
                 lastSelectedValue = selectedValue
-                when (selectedValue) {
+                when (selectedValue?.label) {
                     "Disable all features" -> {
                         PluginSettingsState.instance().mute()
                         updateIcon()
@@ -104,9 +111,10 @@ class BetterPyStatusBarWidget(
             }
 
             override fun getFinalRunnable(): Runnable? {
-                return when (lastSelectedValue) {
+                return when (lastSelectedValue?.label) {
                     "Copy Diagnostic Data" -> Runnable { invokeCopyDiagnosticDataAction() }
                     "Settings" -> Runnable { invokeShowSettingsAction() }
+                    "Toggle incubating features" -> Runnable { invokeToggleIncubatingFeaturesAction() }
                     else -> null
                 }
             }
@@ -126,14 +134,24 @@ class BetterPyStatusBarWidget(
         }
     }
 
-    internal fun getPopupActions(): List<String> {
-        val actions = mutableListOf("Copy Diagnostic Data", "Settings")
+    internal fun getPopupActions(): List<PopupAction> {
+        val actions = mutableListOf(
+            PopupAction("Copy Diagnostic Data"),
+            PopupAction("Settings")
+        )
         val settings = PluginSettingsState.instance()
         if (settings.isMuted()) {
-            actions.add("Enable all features")
+            actions.add(PopupAction("Enable all features"))
         } else {
-            actions.add("Disable all features")
+            actions.add(PopupAction("Disable all features"))
         }
+        val incubatingEnabled = isEnvironmentSupported() && !settings.isMuted()
+        val incubatingLabel = if (settings.isIncubatingOverrideActive()) {
+            "Turn incubating features off"
+        } else {
+            "Turn incubating features on"
+        }
+        actions.add(PopupAction(incubatingLabel, incubatingEnabled))
         return actions
     }
 
@@ -142,17 +160,27 @@ class BetterPyStatusBarWidget(
     }
 
     private fun invokeCopyDiagnosticDataAction() {
-        val action = ActionManager.getInstance()
-            .getAction("com.github.chbndrhnns.betterpy.features.actions.CopyDiagnosticDataAction")
-        if (action != null) {
-            val dataContext = DataContext { dataId ->
-                if (com.intellij.openapi.actionSystem.CommonDataKeys.PROJECT.name == dataId) project else null
-            }
-            val event = AnActionEvent.createEvent(action, dataContext, null, "BetterPyStatusBar", ActionUiKind.NONE, null)
-            action.actionPerformed(event)
+        invokeActionById("com.github.chbndrhnns.betterpy.features.actions.CopyDiagnosticDataAction")
+    }
+
+    private fun invokeToggleIncubatingFeaturesAction() {
+        invokeActionById(toggleIncubatingActionId)
+    }
+
+    private fun invokeActionById(actionId: String) {
+        val action = ActionManager.getInstance().getAction(actionId) ?: return
+        val dataContext = DataContext { dataId ->
+            if (com.intellij.openapi.actionSystem.CommonDataKeys.PROJECT.name == dataId) project else null
         }
+        val event = AnActionEvent.createEvent(action, dataContext, null, "BetterPyStatusBar", ActionUiKind.NONE, null)
+        action.actionPerformed(event)
     }
 }
+
+internal data class PopupAction(
+    val label: String,
+    val enabled: Boolean = true
+)
 
 class BetterPyStatusBarWidgetFactory : StatusBarWidgetFactory, WidgetPresentationFactory {
 
