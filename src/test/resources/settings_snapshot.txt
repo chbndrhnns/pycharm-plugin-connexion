@@ -1,7 +1,17 @@
 === BetterPy ===
 DialogPanel
+  EnabledFilterPanel
+    Label: 'Show:'
+    EnabledFilterTag
+      Label: 'All'
+    EnabledFilterTag
+      Label: 'Enabled'
+    EnabledFilterTag
+      Label: 'Disabled'
   MaturityFilterPanel
-    Label: 'Filter by status:'
+    Label: 'Filter by maturity:'
+    MaturityFilterTag
+      Label: 'Stable'
     MaturityFilterTag
       Label: 'Incubating'
     MaturityFilterTag
@@ -13,8 +23,6 @@ DialogPanel
   
     Label: 'Type Wrapping/Unwrapping'
     JSeparator
-  CheckBox: [x] 'Prefer project types in union wrapping'
-  CheckBox: [x] 'Include standard library types in union wrapping'
   CheckBox: [x] 'Unwrap items to expected type'
   TextField: '<html>
   <head>
@@ -88,6 +96,45 @@ DialogPanel
   </head>
   <body width="560">
     Wraps an expression with a type that matches the expected type annotation
+  </body>
+</html>
+'
+  CheckBox: [x] 'Include standard library types in union wrapping'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Includes standard library types as candidates in union wrapping
+  </body>
+</html>
+'
+  CheckBox: [x] 'Prefer project types in union wrapping'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body width="560">
+    Always prioritizes project types over standard library types in union 
+    wrapping
   </body>
 </html>
 '
@@ -1511,8 +1558,18 @@ DialogPanel
 
 === Pytest ===
 DialogPanel
+  EnabledFilterPanel
+    Label: 'Show:'
+    EnabledFilterTag
+      Label: 'All'
+    EnabledFilterTag
+      Label: 'Enabled'
+    EnabledFilterTag
+      Label: 'Disabled'
   MaturityFilterPanel
-    Label: 'Filter by status:'
+    Label: 'Filter by maturity:'
+    MaturityFilterTag
+      Label: 'Stable'
     MaturityFilterTag
       Label: 'Incubating'
     MaturityFilterTag

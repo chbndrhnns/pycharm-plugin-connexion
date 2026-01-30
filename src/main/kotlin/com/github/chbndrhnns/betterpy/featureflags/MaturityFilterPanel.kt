@@ -134,9 +134,9 @@ class MaturityFilterPanel(
     }
 ) : JPanel() {
 
-    private val stableMaturity = FeatureMaturity.STABLE
     private val filterTags = mutableMapOf<FeatureMaturity, MaturityFilterTag>()
-    private val selectedMaturities = initialSelection.toMutableSet().apply { add(stableMaturity) }
+    private var selectedMaturity: FeatureMaturity = initialSelection.firstOrNull()
+        ?: if (showHidden) FeatureMaturity.HIDDEN else FeatureMaturity.STABLE
 
     init {
         layout = FlowLayout(FlowLayout.LEFT, JBUI.scale(8), JBUI.scale(4))
@@ -144,11 +144,16 @@ class MaturityFilterPanel(
         border = JBUI.Borders.empty(4, 0, 8, 0)
 
         // Add label
-        add(JLabel("Filter by status:").apply {
+        add(JLabel("Filter by maturity:").apply {
             foreground = JBColor.GRAY
         })
 
         // Create filter tags for each maturity level
+        createFilterTag(
+            FeatureMaturity.STABLE,
+            "Stable",
+            FeatureCheckboxBuilder.MaturityColors.STABLE_BG
+        )
         createFilterTag(
             FeatureMaturity.INCUBATING,
             "Incubating",
@@ -173,14 +178,15 @@ class MaturityFilterPanel(
             maturity = maturity,
             label = label,
             activeColor = color,
-            initiallySelected = maturity in selectedMaturities
+            initiallySelected = maturity == selectedMaturity
         ) { m, selected ->
-            if (selected) {
-                selectedMaturities.add(m)
-            } else {
-                selectedMaturities.remove(m)
+            if (!selected) {
+                filterTags[m]?.setSelected(true)
+                return@MaturityFilterTag
             }
-            onFilterChanged(selectedMaturities.toSet())
+            selectedMaturity = m
+            filterTags.forEach { (key, item) -> item.setSelected(key == selectedMaturity) }
+            onFilterChanged(setOf(selectedMaturity))
         }
         filterTags[maturity] = tag
         add(tag)
@@ -189,17 +195,15 @@ class MaturityFilterPanel(
     /**
      * Returns the currently selected maturity levels.
      */
-    fun getSelectedMaturities(): Set<FeatureMaturity> = selectedMaturities.toSet()
+    fun getSelectedMaturities(): Set<FeatureMaturity> = setOf(selectedMaturity)
 
     /**
      * Sets the selected maturity levels programmatically.
      */
     fun setSelectedMaturities(maturities: Set<FeatureMaturity>) {
-        selectedMaturities.clear()
-        selectedMaturities.addAll(maturities)
-        selectedMaturities.add(stableMaturity)
+        selectedMaturity = maturities.firstOrNull() ?: selectedMaturity
         filterTags.forEach { (maturity, tag) ->
-            tag.setSelected(maturity in maturities)
+            tag.setSelected(maturity == selectedMaturity)
         }
     }
 
@@ -207,15 +211,15 @@ class MaturityFilterPanel(
      * Selects all maturity levels.
      */
     fun selectAll() {
-        setSelectedMaturities(filterTags.keys + stableMaturity)
-        onFilterChanged(selectedMaturities.toSet())
+        setSelectedMaturities(setOf(selectedMaturity))
+        onFilterChanged(setOf(selectedMaturity))
     }
 
     /**
      * Deselects all maturity levels.
      */
     fun deselectAll() {
-        setSelectedMaturities(setOf(stableMaturity))
-        onFilterChanged(selectedMaturities.toSet())
+        setSelectedMaturities(setOf(selectedMaturity))
+        onFilterChanged(setOf(selectedMaturity))
     }
 }

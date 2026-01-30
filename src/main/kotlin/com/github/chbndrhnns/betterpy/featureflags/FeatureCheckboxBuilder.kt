@@ -128,7 +128,8 @@ object FeatureCheckboxBuilder {
         feature: FeatureRegistry.FeatureInfo,
         getter: (() -> Boolean)? = null,
         setter: ((Boolean) -> Unit)? = null,
-        labelOverride: String? = null
+        labelOverride: String? = null,
+        onToggle: (() -> Unit)? = null
     ): RowMetadata {
         val label = labelOverride ?: feature.displayName
         val searchableText = buildString {
@@ -181,6 +182,10 @@ object FeatureCheckboxBuilder {
                     if (feature.description.isNotEmpty()) {
                         comment(feature.description)
                     }
+
+                    component.addItemListener {
+                        onToggle?.invoke()
+                    }
                 }
 
             createMaturityTag(feature.maturity, feature.removeIn)?.let { tag ->
@@ -195,7 +200,8 @@ object FeatureCheckboxBuilder {
         return RowMetadata(
             row = row,
             maturity = feature.maturity,
-            searchableText = searchableText
+            searchableText = searchableText,
+            isEnabled = actualGetter
         )
     }
 

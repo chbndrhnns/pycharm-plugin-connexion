@@ -50,9 +50,19 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         var enableUnwrapItemsToExpectedTypeIntention: Boolean = true,
 
         // ---- Type Bucket Priority Settings ----
-        /** When true, always prefer OWN (project) types over STDLIB types in union wrapping. */
+        @Feature(
+            id = "prefer-own-types-in-union-wrapping",
+            displayName = "Prefer project types in union wrapping",
+            description = "Always prioritizes project types over standard library types in union wrapping",
+            category = FeatureCategory.TYPE_WRAPPING
+        )
         var preferOwnTypesInUnionWrapping: Boolean = true,
-        /** When true, include STDLIB types as candidates in union wrapping (otherwise filter them out). */
+        @Feature(
+            id = "include-stdlib-in-union-wrapping",
+            displayName = "Include standard library types in union wrapping",
+            description = "Includes standard library types as candidates in union wrapping",
+            category = FeatureCategory.TYPE_WRAPPING
+        )
         var includeStdlibInUnionWrapping: Boolean = true,
 
         // ---- Parameter & Argument Intentions ----

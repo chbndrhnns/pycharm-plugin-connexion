@@ -14,7 +14,7 @@ class PytestConfigurable : BoundConfigurable("Pytest"), SearchableConfigurable {
     override fun createPanel(): DialogPanel {
         stateSnapshot = FeatureStateSnapshot.fromRegistry(registry)
 
-        return createFilterableFeaturePanel { _ ->
+        return createFilterableFeaturePanel { onFilterRefreshRequested ->
             val rows = mutableListOf<RowMetadata>()
             val features = registry.getVisibleFeaturesByCategories()[FeatureCategory.PYTEST].orEmpty()
 
@@ -24,7 +24,8 @@ class PytestConfigurable : BoundConfigurable("Pytest"), SearchableConfigurable {
                         val row = featureRow(
                             feature,
                             getter = { stateSnapshot.isEnabled(feature.id) },
-                            setter = { value -> stateSnapshot.setEnabled(feature.id, value) }
+                            setter = { value -> stateSnapshot.setEnabled(feature.id, value) },
+                            onToggle = onFilterRefreshRequested
                         )
                         rows.add(row)
                     }

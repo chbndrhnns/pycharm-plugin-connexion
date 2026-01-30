@@ -11,7 +11,8 @@ import com.intellij.ui.dsl.builder.panel
 data class RowMetadata(
     val row: Row,
     val maturity: FeatureMaturity,
-    val searchableText: String
+    val searchableText: String,
+    val isEnabled: () -> Boolean
 )
 
 /**
@@ -20,7 +21,7 @@ data class RowMetadata(
  */
 class FilterableFeaturePanel(
     private val showHidden: Boolean = false,
-    private val contentBuilder: Panel.(onLoggingChanged: () -> Unit) -> List<RowMetadata>
+    private val contentBuilder: Panel.(onFilterRefreshRequested: () -> Unit) -> List<RowMetadata>
 ) {
 
     private var currentMaturities: Set<FeatureMaturity> = if (showHidden) {
@@ -28,8 +29,17 @@ class FilterableFeaturePanel(
     } else {
         setOf(FeatureMaturity.STABLE, FeatureMaturity.INCUBATING, FeatureMaturity.DEPRECATED)
     }
+    private var currentEnabledFilter: EnabledFilter = EnabledFilter.ALL
     private var currentSearchTerm: String = ""
     private var rowMetadata: List<RowMetadata> = emptyList()
+
+    private val enabledFilterPanel = EnabledFilterPanel(
+        initialSelection = currentEnabledFilter,
+        onFilterChanged = { filter ->
+            currentEnabledFilter = filter
+            applyFilters()
+        }
+    )
 
     private val filterPanel = MaturityFilterPanel(
         onFilterChanged = { maturities ->
@@ -51,6 +61,10 @@ class FilterableFeaturePanel(
 
     private val dialogPanel: DialogPanel = panel {
         row {
+            cell(enabledFilterPanel)
+        }.bottomGap(com.intellij.ui.dsl.builder.BottomGap.SMALL)
+
+        row {
             cell(filterPanel)
         }.bottomGap(com.intellij.ui.dsl.builder.BottomGap.SMALL)
 
@@ -60,7 +74,7 @@ class FilterableFeaturePanel(
                 .align(com.intellij.ui.dsl.builder.Align.FILL)
         }.bottomGap(com.intellij.ui.dsl.builder.BottomGap.SMALL)
 
-        rowMetadata = contentBuilder(::refreshLoggingBadges)
+        rowMetadata = contentBuilder(::requestFilterRefresh)
     }
 
     init {
@@ -70,6 +84,17 @@ class FilterableFeaturePanel(
 
     private fun applyFilters() {
         rowMetadata.forEach { metadata ->
+            val matchesEnabled = when (currentEnabledFilter) {
+                EnabledFilter.ALL -> true
+                EnabledFilter.ENABLED -> metadata.isEnabled()
+                EnabledFilter.DISABLED -> !metadata.isEnabled()
+            }
+
+            if (!matchesEnabled) {
+                metadata.row.visible(false)
+                return@forEach
+            }
+
             val matchesMaturity = metadata.maturity in currentMaturities
             val matchesSearch = currentSearchTerm.isEmpty() ||
                     metadata.searchableText.contains(currentSearchTerm, ignoreCase = true)
@@ -81,10 +106,7 @@ class FilterableFeaturePanel(
         dialogPanel.repaint()
     }
 
-    private fun refreshLoggingBadges() {
-        // For now, we'll accept that logging badges won't update dynamically
-        // A full rebuild would break modification tracking
-        // Alternative: we could find and update the badge components directly
+    private fun requestFilterRefresh() {
         applyFilters()
     }
 
@@ -107,7 +129,7 @@ class FilterableFeaturePanel(
  */
 fun createFilterableFeaturePanel(
     showHidden: Boolean = false,
-    contentBuilder: Panel.(onLoggingChanged: () -> Unit) -> List<RowMetadata>
+    contentBuilder: Panel.(onFilterRefreshRequested: () -> Unit) -> List<RowMetadata>
 ): FilterableFeaturePanel {
     return FilterableFeaturePanel(showHidden, contentBuilder)
 }
