@@ -94,13 +94,13 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## In Progress Tasks
 
-- [-] feat: Exclude testing usages in code vision,
-- [-] feat: Render links to classes in output, like `<class 'src.core.mycore.domain.MyRoute'>`
-  cf. https://www.reddit.com/r/pycharm/comments/1qjo39g/how_to_exclude_test_usages_from_pycharms_code/
 - [ ] feat: Block list: Do not allow names from typing or collections.abc.
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Exclude testing usages in code vision,
+- [x] feat: Render links to classes in output, like `<class 'src.core.mycore.domain.MyRoute'>`
+  cf. https://www.reddit.com/r/pycharm/comments/1qjo39g/how_to_exclude_test_usages_from_pycharms_code/
 - [x] feat: "Choose implementation" should search in class names, as well.
 - [x] feat: Wrap with pytest.raises()
 - [x] refactor: Performance (spec/performance.md)
