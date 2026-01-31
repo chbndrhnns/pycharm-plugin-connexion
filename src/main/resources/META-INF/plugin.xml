@@ -25,6 +25,7 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
+        <errorHandler implementation="com.intellij.diagnostic.JetBrainsMarketplaceErrorReportSubmitter"/>
         <intentionAction>
             <className>com.github.chbndrhnns.betterpy.features.pytest.testtree.JumpToPytestNodeInTestTreeIntention
             </className>
