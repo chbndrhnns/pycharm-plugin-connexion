@@ -304,6 +304,100 @@ git commit "feat: Add parameter object with new utils"
 
 ---
 
+## Changelog Generation
+
+This project uses conventional commits to automatically generate changelogs using [git-cliff](https://git-cliff.org/).
+
+### Tools Integration
+
+**git-cliff:** Generates changelog content from conventional commit messages
+- Configuration: `cliff.toml`
+- Skips: Merge commits, Reapply, Revert, Initial commit
+- Output format: Matches "Keep a Changelog" style with emoji groups
+
+**Gradle Changelog Plugin:** Manages `CHANGELOG.md` releases
+- Task `patchChangelog`: Moves `[Unreleased]` → `[version]` section
+- Runs automatically during `publishPlugin`
+- Uses standard groups: Added, Changed, Deprecated, Removed, Fixed, Security
+
+### Changelog Workflow Options
+
+#### Option 1: git-cliff Generates Content (Recommended)
+
+Use git-cliff to populate the `[Unreleased]` section, then Gradle handles releases:
+
+```bash
+# When creating release branch
+git checkout -b release/parameter-object main
+git checkout dev -- src/main/kotlin/.../parameterobject/
+
+# Generate changelog content for unreleased changes
+git-cliff main..HEAD --unreleased --prepend CHANGELOG.md
+
+# Review and edit CHANGELOG.md if needed
+
+# On release, Gradle automatically patches the changelog
+./gradlew publishPlugin  # runs patchChangelog internally
+```
+
+#### Option 2: Manual CHANGELOG with git-cliff Summaries
+
+Keep manual changelog entries, use git-cliff for PR descriptions:
+
+```bash
+# Generate summary for PR description
+git-cliff main..release/parameter-object --strip header
+
+# Manually maintain CHANGELOG.md with proper sections
+# Edit directly under [Unreleased] section using:
+# ### Added, ### Fixed, ### Changed, etc.
+```
+
+#### Option 3: Feature-Specific Changelog
+
+Generate changelog for specific paths (useful for focused releases):
+
+```bash
+# Generate for specific feature only
+git-cliff main..HEAD \
+  --include-path 'src/main/kotlin/**/refactoring/parameterobject/**' \
+  --unreleased
+```
+
+### Common Commands
+
+```bash
+# Generate unreleased changes
+git-cliff --unreleased
+
+# Generate for commit range
+git-cliff main..release/feature-x
+
+# Generate and prepend to CHANGELOG.md
+git-cliff main..HEAD --unreleased --prepend CHANGELOG.md
+
+# Generate without header (for PRs)
+git-cliff main..HEAD --strip header
+```
+
+### Conventional Commit Format
+
+Follow conventional commit format for automatic changelog generation:
+
+```
+feat: Add new feature
+fix: Resolve bug in component
+docs: Update documentation
+refactor: Restructure code
+perf: Improve performance
+test: Add test coverage
+chore: Update build configuration
+```
+
+**Important:** Commits starting with `Merge branch`, `Reapply`, `Revert`, or `Initial commit` are automatically excluded from changelogs.
+
+---
+
 ## Summary
 
 | Branch      | Purpose                       | Lifespan  | Changes                      |

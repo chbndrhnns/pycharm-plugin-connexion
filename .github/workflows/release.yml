@@ -4,6 +4,15 @@ on:
     tags:
       - "*"
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run mode (skip publishing to JetBrains Marketplace and GitHub)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -36,6 +45,13 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Install git-cliff
+        run: |
+          wget https://github.com/orhun/git-cliff/releases/download/v2.8.1/git-cliff-2.8.1-x86_64-unknown-linux-gnu.tar.gz
+          tar -xzf git-cliff-2.8.1-x86_64-unknown-linux-gnu.tar.gz
+          sudo mv git-cliff-2.8.1/git-cliff /usr/local/bin/
+          git-cliff --version
+
       - name: Run Release Script
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -43,6 +59,7 @@ jobs:
           CERTIFICATE_CHAIN: ${{ secrets.CERTIFICATE_CHAIN }}
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
           PRIVATE_KEY_PASSWORD: ${{ secrets.PRIVATE_KEY_PASSWORD }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
         run: |
           chmod +x ./scripts/release-ci.sh
           ./scripts/release-ci.sh

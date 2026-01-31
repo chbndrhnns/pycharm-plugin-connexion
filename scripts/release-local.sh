@@ -103,7 +103,7 @@ VERSION=$(./scripts/version.sh bump --channel="$CHANNEL" | tail -n 1)
 
 if [[ "$SKIP_COMMIT" != "yes" ]]; then
   git add gradle.properties
-  git commit -m "Bump version to $VERSION" || echo "No version change to commit."
+  git commit -m "chore: Bump version to $VERSION" || echo "No version change to commit."
 fi
 
 if [[ "$SKIP_TESTS" != "yes" ]]; then
@@ -112,6 +112,42 @@ fi
 
 ./gradlew buildPlugin
 
+# Generate changelog with git-cliff if available
+if command -v git-cliff >/dev/null 2>&1; then
+  echo "Generating changelog with git-cliff for version $VERSION..."
+  git-cliff --tag "$VERSION" -o CHANGELOG.md
+  echo "Changelog updated in CHANGELOG.md"
+
+  if [[ "$SKIP_COMMIT" != "yes" ]]; then
+    git add CHANGELOG.md
+    git commit -m "docs: Update CHANGELOG.md for $VERSION" || echo "No changelog changes to commit."
+  fi
+else
+  echo "WARNING: git-cliff not found. Using existing CHANGELOG.md" >&2
+fi
+
+RELEASE_NOTE="./build/tmp/release_note.txt"
+mkdir -p "$(dirname "$RELEASE_NOTE")"
+./gradlew getChangelog --unreleased --no-header --quiet --console=plain --output-file="$RELEASE_NOTE"
+
+# Allow interactive editing of release notes
+if [[ -t 0 ]]; then
+  echo ""
+  echo "========================================="
+  echo "  Release Notes Preview"
+  echo "========================================="
+  cat "$RELEASE_NOTE"
+  echo ""
+  echo "========================================="
+  echo ""
+  read -p "Edit release notes before continuing? (y/N) " -n 1 -r
+  echo
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    ${EDITOR:-vi} "$RELEASE_NOTE"
+    echo "Release notes updated."
+  fi
+fi
+
 if [[ "$SKIP_PUBLISH" != "yes" ]]; then
   if [[ -n "${PUBLISH_TOKEN:-}" ]]; then
     ./gradlew publishPlugin
@@ -119,10 +155,6 @@ if [[ "$SKIP_PUBLISH" != "yes" ]]; then
     echo "PUBLISH_TOKEN not set, skipping publishPlugin."
   fi
 fi
-
-RELEASE_NOTE="./build/tmp/release_note.txt"
-mkdir -p "$(dirname "$RELEASE_NOTE")"
-./gradlew getChangelog --unreleased --no-header --quiet --console=plain --output-file="$RELEASE_NOTE"
 
 if ! ls ./build/distributions/*.zip >/dev/null 2>&1; then
   echo "ERROR: No plugin zip found in ./build/distributions." >&2

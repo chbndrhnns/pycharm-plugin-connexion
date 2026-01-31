@@ -5,10 +5,18 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_DIR"
 
+DRY_RUN="${DRY_RUN:-false}"
+
 VERSION="${VERSION:-${GITHUB_REF_NAME:-}}"
 if [[ -z "$VERSION" ]]; then
   echo "ERROR: VERSION or GITHUB_REF_NAME is required." >&2
   exit 1
+fi
+
+if [[ "$DRY_RUN" == "true" ]]; then
+  echo "========================================="
+  echo "  DRY RUN MODE - No publishing will occur"
+  echo "========================================="
 fi
 
 CURRENT_VERSION="$(./scripts/version.sh current)"
@@ -41,21 +49,37 @@ if ! command -v gh >/dev/null 2>&1; then
   exit 1
 fi
 
-RELEASE_NOTE="./build/tmp/release_note.txt"
-mkdir -p "$(dirname "$RELEASE_NOTE")"
-
-./gradlew getChangelog --unreleased --no-header --quiet --console=plain --output-file="$RELEASE_NOTE"
-
 if [[ "${SKIP_TESTS:-}" != "true" ]]; then
   ./gradlew test
 fi
 
 ./gradlew buildPlugin
-./gradlew publishPlugin
+
+# Generate changelog with git-cliff if available
+if command -v git-cliff >/dev/null 2>&1; then
+  echo "Generating changelog with git-cliff for version $VERSION..."
+  git-cliff --tag "$VERSION" -o CHANGELOG.md
+  echo "Changelog updated in CHANGELOG.md"
+else
+  echo "WARNING: git-cliff not found. Using existing CHANGELOG.md" >&2
+fi
+
+RELEASE_NOTE="./build/tmp/release_note.txt"
+mkdir -p "$(dirname "$RELEASE_NOTE")"
+./gradlew getChangelog --unreleased --no-header --quiet --console=plain --output-file="$RELEASE_NOTE"
 
 if ! ls ./build/distributions/*.zip >/dev/null 2>&1; then
   echo "ERROR: No plugin zip found in ./build/distributions." >&2
   exit 1
+fi
+
+# Publish to JetBrains Marketplace (skip in dry-run mode)
+if [[ "$DRY_RUN" == "true" ]]; then
+  echo "[DRY RUN] Skipping JetBrains Marketplace publishing"
+  echo "[DRY RUN] Would run: ./gradlew publishPlugin"
+else
+  echo "Publishing to JetBrains Marketplace..."
+  ./gradlew publishPlugin
 fi
 
 PRERELEASE_FLAG=""
@@ -63,10 +87,18 @@ if [[ "$VERSION" == *-* ]]; then
   PRERELEASE_FLAG="--prerelease"
 fi
 
-if gh release view "$VERSION" >/dev/null 2>&1; then
-  gh release edit "$VERSION" --notes-file "$RELEASE_NOTE" $PRERELEASE_FLAG
+# Create GitHub release (skip in dry-run mode)
+if [[ "$DRY_RUN" == "true" ]]; then
+  echo "[DRY RUN] Skipping GitHub release creation"
+  echo "[DRY RUN] Would create/edit release: $VERSION"
+  echo "[DRY RUN] Release notes preview:"
+  cat "$RELEASE_NOTE"
 else
-  gh release create "$VERSION" --title "$VERSION" --notes-file "$RELEASE_NOTE" $PRERELEASE_FLAG
-fi
+  if gh release view "$VERSION" >/dev/null 2>&1; then
+    gh release edit "$VERSION" --notes-file "$RELEASE_NOTE" $PRERELEASE_FLAG
+  else
+    gh release create "$VERSION" --title "$VERSION" --notes-file "$RELEASE_NOTE" $PRERELEASE_FLAG
+  fi
 
-gh release upload "$VERSION" ./build/distributions/*.zip --clobber
+  gh release upload "$VERSION" ./build/distributions/*.zip --clobber
+fi
