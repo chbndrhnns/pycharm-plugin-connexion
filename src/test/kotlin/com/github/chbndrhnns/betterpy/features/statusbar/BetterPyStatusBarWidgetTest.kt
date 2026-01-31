@@ -76,7 +76,7 @@ class BetterPyStatusBarWidgetTest : TestBase() {
 
     fun testPopupActionsIncludeSettings() {
         val widget = createWidget()
-        val actions = widget.getPopupActions()
+        val actions = widget.getPopupActions().map { it.label }
         assertContainsElements(actions, "Settings")
         assertContainsElements(actions, "Copy Diagnostic Data")
     }
@@ -86,7 +86,7 @@ class BetterPyStatusBarWidgetTest : TestBase() {
         PluginSettingsState.instance().unmute()
 
         val widget = createWidget()
-        val actions = widget.getPopupActions()
+        val actions = widget.getPopupActions().map { it.label }
         assertContainsElements(actions, "Disable all features")
         assertFalse(actions.contains("Enable all features"))
     }
@@ -96,7 +96,7 @@ class BetterPyStatusBarWidgetTest : TestBase() {
         settings.mute()
         try {
             val widget = createWidget()
-            val actions = widget.getPopupActions()
+            val actions = widget.getPopupActions().map { it.label }
             assertContainsElements(actions, "Enable all features")
             assertFalse(actions.contains("Disable all features"))
         } finally {
