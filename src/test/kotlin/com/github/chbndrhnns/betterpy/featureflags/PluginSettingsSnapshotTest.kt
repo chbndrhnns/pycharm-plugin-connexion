@@ -89,7 +89,7 @@ class PluginSettingsSnapshotTest : TestBase() {
         val initialSnapshot = buildCompleteSnapshot(mainConfigurable.displayName, mainPanel, childPanels)
 
         val registry = FeatureRegistry.instance()
-        val featureId = "jump-to-pytest-node-in-test-tree"
+        val featureId = "parameter-object-gutter-icon"
         val originalValue = registry.isFeatureEnabled(featureId)
         try {
             registry.setFeatureEnabled(featureId, !originalValue)

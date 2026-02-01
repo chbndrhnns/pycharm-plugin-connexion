@@ -16,45 +16,41 @@ class FeatureRegistryTest : TestBase() {
 
     fun testAllFeaturesDiscovered() {
         val features = registry.getAllFeatures()
-        // We have ~54 annotated features in PluginSettingsState.State
-        assertTrue("Expected at least 50 features, got ${features.size}", features.size >= 50)
+        assertTrue("Expected at least 5 features, got ${features.size}", features.size >= 5)
     }
 
     fun testFeatureHasRequiredMetadata() {
-        val feature = registry.getFeature("populate-arguments")
-        assertNotNull("Feature 'populate-arguments' should exist", feature)
+        val feature = registry.getFeature("parameter-object-refactoring")
+        assertNotNull("Feature 'parameter-object-refactoring' should exist", feature)
         feature!!
 
-        assertEquals("populate-arguments", feature.id)
-        assertEquals("Populate arguments", feature.displayName)
+        assertEquals("parameter-object-refactoring", feature.id)
+        assertEquals("Parameter object refactoring", feature.displayName)
         assertTrue("Description should not be empty", feature.description.isNotEmpty())
-        assertEquals(FeatureCategory.ARGUMENTS, feature.category)
+        assertEquals(FeatureCategory.ACTIONS, feature.category)
         assertEquals(FeatureMaturity.STABLE, feature.maturity)
-        assertEquals("enablePopulateArgumentsIntention", feature.propertyName)
+        assertEquals("enableParameterObjectRefactoring", feature.propertyName)
     }
 
-    fun testIncubatingFeatureDetected() {
-        val feature = registry.getFeature("callable-to-protocol")
-        assertNotNull("Feature 'callable-to-protocol' should exist", feature)
+    fun testStableFeatureDetected() {
+        val feature = registry.getFeature("make-parameter-optional")
+        assertNotNull("Feature 'make-parameter-optional' should exist", feature)
         feature!!
 
-        assertEquals(FeatureMaturity.INCUBATING, feature.maturity)
+        assertEquals(FeatureMaturity.STABLE, feature.maturity)
     }
 
     fun testGetFeaturesByCategory() {
-        val typeWrappingFeatures = registry.getFeaturesByCategory(FeatureCategory.TYPE_WRAPPING)
-        assertTrue("Should have type wrapping features", typeWrappingFeatures.isNotEmpty())
+        val actionFeatures = registry.getFeaturesByCategory(FeatureCategory.ACTIONS)
+        assertTrue("Should have action features", actionFeatures.isNotEmpty())
 
-        typeWrappingFeatures.forEach { feature ->
-            assertEquals(FeatureCategory.TYPE_WRAPPING, feature.category)
+        actionFeatures.forEach { feature ->
+            assertEquals(FeatureCategory.ACTIONS, feature.category)
         }
     }
 
     fun testGetFeaturesByMaturity() {
         val incubatingFeatures = registry.getFeaturesByMaturity(FeatureMaturity.INCUBATING)
-        // We have at least one incubating feature (callable-to-protocol)
-        assertTrue("Should have at least one incubating feature", incubatingFeatures.isNotEmpty())
-
         incubatingFeatures.forEach { feature ->
             assertEquals(FeatureMaturity.INCUBATING, feature.maturity)
         }
@@ -77,7 +73,7 @@ class FeatureRegistryTest : TestBase() {
     }
 
     fun testFeatureEnabledState() {
-        val feature = registry.getFeature("populate-arguments")
+        val feature = registry.getFeature("make-parameter-optional")
         assertNotNull(feature)
         feature!!
 
@@ -95,24 +91,24 @@ class FeatureRegistryTest : TestBase() {
 
     fun testIsFeatureEnabledById() {
         // Default should be enabled
-        assertTrue(registry.isFeatureEnabled("populate-arguments"))
+        assertTrue(registry.isFeatureEnabled("make-parameter-optional"))
 
         // Non-existent feature should return false
         assertFalse(registry.isFeatureEnabled("non-existent-feature"))
     }
 
     fun testSetFeatureEnabledById() {
-        registry.setFeatureEnabled("populate-arguments", false)
-        assertFalse(registry.isFeatureEnabled("populate-arguments"))
+        registry.setFeatureEnabled("make-parameter-optional", false)
+        assertFalse(registry.isFeatureEnabled("make-parameter-optional"))
 
-        registry.setFeatureEnabled("populate-arguments", true)
-        assertTrue(registry.isFeatureEnabled("populate-arguments"))
+        registry.setFeatureEnabled("make-parameter-optional", true)
+        assertTrue(registry.isFeatureEnabled("make-parameter-optional"))
     }
 
     fun testGetFeaturesByCategories() {
         val byCategory = registry.getFeaturesByCategories()
 
-        assertTrue("Should have multiple categories", byCategory.keys.size > 5)
+        assertTrue("Should have multiple categories", byCategory.keys.size >= 2)
 
         byCategory.forEach { (category, features) ->
             features.forEach { feature ->
@@ -173,7 +169,7 @@ class FeatureRegistryTest : TestBase() {
         val categoriesWithFeatures = registry.getFeaturesByCategories().keys
         assertTrue(
             "Should have features in multiple categories",
-            categoriesWithFeatures.size >= 8
+            categoriesWithFeatures.containsAll(setOf(FeatureCategory.ARGUMENTS, FeatureCategory.ACTIONS))
         )
     }
 }

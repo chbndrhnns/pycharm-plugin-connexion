@@ -10,7 +10,7 @@ class PersistenceTest : TestBase() {
 
     fun testSettingsPersistAcrossConfigurableInstances() {
         val registry = FeatureRegistry.instance()
-        val feature = registry.getFeature("populate-arguments")!!
+        val feature = registry.getFeature("make-parameter-optional")!!
 
         // Save original state
         val originalState = feature.isEnabled()
@@ -41,7 +41,7 @@ class PersistenceTest : TestBase() {
         configurable2.createComponent()
 
         // New configurable should see the persisted change
-        val feature2 = FeatureRegistry.instance().getFeature("populate-arguments")!!
+        val feature2 = FeatureRegistry.instance().getFeature("make-parameter-optional")!!
         assertEquals("New configurable should see persisted state", newValue, feature2.isEnabled())
 
         // Restore original state
@@ -50,8 +50,8 @@ class PersistenceTest : TestBase() {
 
     fun testMultipleFeaturesPersist() {
         val registry = FeatureRegistry.instance()
-        val feature1 = registry.getFeature("populate-arguments")!!
-        val feature2 = registry.getFeature("make-parameter-optional")!!
+        val feature1 = registry.getFeature("make-parameter-optional")!!
+        val feature2 = registry.getFeature("parameter-object-refactoring")!!
 
         val original1 = feature1.isEnabled()
         val original2 = feature2.isEnabled()
@@ -68,8 +68,8 @@ class PersistenceTest : TestBase() {
 
         // Create new registry instance and verify persistence
         val newRegistry = FeatureRegistry.instance()
-        val newFeature1 = newRegistry.getFeature("populate-arguments")!!
-        val newFeature2 = newRegistry.getFeature("make-parameter-optional")!!
+        val newFeature1 = newRegistry.getFeature("make-parameter-optional")!!
+        val newFeature2 = newRegistry.getFeature("parameter-object-refactoring")!!
 
         assertEquals("Feature 1 should persist across instances", !original1, newFeature1.isEnabled())
         assertEquals("Feature 2 should persist across instances", !original2, newFeature2.isEnabled())
@@ -81,7 +81,7 @@ class PersistenceTest : TestBase() {
 
     fun testApplyPersistsChanges() {
         val registry = FeatureRegistry.instance()
-        val feature = registry.getFeature("wrap-with-expected-type")!!
+        val feature = registry.getFeature("parameter-object-gutter-icon")!!
         val originalState = feature.isEnabled()
         val newValue = !originalState
 
@@ -95,7 +95,7 @@ class PersistenceTest : TestBase() {
 
         // Simulate closing and reopening settings
         val newRegistry = FeatureRegistry.instance()
-        val newFeature = newRegistry.getFeature("wrap-with-expected-type")!!
+        val newFeature = newRegistry.getFeature("parameter-object-gutter-icon")!!
         assertEquals("Changes should persist across registry access", newValue, newFeature.isEnabled())
 
         // Restore original state

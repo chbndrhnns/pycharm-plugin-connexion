@@ -11,22 +11,22 @@ class PluginSettingsStateTest {
         val settings = PluginSettingsState()
 
         // Initial state: all true by default
-        assertTrue(settings.state.enablePopulateArgumentsIntention)
+        assertTrue(settings.state.enableMakeParameterOptionalIntention)
 
         // Change one to false to verify restoration
-        settings.state.enableWrapWithExpectedTypeIntention = false
+        settings.state.enableMakeParameterMandatoryIntention = false
 
         settings.mute()
 
         assertTrue("Should be muted", settings.isMuted())
-        assertFalse("Feature should be disabled", settings.state.enablePopulateArgumentsIntention)
-        assertFalse("Feature should be disabled", settings.state.enableWrapWithExpectedTypeIntention)
+        assertFalse("Feature should be disabled", settings.state.enableMakeParameterOptionalIntention)
+        assertFalse("Feature should be disabled", settings.state.enableMakeParameterMandatoryIntention)
 
         settings.unmute()
 
         assertFalse("Should not be muted", settings.isMuted())
-        assertTrue("Feature should be restored to true", settings.state.enablePopulateArgumentsIntention)
-        assertFalse("Feature should be restored to false", settings.state.enableWrapWithExpectedTypeIntention)
+        assertTrue("Feature should be restored to true", settings.state.enableMakeParameterOptionalIntention)
+        assertFalse("Feature should be restored to false", settings.state.enableMakeParameterMandatoryIntention)
     }
 
     @Test
@@ -38,13 +38,13 @@ class PluginSettingsStateTest {
         // But we can construct a State object.
 
         val original = PluginSettingsState.State(
-            enablePopulateArgumentsIntention = true,
-            enableWrapWithExpectedTypeIntention = false
+            enableMakeParameterOptionalIntention = true,
+            enableMakeParameterMandatoryIntention = false
         )
 
         val mutedState = PluginSettingsState.State(
-            enablePopulateArgumentsIntention = false,
-            enableWrapWithExpectedTypeIntention = false,
+            enableMakeParameterOptionalIntention = false,
+            enableMakeParameterMandatoryIntention = false,
             originalState = original
         )
 
@@ -52,7 +52,7 @@ class PluginSettingsStateTest {
 
         // It should have auto-unmuted
         assertFalse("Should be unmuted after load", settings.isMuted())
-        assertTrue("Feature should be restored", settings.state.enablePopulateArgumentsIntention)
-        assertFalse("Feature should be restored", settings.state.enableWrapWithExpectedTypeIntention)
+        assertTrue("Feature should be restored", settings.state.enableMakeParameterOptionalIntention)
+        assertFalse("Feature should be restored", settings.state.enableMakeParameterMandatoryIntention)
     }
 }

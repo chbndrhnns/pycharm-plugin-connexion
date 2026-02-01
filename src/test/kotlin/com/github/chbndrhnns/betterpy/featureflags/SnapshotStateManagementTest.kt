@@ -13,7 +13,7 @@ class SnapshotStateManagementTest : TestBase() {
         val snapshot = FeatureStateSnapshot.fromRegistry(registry)
 
         // Snapshot should have feature states
-        val feature = registry.getFeature("populate-arguments")!!
+        val feature = registry.getFeature("make-parameter-optional")!!
         val snapshotValue = snapshot.isEnabled(feature.id)
         val persistentValue = feature.isEnabled()
 
@@ -23,7 +23,7 @@ class SnapshotStateManagementTest : TestBase() {
     fun testSnapshotModification() {
         val registry = FeatureRegistry.instance()
         val snapshot = FeatureStateSnapshot.fromRegistry(registry)
-        val feature = registry.getFeature("populate-arguments")!!
+        val feature = registry.getFeature("make-parameter-optional")!!
 
         val originalValue = snapshot.isEnabled(feature.id)
         assertFalse("Should not be modified initially", snapshot.isModified())
@@ -38,7 +38,7 @@ class SnapshotStateManagementTest : TestBase() {
 
     fun testSnapshotApply() {
         val registry = FeatureRegistry.instance()
-        val feature = registry.getFeature("populate-arguments")!!
+        val feature = registry.getFeature("make-parameter-optional")!!
         val originalValue = feature.isEnabled()
 
         val snapshot = FeatureStateSnapshot.fromRegistry(registry)
@@ -60,7 +60,7 @@ class SnapshotStateManagementTest : TestBase() {
     fun testSnapshotReset() {
         val registry = FeatureRegistry.instance()
         val snapshot = FeatureStateSnapshot.fromRegistry(registry)
-        val feature = registry.getFeature("populate-arguments")!!
+        val feature = registry.getFeature("make-parameter-optional")!!
 
         val originalValue = snapshot.isEnabled(feature.id)
 
@@ -77,7 +77,7 @@ class SnapshotStateManagementTest : TestBase() {
     fun testSnapshotWithNewBaseline() {
         val registry = FeatureRegistry.instance()
         val snapshot = FeatureStateSnapshot.fromRegistry(registry)
-        val feature = registry.getFeature("populate-arguments")!!
+        val feature = registry.getFeature("make-parameter-optional")!!
 
         val originalValue = snapshot.isEnabled(feature.id)
         val newValue = !originalValue
