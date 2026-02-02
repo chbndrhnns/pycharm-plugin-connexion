@@ -1,9 +1,6 @@
 package com.github.chbndrhnns.betterpy.core.pytest
 
-import com.jetbrains.python.psi.PyDecorator
-import com.jetbrains.python.psi.PyFunction
-import com.jetbrains.python.psi.PyQualifiedExpression
-import com.jetbrains.python.psi.PyStringLiteralExpression
+import com.jetbrains.python.psi.*
 
 /**
  * Utilities for identifying and working with pytest fixtures.
@@ -30,30 +27,7 @@ object PytestFixtureUtil {
      * Recognizes: @pytest.fixture, @fixture (if imported), @pytest_asyncio.fixture
      */
     fun isFixtureDecorator(decorator: PyDecorator): Boolean {
-        val callee = decorator.callee as? PyQualifiedExpression
-        val qName = callee?.asQualifiedName()?.toString()
-
-        // Check for pytest.fixture or _pytest.fixture
-        if (qName == "pytest.fixture" ||
-            qName == "_pytest.fixture" ||
-            qName?.endsWith(".pytest.fixture") == true
-        ) {
-            return true
-        }
-
-        // Check for pytest_asyncio.fixture
-        if (qName == "pytest_asyncio.fixture" ||
-            qName?.endsWith(".pytest_asyncio.fixture") == true
-        ) {
-            return true
-        }
-
-        // Check for bare "fixture" name (imported)
-        if (decorator.name == "fixture") {
-            return true
-        }
-
-        return false
+        return isFixtureDecoratorCallee(decorator.callee)
     }
 
     /**
@@ -88,6 +62,60 @@ object PytestFixtureUtil {
 
         // Default to function name
         return function.name
+    }
+
+    data class AssignedFixture(
+        val fixtureName: String,
+        val fixtureFunction: PyFunction
+    )
+
+    /**
+     * Extract pytest fixture assignments like: my_fixture = pytest.fixture()(_impl)
+     */
+    fun getAssignedFixture(assignment: PyAssignmentStatement): AssignedFixture? {
+        val target = assignment.targets.singleOrNull() as? PyTargetExpression ?: return null
+        val fixtureName = target.name ?: return null
+        val assignedValue = assignment.assignedValue as? PyCallExpression ?: return null
+        val fixtureFunction = resolveFixtureFunctionFromAssignment(assignedValue) ?: return null
+        return AssignedFixture(fixtureName, fixtureFunction)
+    }
+
+    private fun resolveFixtureFunctionFromAssignment(call: PyCallExpression): PyFunction? {
+        val callee = call.callee
+        val decoratorCall = callee as? PyCallExpression
+        if (decoratorCall != null && isFixtureDecoratorCallee(decoratorCall.callee)) {
+            return resolveFixtureFunctionArgument(call)
+        }
+        if (isFixtureDecoratorCallee(callee)) {
+            return resolveFixtureFunctionArgument(call)
+        }
+        return null
+    }
+
+    private fun resolveFixtureFunctionArgument(call: PyCallExpression): PyFunction? {
+        val firstArg = call.arguments.firstOrNull() ?: return null
+        val resolved = (firstArg as? PyReferenceExpression)?.reference?.resolve()
+        return resolved as? PyFunction
+    }
+
+    private fun isFixtureDecoratorCallee(callee: PyExpression?): Boolean {
+        val qualified = (callee as? PyQualifiedExpression)?.asQualifiedName()?.toString()
+        if (qualified == "pytest.fixture" ||
+            qualified == "_pytest.fixture" ||
+            qualified?.endsWith(".pytest.fixture") == true
+        ) {
+            return true
+        }
+        if (qualified == "pytest_asyncio.fixture" ||
+            qualified?.endsWith(".pytest_asyncio.fixture") == true
+        ) {
+            return true
+        }
+        val reference = callee as? PyReferenceExpression
+        if (reference?.name == "fixture") {
+            return true
+        }
+        return false
     }
 
     /**

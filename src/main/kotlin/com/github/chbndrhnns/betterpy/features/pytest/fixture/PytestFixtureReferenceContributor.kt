@@ -149,7 +149,10 @@ class PytestFixtureReference(
         val context = TypeEvalContext.codeAnalysis(element.project, element.containingFile)
         val chain = PytestFixtureResolver.findFixtureChain(element, fixtureName, context)
         if (LOG.isDebugEnabled) {
-            LOG.debug("PytestFixtureReference: resolved '${fixtureName}' to ${chain.size} fixture(s)")
+            val fileName = element.containingFile?.virtualFile?.path ?: "<unknown>"
+            LOG.debug(
+                "PytestFixtureReference: fixtureName='$fixtureName', file='$fileName', resolved=${chain.size}"
+            )
         }
 
         return chain.map { link ->
@@ -205,7 +208,10 @@ class PytestFixtureStringReference(
         val context = TypeEvalContext.codeAnalysis(element.project, element.containingFile)
         val chain = PytestFixtureResolver.findFixtureChain(element, fixtureName, context)
         if (LOG.isDebugEnabled) {
-            LOG.debug("PytestFixtureStringReference: resolved '${fixtureName}' to ${chain.size} fixture(s)")
+            val fileName = element.containingFile?.virtualFile?.path ?: "<unknown>"
+            LOG.debug(
+                "PytestFixtureStringReference: fixtureName='$fixtureName', file='$fileName', resolved=${chain.size}"
+            )
         }
 
         return chain.map { link ->

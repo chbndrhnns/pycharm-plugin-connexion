@@ -1,7 +1,12 @@
 package com.github.chbndrhnns.betterpy.features.pytest.fixture
 
+import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess
+import com.intellij.testFramework.PsiTestUtil
 import com.jetbrains.python.psi.PyFunction
+import com.jetbrains.python.sdk.PythonSdkUtil
 import fixtures.TestBase
+import java.nio.file.Files
 
 /**
  * Tests for pytest fixture navigation (Go to Declaration and Show Implementations).
@@ -196,6 +201,250 @@ class PytestFixtureNavigationTest : TestBase() {
         assertNotNull("Should resolve to fixture function", resolved)
         assertInstanceOf(resolved, PyFunction::class.java)
         assertEquals("Should resolve to fixtures.py", "fixtures.py", (resolved as PyFunction).containingFile.name)
+    }
+
+    // Test 7.1: Assigned fixture imported from a module
+    fun testImportedAssignedFixture() {
+        myFixture.addFileToProject(
+            "lib.py", """
+            import pytest
+
+            def _mocker():
+                return object()
+
+            mocker = pytest.fixture()(_mocker)
+        """.trimIndent()
+        )
+
+        val code = """
+            from lib import mocker
+
+            def test_something(mocker<caret>):
+                assert mocker
+        """.trimIndent()
+
+        myFixture.configureByText("test_import_assigned.py", code)
+
+        val resolved = myFixture.elementAtCaret
+        assertNotNull("Should resolve to fixture function", resolved)
+        assertInstanceOf(resolved, PyFunction::class.java)
+        assertEquals("Should resolve to _mocker", "_mocker", (resolved as PyFunction).name)
+    }
+
+    fun testImportedAssignedFixtureFromLibrary() {
+        val libRoot = Files.createTempDirectory("pytest-lib").toFile()
+        VfsRootAccess.allowRootAccess(testRootDisposable, libRoot.canonicalPath, libRoot.path)
+
+        val libFile = libRoot.resolve("lib.py")
+        libFile.writeText(
+            """
+            import pytest
+
+            def _mocker():
+                return object()
+
+            mocker = pytest.fixture()(_mocker)
+        """.trimIndent()
+        )
+
+        val vLibRoot = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(libRoot)!!
+        PsiTestUtil.addLibrary(myFixture.module, "pytest-lib", vLibRoot.path, arrayOf(""), arrayOf(""))
+
+        val code = """
+            from lib import mocker
+
+            def test_something(mocker<caret>):
+                assert mocker
+        """.trimIndent()
+
+        myFixture.configureByText("test_import_assigned_library.py", code)
+
+        val resolved = myFixture.elementAtCaret
+        assertNotNull("Should resolve to fixture function from library", resolved)
+        assertInstanceOf(resolved, PyFunction::class.java)
+        assertEquals("Should resolve to _mocker", "_mocker", (resolved as PyFunction).name)
+    }
+
+    fun testEntryPointFixtureFromLibrary() {
+        val libRoot = Files.createTempDirectory("pytest-plugin").toFile()
+        VfsRootAccess.allowRootAccess(testRootDisposable, libRoot.canonicalPath, libRoot.path)
+
+        val pkgDir = libRoot.resolve("pluginpkg").apply { mkdirs() }
+        pkgDir.resolve("__init__.py").writeText(
+            """
+            pytest_plugins = ["pluginpkg.plugin"]
+        """.trimIndent()
+        )
+        val pluginPy = pkgDir.resolve("plugin.py")
+        pluginPy.writeText(
+            """
+            import pytest
+
+            @pytest.fixture
+            def plugin_fixture():
+                return 123
+        """.trimIndent()
+        )
+
+        val distInfo = libRoot.resolve("pluginpkg-1.0.dist-info").apply { mkdirs() }
+        val entryPoints = distInfo.resolve("entry_points.txt")
+        entryPoints.writeText(
+            """
+            [pytest11]
+            pluginpkg = pluginpkg
+        """.trimIndent()
+        )
+
+        val vLibRoot = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(libRoot)!!
+        PsiTestUtil.addLibrary(myFixture.module, "pytest-plugin", vLibRoot.path, arrayOf(""), arrayOf(""))
+
+        val roots = com.intellij.openapi.roots.OrderEnumerator.orderEntries(project)
+            .librariesOnly()
+            .classes()
+            .roots
+            .toList()
+        assertTrue("Library root should be discoverable", roots.contains(vLibRoot))
+
+        val code = """
+            def test_something(plugin_fixture<caret>):
+                assert plugin_fixture == 123
+        """.trimIndent()
+
+        myFixture.configureByText("test_entrypoint_fixture.py", code)
+
+        val resolved = myFixture.elementAtCaret
+        assertNotNull("Should resolve to plugin fixture function", resolved)
+        assertInstanceOf(resolved, PyFunction::class.java)
+        assertEquals("Should resolve to plugin_fixture", "plugin_fixture", (resolved as PyFunction).name)
+    }
+
+    fun testEntryPointPackageFixtureFromLibrary() {
+        val libRoot = Files.createTempDirectory("pytest-plugin-pkg").toFile()
+        VfsRootAccess.allowRootAccess(testRootDisposable, libRoot.canonicalPath, libRoot.path)
+
+        val pkgDir = libRoot.resolve("pkgplugin").apply { mkdirs() }
+        pkgDir.resolve("__init__.py").writeText("")
+        val pluginPy = pkgDir.resolve("plugin.py")
+        pluginPy.writeText(
+            """
+            import pytest
+
+            @pytest.fixture
+            def pkg_fixture():
+                return "pkg"
+        """.trimIndent()
+        )
+
+        val distInfo = libRoot.resolve("pkgplugin-1.0.dist-info").apply { mkdirs() }
+        distInfo.resolve("entry_points.txt").writeText(
+            """
+            [pytest11]
+            pkgplugin = pkgplugin
+        """.trimIndent()
+        )
+
+        val vLibRoot = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(libRoot)!!
+        PsiTestUtil.addLibrary(myFixture.module, "pytest-plugin-pkg", vLibRoot.path, arrayOf(""), arrayOf(""))
+
+        val code = """
+            def test_something(pkg_fixture<caret>):
+                assert pkg_fixture == "pkg"
+        """.trimIndent()
+
+        myFixture.configureByText("test_entrypoint_pkg_fixture.py", code)
+
+        val resolved = myFixture.elementAtCaret
+        assertNotNull("Should resolve to package fixture function", resolved)
+        assertInstanceOf(resolved, PyFunction::class.java)
+        assertEquals("Should resolve to pkg_fixture", "pkg_fixture", (resolved as PyFunction).name)
+    }
+
+    fun testPyprojectEntryPointFixtureFromLibrary() {
+        val libRoot = Files.createTempDirectory("pytest-pyproject").toFile()
+        VfsRootAccess.allowRootAccess(testRootDisposable, libRoot.canonicalPath, libRoot.path)
+
+        val pkgDir = libRoot.resolve("pyprojectpkg").apply { mkdirs() }
+        pkgDir.resolve("__init__.py").writeText("")
+        val pluginPy = pkgDir.resolve("plugin.py")
+        pluginPy.writeText(
+            """
+            import pytest
+
+            @pytest.fixture
+            def pyproject_fixture():
+                return "pyproject"
+        """.trimIndent()
+        )
+
+        val pyproject = libRoot.resolve("pyproject.toml")
+        pyproject.writeText(
+            """
+            [project.entry-points."pytest11"]
+            pyprojectpkg = "pyprojectpkg.plugin"
+        """.trimIndent()
+        )
+
+        val vLibRoot = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(libRoot)!!
+        PsiTestUtil.addLibrary(myFixture.module, "pytest-pyproject", vLibRoot.path, arrayOf(""), arrayOf(""))
+
+        val code = """
+            def test_something(pyproject_fixture<caret>):
+                assert pyproject_fixture == "pyproject"
+        """.trimIndent()
+
+        myFixture.configureByText("test_pyproject_entrypoint_fixture.py", code)
+
+        val resolved = myFixture.elementAtCaret
+        assertNotNull("Should resolve to pyproject fixture function", resolved)
+        assertInstanceOf(resolved, PyFunction::class.java)
+        assertEquals("Should resolve to pyproject_fixture", "pyproject_fixture", (resolved as PyFunction).name)
+    }
+
+    fun testEntryPointFixtureFromSdkRoot() {
+        val sdk = PythonSdkUtil.findPythonSdk(myFixture.module)
+        assertNotNull("Expected Python SDK in test setup", sdk)
+        val sdkRoot = sdk!!.rootProvider.getFiles(com.intellij.openapi.roots.OrderRootType.CLASSES)
+            .firstOrNull { it.isInLocalFileSystem }
+            ?: sdk.rootProvider.getFiles(com.intellij.openapi.roots.OrderRootType.CLASSES).firstOrNull()
+        assertNotNull("Expected SDK root", sdkRoot)
+
+        val rootFile = com.intellij.openapi.vfs.VfsUtilCore.virtualToIoFile(sdkRoot!!)
+        val pkgDir = rootFile.resolve("sdktestpkg").apply { mkdirs() }
+        pkgDir.resolve("__init__.py").writeText("")
+        val pluginPy = pkgDir.resolve("plugin.py")
+        pluginPy.writeText(
+            """
+            import pytest
+
+            @pytest.fixture
+            def sdk_fixture():
+                return "sdk"
+        """.trimIndent()
+        )
+
+        val distInfo = rootFile.resolve("sdktestpkg-1.0.dist-info").apply { mkdirs() }
+        distInfo.resolve("entry_points.txt").writeText(
+            """
+            [pytest11]
+            sdktestpkg = sdktestpkg.plugin
+        """.trimIndent()
+        )
+
+        com.intellij.openapi.vfs.VfsUtil.markDirtyAndRefresh(true, true, true, sdkRoot)
+        val moduleFile = com.intellij.openapi.vfs.VfsUtil.findRelativeFile(sdkRoot, "sdktestpkg", "plugin.py")
+        assertNotNull("Expected plugin module under SDK root", moduleFile)
+
+        val code = """
+            def test_something(sdk_fixture<caret>):
+                assert sdk_fixture == "sdk"
+        """.trimIndent()
+
+        myFixture.configureByText("test_sdk_entrypoint_fixture.py", code)
+
+        val resolved = myFixture.elementAtCaret
+        assertNotNull("Should resolve to SDK plugin fixture function", resolved)
+        assertInstanceOf(resolved, PyFunction::class.java)
+        assertEquals("Should resolve to sdk_fixture", "sdk_fixture", (resolved as PyFunction).name)
     }
 
     // Test 7: Fixture with name= argument

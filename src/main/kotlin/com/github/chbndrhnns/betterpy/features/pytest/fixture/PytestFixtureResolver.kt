@@ -4,18 +4,23 @@ import com.github.chbndrhnns.betterpy.core.index.PytestFixtureFileIndex
 import com.github.chbndrhnns.betterpy.core.pytest.PytestFixtureUtil
 import com.github.chbndrhnns.betterpy.core.pytest.PytestNaming
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.module.ModuleManager
+import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.project.DumbService
+import com.intellij.openapi.projectRoots.Sdk
+import com.intellij.openapi.roots.OrderEnumerator
+import com.intellij.openapi.vfs.VfsUtil
+import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiManager
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.GlobalSearchScopesCore
 import com.intellij.psi.util.PsiTreeUtil
-import com.jetbrains.python.psi.PyClass
-import com.jetbrains.python.psi.PyFile
-import com.jetbrains.python.psi.PyFromImportStatement
-import com.jetbrains.python.psi.PyFunction
+import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.search.PyClassInheritorsSearch
 import com.jetbrains.python.psi.types.TypeEvalContext
+import com.jetbrains.python.sdk.PythonSdkUtil
 
 /**
  * Represents a link in the fixture resolution chain.
@@ -50,10 +55,10 @@ object PytestFixtureResolver {
         context: TypeEvalContext
     ): List<FixtureLink> {
         if (LOG.isDebugEnabled) {
-            val fileName = usageElement.containingFile?.name
+            val fileName = usageElement.containingFile?.virtualFile?.path ?: "<unknown>"
             LOG.debug(
                 "PytestFixtureResolver.findFixtureChain: fixtureName='$fixtureName', element=${usageElement::class.java.simpleName}, " +
-                        "file='${fileName ?: "<unknown>"}'"
+                        "file='$fileName'"
             )
         }
         val result = mutableListOf<FixtureLink>()
@@ -85,6 +90,13 @@ object PytestFixtureResolver {
         result.addAll(conftestFixtures)
         if (LOG.isDebugEnabled) {
             LOG.debug("PytestFixtureResolver.findFixtureChain: conftest fixtures=${conftestFixtures.size}")
+        }
+
+        // 5. pytest plugin fixtures from entry points
+        val pluginFixtures = findPluginFixtures(usageElement, fixtureName, seen)
+        result.addAll(pluginFixtures)
+        if (LOG.isDebugEnabled) {
+            LOG.debug("PytestFixtureResolver.findFixtureChain: plugin fixtures=${pluginFixtures.size}")
         }
 
         // Note: Built-in fixtures would require access to pytest's internal fixture registry
@@ -150,6 +162,7 @@ object PytestFixtureResolver {
                 }
             }
         }
+        collectAssignedFixtures(file, fixtureName, seen, result)
 
         return result
     }
@@ -169,11 +182,66 @@ object PytestFixtureResolver {
 
         // Check explicit imports: from x import my_fixture (or alias)
         for (importElement in file.importTargets) {
-            val resolved = importElement.reference?.resolve()
-            if (resolved is PyFunction && PytestFixtureUtil.isFixtureFunction(resolved)) {
-                val name = PytestFixtureUtil.getFixtureName(resolved)
-                if (name == fixtureName && seen.add(resolved)) {
-                    result.add(FixtureLink(resolved, fixtureName, importElement))
+            if (LOG.isDebugEnabled) {
+                val visibleName = importElement.asName ?: importElement.importedQName?.lastComponent
+                LOG.debug(
+                    "PytestFixtureResolver.findImportedFixtures: importTarget='${importElement.text}', visibleName='${visibleName ?: "<unknown>"}'"
+                )
+            }
+            val resolveResults = importElement.multiResolve()
+            if (resolveResults.isNotEmpty()) {
+                resolveResults.mapNotNull { it.element }.forEach { resolved ->
+                    if (LOG.isDebugEnabled) {
+                        LOG.debug(
+                            "PytestFixtureResolver.findImportedFixtures: resolved='${resolved::class.java.simpleName}'"
+                        )
+                    }
+                    if (resolved is PyFunction && PytestFixtureUtil.isFixtureFunction(resolved)) {
+                        val name = PytestFixtureUtil.getFixtureName(resolved)
+                        if (name == fixtureName && seen.add(resolved)) {
+                            result.add(FixtureLink(resolved, fixtureName, importElement))
+                        }
+                    }
+                    if (resolved is PyTargetExpression) {
+                        val assignment = resolved.parent as? PyAssignmentStatement
+                        val assignedFixture = assignment?.let { PytestFixtureUtil.getAssignedFixture(it) }
+                        if (assignedFixture != null && LOG.isDebugEnabled) {
+                            LOG.debug(
+                                "PytestFixtureResolver.findImportedFixtures: assignedFixture='${assignedFixture.fixtureName}' " +
+                                        "from '${assignedFixture.fixtureFunction.name}'"
+                            )
+                        }
+                        if (assignedFixture != null &&
+                            assignedFixture.fixtureName == fixtureName &&
+                            seen.add(assignedFixture.fixtureFunction)
+                        ) {
+                            result.add(FixtureLink(assignedFixture.fixtureFunction, fixtureName, importElement))
+                        }
+                    }
+                }
+            } else {
+                val resolved = importElement.reference?.resolve()
+                if (resolved is PyFunction && PytestFixtureUtil.isFixtureFunction(resolved)) {
+                    val name = PytestFixtureUtil.getFixtureName(resolved)
+                    if (name == fixtureName && seen.add(resolved)) {
+                        result.add(FixtureLink(resolved, fixtureName, importElement))
+                    }
+                }
+                if (resolved is PyTargetExpression) {
+                    val assignment = resolved.parent as? PyAssignmentStatement
+                    val assignedFixture = assignment?.let { PytestFixtureUtil.getAssignedFixture(it) }
+                    if (assignedFixture != null && LOG.isDebugEnabled) {
+                        LOG.debug(
+                            "PytestFixtureResolver.findImportedFixtures: assignedFixture='${assignedFixture.fixtureName}' " +
+                                    "from '${assignedFixture.fixtureFunction.name}'"
+                        )
+                    }
+                    if (assignedFixture != null &&
+                        assignedFixture.fixtureName == fixtureName &&
+                        seen.add(assignedFixture.fixtureFunction)
+                    ) {
+                        result.add(FixtureLink(assignedFixture.fixtureFunction, fixtureName, importElement))
+                    }
                 }
             }
         }
@@ -185,6 +253,11 @@ object PytestFixtureResolver {
                 val importSource = importStatement.importSource
                 val resolvedModule = importSource?.reference?.resolve()
                 if (resolvedModule is PyFile) {
+                    if (LOG.isDebugEnabled) {
+                        LOG.debug(
+                            "PytestFixtureResolver.findImportedFixtures: star import from '${resolvedModule.name}'"
+                        )
+                    }
                     // Look for fixtures in the imported module
                     for (function in resolvedModule.topLevelFunctions) {
                         if (PytestFixtureUtil.isFixtureFunction(function)) {
@@ -194,7 +267,24 @@ object PytestFixtureResolver {
                             }
                         }
                     }
+                    collectAssignedFixtures(resolvedModule, fixtureName, seen, result, importStatement)
                 }
+            }
+        }
+
+        // Check explicit from-imports where direct resolution may be missing
+        for (fromImport in file.fromImports) {
+            if (fromImport.isStarImport) continue
+            val resolvedModule = fromImport.importSource?.reference?.resolve() as? PyFile ?: continue
+            for (importElement in fromImport.importElements) {
+                val visibleName = importElement.asName ?: importElement.importedQName?.lastComponent
+                if (visibleName != fixtureName) continue
+                if (LOG.isDebugEnabled) {
+                    LOG.debug(
+                        "PytestFixtureResolver.findImportedFixtures: from-import module='${resolvedModule.name}', name='${visibleName}'"
+                    )
+                }
+                collectAssignedFixtures(resolvedModule, fixtureName, seen, result, importElement)
             }
         }
 
@@ -231,12 +321,279 @@ object PytestFixtureResolver {
                             }
                         }
                     }
+                    collectAssignedFixtures(psiFile, fixtureName, seen, result)
                 }
             }
             currentDir = currentDir.parent
         }
 
         return result
+    }
+
+    private fun findPluginFixtures(
+        usageElement: PsiElement,
+        fixtureName: String,
+        seen: MutableSet<PyFunction>
+    ): List<FixtureLink> {
+        val result = mutableListOf<FixtureLink>()
+        val project = usageElement.project
+        if (DumbService.isDumb(project)) return result
+
+        val roots = mutableSetOf<VirtualFile>()
+        val classRoots = OrderEnumerator.orderEntries(project)
+            .librariesOnly()
+            .classes()
+            .roots
+        for (root in classRoots) {
+            roots.add(root)
+        }
+        val sourceRoots = OrderEnumerator.orderEntries(project)
+            .librariesOnly()
+            .sources()
+            .roots
+        for (root in sourceRoots) {
+            roots.add(root)
+        }
+        val sdkRoots = findSdkRoots(usageElement, project)
+        roots.addAll(sdkRoots)
+
+        if (LOG.isDebugEnabled) {
+            LOG.debug(
+                "PytestFixtureResolver.findPluginFixtures: roots=${roots.size}, sdkRoots=${sdkRoots.size}"
+            )
+        }
+
+        for (root in roots) {
+            val distInfos = root.children.filter { it.isDirectory && it.name.endsWith(".dist-info") }
+            val entryModules = mutableListOf<String>()
+            for (distInfo in distInfos) {
+                val entryPointsFile = distInfo.findChild("entry_points.txt") ?: continue
+                val modules = parsePytestEntryPointModules(entryPointsFile)
+                if (modules.isEmpty()) continue
+                if (LOG.isDebugEnabled) {
+                    LOG.debug(
+                        "PytestFixtureResolver.findPluginFixtures: distInfo='${distInfo.name}', modules=${modules.size}"
+                    )
+                }
+                entryModules.addAll(modules)
+            }
+
+            val pyprojectModules = collectPyprojectModules(root)
+            if (pyprojectModules.isNotEmpty() && LOG.isDebugEnabled) {
+                LOG.debug(
+                    "PytestFixtureResolver.findPluginFixtures: pyprojectModules=${pyprojectModules.size}"
+                )
+            }
+            entryModules.addAll(pyprojectModules)
+
+            if (entryModules.isNotEmpty()) {
+                val queue = ArrayDeque(entryModules)
+                val processed = mutableSetOf<String>()
+                while (queue.isNotEmpty()) {
+                    val moduleName = queue.removeFirst()
+                    if (!processed.add(moduleName)) continue
+                    val moduleFile = resolveModuleFile(project, root, moduleName) ?: continue
+                    if (LOG.isDebugEnabled) {
+                        LOG.debug(
+                            "PytestFixtureResolver.findPluginFixtures: module='$moduleName', file='${moduleFile.name}'"
+                        )
+                    }
+                    collectFixturesFromModuleFile(moduleFile, fixtureName, seen, result)
+                    collectFixturesFromPackage(moduleFile, fixtureName, seen, result)
+                    val plugins = extractPytestPluginModules(moduleFile)
+                    if (plugins.isNotEmpty() && LOG.isDebugEnabled) {
+                        LOG.debug(
+                            "PytestFixtureResolver.findPluginFixtures: pytest_plugins from '${moduleFile.name}' -> ${
+                                plugins.joinToString(
+                                    ","
+                                )
+                            }"
+                        )
+                    }
+                    queue.addAll(plugins)
+                }
+            }
+        }
+
+        return result
+    }
+
+    private fun findSdkRoots(
+        usageElement: PsiElement,
+        project: com.intellij.openapi.project.Project
+    ): Set<VirtualFile> {
+        val module = ModuleUtilCore.findModuleForPsiElement(usageElement)
+            ?: ModuleManager.getInstance(project).modules.firstOrNull()
+        val sdk = module?.let { PythonSdkUtil.findPythonSdk(it) }
+        return sdkRoots(sdk)
+    }
+
+    private fun sdkRoots(sdk: Sdk?): Set<VirtualFile> {
+        if (sdk == null) return emptySet()
+        val result = mutableSetOf<VirtualFile>()
+        sdk.rootProvider.getFiles(com.intellij.openapi.roots.OrderRootType.CLASSES).forEach { result.add(it) }
+        sdk.rootProvider.getFiles(com.intellij.openapi.roots.OrderRootType.SOURCES).forEach { result.add(it) }
+        return result
+    }
+
+    private fun parsePytestEntryPointModules(entryPointsFile: VirtualFile): List<String> {
+        val text = runCatching { VfsUtilCore.loadText(entryPointsFile) }.getOrNull() ?: return emptyList()
+        val result = mutableListOf<String>()
+        var inPytestSection = false
+        text.lineSequence().forEach { line ->
+            val trimmed = line.trim()
+            if (trimmed.isEmpty() || trimmed.startsWith("#") || trimmed.startsWith(";")) return@forEach
+            if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+                inPytestSection = trimmed.substring(1, trimmed.length - 1) == "pytest11"
+                return@forEach
+            }
+            if (!inPytestSection) return@forEach
+            val parts = trimmed.split("=", limit = 2)
+            if (parts.size != 2) return@forEach
+            val value = parts[1].trim()
+            if (value.isEmpty()) return@forEach
+            val module = value.substringBefore(":").trim()
+            if (module.isNotEmpty()) {
+                result.add(module)
+            }
+        }
+        return result.distinct()
+    }
+
+    private fun collectPyprojectModules(root: VirtualFile): List<String> {
+        val result = mutableListOf<String>()
+        val rootPyproject = root.findChild("pyproject.toml")
+        if (rootPyproject != null) {
+            result.addAll(parsePytestModulesFromPyproject(rootPyproject))
+        }
+        root.children.filter { it.isDirectory }.forEach { dir ->
+            val pyproject = dir.findChild("pyproject.toml") ?: return@forEach
+            result.addAll(parsePytestModulesFromPyproject(pyproject))
+        }
+        return result.distinct()
+    }
+
+    private fun parsePytestModulesFromPyproject(pyprojectFile: VirtualFile): List<String> {
+        val text = runCatching { VfsUtilCore.loadText(pyprojectFile) }.getOrNull() ?: return emptyList()
+        val result = mutableListOf<String>()
+        var inPytestSection = false
+        text.lineSequence().forEach { line ->
+            val trimmed = line.trim()
+            if (trimmed.isEmpty() || trimmed.startsWith("#")) return@forEach
+            if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+                val section = trimmed.substring(1, trimmed.length - 1)
+                inPytestSection = section == "project.entry-points.\"pytest11\"" ||
+                        section == "project.entry-points.'pytest11'" ||
+                        section == "project.entry-points.pytest11" ||
+                        section == "tool.poetry.plugins.\"pytest11\"" ||
+                        section == "tool.poetry.plugins.'pytest11'" ||
+                        section == "tool.poetry.plugins.pytest11"
+                return@forEach
+            }
+            if (!inPytestSection) return@forEach
+            val parts = trimmed.split("=", limit = 2)
+            if (parts.size != 2) return@forEach
+            val value = parts[1].trim().trim('"', '\'')
+            if (value.isEmpty()) return@forEach
+            val module = value.substringBefore(":").trim()
+            if (module.isNotEmpty()) {
+                result.add(module)
+            }
+        }
+        return result.distinct()
+    }
+
+    private fun collectFixturesFromModuleFile(
+        moduleFile: PyFile,
+        fixtureName: String,
+        seen: MutableSet<PyFunction>,
+        result: MutableList<FixtureLink>
+    ) {
+        for (function in moduleFile.topLevelFunctions) {
+            if (!PytestFixtureUtil.isFixtureFunction(function)) continue
+            val name = PytestFixtureUtil.getFixtureName(function)
+            if (name == fixtureName && seen.add(function)) {
+                result.add(FixtureLink(function, fixtureName))
+            }
+        }
+        collectAssignedFixtures(moduleFile, fixtureName, seen, result)
+    }
+
+    private fun collectFixturesFromPackage(
+        moduleFile: PyFile,
+        fixtureName: String,
+        seen: MutableSet<PyFunction>,
+        result: MutableList<FixtureLink>
+    ) {
+        val packageDir = moduleFile.virtualFile?.parent ?: return
+        val project = moduleFile.project
+        val scope = GlobalSearchScopesCore.directoryScope(project, packageDir, true)
+        val candidates = PytestFixtureFileIndex.findFilesWithFixture(fixtureName, project, scope)
+        for (candidate in candidates) {
+            val psiFile = PsiManager.getInstance(project).findFile(candidate) as? PyFile ?: continue
+            for (function in psiFile.topLevelFunctions) {
+                if (!PytestFixtureUtil.isFixtureFunction(function)) continue
+                val name = PytestFixtureUtil.getFixtureName(function)
+                if (name == fixtureName && seen.add(function)) {
+                    result.add(FixtureLink(function, fixtureName))
+                }
+            }
+            for (pyClass in psiFile.topLevelClasses) {
+                for (method in pyClass.methods) {
+                    if (!PytestFixtureUtil.isFixtureFunction(method)) continue
+                    val name = PytestFixtureUtil.getFixtureName(method)
+                    if (name == fixtureName && seen.add(method)) {
+                        result.add(FixtureLink(method, fixtureName))
+                    }
+                }
+            }
+            collectAssignedFixtures(psiFile, fixtureName, seen, result)
+        }
+    }
+
+    private fun extractPytestPluginModules(moduleFile: PyFile): List<String> {
+        val result = mutableListOf<String>()
+        moduleFile.statements.filterIsInstance<PyAssignmentStatement>().forEach { assignment ->
+            val target = assignment.targets.singleOrNull() as? PyTargetExpression ?: return@forEach
+            if (target.name != "pytest_plugins") return@forEach
+            val value = assignment.assignedValue ?: return@forEach
+            when (value) {
+                is PyStringLiteralExpression -> {
+                    val name = value.stringValue
+                    if (name.isNotBlank()) result.add(name)
+                }
+
+                is PyListLiteralExpression -> {
+                    value.elements.filterIsInstance<PyStringLiteralExpression>().forEach { element ->
+                        val name = element.stringValue
+                        if (name.isNotBlank()) result.add(name)
+                    }
+                }
+
+                is PyTupleExpression -> {
+                    value.elements.filterIsInstance<PyStringLiteralExpression>().forEach { element ->
+                        val name = element.stringValue
+                        if (name.isNotBlank()) result.add(name)
+                    }
+                }
+            }
+        }
+        return result.distinct()
+    }
+
+    private fun resolveModuleFile(
+        project: com.intellij.openapi.project.Project,
+        root: VirtualFile,
+        module: String
+    ): PyFile? {
+        val segments = module.split('.').filter { it.isNotEmpty() }
+        if (segments.isEmpty()) return null
+        val pySegments = segments.dropLast(1).toMutableList()
+        pySegments.add(segments.last() + ".py")
+        val pyFile = VfsUtil.findRelativeFile(root, *pySegments.toTypedArray())
+        val initFile = VfsUtil.findRelativeFile(root, *segments.toTypedArray(), "__init__.py")
+        val target = pyFile ?: initFile ?: return null
+        return PsiManager.getInstance(project).findFile(target) as? PyFile
     }
 
     /**
@@ -416,6 +773,7 @@ object PytestFixtureResolver {
                 result.add(FixtureLink(function, fixtureName))
             }
         }
+        collectAssignedFixtures(psiFile, fixtureName, mutableSetOf(), result)
         if (!includeClassFixtures) return
         val classes = PsiTreeUtil.findChildrenOfType(psiFile, PyClass::class.java)
         for (cls in classes) {
@@ -428,6 +786,28 @@ object PytestFixtureResolver {
                     result.add(FixtureLink(method, fixtureName))
                 }
             }
+        }
+    }
+
+    private fun collectAssignedFixtures(
+        file: PyFile,
+        fixtureName: String,
+        seen: MutableSet<PyFunction>,
+        result: MutableList<FixtureLink>,
+        importElement: PsiElement? = null
+    ) {
+        for (statement in file.statements) {
+            val assignment = statement as? PyAssignmentStatement ?: continue
+            val assignedFixture = PytestFixtureUtil.getAssignedFixture(assignment) ?: continue
+            if (assignedFixture.fixtureName != fixtureName) continue
+            if (!seen.add(assignedFixture.fixtureFunction)) continue
+            if (LOG.isDebugEnabled) {
+                LOG.debug(
+                    "PytestFixtureResolver.collectAssignedFixtures: file='${file.name}', fixture='${assignedFixture.fixtureName}', " +
+                            "target='${assignedFixture.fixtureFunction.name}'"
+                )
+            }
+            result.add(FixtureLink(assignedFixture.fixtureFunction, fixtureName, importElement))
         }
     }
 }

@@ -9,6 +9,7 @@ import com.intellij.util.indexing.*
 import com.intellij.util.io.EnumeratorStringDescriptor
 import com.intellij.util.io.KeyDescriptor
 import com.jetbrains.python.PythonFileType
+import com.jetbrains.python.psi.PyAssignmentStatement
 import com.jetbrains.python.psi.PyFile
 
 /**
@@ -59,6 +60,11 @@ class PytestFixtureFileIndex : ScalarIndexExtension<String>() {
                         result[fixtureName] = null
                     }
                 }
+
+                psiFile.statements.filterIsInstance<PyAssignmentStatement>().forEach { assignment ->
+                    val fixtureName = PytestFixtureUtil.getAssignedFixture(assignment)?.fixtureName ?: return@forEach
+                    result[fixtureName] = null
+                }
             }
             result
         }
@@ -66,21 +72,20 @@ class PytestFixtureFileIndex : ScalarIndexExtension<String>() {
 
     override fun getKeyDescriptor(): KeyDescriptor<String> = EnumeratorStringDescriptor.INSTANCE
 
-    override fun getVersion(): Int = 2
+    override fun getVersion(): Int = 4
 
     /**
-     * Input filter that only accepts Python files in project source content.
-     * This excludes stdlib, third-party dependencies, and library files.
+     * Input filter that accepts Python files in project content or library roots.
      */
     override fun getInputFilter(): FileBasedIndex.InputFilter {
         return object : FileBasedIndex.ProjectSpecificInputFilter {
+
             override fun acceptInput(file: IndexedFile): Boolean {
                 val vFile = file.file
                 if (vFile.fileType != PythonFileType.INSTANCE) return false
                 val project = file.project ?: return false
                 val fileIndex = ProjectFileIndex.getInstance(project)
-                return fileIndex.isInContent(vFile) &&
-                        !fileIndex.isInLibrary(vFile) &&
+                return (fileIndex.isInContent(vFile) || fileIndex.isInLibrary(vFile)) &&
                         !fileIndex.isExcluded(vFile)
             }
         }
