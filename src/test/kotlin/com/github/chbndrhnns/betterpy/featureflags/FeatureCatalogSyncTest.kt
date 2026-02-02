@@ -6,7 +6,7 @@ import com.networknt.schema.JsonSchemaFactory
 import com.networknt.schema.SpecVersion
 import fixtures.TestBase
 import org.w3c.dom.Element
-import java.io.InputStream
+import java.net.URL
 import javax.xml.parsers.DocumentBuilderFactory
 import kotlin.reflect.KClass
 import kotlin.reflect.full.findAnnotation
@@ -122,10 +122,48 @@ class FeatureCatalogSyncTest : TestBase() {
     }
 
     private fun loadPluginXmlRegistrations(): List<Pair<String, String>> {
-        val inputStream = requireNotNull(
-            FeatureCatalogSyncTest::class.java.classLoader.getResourceAsStream("META-INF/plugin.xml")
-        )
-        val document = parseXml(inputStream)
+        val classLoader = FeatureCatalogSyncTest::class.java.classLoader
+        val resourceUrl = requireNotNull(classLoader.getResource("META-INF/plugin.xml"))
+        val visited = mutableSetOf<String>()
+        return collectRegistrationsFromResource(classLoader, resourceUrl, visited).toList()
+    }
+
+    private fun collectRegistrationsFromResource(
+        classLoader: ClassLoader,
+        resourceUrl: URL,
+        visited: MutableSet<String>
+    ): Set<Pair<String, String>> {
+        val resourceKey = resourceUrl.toExternalForm()
+        if (!visited.add(resourceKey)) {
+            return emptySet()
+        }
+
+        val document = parseXml(resourceUrl)
+        val registrations = collectRegistrationsFromDocument(document)
+        val includeHrefs = mutableSetOf<String>()
+        val elements = document.getElementsByTagName("*")
+        for (i in 0 until elements.length) {
+            val element = elements.item(i) as? Element ?: continue
+            if (!isXIncludeElement(element)) {
+                continue
+            }
+            val href = element.getAttribute("href").trim()
+            if (href.isNotEmpty()) {
+                includeHrefs.add(href)
+            }
+        }
+        includeHrefs.addAll(collectIncludeHrefs(resourceUrl))
+
+        for (href in includeHrefs) {
+            val resourcePath = href.trimStart('/')
+            val includedUrl = classLoader.getResource(resourcePath) ?: continue
+            registrations.addAll(collectRegistrationsFromResource(classLoader, includedUrl, visited))
+        }
+
+        return registrations
+    }
+
+    private fun collectRegistrationsFromDocument(document: org.w3c.dom.Document): MutableSet<Pair<String, String>> {
         val elements = document.getElementsByTagName("*")
         val registrations = mutableSetOf<Pair<String, String>>()
 
@@ -150,11 +188,36 @@ class FeatureCatalogSyncTest : TestBase() {
             }
         }
 
-        return registrations.toList()
+        return registrations
     }
 
-    private fun parseXml(inputStream: InputStream) =
-        DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream)
+    private fun parseXml(resourceUrl: URL) =
+        DocumentBuilderFactory.newInstance().apply {
+            isNamespaceAware = true
+            isXIncludeAware = true
+        }.newDocumentBuilder().parse(resourceUrl.toExternalForm())
+
+    companion object {
+        private const val XINCLUDE_NS = "http://www.w3.org/2001/XInclude"
+        private val XINCLUDE_REGEX = Regex(
+            "<\\s*(?:xi:)?include\\b[^>]*\\bhref\\s*=\\s*(['\"])(.*?)\\1",
+            RegexOption.IGNORE_CASE
+        )
+    }
+
+    private fun isXIncludeElement(element: Element): Boolean {
+        val localName = element.localName ?: element.tagName
+        if (localName != "include") {
+            return false
+        }
+        val namespace = element.namespaceURI
+        return namespace == XINCLUDE_NS || element.tagName == "xi:include"
+    }
+
+    private fun collectIncludeHrefs(resourceUrl: URL): Set<String> {
+        val xml = resourceUrl.openStream().bufferedReader().use { it.readText() }
+        return XINCLUDE_REGEX.findAll(xml).map { it.groupValues[2] }.toSet()
+    }
 
     // YAML resource listing is handled by FeatureCatalogLoader; schema validation reuses parsed declarations.
 }
