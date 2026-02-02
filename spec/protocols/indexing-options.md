@@ -12,7 +12,7 @@ you to define your own indexer that processes files directly.
 class PyClassMembersFileIndex : ScalarIndexExtension<String>() {
 
        companion object {
-           val NAME: ID<String, Void> = ID.create("Py.class.members.file")
+           val NAME: ID<String, Void> = ID.create("betterpy.class.members.file")
 
            fun findFilesWithMember(memberName: String, project: Project, scope: GlobalSearchScope): Collection<VirtualFile> {
                return FileBasedIndex.getInstance().getContainingFiles(NAME, memberName, scope)

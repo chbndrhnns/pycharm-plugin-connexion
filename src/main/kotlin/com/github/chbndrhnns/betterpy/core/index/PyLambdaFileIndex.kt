@@ -27,7 +27,7 @@ import com.jetbrains.python.psi.PyLambdaExpression
 class PyLambdaFileIndex : ScalarIndexExtension<String>() {
 
     companion object {
-        val NAME: ID<String, Void> = ID.create("Py.lambda.file")
+        val NAME: ID<String, Void> = ID.create("betterpy.lambda.file")
 
         /**
          * Marker key used to indicate a file contains lambdas.

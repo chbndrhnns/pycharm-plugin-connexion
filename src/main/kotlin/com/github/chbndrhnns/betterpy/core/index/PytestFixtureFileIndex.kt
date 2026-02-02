@@ -21,7 +21,7 @@ import com.jetbrains.python.psi.PyFile
 class PytestFixtureFileIndex : ScalarIndexExtension<String>() {
 
     companion object {
-        val NAME: ID<String, Void> = ID.create("Pytest.fixture.file")
+        val NAME: ID<String, Void> = ID.create("betterpy.pytest.fixture.file")
 
         /**
          * Finds all files that define a fixture with the given name.

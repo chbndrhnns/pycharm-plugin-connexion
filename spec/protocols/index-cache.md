@@ -39,7 +39,7 @@ Create a new stub index that maps method/attribute names directly to classes tha
 
 class PyClassMembersIndex : StringStubIndexExtension<PyClass>() {
     companion object {
-        val KEY: StubIndexKey<String, PyClass> = StubIndexKey.createIndexKey("Py.class.members")
+        val KEY: StubIndexKey<String, PyClass> = StubIndexKey.createIndexKey("betterpy.class.members")
         
         fun findClassesWithMember(memberName: String, project: Project, scope: GlobalSearchScope): Collection<PyClass> {
             return StubIndex.getElements(KEY, memberName, project, scope, PyClass::class.java)

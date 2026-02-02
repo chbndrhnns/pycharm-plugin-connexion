@@ -26,7 +26,7 @@ import com.jetbrains.python.psi.PyFile
 class PyClassMembersFileIndex : ScalarIndexExtension<String>() {
 
     companion object {
-        val NAME: ID<String, Void> = ID.create("Py.class.members.file")
+        val NAME: ID<String, Void> = ID.create("betterpy.class.members.file")
 
         /**
          * Finds all files that contain classes with a member (method or attribute) with the given name.

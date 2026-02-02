@@ -18,7 +18,7 @@ class PyClassMembersIndex : StringStubIndexExtension<PyClass>() {
 
     companion object {
         @JvmField
-        val KEY: StubIndexKey<String, PyClass> = StubIndexKey.createIndexKey("Py.class.members")
+        val KEY: StubIndexKey<String, PyClass> = StubIndexKey.createIndexKey("betterpy.class.members")
 
         /**
          * Finds all classes that have a member (method or attribute) with the given name.

@@ -478,7 +478,7 @@ import com.jetbrains.python.psi.PyClass
 class PyProtocolMembersIndex : StringStubIndexExtension<PyClass>() {
     
     companion object {
-        val KEY: StubIndexKey<String, PyClass> = StubIndexKey.createIndexKey("Py.class.members")
+        val KEY: StubIndexKey<String, PyClass> = StubIndexKey.createIndexKey("betterpy.class.members")
     }
     
     override fun getKey(): StubIndexKey<String, PyClass> = KEY
