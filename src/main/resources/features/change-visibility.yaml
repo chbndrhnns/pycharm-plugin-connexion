@@ -1,0 +1,13 @@
+id: change-visibility
+displayName: Change visibility
+description: Changes the visibility of a symbol (public/protected/private)
+category: CODE_STRUCTURE
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: intentionAction
+    className: com.github.chbndrhnns.betterpy.features.intentions.visibility.PyChangeVisibilityIntention

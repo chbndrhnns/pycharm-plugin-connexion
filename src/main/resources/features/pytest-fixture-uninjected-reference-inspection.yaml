@@ -1,0 +1,15 @@
+id: pytest-fixture-uninjected-reference-inspection
+displayName: Pytest fixture uninjected reference inspection
+description: Reports fixture references inside tests/fixtures that are not declared
+  as parameters
+category: INSPECTIONS
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories:
+  - com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureUninjectedReferenceInspection
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: localInspection
+    className: com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureUninjectedReferenceInspection

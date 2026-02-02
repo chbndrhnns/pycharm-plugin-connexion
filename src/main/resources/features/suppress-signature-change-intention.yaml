@@ -1,0 +1,13 @@
+id: suppress-signature-change-intention
+displayName: Suppress signature change intention
+description: Suppresses the suggested refactoring signature change intention
+category: FILTERS
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: daemon.intentionActionFilter
+    className: com.github.chbndrhnns.betterpy.features.intentions.suppressor.SuppressSuggestedRefactoringIntentionActionFilter

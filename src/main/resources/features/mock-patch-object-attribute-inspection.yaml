@@ -1,0 +1,14 @@
+id: mock-patch-object-attribute-inspection
+displayName: Mock patch object attribute inspection
+description: Reports unresolved attributes in mock.patch.object calls
+category: INSPECTIONS
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories:
+  - com.github.chbndrhnns.betterpy.features.inspections.PyMockPatchObjectAttributeInspection
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: localInspection
+    className: com.github.chbndrhnns.betterpy.features.inspections.PyMockPatchObjectAttributeInspection

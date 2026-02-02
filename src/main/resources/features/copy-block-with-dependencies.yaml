@@ -1,0 +1,11 @@
+id: copy-block-with-dependencies
+displayName: Copy block with dependencies
+description: Copies a code block along with its required imports and dependencies
+category: ACTIONS
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations: [ ]

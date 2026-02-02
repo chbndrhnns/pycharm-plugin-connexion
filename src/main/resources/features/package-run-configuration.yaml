@@ -1,0 +1,11 @@
+id: package-run-configuration
+displayName: Package run configuration
+description: Enables run configuration for Python packages with -m flag
+category: ACTIONS
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations: [ ]

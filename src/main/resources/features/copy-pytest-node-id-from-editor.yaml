@@ -1,0 +1,11 @@
+id: copy-pytest-node-id-from-editor
+displayName: Copy pytest node ID from editor
+description: Copies the pytest node ID for the test at the caret position
+category: ACTIONS
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations: [ ]

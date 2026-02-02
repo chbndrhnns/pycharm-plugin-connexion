@@ -1,0 +1,13 @@
+id: make-parameter-optional
+displayName: Make parameter optional
+description: Converts a required parameter to an optional one with a default value
+category: ARGUMENTS
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: intentionAction
+    className: com.github.chbndrhnns.betterpy.features.intentions.optional.MakeParameterOptionalIntention

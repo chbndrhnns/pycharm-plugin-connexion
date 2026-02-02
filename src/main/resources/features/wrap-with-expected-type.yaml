@@ -1,0 +1,13 @@
+id: wrap-with-expected-type
+displayName: Wrap with expected type
+description: Wraps an expression with a type that matches the expected type annotation
+category: TYPE_WRAPPING
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: intentionAction
+    className: com.github.chbndrhnns.betterpy.features.intentions.WrapWithExpectedTypeIntention

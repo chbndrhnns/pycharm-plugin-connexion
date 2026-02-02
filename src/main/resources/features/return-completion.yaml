@@ -1,0 +1,12 @@
+id: return-completion
+displayName: Return completion
+description: Provides completion suggestions for return statements based on return
+  type
+category: COMPLETION
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations: [ ]

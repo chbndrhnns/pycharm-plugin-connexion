@@ -1,0 +1,14 @@
+id: expected-type-completion
+displayName: Expected type completion
+description: Suggests values based on the expected type at the caret
+category: COMPLETION
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories:
+  - com.github.chbndrhnns.betterpy.features.completion.PyExpectedTypeCompletionContributor
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: completion.contributor
+    className: com.github.chbndrhnns.betterpy.features.completion.PyExpectedTypeCompletionContributor

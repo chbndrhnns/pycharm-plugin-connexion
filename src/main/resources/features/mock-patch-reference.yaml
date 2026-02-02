@@ -1,0 +1,15 @@
+id: mock-patch-reference
+displayName: Mock patch reference
+description: Provides reference resolution for mock.patch target strings
+category: COMPLETION
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: gotoDeclarationHandler
+    className: com.github.chbndrhnns.betterpy.features.navigation.PyMockPatchObjectGotoDeclarationHandler
+  - type: psi.referenceContributor
+    className: com.github.chbndrhnns.betterpy.core.psi.PyMockPatchReferenceContributor

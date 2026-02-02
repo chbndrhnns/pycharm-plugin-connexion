@@ -1,0 +1,14 @@
+id: create-pytest-fixtures-from-parameters
+displayName: Create pytest fixtures from parameters
+description: Offers a quick fix to generate pytest fixtures for unresolved fixture
+  parameters
+category: PYTEST
+maturity: INCUBATING
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: intentionAction
+    className: com.github.chbndrhnns.betterpy.features.pytest.fixture.CreateFixtureFromParameterIntention

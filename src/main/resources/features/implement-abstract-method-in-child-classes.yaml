@@ -1,0 +1,13 @@
+id: implement-abstract-method-in-child-classes
+displayName: Implement abstract method in child classes
+description: Generates implementations of an abstract method in all child classes
+category: ABSTRACT_METHODS
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: intentionAction
+    className: com.github.chbndrhnns.betterpy.features.intentions.abstractmethod.ImplementAbstractMethodInChildClassesIntention

@@ -1,0 +1,18 @@
+id: connexion-line-markers
+displayName: Connexion line markers
+description: Adds navigation gutter icons between OpenAPI specs and Python handlers
+category: CONNEXION
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories:
+  - com.github.chbndrhnns.betterpy.features.connexion.ConnexionPythonLineMarkerProvider
+  - com.github.chbndrhnns.betterpy.features.connexion.ConnexionJsonLineMarkerProvider
+  - com.github.chbndrhnns.betterpy.features.connexion.ConnexionYamlLineMarkerProvider
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: codeInsight.lineMarkerProvider
+    className: com.github.chbndrhnns.betterpy.features.connexion.ConnexionJsonLineMarkerProvider
+  - type: codeInsight.lineMarkerProvider
+    className: com.github.chbndrhnns.betterpy.features.connexion.ConnexionPythonLineMarkerProvider

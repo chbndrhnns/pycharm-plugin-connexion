@@ -1,0 +1,15 @@
+id: convert-pytest-param
+displayName: Convert pytest.param
+description: Converts between different pytest parameter formats
+category: PYTEST
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: intentionAction
+    className: com.github.chbndrhnns.betterpy.features.intentions.pytest.ConvertToPlainParametrizeValuesIntention
+  - type: intentionAction
+    className: com.github.chbndrhnns.betterpy.features.intentions.pytest.ConvertToPytestParamIntention

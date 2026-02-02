@@ -1,0 +1,14 @@
+id: mock-patch-unresolved-reference-inspection
+displayName: Mock patch unresolved reference inspection
+description: Reports unresolved references in mock.patch target strings
+category: INSPECTIONS
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories:
+  - com.github.chbndrhnns.betterpy.features.inspections.PyMockPatchUnresolvedReferenceInspection
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: localInspection
+    className: com.github.chbndrhnns.betterpy.features.inspections.PyMockPatchUnresolvedReferenceInspection

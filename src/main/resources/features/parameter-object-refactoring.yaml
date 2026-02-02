@@ -1,0 +1,13 @@
+id: parameter-object-refactoring
+displayName: Parameter object refactoring
+description: Enables introduce/inline parameter object refactoring actions
+category: ACTIONS
+maturity: STABLE
+youtrackIssues:
+  - PY-59270
+loggingCategories:
+  - com.github.chbndrhnns.betterpy.features.refactoring.parameterobject
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations: [ ]

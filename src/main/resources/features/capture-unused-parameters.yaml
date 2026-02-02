@@ -1,0 +1,13 @@
+id: capture-unused-parameters
+displayName: Capture unused parameters
+description: Assigns unused parameters to '_' in a single statement
+category: ARGUMENTS
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: intentionAction
+    className: com.github.chbndrhnns.betterpy.features.intentions.CaptureUnusedParametersIntention

@@ -1,0 +1,16 @@
+id: enhanced-dataclass-quick-info
+displayName: Enhanced Dataclass Quick Info
+description: Shows fields and inheritance details in Quick Documentation for dataclasses
+  and Pydantic models
+category: DOCUMENTATION
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: lang.documentationProvider
+    className: com.github.chbndrhnns.betterpy.features.documentation.DataclassQuickInfoProvider
+  - type: pythonDocumentationQuickInfoProvider
+    className: com.github.chbndrhnns.betterpy.features.documentation.DataclassQuickInfoProvider

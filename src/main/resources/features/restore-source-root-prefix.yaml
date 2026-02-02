@@ -1,0 +1,13 @@
+id: restore-source-root-prefix
+displayName: Restore source root prefix
+description: Restores the source root prefix in import statements
+category: IMPORTS
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: canonicalPathProvider
+    className: com.github.chbndrhnns.betterpy.features.imports.SourceRootPrefixProvider

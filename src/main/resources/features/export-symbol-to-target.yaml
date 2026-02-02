@@ -1,0 +1,13 @@
+id: export-symbol-to-target
+displayName: Export symbol to target
+description: Exports a symbol to a specified target module's __all__
+category: IMPORTS
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: intentionAction
+    className: com.github.chbndrhnns.betterpy.features.exports.PyExportSymbolToTargetIntention

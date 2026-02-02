@@ -1,0 +1,13 @@
+id: test-usage-filtering
+displayName: Test usage filtering
+description: Adds a Find Usages filter to show only test usages
+category: FILTERS
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: usageFilteringRuleProvider
+    className: com.github.chbndrhnns.betterpy.features.usages.PyTestUsageFilteringRuleProvider

@@ -1,0 +1,14 @@
+id: py-goto-target-presentation
+displayName: Enhanced Go to Implementation presentation
+description: Prepends class name to method name in Go to Implementation popup when
+  names are identical
+category: NAVIGATION
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: gotoTargetPresentationProvider
+    className: com.github.chbndrhnns.betterpy.features.navigation.PyGotoTargetPresentationProvider

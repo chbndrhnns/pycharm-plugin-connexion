@@ -1,0 +1,16 @@
+id: populate-arguments
+displayName: Populate arguments
+description: Automatically fills in function call arguments based on the function
+  signature
+category: ARGUMENTS
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: intentionAction
+    className: com.github.chbndrhnns.betterpy.features.intentions.populate.PopulateArgumentsIntention
+  - type: intentionAction
+    className: com.github.chbndrhnns.betterpy.features.intentions.populate.PopulateArgumentsRecursiveFromLocalsIntention

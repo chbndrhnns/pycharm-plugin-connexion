@@ -1,0 +1,13 @@
+id: strip-signature-type-annotations
+displayName: Strip signature type annotations
+description: Removes type annotations from a function signature
+category: CODE_STRUCTURE
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: intentionAction
+    className: com.github.chbndrhnns.betterpy.features.intentions.signature.StripSignatureTypeAnnotationsIntention

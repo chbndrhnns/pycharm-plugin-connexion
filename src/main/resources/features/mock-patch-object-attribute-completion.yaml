@@ -1,0 +1,14 @@
+id: mock-patch-object-attribute-completion
+displayName: Mock patch object attribute completion
+description: Completes attributes for mock.patch.object targets
+category: COMPLETION
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories:
+  - com.github.chbndrhnns.betterpy.features.completion.PyMockPatchObjectAttributeCompletionContributor
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: completion.contributor
+    className: com.github.chbndrhnns.betterpy.features.completion.PyMockPatchObjectAttributeCompletionContributor

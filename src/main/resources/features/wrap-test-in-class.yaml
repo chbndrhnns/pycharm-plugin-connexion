@@ -1,0 +1,15 @@
+id: wrap-test-in-class
+displayName: Wrap test in class
+description: Wraps a test function in a test class
+category: PYTEST
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: intentionAction
+    className: com.github.chbndrhnns.betterpy.features.intentions.pytest.MoveTestToClassIntention
+  - type: intentionAction
+    className: com.github.chbndrhnns.betterpy.features.intentions.pytest.WrapTestInClassIntention

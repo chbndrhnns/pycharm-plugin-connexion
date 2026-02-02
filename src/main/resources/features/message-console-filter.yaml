@@ -1,0 +1,13 @@
+id: message-console-filter
+displayName: Message console filter
+description: Filters and formats Python messages in the console
+category: FILTERS
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: consoleFilterProvider
+    className: com.github.chbndrhnns.betterpy.features.testing.PyMessageFilterProvider

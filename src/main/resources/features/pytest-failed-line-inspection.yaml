@@ -1,0 +1,17 @@
+id: pytest-failed-line-inspection
+displayName: Pytest failed line inspection
+description: Marks the line where a pytest test failed
+category: INSPECTIONS
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories:
+  - com.github.chbndrhnns.betterpy.features.pytest.outcome.PyTestFailedLineInspection
+  - com.github.chbndrhnns.betterpy.features.pytest.outcome.TestOutcomeDiffService
+  - com.github.chbndrhnns.betterpy.features.pytest.outcome.TestFailureListener
+  - com.github.chbndrhnns.betterpy.features.pytest.outcome.PytestLocationUrlFactory
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: localInspection
+    className: com.github.chbndrhnns.betterpy.features.pytest.outcome.PyTestFailedLineInspection

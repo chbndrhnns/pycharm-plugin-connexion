@@ -1,0 +1,13 @@
+id: create-local-variable
+displayName: Create local variable
+description: Creates a local variable from an expression
+category: ARGUMENTS
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: intentionAction
+    className: com.github.chbndrhnns.betterpy.features.intentions.localvariable.CreateLocalVariableIntention

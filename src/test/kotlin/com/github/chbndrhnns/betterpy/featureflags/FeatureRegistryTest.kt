@@ -3,7 +3,7 @@ package com.github.chbndrhnns.betterpy.featureflags
 import fixtures.TestBase
 
 /**
- * Tests for [FeatureRegistry] to verify annotation-based feature discovery and metadata access.
+ * Tests for [FeatureRegistry] to verify feature discovery and metadata access.
  */
 class FeatureRegistryTest : TestBase() {
 

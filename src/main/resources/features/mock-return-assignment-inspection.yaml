@@ -1,0 +1,14 @@
+id: mock-return-assignment-inspection
+displayName: Mock return assignment inspection
+description: Reports invalid assignments to mock return values
+category: INSPECTIONS
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories:
+  - com.github.chbndrhnns.betterpy.features.inspections.PyMockReturnAssignmentInspection
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: localInspection
+    className: com.github.chbndrhnns.betterpy.features.inspections.PyMockReturnAssignmentInspection

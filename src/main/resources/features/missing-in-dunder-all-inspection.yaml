@@ -1,0 +1,13 @@
+id: missing-in-dunder-all-inspection
+displayName: Missing in __all__ inspection
+description: Reports public symbols that are not listed in __all__
+category: INSPECTIONS
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: localInspection
+    className: com.github.chbndrhnns.betterpy.features.exports.PyMissingInDunderAllInspection

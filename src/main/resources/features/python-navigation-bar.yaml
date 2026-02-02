@@ -1,0 +1,14 @@
+id: python-navigation-bar
+displayName: Python navigation bar
+description: Enables enhanced Python navigation bar with module path display
+category: NAVIGATION
+maturity: STABLE
+youtrackIssues:
+  - PY-53757
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: navbar
+    className: com.github.chbndrhnns.betterpy.features.navbar.PyNavBarModelExtension

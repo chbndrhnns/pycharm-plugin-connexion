@@ -1,0 +1,11 @@
+id: copy-build-number
+displayName: Copy build number
+description: Copies the IDE build number to the clipboard
+category: ACTIONS
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations: [ ]

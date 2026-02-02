@@ -1,0 +1,14 @@
+id: add-self-parameter
+displayName: Add self parameter
+description: Adds a missing self parameter to instance methods
+category: CODE_STRUCTURE
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories:
+  - com.github.chbndrhnns.betterpy.features.intentions.AddSelfParameterIntention
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: intentionAction
+    className: com.github.chbndrhnns.betterpy.features.intentions.AddSelfParameterIntention

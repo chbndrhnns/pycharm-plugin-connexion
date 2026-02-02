@@ -1,0 +1,13 @@
+id: parametrize-pytest-test
+displayName: Parametrize pytest test
+description: Converts a test function to use @pytest.mark.parametrize
+category: PYTEST
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: intentionAction
+    className: com.github.chbndrhnns.betterpy.features.intentions.pytest.ParametrizePytestTestIntention

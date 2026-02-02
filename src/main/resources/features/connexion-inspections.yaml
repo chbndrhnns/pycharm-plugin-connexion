@@ -1,0 +1,13 @@
+id: connexion-inspections
+displayName: Connexion inspections
+description: Enables inspections for Connexion API framework
+category: CONNEXION
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: localInspection
+    className: com.github.chbndrhnns.betterpy.features.connexion.ConnexionJsonInspection

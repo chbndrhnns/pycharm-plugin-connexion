@@ -1,0 +1,13 @@
+id: surround-with-pytest-raises
+displayName: Surround with pytest.raises()
+description: Wraps a statement with pytest.raises() in test contexts
+category: PYTEST
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: lang.surroundDescriptor
+    className: com.github.chbndrhnns.betterpy.features.pytest.surround.PytestSurroundDescriptor

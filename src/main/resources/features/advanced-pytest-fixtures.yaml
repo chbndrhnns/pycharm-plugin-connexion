@@ -1,0 +1,29 @@
+id: advanced-pytest-fixtures
+displayName: Advanced pytest fixture features
+description: Adds navigation, hierarchy, and override support for pytest fixtures
+category: PYTEST
+maturity: INCUBATING
+youtrackIssues:
+  - PY-81495
+loggingCategories:
+  - com.github.chbndrhnns.betterpy.features.pytest.fixture
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: codeInsight.gotoSuper
+    className: com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureGotoSuperHandler
+  - type: codeInsight.lineMarkerProvider
+    className: com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureLineMarkerProvider
+  - type: codeInsight.overrideMethod
+    className: com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureOverrideMethodsHandler
+  - type: definitionsScopedSearch
+    className: com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureImplementationSearch
+  - type: findUsagesHandlerFactory
+    className: com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureFindUsagesHandlerFactory
+  - type: psi.referenceContributor
+    className: com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureReferenceContributor
+  - type: pySuperMethodsSearch
+    className: com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureSuperMethodsSearchExecutor
+  - type: renamePsiElementProcessor
+    className: com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureRenameProcessor

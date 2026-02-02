@@ -1,0 +1,13 @@
+id: assign-statement-to-variable
+displayName: Assign statement to variable
+description: Assigns a statement expression to a new local variable
+category: ARGUMENTS
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: intentionAction
+    className: com.github.chbndrhnns.betterpy.features.intentions.localvariable.AssignStatementToVariableIntention

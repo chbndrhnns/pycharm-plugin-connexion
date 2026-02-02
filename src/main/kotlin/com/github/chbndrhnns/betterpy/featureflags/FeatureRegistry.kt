@@ -48,6 +48,14 @@ class FeatureRegistry {
         }
     }
 
+    private data class ToggleBinding(
+        val id: String,
+        val propertyName: String,
+        val annotation: Feature,
+        val getter: () -> Boolean,
+        val setter: (Boolean) -> Unit
+    )
+
     private val features: Map<String, FeatureInfo> by lazy { buildFeatureMap() }
 
     /** Returns all registered features. */
@@ -119,12 +127,34 @@ class FeatureRegistry {
         val visited = mutableSetOf<kotlin.reflect.KClass<*>>()
 
         // Scan top-level properties in PluginSettingsState.State
+        val bindings = mutableListOf<ToggleBinding>()
         scanPropertiesForFeatures(
             klass = PluginSettingsState.State::class,
             instanceGetter = { PluginSettingsState.instance().state },
-            result = result,
+            result = bindings,
             visited = visited
         )
+
+        val catalog = FeatureCatalogLoader.load()
+        val declarationsById = catalog.associateBy { it.id }
+
+        bindings.forEach { binding ->
+            val declaration = declarationsById[binding.id] ?: FeatureDeclaration.fromAnnotation(binding.annotation)
+            result[binding.id] = FeatureInfo(
+                id = declaration.id,
+                displayName = declaration.displayName,
+                description = declaration.description,
+                maturity = declaration.maturity,
+                category = declaration.category,
+                youtrackIssues = declaration.youtrackIssues,
+                loggingCategories = declaration.loggingCategories,
+                since = declaration.since,
+                removeIn = declaration.removeIn,
+                propertyName = binding.propertyName,
+                getter = binding.getter,
+                setter = binding.setter
+            )
+        }
 
         return result
     }
@@ -137,7 +167,7 @@ class FeatureRegistry {
     private fun <T : Any> scanPropertiesForFeatures(
         klass: kotlin.reflect.KClass<T>,
         instanceGetter: () -> T,
-        result: MutableMap<String, FeatureInfo>,
+        result: MutableList<ToggleBinding>,
         visited: MutableSet<kotlin.reflect.KClass<*>>
     ) {
         // Prevent infinite recursion by tracking visited classes
@@ -153,25 +183,20 @@ class FeatureRegistry {
                 // This is a @Feature-annotated Boolean property
                 val mutableProp = prop as KMutableProperty1<T, Boolean>
 
-                result[annotation.id] = FeatureInfo(
-                    id = annotation.id,
-                    displayName = annotation.displayName,
-                    description = annotation.description,
-                    maturity = annotation.maturity,
-                    category = annotation.category,
-                    youtrackIssues = annotation.youtrackIssues.toList(),
-                    loggingCategories = annotation.loggingCategories.toList(),
-                    since = annotation.since,
-                    removeIn = annotation.removeIn,
-                    propertyName = prop.name,
-                    getter = {
-                        val instance = instanceGetter()
-                        mutableProp.get(instance)
-                    },
-                    setter = { value ->
-                        val instance = instanceGetter()
-                        mutableProp.set(instance, value)
-                    }
+                result.add(
+                    ToggleBinding(
+                        id = annotation.id,
+                        propertyName = prop.name,
+                        annotation = annotation,
+                        getter = {
+                            val instance = instanceGetter()
+                            mutableProp.get(instance)
+                        },
+                        setter = { value ->
+                            val instance = instanceGetter()
+                            mutableProp.set(instance, value)
+                        }
+                    )
                 )
             } else if (prop is KMutableProperty1<*, *> && prop.returnType.classifier is kotlin.reflect.KClass<*>) {
                 // Check if this is a nested settings object (data class with @Feature-annotated properties)

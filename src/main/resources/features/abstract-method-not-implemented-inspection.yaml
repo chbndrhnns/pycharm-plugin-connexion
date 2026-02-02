@@ -1,0 +1,13 @@
+id: abstract-method-not-implemented-inspection
+displayName: Abstract method not implemented inspection
+description: Reports abstract methods that are not implemented in concrete subclasses
+category: INSPECTIONS
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: localInspection
+    className: com.github.chbndrhnns.betterpy.features.inspections.PyAbstractMethodNotImplementedInChildInspection

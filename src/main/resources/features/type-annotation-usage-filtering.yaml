@@ -1,0 +1,13 @@
+id: type-annotation-usage-filtering
+displayName: Type annotation usage filtering
+description: Filters out type annotation usages from Find Usages results
+category: FILTERS
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: usageFilteringRuleProvider
+    className: com.github.chbndrhnns.betterpy.features.usages.PyTypeAnnotationFilteringRuleProvider
