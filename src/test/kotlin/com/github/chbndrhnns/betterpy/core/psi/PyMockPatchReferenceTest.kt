@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.betterpy.core.psi
 
 import com.intellij.psi.PsiPolyVariantReference
+import com.intellij.refactoring.rename.RenameProcessor
 import com.jetbrains.python.psi.PyClass
 import com.jetbrains.python.psi.PyFunction
 import fixtures.SettingsTestUtils.withPluginSettings
@@ -115,6 +116,40 @@ class PyMockPatchReferenceTest : TestBase() {
             """
             from unittest.mock import patch
             
+            @patch('RenameModule.NewClass')
+            def test_something(mock_cls):
+                pass
+        """.trimIndent()
+        )
+    }
+
+    fun testRenameWithSearchInStringsDisabledStillUpdatesPatch() {
+        myFixture.addFileToProject(
+            "RenameModule.py", """
+            class OldClass:
+                pass
+        """.trimIndent()
+        )
+
+        myFixture.configureByText(
+            "test_rename_settings.py", """
+            from unittest.mock import patch
+
+            @patch('RenameModule.Old<caret>Class')
+            def test_something(mock_cls):
+                pass
+        """.trimIndent()
+        )
+
+        val element = myFixture.elementAtCaret
+        assertInstanceOf(element, PyClass::class.java)
+
+        RenameProcessor(project, element, "NewClass", false, false).run()
+
+        myFixture.checkResult(
+            """
+            from unittest.mock import patch
+
             @patch('RenameModule.NewClass')
             def test_something(mock_cls):
                 pass

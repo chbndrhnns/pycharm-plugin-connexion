@@ -26,7 +26,7 @@ class PyDottedSegmentReference(
         return this.element
     }
 
-    override fun isSoft(): Boolean = true
+    override fun isSoft(): Boolean = false
 
     override fun multiResolve(incompleteCode: Boolean): Array<ResolveResult> {
         element.stringValueTextRange
