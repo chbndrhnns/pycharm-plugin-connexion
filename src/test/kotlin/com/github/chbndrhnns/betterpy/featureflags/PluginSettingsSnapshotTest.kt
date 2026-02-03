@@ -3,6 +3,7 @@ package com.github.chbndrhnns.betterpy.featureflags
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.ui.DialogPanel
+import com.intellij.ui.SearchTextField
 import fixtures.TestBase
 import io.github.classgraph.ClassGraph
 import java.awt.Component
@@ -141,6 +142,10 @@ class PluginSettingsSnapshotTest : TestBase() {
             else -> sb.append(component.javaClass.simpleName)
         }
         sb.append("\n")
+
+        if (component is SearchTextField) {
+            return sb.toString()
+        }
 
         if (component is Container) {
             for (child in component.components) {
