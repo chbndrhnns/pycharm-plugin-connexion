@@ -3,6 +3,7 @@ package com.github.chbndrhnns.betterpy.features.statusbar
 import com.github.chbndrhnns.betterpy.core.python.PythonVersionGuard
 import com.github.chbndrhnns.betterpy.featureflags.PluginSettingsConfigurable
 import com.github.chbndrhnns.betterpy.featureflags.PluginSettingsState
+import com.github.chbndrhnns.betterpy.features.actions.CopyDiagnosticDataAction
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.options.ConfigurableGroup
 import com.intellij.openapi.options.ShowSettingsUtil
@@ -77,6 +78,8 @@ class BetterPyStatusBarWidgetTest : TestBase() {
     fun testPopupActionsIncludeSettings() {
         val widget = createWidget()
         val actions = widget.getPopupActions().map { it.label }
+        println("BetterPyStatusBarWidget popup actions: $actions")
+        println("BetterPy diagnostic data:\n${CopyDiagnosticDataAction.getDiagnosticData()}")
         assertContainsElements(actions, "Settings")
         assertContainsElements(actions, "Copy Diagnostic Data")
     }
