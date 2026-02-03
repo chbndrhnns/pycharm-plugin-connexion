@@ -17,6 +17,7 @@ import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
+import com.intellij.psi.PsiManager
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.jetbrains.python.inspections.PyInspection
@@ -217,10 +218,12 @@ class PyMockPatchUnresolvedReferenceInspection : PyInspection() {
 
         // Find modules
         try {
-            val modules = FilenameIndex.getFilesByName(project, "$name.py", scope)
+            val modules = FilenameIndex.getVirtualFilesByName("$name.py", scope)
+                .mapNotNull { PsiManager.getInstance(project).findFile(it) }
             result.addAll(modules)
             // Also try searching for directory with __init__.py (package)
-            val packages = FilenameIndex.getFilesByName(project, "__init__.py", scope)
+            val packages = FilenameIndex.getVirtualFilesByName("__init__.py", scope)
+                .mapNotNull { PsiManager.getInstance(project).findFile(it) }
                 .filter { 
                     it.parent?.name == name
                 }

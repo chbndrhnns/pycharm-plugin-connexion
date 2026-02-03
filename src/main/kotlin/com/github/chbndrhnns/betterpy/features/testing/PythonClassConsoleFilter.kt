@@ -2,7 +2,7 @@ package com.github.chbndrhnns.betterpy.features.testing
 
 import com.intellij.execution.filters.Filter
 import com.intellij.execution.filters.HyperlinkInfo
-import com.intellij.openapi.project.DumbService
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.roots.ProjectRootManager
@@ -83,9 +83,9 @@ class PythonClassConsoleFilter(private val project: Project) : Filter {
 
         override fun navigate(project: Project) {
             val element = runWithModalProgressBlocking(project, "") {
-                DumbService.getInstance(project).runReadActionInSmartMode<PsiElement?> {
-                    resolveClass(project, classQName)
-                }
+                ReadAction.nonBlocking<PsiElement?> { resolveClass(project, classQName) }
+                    .inSmartMode(project)
+                    .executeSynchronously()
             }
             (element as? Navigatable)?.navigate(true)
         }
