@@ -141,8 +141,9 @@ intellijPlatform {
 changelog {
     groups.empty()
     repositoryUrl = providers.gradleProperty("pluginRepositoryUrl")
-    // Support CalVer format: YYYY.MM.PATCH or YYYY.MM.PATCH-channel.build (extracts from [version] format)
-    headerParserRegex.set("""\d{4}\.\d{1,2}\.\d+(-\w+\.\w+)?""".toRegex())
+    // Support CalVer format: YYYY.MM.PATCH or YYYY.MM.PATCH-channel.build (two-digit month)
+    // Include Unreleased so getChangelog --unreleased works.
+    headerParserRegex.set("""(Unreleased|\d{4}\.\d{2}\.\d+(-\w+\.\w+)?)""".toRegex())
     version.set(providers.gradleProperty("pluginVersion"))
 }
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-BetterPy uses **CalVer** (Calendar Versioning) with the format: `YYYY.MM.PATCH[-channel.build]`
+BetterPy uses **CalVer** (Calendar Versioning) with the format: `YYYY.MM.PATCH[-channel.build]` (MM is zero-padded)
 
 This versioning scheme provides:
 - Clear timeline visibility for releases

@@ -94,7 +94,7 @@ get_next_version() {
 
     local current_year current_month
     current_year=$(date +%Y)
-    current_month=$(date +%m | sed 's/^0//')  # Remove leading zero
+    current_month=$(date +%m)  # Keep leading zero for two-digit month
 
     local next_version
 

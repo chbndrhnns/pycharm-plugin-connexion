@@ -58,7 +58,7 @@ fi
 # Generate changelog with git-cliff if available
 if command -v git-cliff >/dev/null 2>&1; then
   echo "Generating changelog with git-cliff for version $VERSION..."
-  git-cliff --tag "$VERSION" -o CHANGELOG.md
+  git-cliff --tag "$VERSION" --unreleased -o CHANGELOG.md
   echo "Changelog updated in CHANGELOG.md"
 else
   echo "WARNING: git-cliff not found. Using existing CHANGELOG.md" >&2
