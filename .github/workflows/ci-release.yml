@@ -80,10 +80,16 @@ jobs:
       - name: Build Plugin
         run: ./gradlew buildPlugin
 
+      - name: Generate Release Notes
+        run: |
+          RELEASE_NOTE="./build/tmp/release_note.txt"
+          mkdir -p "$(dirname "$RELEASE_NOTE")"
+          ./gradlew getChangelog --unreleased --no-header --quiet --console=plain --output-file="$RELEASE_NOTE"
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.VERSION }}
           files: build/distributions/*.zip
-          generate_release_notes: true
+          body_path: ./build/tmp/release_note.txt
           prerelease: ${{ contains(env.VERSION, '-') }}
