@@ -20,11 +20,12 @@ class CopyDiagnosticDataActionTest : TestBase() {
         val pluginVersion = "1.2.3"
         val ideBuildNumber = "PY-243.12345"
 
-        val result = CopyDiagnosticDataAction.formatDiagnosticData(pluginVersion, ideBuildNumber)
+        val result = CopyDiagnosticDataAction.formatDiagnosticData(pluginVersion, ideBuildNumber, emptyList())
 
         val expected = """
             BetterPy Plugin Version: 1.2.3
             IDE Build Number: PY-243.12345
+            Enabled Features: none
         """.trimIndent()
 
         assertEquals(expected, result)
@@ -52,6 +53,10 @@ class CopyDiagnosticDataActionTest : TestBase() {
         assertTrue(
             "Diagnostic data should contain IDE build number label",
             diagnosticData.contains("IDE Build Number:")
+        )
+        assertTrue(
+            "Diagnostic data should contain enabled features label",
+            diagnosticData.contains("Enabled Features:")
         )
     }
 }

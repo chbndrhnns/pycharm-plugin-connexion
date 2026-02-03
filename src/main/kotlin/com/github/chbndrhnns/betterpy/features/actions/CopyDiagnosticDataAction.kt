@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.betterpy.features.actions
 
+import com.github.chbndrhnns.betterpy.featureflags.FeatureRegistry
 import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
@@ -25,15 +26,39 @@ class CopyDiagnosticDataAction : AnAction() {
             return ApplicationInfo.getInstance().build.asString()
         }
 
-        fun formatDiagnosticData(pluginVersion: String, ideBuildNumber: String): String {
-            return """
-                BetterPy Plugin Version: $pluginVersion
-                IDE Build Number: $ideBuildNumber
-            """.trimIndent()
+        fun formatDiagnosticData(
+            pluginVersion: String,
+            ideBuildNumber: String,
+            enabledFeatures: List<FeatureRegistry.FeatureInfo>
+        ): String {
+            val enabledFeaturesBlock = formatEnabledFeatures(enabledFeatures)
+            return buildString {
+                appendLine("BetterPy Plugin Version: $pluginVersion")
+                appendLine("IDE Build Number: $ideBuildNumber")
+                append(enabledFeaturesBlock)
+            }.trimEnd()
+        }
+
+        private fun formatEnabledFeatures(enabledFeatures: List<FeatureRegistry.FeatureInfo>): String {
+            if (enabledFeatures.isEmpty()) {
+                return "Enabled Features: none"
+            }
+
+            return buildString {
+                appendLine("Enabled Features:")
+                enabledFeatures
+                    .sortedBy { it.displayName }
+                    .forEach { feature ->
+                        appendLine("- ${feature.id} (${feature.displayName})")
+                    }
+            }.trimEnd()
         }
 
         fun getDiagnosticData(): String {
-            return formatDiagnosticData(getPluginVersion(), getIdeBuildNumber())
+            val enabledFeatures = FeatureRegistry.instance()
+                .getAllFeatures()
+                .filter { it.isEnabled() }
+            return formatDiagnosticData(getPluginVersion(), getIdeBuildNumber(), enabledFeatures)
         }
     }
 
