@@ -87,7 +87,7 @@ class BetterPyStatusBarWidgetTest : TestBase() {
 
         val widget = createWidget()
         val actions = widget.getPopupActions().map { it.label }
-        assertContainsElements(actions, "Disable all features")
+        assertContainsElements(actions, "Disable all features (temporary until restart)")
         assertFalse(actions.contains("Enable all features"))
     }
 
@@ -98,7 +98,7 @@ class BetterPyStatusBarWidgetTest : TestBase() {
             val widget = createWidget()
             val actions = widget.getPopupActions().map { it.label }
             assertContainsElements(actions, "Enable all features")
-            assertFalse(actions.contains("Disable all features"))
+            assertFalse(actions.contains("Disable all features (temporary until restart)"))
         } finally {
             settings.unmute()
         }
