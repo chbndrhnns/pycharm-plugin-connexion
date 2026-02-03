@@ -605,7 +605,7 @@
         </action>
         <action id="com.github.chbndrhnns.betterpy.features.actions.ToggleIncubatingFeaturesAction"
                 class="com.github.chbndrhnns.betterpy.features.actions.ToggleIncubatingFeaturesAction"
-                text="BetterPy: Toggle Incubating Features"
+                text="BetterPy: Toggle Incubating Features (Temporary until Restart)"
                 description="Temporarily toggles all incubating features (resets on restart)">
             <add-to-group group-id="HelpMenu" anchor="last"/>
         </action>

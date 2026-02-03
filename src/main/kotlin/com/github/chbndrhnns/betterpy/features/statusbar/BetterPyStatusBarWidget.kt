@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.betterpy.features.statusbar
 
 import com.github.chbndrhnns.betterpy.core.python.PythonVersionGuard
+import com.github.chbndrhnns.betterpy.featureflags.FeatureRegistry
 import com.github.chbndrhnns.betterpy.featureflags.PluginSettingsConfigurable
 import com.github.chbndrhnns.betterpy.featureflags.PluginSettingsState
 import com.intellij.openapi.actionSystem.ActionManager
@@ -111,10 +112,12 @@ class BetterPyStatusBarWidget(
             }
 
             override fun getFinalRunnable(): Runnable? {
-                return when (lastSelectedValue?.label) {
-                    "Copy Diagnostic Data" -> Runnable { invokeCopyDiagnosticDataAction() }
-                    "Settings" -> Runnable { invokeShowSettingsAction() }
-                    "Toggle incubating features" -> Runnable { invokeToggleIncubatingFeaturesAction() }
+                val label = lastSelectedValue?.label
+                return when {
+                    label == "Copy Diagnostic Data" -> Runnable { invokeCopyDiagnosticDataAction() }
+                    label == "Settings" -> Runnable { invokeShowSettingsAction() }
+                    label?.startsWith("Turn incubating features ") == true ->
+                        Runnable { invokeToggleIncubatingFeaturesAction() }
                     else -> null
                 }
             }
@@ -146,10 +149,11 @@ class BetterPyStatusBarWidget(
             actions.add(PopupAction("Disable all features"))
         }
         val incubatingEnabled = isEnvironmentSupported() && !settings.isMuted()
-        val incubatingLabel = if (settings.isIncubatingOverrideActive()) {
-            "Turn incubating features off"
+        val incubatingActive = FeatureRegistry.instance().getEnabledIncubatingFeatures().isNotEmpty()
+        val incubatingLabel = if (incubatingActive) {
+            "Turn incubating features off (temporary until restart)"
         } else {
-            "Turn incubating features on"
+            "Turn incubating features on (temporary until restart)"
         }
         actions.add(PopupAction(incubatingLabel, incubatingEnabled))
         return actions
