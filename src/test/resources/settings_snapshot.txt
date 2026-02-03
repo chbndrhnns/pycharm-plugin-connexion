@@ -17,9 +17,6 @@ DialogPanel
     MaturityFilterTag
       Label: 'Deprecated'
   SearchTextField
-    TextField: ''
-      Button: ''
-      Label: ' '
   
     Label: 'Type Wrapping/Unwrapping'
     JSeparator
@@ -1575,9 +1572,6 @@ DialogPanel
     MaturityFilterTag
       Label: 'Deprecated'
   SearchTextField
-    TextField: ''
-      Button: ''
-      Label: ' '
   
     Label: 'Pytest'
     JSeparator
