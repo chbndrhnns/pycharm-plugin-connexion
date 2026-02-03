@@ -7,6 +7,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.project.DumbService
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.roots.OrderEnumerator
 import com.intellij.openapi.vfs.VfsUtil
@@ -303,6 +304,7 @@ object PytestFixtureResolver {
 
         val file = usageElement.containingFile as? PyFile ?: return result
         val virtualFile = file.virtualFile ?: return result
+        val pluginRoots = buildPluginRoots(usageElement, file.project)
 
         var currentDir = virtualFile.parent
 
@@ -322,6 +324,15 @@ object PytestFixtureResolver {
                         }
                     }
                     collectAssignedFixtures(psiFile, fixtureName, seen, result)
+                    val pluginModules = extractPytestPluginModules(psiFile)
+                    collectPluginFixturesFromModules(
+                        pluginModules,
+                        pluginRoots,
+                        fixtureName,
+                        seen,
+                        result,
+                        file.project
+                    )
                 }
             }
             currentDir = currentDir.parent
@@ -339,23 +350,8 @@ object PytestFixtureResolver {
         val project = usageElement.project
         if (DumbService.isDumb(project)) return result
 
-        val roots = mutableSetOf<VirtualFile>()
-        val classRoots = OrderEnumerator.orderEntries(project)
-            .librariesOnly()
-            .classes()
-            .roots
-        for (root in classRoots) {
-            roots.add(root)
-        }
-        val sourceRoots = OrderEnumerator.orderEntries(project)
-            .librariesOnly()
-            .sources()
-            .roots
-        for (root in sourceRoots) {
-            roots.add(root)
-        }
+        val roots = buildPluginRoots(usageElement, project)
         val sdkRoots = findSdkRoots(usageElement, project)
-        roots.addAll(sdkRoots)
 
         if (LOG.isDebugEnabled) {
             LOG.debug(
@@ -363,9 +359,9 @@ object PytestFixtureResolver {
             )
         }
 
+        val entryModules = mutableListOf<String>()
         for (root in roots) {
             val distInfos = root.children.filter { it.isDirectory && it.name.endsWith(".dist-info") }
-            val entryModules = mutableListOf<String>()
             for (distInfo in distInfos) {
                 val entryPointsFile = distInfo.findChild("entry_points.txt") ?: continue
                 val modules = parsePytestEntryPointModules(entryPointsFile)
@@ -385,35 +381,8 @@ object PytestFixtureResolver {
                 )
             }
             entryModules.addAll(pyprojectModules)
-
-            if (entryModules.isNotEmpty()) {
-                val queue = ArrayDeque(entryModules)
-                val processed = mutableSetOf<String>()
-                while (queue.isNotEmpty()) {
-                    val moduleName = queue.removeFirst()
-                    if (!processed.add(moduleName)) continue
-                    val moduleFile = resolveModuleFile(project, root, moduleName) ?: continue
-                    if (LOG.isDebugEnabled) {
-                        LOG.debug(
-                            "PytestFixtureResolver.findPluginFixtures: module='$moduleName', file='${moduleFile.name}'"
-                        )
-                    }
-                    collectFixturesFromModuleFile(moduleFile, fixtureName, seen, result)
-                    collectFixturesFromPackage(moduleFile, fixtureName, seen, result)
-                    val plugins = extractPytestPluginModules(moduleFile)
-                    if (plugins.isNotEmpty() && LOG.isDebugEnabled) {
-                        LOG.debug(
-                            "PytestFixtureResolver.findPluginFixtures: pytest_plugins from '${moduleFile.name}' -> ${
-                                plugins.joinToString(
-                                    ","
-                                )
-                            }"
-                        )
-                    }
-                    queue.addAll(plugins)
-                }
-            }
         }
+        collectPluginFixturesFromModules(entryModules, roots, fixtureName, seen, result, project)
 
         return result
     }
@@ -434,6 +403,30 @@ object PytestFixtureResolver {
         sdk.rootProvider.getFiles(com.intellij.openapi.roots.OrderRootType.CLASSES).forEach { result.add(it) }
         sdk.rootProvider.getFiles(com.intellij.openapi.roots.OrderRootType.SOURCES).forEach { result.add(it) }
         return result
+    }
+
+    private fun buildPluginRoots(
+        usageElement: PsiElement,
+        project: com.intellij.openapi.project.Project
+    ): Set<VirtualFile> {
+        val roots = mutableSetOf<VirtualFile>()
+        val classRoots = OrderEnumerator.orderEntries(project)
+            .librariesOnly()
+            .classes()
+            .roots
+        for (root in classRoots) {
+            roots.add(root)
+        }
+        val sourceRoots = OrderEnumerator.orderEntries(project)
+            .librariesOnly()
+            .sources()
+            .roots
+        for (root in sourceRoots) {
+            roots.add(root)
+        }
+        roots.addAll(findSdkRoots(usageElement, project))
+        project.guessProjectDir()?.let { roots.add(it) }
+        return roots
     }
 
     private fun parsePytestEntryPointModules(entryPointsFile: VirtualFile): List<String> {
@@ -549,6 +542,52 @@ object PytestFixtureResolver {
             }
             collectAssignedFixtures(psiFile, fixtureName, seen, result)
         }
+    }
+
+    private fun collectPluginFixturesFromModules(
+        moduleNames: List<String>,
+        roots: Collection<VirtualFile>,
+        fixtureName: String,
+        seen: MutableSet<PyFunction>,
+        result: MutableList<FixtureLink>,
+        project: com.intellij.openapi.project.Project
+    ) {
+        if (moduleNames.isEmpty()) return
+        val queue = ArrayDeque(moduleNames)
+        val processed = mutableSetOf<String>()
+        while (queue.isNotEmpty()) {
+            val moduleName = queue.removeFirst()
+            if (!processed.add(moduleName)) continue
+            val moduleFile = resolveModuleFileInRoots(project, roots, moduleName) ?: continue
+            if (LOG.isDebugEnabled) {
+                LOG.debug(
+                    "PytestFixtureResolver.collectPluginFixturesFromModules: module='$moduleName', file='${moduleFile.name}'"
+                )
+            }
+            collectFixturesFromModuleFile(moduleFile, fixtureName, seen, result)
+            collectFixturesFromPackage(moduleFile, fixtureName, seen, result)
+            val plugins = extractPytestPluginModules(moduleFile)
+            if (plugins.isNotEmpty() && LOG.isDebugEnabled) {
+                LOG.debug(
+                    "PytestFixtureResolver.collectPluginFixturesFromModules: pytest_plugins from '${moduleFile.name}' -> ${
+                        plugins.joinToString(",")
+                    }"
+                )
+            }
+            queue.addAll(plugins)
+        }
+    }
+
+    private fun resolveModuleFileInRoots(
+        project: com.intellij.openapi.project.Project,
+        roots: Collection<VirtualFile>,
+        module: String
+    ): PyFile? {
+        for (root in roots) {
+            val resolved = resolveModuleFile(project, root, module)
+            if (resolved != null) return resolved
+        }
+        return null
     }
 
     private fun extractPytestPluginModules(moduleFile: PyFile): List<String> {

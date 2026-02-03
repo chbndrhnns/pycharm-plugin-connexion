@@ -359,6 +359,50 @@ class PytestFixtureNavigationTest : TestBase() {
         assertEquals("Should resolve to pkg_fixture", "pkg_fixture", (resolved as PyFunction).name)
     }
 
+    fun testConftestPytestPluginsFromLibrary() {
+        val libRoot = Files.createTempDirectory("pytest-plugin-conftest").toFile()
+        VfsRootAccess.allowRootAccess(testRootDisposable, libRoot.canonicalPath, libRoot.path)
+
+        val pkgDir = libRoot.resolve("conftestpkg").apply { mkdirs() }
+        pkgDir.resolve("__init__.py").writeText("")
+        val pluginPy = pkgDir.resolve("plugin.py")
+        pluginPy.writeText(
+            """
+            import pytest
+
+            @pytest.fixture
+            def conftest_plugin_fixture():
+                return "conftest"
+        """.trimIndent()
+        )
+
+        val vLibRoot = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(libRoot)!!
+        PsiTestUtil.addLibrary(myFixture.module, "pytest-plugin-conftest", vLibRoot.path, arrayOf(""), arrayOf(""))
+
+        myFixture.addFileToProject(
+            "conftest.py",
+            """
+            pytest_plugins = ["conftestpkg.plugin"]
+        """.trimIndent()
+        )
+
+        val code = """
+            def test_something(conftest_plugin_fixture<caret>):
+                assert conftest_plugin_fixture == "conftest"
+        """.trimIndent()
+
+        myFixture.configureByText("test_conftest_plugins_fixture.py", code)
+
+        val resolved = myFixture.elementAtCaret
+        assertNotNull("Should resolve to conftest plugin fixture function", resolved)
+        assertInstanceOf(resolved, PyFunction::class.java)
+        assertEquals(
+            "Should resolve to conftest_plugin_fixture",
+            "conftest_plugin_fixture",
+            (resolved as PyFunction).name
+        )
+    }
+
     fun testPyprojectEntryPointFixtureFromLibrary() {
         val libRoot = Files.createTempDirectory("pytest-pyproject").toFile()
         VfsRootAccess.allowRootAccess(testRootDisposable, libRoot.canonicalPath, libRoot.path)
