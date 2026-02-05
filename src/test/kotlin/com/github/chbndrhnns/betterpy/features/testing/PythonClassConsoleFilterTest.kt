@@ -2,6 +2,7 @@ package com.github.chbndrhnns.betterpy.features.testing
 
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.WriteAction
+import com.intellij.openapi.editor.markup.EffectType
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -22,6 +23,7 @@ class PythonClassConsoleFilterTest : TestBase() {
         val item = result!!.resultItems.first()
         assertEquals(0, item.highlightStartOffset)
         assertEquals(line.length, item.highlightEndOffset)
+        assertEquals(EffectType.BOLD_DOTTED_LINE, item.highlightAttributes?.effectType)
     }
 
     fun testParseDoubleQuotes() {

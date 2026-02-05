@@ -2,7 +2,11 @@ package com.github.chbndrhnns.betterpy.features.testing
 
 import com.intellij.execution.filters.Filter
 import com.intellij.execution.filters.HyperlinkInfo
+import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.editor.colors.EditorColorsManager
+import com.intellij.openapi.editor.markup.EffectType
+import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.roots.ProjectRootManager
@@ -19,6 +23,42 @@ class PythonClassConsoleFilter(private val project: Project) : Filter {
     companion object {
         // Matches <class 'dotted.path.to.Class'> or <class "dotted.path.to.Class">
         private val PATTERN = Pattern.compile("<class ['\"]([\\w.]+)['\"]>")
+        private val CLASS_HIGHLIGHT_ATTRIBUTES: TextAttributes by lazy {
+            val base = ConsoleViewContentType.NORMAL_OUTPUT.attributes
+            val scheme = EditorColorsManager.getInstance().globalScheme
+            val foreground = base.foregroundColor ?: scheme.defaultForeground
+            TextAttributes(
+                foreground,
+                base.backgroundColor,
+                foreground,
+                EffectType.BOLD_DOTTED_LINE,
+                base.fontType
+            )
+        }
+        private val CLASS_FOLLOWED_ATTRIBUTES: TextAttributes by lazy {
+            val base = ConsoleViewContentType.NORMAL_OUTPUT.attributes
+            val scheme = EditorColorsManager.getInstance().globalScheme
+            val foreground = base.foregroundColor ?: scheme.defaultForeground
+            TextAttributes(
+                foreground,
+                base.backgroundColor,
+                foreground,
+                EffectType.BOLD_DOTTED_LINE,
+                base.fontType
+            )
+        }
+        private val CLASS_HOVER_ATTRIBUTES: TextAttributes by lazy {
+            val base = ConsoleViewContentType.NORMAL_OUTPUT.attributes
+            val scheme = EditorColorsManager.getInstance().globalScheme
+            val foreground = base.foregroundColor ?: scheme.defaultForeground
+            TextAttributes(
+                foreground,
+                base.backgroundColor,
+                foreground,
+                EffectType.BOLD_DOTTED_LINE,
+                base.fontType
+            )
+        }
 
         internal fun resolveClass(project: Project, qName: String): PsiElement? {
             val scope = GlobalSearchScope.allScope(project)
@@ -71,7 +111,14 @@ class PythonClassConsoleFilter(private val project: Project) : Filter {
             val startOffset = entireLength - line.length + matcher.start()
             val endOffset = entireLength - line.length + matcher.end()
 
-            return Filter.Result(startOffset, endOffset, PythonClassHyperlinkInfo(project, classQName))
+            return Filter.Result(
+                startOffset,
+                endOffset,
+                PythonClassHyperlinkInfo(project, classQName),
+                CLASS_HIGHLIGHT_ATTRIBUTES,
+                CLASS_FOLLOWED_ATTRIBUTES,
+                CLASS_HOVER_ATTRIBUTES
+            )
         }
         return null
     }
