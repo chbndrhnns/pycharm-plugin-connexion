@@ -18,24 +18,7 @@ data class FeatureDeclaration(
     val removeIn: String = "",
     val defaultEnabled: Boolean = true,
     val registrations: List<FeatureRegistration> = emptyList()
-) {
-    companion object {
-        fun fromAnnotation(annotation: Feature): FeatureDeclaration {
-            return FeatureDeclaration(
-                id = annotation.id,
-                displayName = annotation.displayName,
-                description = annotation.description,
-                category = annotation.category,
-                maturity = annotation.maturity,
-                youtrackIssues = annotation.youtrackIssues.toList(),
-                loggingCategories = annotation.loggingCategories.toList(),
-                since = annotation.since,
-                removeIn = annotation.removeIn,
-                defaultEnabled = true
-            )
-        }
-    }
-}
+)
 
 data class FeatureRegistration(
     val type: String = "",
@@ -47,12 +30,12 @@ object FeatureCatalogLoader {
     private val mapper = ObjectMapper(YAMLFactory())
         .registerModule(KotlinModule.Builder().build())
 
-    fun load(): List<FeatureDeclaration> {
+    private val cachedDeclarations: List<FeatureDeclaration> by lazy {
         val classLoader = FeatureCatalogLoader::class.java.classLoader
         val resources = classLoader.getResources("features").toList()
         if (resources.isEmpty()) {
             logger.warn("features/ directory not found on classpath")
-            return emptyList()
+            return@lazy emptyList()
         }
 
         val declarations = mutableListOf<FeatureDeclaration>()
@@ -73,8 +56,10 @@ object FeatureCatalogLoader {
             }
         }
 
-        return declarations.sortedBy { it.id }
+        declarations.sortedBy { it.id }
     }
+
+    fun load(): List<FeatureDeclaration> = cachedDeclarations
 
     private fun loadFromPath(path: java.nio.file.Path): List<FeatureDeclaration> {
         if (!java.nio.file.Files.exists(path)) {

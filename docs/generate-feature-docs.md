@@ -1,6 +1,7 @@
 # Generating Feature Documentation
 
-The `FeatureDocumentationGenerator` generates documentation for all plugin features from their `@Feature` annotation metadata. This is useful for maintaining up-to-date feature references and for external tooling.
+The `FeatureDocumentationGenerator` generates documentation for all plugin features from their YAML feature
+declarations. This is useful for maintaining up-to-date feature references and for external tooling.
 
 ## Overview
 
@@ -157,20 +158,13 @@ To automatically generate and commit documentation on release:
 
 ## Adding Feature Metadata
 
-To ensure your features appear in the generated documentation, annotate them in `PluginSettingsState.State`:
+To ensure your features appear in the generated documentation, add a YAML declaration under
+`src/main/resources/features` and bind the toggle to the same ID:
 
 ```kotlin
-@Feature(
-    id = "my-feature",
-    displayName = "My Feature",
-    description = "What this feature does",
-    maturity = FeatureMaturity.INCUBATING,
-    category = FeatureCategory.CODE_STRUCTURE,
-    youtrackIssues = ["PY-12345"],
-    since = "1.2.0"
-)
-var enableMyFeature: Boolean = true
+@Feature("my-feature")
+var enableMyFeature: Boolean = FeatureDefaults.defaultEnabled("my-feature")
 ```
 
-See [FeatureMetadata.kt](../src/main/kotlin/com/github/chbndrhnns/betterpy/settings/FeatureMetadata.kt) for all
-available annotation parameters.
+See [FeatureMetadata.kt](../src/main/kotlin/com/github/chbndrhnns/betterpy/featureflags/FeatureMetadata.kt) for the
+binding annotation definition.

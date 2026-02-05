@@ -51,7 +51,6 @@ class FeatureRegistry {
     private data class ToggleBinding(
         val id: String,
         val propertyName: String,
-        val annotation: Feature,
         val getter: () -> Boolean,
         val setter: (Boolean) -> Unit
     )
@@ -139,7 +138,8 @@ class FeatureRegistry {
         val declarationsById = catalog.associateBy { it.id }
 
         bindings.forEach { binding ->
-            val declaration = declarationsById[binding.id] ?: FeatureDeclaration.fromAnnotation(binding.annotation)
+            val declaration = declarationsById[binding.id]
+                ?: error("Feature declaration not found for id: ${binding.id}")
             result[binding.id] = FeatureInfo(
                 id = declaration.id,
                 displayName = declaration.displayName,
@@ -187,7 +187,6 @@ class FeatureRegistry {
                     ToggleBinding(
                         id = annotation.id,
                         propertyName = prop.name,
-                        annotation = annotation,
                         getter = {
                             val instance = instanceGetter()
                             mutableProp.get(instance)
