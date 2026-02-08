@@ -3,7 +3,6 @@
 ## Pending Issues
 
 - [ ] fix: Copy type annotations not working?
-- [ ] fix: Introduce paramter object should not be available on tests and fixtures
 - [ ] fix: Introduce custom type needs to wrap usage sites
 - [ ] fix: Logger should distinguish between packages and classes
 - [ ] fix: Add test which reads all logging-related classes and marks invalid
