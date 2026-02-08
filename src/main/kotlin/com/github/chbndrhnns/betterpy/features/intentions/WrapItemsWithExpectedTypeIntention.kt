@@ -71,7 +71,6 @@ class WrapItemsWithExpectedTypeIntention : IntentionAction, HighPriorityAction, 
         lastText = when (plan) {
             is ElementwiseUnionChoice -> PluginConstants.ACTION_PREFIX + "Wrap items with expected union type…"
             is Elementwise -> PluginConstants.ACTION_PREFIX + "Wrap items with ${plan.itemCtorName}()"
-            else -> PluginConstants.ACTION_PREFIX + "Wrap items with expected type"
         }
         return true
     }

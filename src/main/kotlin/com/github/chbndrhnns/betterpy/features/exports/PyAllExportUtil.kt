@@ -184,7 +184,7 @@ object PyAllExportUtil {
                 val source = fromImport.importSource
                 // We want "from .module import ..." – a relative import
                 // whose referenced name matches the module name.
-                (fromImport.relativeLevel ?: 0) > 0 && source?.referencedName == moduleName
+                fromImport.relativeLevel > 0 && source?.referencedName == moduleName
             }
     }
 

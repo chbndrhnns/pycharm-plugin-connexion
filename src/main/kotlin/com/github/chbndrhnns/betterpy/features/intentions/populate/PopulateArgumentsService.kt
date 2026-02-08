@@ -288,7 +288,8 @@ class PopulateArgumentsService {
                     ?: return
             val newArgList = parsedCall.argumentList ?: return
 
-            val replacedArgList = argumentList.replace(newArgList) as? PyArgumentList ?: return
+            argumentList.replace(newArgList)
+            val replacedArgList = call.argumentList ?: return
 
             // Ensure imports for all inserted values
             for ((_, name, result) in paramData) {
@@ -304,7 +305,8 @@ class PopulateArgumentsService {
             // Otherwise, append missing keyword arguments and ensure imports.
             for ((_, name, result) in paramData) {
                 val kwArg = generator.createKeywordArgument(languageLevel, name, result.text)
-                val added = argumentList.addArgument(kwArg) as? PyKeywordArgument
+                argumentList.addArgument(kwArg)
+                val added = argumentList.arguments.filterIsInstance<PyKeywordArgument>().find { it.keyword == name }
                 val valueExpression = (added ?: kwArg).valueExpression
                 if (valueExpression != null) {
                     for (cls in result.imports) {

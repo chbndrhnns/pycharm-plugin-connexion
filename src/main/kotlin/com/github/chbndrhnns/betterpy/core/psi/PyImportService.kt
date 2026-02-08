@@ -150,7 +150,7 @@ class PyImportService {
                 // preserve the written module reference, including any
                 // relative level (e.g. leading dots like ".model"), while
                 // still building the updated statement in a structured way.
-                val relativeLevel = existingFromImport.relativeLevel ?: 0
+                val relativeLevel = existingFromImport.relativeLevel
                 val importSourceText = existingFromImport.importSource?.text
 
                 // PyFromImportStatement represents relative imports using a

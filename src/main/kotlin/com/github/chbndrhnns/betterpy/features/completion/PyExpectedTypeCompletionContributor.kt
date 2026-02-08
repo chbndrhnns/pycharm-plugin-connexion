@@ -157,7 +157,7 @@ class PyExpectedTypeCompletionContributor : CompletionContributor() {
         )
 
         val elementText = if (elementResult.text == "...") {
-            val ctorName = elementExpr?.let { ExpectedTypeInfo.canonicalCtorName(it, context) }
+            val ctorName = ExpectedTypeInfo.canonicalCtorName(elementExpr, context)
             ctorName?.let { "$it()" } ?: return null
         } else {
             elementResult.text

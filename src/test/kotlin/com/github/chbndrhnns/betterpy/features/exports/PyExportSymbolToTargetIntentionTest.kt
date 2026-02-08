@@ -114,14 +114,14 @@ class PyExportSymbolToTargetIntentionTest : TestBase() {
         val initFile =
             myFixture.tempDirFixture.getFile("src/__init__.py") ?: myFixture.tempDirFixture.getFile("__init__.py")
         val actual = initFile?.let { myFixture.psiManager.findFile(it) as? PyFile }?.text
-
-        if (actual == null) {
+        val nonNullActual = actual ?: run {
             val allFiles = myFixture.tempDirFixture.getFile("")?.children?.map { it.path } ?: emptyList()
             fail("Could not find __init__.py. All files: $allFiles")
+            return
         }
 
-        assertTrue(actual!!.contains("__all__ = [\"foo\"]"))
-        assertTrue(actual!!.contains("from ._private.mod import foo"))
+        assertTrue(nonNullActual.contains("__all__ = [\"foo\"]"))
+        assertTrue(nonNullActual.contains("from ._private.mod import foo"))
     }
 
     fun testExportToSelf() {

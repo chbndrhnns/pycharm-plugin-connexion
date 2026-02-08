@@ -81,7 +81,8 @@ object TypeNameRenderer {
         val looksAnnotated = short == "Annotated" || qName.contains("typing.Annotated")
         if (!looksAnnotated) return t
 
-        val params = col.elementTypes?.toList() ?: return t
+        val params = col.elementTypes.toList()
+        if (params.isEmpty()) return t
         return params.firstOrNull() ?: t
     }
 
@@ -115,7 +116,7 @@ object TypeNameRenderer {
     private fun renderCollection(col: PyCollectionType, o: Options): String {
         val name = (col.classQName) ?: col.name ?: "Collection"
         val display = builtinAlias(name)
-        val params = col.elementTypes?.map { render(it, o) } ?: emptyList()
+        val params = col.elementTypes.map { render(it, o) }
 
         return if (params.isEmpty()) display else "$display[${params.joinToString(", ")}]"
     }

@@ -30,7 +30,7 @@ class PyDataclassFieldExtractor {
                     // (This can lead to nested dataclass values receiving sibling parameters.)
                     val classAttr = pyClass.findClassAttribute(name, /* inherited = */ true, context)
                         ?: return@mapNotNull null
-                    val alias = classAttr?.let { extractAliasFromTarget(it, resolveCtx) }
+                    val alias = extractAliasFromTarget(classAttr, resolveCtx)
                     FieldSpec(
                         name = alias?.first ?: name,
                         type = param.getType(context),
@@ -116,8 +116,8 @@ class PyDataclassFieldExtractor {
                                 }
 
                                 is PyReferenceExpression -> {
-                                    val resolved = meta.getReference(resolveCtx)?.multiResolve(false)
-                                        ?.firstOrNull()?.element as? PsiNamedElement
+                                    val resolved = meta.getReference(resolveCtx).multiResolve(false)
+                                        .firstOrNull()?.element as? PsiNamedElement
                                     if (resolved != null) {
                                         val effectiveName = resolved.name ?: target.name ?: return null
                                         return effectiveName to (resolved.name to resolved)

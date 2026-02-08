@@ -75,7 +75,7 @@ class UseActualOutcomeUseCase(
         val isAvailable = diffResult != null
 
         if (isAvailable) {
-            LOG.debug("UseActualOutcomeUseCase.isAvailable: diff data found with key '${diffResult?.second}', returning true")
+            LOG.debug("UseActualOutcomeUseCase.isAvailable: diff data found with key '${diffResult.second}', returning true")
         } else {
             LOG.debug("UseActualOutcomeUseCase.isAvailable: no diff data found for any location URL, returning false")
         }

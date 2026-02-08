@@ -50,10 +50,10 @@ class PyMockReturnAssignmentInspection : PyInspection() {
                                     )
 
                                     else -> {
-                                        val baseQualifier = (qualifier as? PyQualifiedExpression)?.qualifier
+                                        val baseQualifier = (qualifier as PyQualifiedExpression).qualifier
                                         val baseType = baseQualifier?.let { context.getType(it) }
                                         if (baseType is PyMockType) {
-                                            val resolved = qualifier?.reference?.resolve()
+                                            val resolved = qualifier.reference?.resolve()
                                             if (resolved is PyFunction) context.getReturnType(resolved) else null
                                         } else null
                                     }

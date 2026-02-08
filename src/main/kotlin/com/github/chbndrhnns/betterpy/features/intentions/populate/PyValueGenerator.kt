@@ -398,7 +398,7 @@ class PyValueGenerator(private val fieldExtractor: PyDataclassFieldExtractor) {
         val name = type.name ?: type.classQName?.substringAfterLast('.') ?: return null
         val pyClass = type.pyClass
         // If there is a real class and its simple name equals the alias name, do not treat as alias.
-        if (pyClass?.name == name) return null
+        if (pyClass.name == name) return null
 
         val qName = type.classQName
         val resolved = if (qName != null) resolveInScope(qName, scopeOwner, context) else null

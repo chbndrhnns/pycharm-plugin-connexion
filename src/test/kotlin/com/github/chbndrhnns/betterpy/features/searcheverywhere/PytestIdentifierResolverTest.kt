@@ -42,9 +42,10 @@ class PytestIdentifierResolverTest : TestBase() {
 
         assertNotNull(element)
         assertTrue(element is PyFunction)
-        assertEquals("test_x", (element as PyFunction).name)
+        val function = element as PyFunction
+        assertEquals("test_x", function.name)
 
-        val containingClass = (element as PyFunction).containingClass
+        val containingClass = function.containingClass
         assertNotNull(containingClass)
         assertTrue(containingClass is PyClass)
         assertEquals("TestInner", containingClass!!.name)

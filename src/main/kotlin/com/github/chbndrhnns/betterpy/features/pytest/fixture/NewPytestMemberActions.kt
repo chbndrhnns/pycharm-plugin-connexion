@@ -178,9 +178,16 @@ private fun resolveContext(e: AnActionEvent): PytestInsertionContext? {
 private fun findElementAtOrNear(file: PsiElement, offset: Int): PsiElement? {
     if (file !is PyFile) return null
     if (offset < 0 || offset > file.textLength) return null
-    return file.findElementAt(offset)
-        ?: if (offset > 0) file.findElementAt(offset - 1) else null
-            ?: if (offset + 1 <= file.textLength) file.findElementAt(offset + 1) else null
+    val atOffset = file.findElementAt(offset)
+    if (atOffset != null) return atOffset
+    if (offset > 0) {
+        val before = file.findElementAt(offset - 1)
+        if (before != null) return before
+    }
+    if (offset + 1 <= file.textLength) {
+        return file.findElementAt(offset + 1)
+    }
+    return null
 }
 
 private fun findTargetClass(file: PyFile, element: PsiElement, caretOffset: Int, editor: Editor?): PyClass? {

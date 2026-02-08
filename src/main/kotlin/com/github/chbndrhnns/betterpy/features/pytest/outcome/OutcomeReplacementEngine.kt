@@ -257,7 +257,7 @@ class OutcomeReplacementEngine {
             return names.indexOf(paramName)
         }
         if (namesArg is PyListLiteralExpression || namesArg is PyTupleExpression) {
-            val elements = (namesArg as? PySequenceExpression)?.elements ?: return -1
+            val elements = namesArg.elements
             return elements.indexOfFirst {
                 it is PyStringLiteralExpression && it.stringValue == paramName
             }

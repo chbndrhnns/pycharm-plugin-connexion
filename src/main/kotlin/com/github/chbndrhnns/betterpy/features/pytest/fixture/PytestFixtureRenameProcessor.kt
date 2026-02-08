@@ -197,7 +197,7 @@ class PytestFixtureRenameProcessor : RenamePsiElementProcessor() {
         val refElement = reference.element
         val decorator = PsiTreeUtil.getParentOfType(refElement, PyDecorator::class.java, false) ?: return false
         if (!PytestFixtureUtil.isFixtureDecorator(decorator)) return false
-        val callee = decorator.callee as? PyExpression ?: return false
+        val callee = decorator.callee ?: return false
         return callee.textRange.contains(refElement.textRange)
     }
 }

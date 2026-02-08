@@ -52,7 +52,7 @@ class PytestFixtureUninjectedReferenceInspection : PyInspection() {
 
                 if (function.parameterList.parameters.any { it.name == name }) return
 
-                val resolved = node.reference?.resolve()
+                val resolved = node.reference.resolve()
                 if (resolved != null) {
                     val resolvedFunction = resolved as? PyFunction ?: return
                     if (!PytestFixtureUtil.isFixtureFunction(resolvedFunction)) return

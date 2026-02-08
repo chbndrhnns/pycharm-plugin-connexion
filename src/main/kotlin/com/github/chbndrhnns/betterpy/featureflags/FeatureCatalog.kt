@@ -89,7 +89,7 @@ object FeatureCatalogLoader {
                 logger.warn("Unable to read jar resource: $resource")
                 return emptyList()
             }
-            val jarUrl = java.net.URL(url.substring(4, bangIndex))
+            val jarUrl = java.net.URI(url.substring(4, bangIndex)).toURL()
             val jarPath = java.nio.file.Paths.get(jarUrl.toURI()).toFile()
             java.util.jar.JarFile(jarPath)
         }
