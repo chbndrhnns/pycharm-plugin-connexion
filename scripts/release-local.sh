@@ -87,16 +87,9 @@ if [[ "$ALLOW_DIRTY" != "yes" ]] && [[ -n "$(git status --porcelain)" ]]; then
 fi
 
 CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
-if [[ "$CHANNEL" == "dev" ]]; then
-  if [[ "$CURRENT_BRANCH" != "develop" && "$CURRENT_BRANCH" != "dev" ]]; then
-    echo "ERROR: Dev releases must be run from the develop or dev branch. Current branch: $CURRENT_BRANCH" >&2
-    exit 1
-  fi
-else
-  if [[ "$CURRENT_BRANCH" != "main" ]]; then
-    echo "ERROR: Releases must be run from the main branch. Current branch: $CURRENT_BRANCH" >&2
-    exit 1
-  fi
+if [[ "$CURRENT_BRANCH" != "main" ]]; then
+  echo "ERROR: All releases must be run from the main branch. Current branch: $CURRENT_BRANCH" >&2
+  exit 1
 fi
 
 VERSION=$(./scripts/version.sh bump --channel="$CHANNEL" | tail -n 1)

@@ -26,21 +26,11 @@ if [[ "$CURRENT_VERSION" != "$VERSION" ]]; then
 fi
 
 CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
-if [[ "$VERSION" == *-dev.* ]]; then
-  if [[ "$CURRENT_BRANCH" != "develop" && "$CURRENT_BRANCH" != "dev" ]]; then
-    git fetch origin develop --depth=1
-    if ! git merge-base --is-ancestor HEAD origin/develop; then
-      echo "ERROR: Dev release tag must be based on develop." >&2
-      exit 1
-    fi
-  fi
-else
-  if [[ "$CURRENT_BRANCH" != "main" ]]; then
-    git fetch origin main --depth=1
-    if ! git merge-base --is-ancestor HEAD origin/main; then
-      echo "ERROR: Release tag must be based on main." >&2
-      exit 1
-    fi
+if [[ "$CURRENT_BRANCH" != "main" ]]; then
+  git fetch origin main --depth=1
+  if ! git merge-base --is-ancestor HEAD origin/main; then
+    echo "ERROR: Release tag must be based on main." >&2
+    exit 1
   fi
 fi
 
