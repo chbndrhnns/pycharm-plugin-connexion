@@ -474,8 +474,8 @@ class PytestFixtureNavigationTest : TestBase() {
         """.trimIndent()
         )
 
-        com.intellij.openapi.vfs.VfsUtil.markDirtyAndRefresh(true, true, true, sdkRoot)
-        val moduleFile = com.intellij.openapi.vfs.VfsUtil.findRelativeFile(sdkRoot, "sdktestpkg", "plugin.py")
+        com.intellij.openapi.vfs.VfsUtil.markDirtyAndRefresh(false, true, true, sdkRoot)
+        val moduleFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(pluginPy)
         assertNotNull("Expected plugin module under SDK root", moduleFile)
 
         val code = """
