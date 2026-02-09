@@ -2,7 +2,18 @@
 
 ## Pending Issues
 
-- [ ] fix: Copy type annotations not working?
+- [ ] fix: Do not mark test params as invalid fixtures
+
+```python
+@pytest.mark.parametrize(("a_fixture", "a_param"), [(1, 2)])
+def test_no_skip_markers_on_adapter_fixture(
+        a_fixture, a_param
+):
+```
+
+
+- [ ] fix: Rendering of links for pytest, now blue and dotted.
+  `tests/unit/test_integrity.py::test_no_skip_markers_on_adapter_fixture[<class 'src.adapters.outbound.HttpRepository'>] ✓                51% █████▏`
 - [ ] fix: Introduce custom type needs to wrap usage sites
 - [ ] fix: Logger should distinguish between packages and classes
 - [ ] fix: Add test which reads all logging-related classes and marks invalid
