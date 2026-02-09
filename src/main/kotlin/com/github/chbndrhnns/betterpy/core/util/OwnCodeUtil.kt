@@ -18,6 +18,5 @@ fun PsiFile.isOwnCode(): Boolean {
 
 fun isOwnCode(project: Project, file: VirtualFile): Boolean {
     val index = ProjectFileIndex.getInstance(project)
-    // We want code that is part of the project content, but not part of any library.
-    return index.isInContent(file) && !index.isInLibrary(file)
+    return index.isInContent(file)
 }
