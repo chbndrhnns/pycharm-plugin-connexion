@@ -2,16 +2,6 @@
 
 ## Pending Issues
 
-- [ ] fix: Do not mark test params as invalid fixtures
-
-```python
-@pytest.mark.parametrize(("a_fixture", "a_param"), [(1, 2)])
-def test_no_skip_markers_on_adapter_fixture(
-        a_fixture, a_param
-):
-```
-
-
 - [ ] fix: Rendering of links for pytest, now blue and dotted.
   `tests/unit/test_integrity.py::test_no_skip_markers_on_adapter_fixture[<class 'src.adapters.outbound.HttpRepository'>] ✓                51% █████▏`
 - [ ] fix: Introduce custom type needs to wrap usage sites
@@ -112,6 +102,14 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Do not mark test params as invalid fixtures
+
+```python
+@pytest.mark.parametrize(("a_fixture", "a_param"), [(1, 2)])
+def test_no_skip_markers_on_adapter_fixture(
+        a_fixture, a_param
+):
+```
 - [x] feat: Exclude testing usages in code vision,
 - [x] feat: Render links to classes in output, like `<class 'src.core.mycore.domain.MyRoute'>`
   cf. https://www.reddit.com/r/pycharm/comments/1qjo39g/how_to_exclude_test_usages_from_pycharms_code/
