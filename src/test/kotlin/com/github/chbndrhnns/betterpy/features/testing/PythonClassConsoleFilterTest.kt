@@ -21,8 +21,9 @@ class PythonClassConsoleFilterTest : TestBase() {
         val result = filter.applyFilter(line, line.length)
         assertNotNull(result)
         val item = result!!.resultItems.first()
-        assertEquals(0, item.highlightStartOffset)
-        assertEquals(line.length, item.highlightEndOffset)
+        // Only "HttpAdapter" should be highlighted (class name only)
+        assertEquals(line.indexOf("HttpAdapter"), item.highlightStartOffset)
+        assertEquals(line.indexOf("HttpAdapter") + "HttpAdapter".length, item.highlightEndOffset)
         assertEquals(EffectType.BOLD_DOTTED_LINE, item.highlightAttributes?.effectType)
     }
 
@@ -32,8 +33,9 @@ class PythonClassConsoleFilterTest : TestBase() {
         val result = filter.applyFilter(line, line.length)
         assertNotNull(result)
         val item = result!!.resultItems.first()
-        assertEquals(0, item.highlightStartOffset)
-        assertEquals(line.length, item.highlightEndOffset)
+        // Only "HttpAdapter" should be highlighted
+        assertEquals(line.indexOf("HttpAdapter"), item.highlightStartOffset)
+        assertEquals(line.indexOf("HttpAdapter") + "HttpAdapter".length, item.highlightEndOffset)
     }
 
     fun testParseEmbeddedInText() {
@@ -45,8 +47,20 @@ class PythonClassConsoleFilterTest : TestBase() {
         val result = filter.applyFilter(line, line.length)
         assertNotNull(result)
         val item = result!!.resultItems.first()
-        assertEquals(prefix.length, item.highlightStartOffset)
-        assertEquals(prefix.length + classRef.length, item.highlightEndOffset)
+        // Only "MyClass" should be highlighted
+        assertEquals(line.indexOf("MyClass"), item.highlightStartOffset)
+        assertEquals(line.indexOf("MyClass") + "MyClass".length, item.highlightEndOffset)
+    }
+
+    fun testParseNestedClass() {
+        val filter = PythonClassConsoleFilter(project)
+        val line = "<class 'module.path.OuterClass.InnerClass'>"
+        val result = filter.applyFilter(line, line.length)
+        assertNotNull(result)
+        val item = result!!.resultItems.first()
+        // "OuterClass.InnerClass" should be highlighted (nested class)
+        assertEquals(line.indexOf("OuterClass"), item.highlightStartOffset)
+        assertEquals(line.indexOf("InnerClass") + "InnerClass".length, item.highlightEndOffset)
     }
 
     fun testNoMatch() {

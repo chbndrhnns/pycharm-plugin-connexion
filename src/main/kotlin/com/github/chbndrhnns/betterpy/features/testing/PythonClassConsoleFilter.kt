@@ -84,8 +84,10 @@ class PythonClassConsoleFilter(private val project: Project) : Filter {
         val matcher = PATTERN.matcher(line)
         if (matcher.find()) {
             val classQName = matcher.group(1)
-            val startOffset = entireLength - line.length + matcher.start()
-            val endOffset = entireLength - line.length + matcher.end()
+            val className = extractClassName(classQName)
+            val classNameStart = matcher.end(1) - className.length
+            val startOffset = entireLength - line.length + classNameStart
+            val endOffset = entireLength - line.length + matcher.end(1)
 
             return Filter.Result(
                 startOffset,
@@ -95,6 +97,22 @@ class PythonClassConsoleFilter(private val project: Project) : Filter {
             )
         }
         return null
+    }
+
+    /**
+     * Extracts the class name from a qualified name.
+     * For nested classes like "module.OuterClass.InnerClass", returns "OuterClass.InnerClass".
+     * For simple classes like "module.path.ClassName", returns "ClassName".
+     */
+    private fun extractClassName(qName: String): String {
+        val parts = qName.split('.')
+        // Find the first part that starts with uppercase (class name)
+        val classStartIndex = parts.indexOfFirst { it.isNotEmpty() && it[0].isUpperCase() }
+        return if (classStartIndex >= 0) {
+            parts.subList(classStartIndex, parts.size).joinToString(".")
+        } else {
+            parts.lastOrNull() ?: qName
+        }
     }
 
     private class PythonClassHyperlinkInfo(
