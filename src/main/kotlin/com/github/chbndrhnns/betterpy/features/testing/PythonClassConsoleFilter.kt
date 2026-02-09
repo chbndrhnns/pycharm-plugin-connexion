@@ -35,30 +35,6 @@ class PythonClassConsoleFilter(private val project: Project) : Filter {
                 base.fontType
             )
         }
-        private val CLASS_FOLLOWED_ATTRIBUTES: TextAttributes by lazy {
-            val base = ConsoleViewContentType.NORMAL_OUTPUT.attributes
-            val scheme = EditorColorsManager.getInstance().globalScheme
-            val foreground = base.foregroundColor ?: scheme.defaultForeground
-            TextAttributes(
-                foreground,
-                base.backgroundColor,
-                foreground,
-                EffectType.BOLD_DOTTED_LINE,
-                base.fontType
-            )
-        }
-        private val CLASS_HOVER_ATTRIBUTES: TextAttributes by lazy {
-            val base = ConsoleViewContentType.NORMAL_OUTPUT.attributes
-            val scheme = EditorColorsManager.getInstance().globalScheme
-            val foreground = base.foregroundColor ?: scheme.defaultForeground
-            TextAttributes(
-                foreground,
-                base.backgroundColor,
-                foreground,
-                EffectType.BOLD_DOTTED_LINE,
-                base.fontType
-            )
-        }
 
         internal fun resolveClass(project: Project, qName: String): PsiElement? {
             val scope = GlobalSearchScope.allScope(project)
@@ -115,9 +91,7 @@ class PythonClassConsoleFilter(private val project: Project) : Filter {
                 startOffset,
                 endOffset,
                 PythonClassHyperlinkInfo(project, classQName),
-                CLASS_HIGHLIGHT_ATTRIBUTES,
-                CLASS_FOLLOWED_ATTRIBUTES,
-                CLASS_HOVER_ATTRIBUTES
+                CLASS_HIGHLIGHT_ATTRIBUTES
             )
         }
         return null
