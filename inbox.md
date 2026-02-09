@@ -44,6 +44,7 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Pending Features
 
+- [ ] feat: Unwrap try/except block (consider finally!)
 - [ ] feat: Copy as import statement]
 - [ ] feat: For unresolved logger, offer to add logging skeleton on top
 - [ ] feat: pytest fixtures: Add rename option to rename not in hierarchy
