@@ -94,7 +94,10 @@ class PytestCollectorTask(
         env.forEach { (key, value) -> commandLine.withEnvironment(key, value) }
 
         val handler = CapturingProcessHandler(commandLine)
-        val output = handler.runProcessWithProgressIndicator(indicator, TIMEOUT_MS)
+        // Use runProcess instead of runProcessWithProgressIndicator to keep the
+        // progress bar indeterminate — the latter internally sets fraction which
+        // makes the bar appear stuck near 100 %.
+        val output = handler.runProcess(TIMEOUT_MS)
 
         val stdout = output.stdout
         val stderr = output.stderr
