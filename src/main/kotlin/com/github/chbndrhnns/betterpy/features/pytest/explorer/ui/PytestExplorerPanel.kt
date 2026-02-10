@@ -61,6 +61,7 @@ class PytestExplorerPanel(
     private var scopeToCurrentFile = true
     private var flatView = false
     private var followCaret = false
+    private var sortAlphabetically = false
     private var filterText: String? = null
     private var lastSnapshot: CollectionSnapshot? = null
     private var currentEditorFile: VirtualFile? = null
@@ -127,6 +128,7 @@ class PytestExplorerPanel(
             add(RefreshAction())
             add(ScopeToCurrentFileAction())
             add(FlatViewAction())
+            add(FileOrderAction())
             add(FollowCaretAction())
             addSeparator()
             add(ExpandAllAction())
@@ -218,7 +220,11 @@ class PytestExplorerPanel(
         val root = if (flatView) {
             PytestExplorerTreeBuilder.buildFlatTestTree(displaySnapshot)
         } else {
-            PytestExplorerTreeBuilder.buildTestTree(displaySnapshot, collapseModuleNode = scopeToCurrentFile)
+            PytestExplorerTreeBuilder.buildTestTree(
+                displaySnapshot,
+                collapseModuleNode = scopeToCurrentFile,
+                fileOrder = !sortAlphabetically
+            )
         }
 
         val expandedKeys = TreeStatePreserver.captureExpandedKeys(testTree)
@@ -299,6 +305,22 @@ class PytestExplorerPanel(
     private inner class ExpandAllAction : AnAction("Expand All", null, AllIcons.Actions.Expandall) {
         override fun actionPerformed(e: AnActionEvent) {
             TreeUtil.expandAll(testTree)
+        }
+
+        override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+    }
+
+    private inner class FileOrderAction :
+        ToggleAction(
+            "Sort Alphabetically",
+            "Sort tests alphabetically instead of file order",
+            AllIcons.ObjectBrowser.Sorted
+        ) {
+        override fun isSelected(e: AnActionEvent): Boolean = sortAlphabetically
+
+        override fun setSelected(e: AnActionEvent, state: Boolean) {
+            sortAlphabetically = state
+            lastSnapshot?.let { applyTreeUpdate(it) }
         }
 
         override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT

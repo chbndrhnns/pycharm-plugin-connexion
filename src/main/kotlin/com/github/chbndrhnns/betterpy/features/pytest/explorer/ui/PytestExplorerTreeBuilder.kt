@@ -7,7 +7,11 @@ import javax.swing.tree.DefaultMutableTreeNode
 
 object PytestExplorerTreeBuilder {
 
-    fun buildTestTree(snapshot: CollectionSnapshot, collapseModuleNode: Boolean = false): DefaultMutableTreeNode {
+    fun buildTestTree(
+        snapshot: CollectionSnapshot,
+        collapseModuleNode: Boolean = false,
+        fileOrder: Boolean = false
+    ): DefaultMutableTreeNode {
         val byModule = snapshot.tests.groupBy { it.modulePath }
         val useModuleAsRoot = collapseModuleNode && byModule.size == 1
         val root = if (useModuleAsRoot) {
@@ -16,10 +20,16 @@ object PytestExplorerTreeBuilder {
             DefaultMutableTreeNode("Tests")
         }
 
-        for ((modulePath, tests) in byModule.toSortedMap()) {
+        val orderedModules = if (fileOrder) byModule.entries else byModule.toSortedMap().entries
+        for ((modulePath, tests) in orderedModules) {
             val moduleNode = if (useModuleAsRoot) root else DefaultMutableTreeNode(ModuleTreeNode(modulePath))
 
-            for (test in tests) {
+            val orderedTests = if (fileOrder) tests else tests.sortedWith(
+                compareBy<CollectedTest> { extractClassChain(it).isEmpty() }
+                    .thenBy { extractClassChain(it).firstOrNull() ?: "" }
+                    .thenBy { it.functionName }
+            )
+            for (test in orderedTests) {
                 val classChain = extractClassChain(test)
                 val parent = getOrCreateClassChain(moduleNode, classChain)
                 addTestToParent(parent, test)

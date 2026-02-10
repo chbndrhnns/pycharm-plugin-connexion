@@ -85,6 +85,45 @@ class PytestExplorerTreeBuilderTest {
     }
 
     @Test
+    fun `tests within module sorted alphabetically by default`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("a.py::test_z", "a.py", null, "test_z", emptyList()),
+                CollectedTest("a.py::test_a", "a.py", null, "test_a", emptyList()),
+                CollectedTest("a.py::test_m", "a.py", null, "test_m", emptyList()),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
+        val moduleNode = root.getChildAt(0) as DefaultMutableTreeNode
+        val names = (0 until moduleNode.childCount).map {
+            ((moduleNode.getChildAt(it) as DefaultMutableTreeNode).userObject as TestTreeNode).test.functionName
+        }
+        assertEquals(listOf("test_a", "test_m", "test_z"), names)
+    }
+
+    @Test
+    fun `fileOrder preserves original insertion order`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("z.py::test_z", "z.py", null, "test_z", emptyList()),
+                CollectedTest("a.py::test_a", "a.py", null, "test_a", emptyList()),
+                CollectedTest("m.py::test_m", "m.py", null, "test_m", emptyList()),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildTestTree(snapshot, fileOrder = true)
+        val paths = (0 until root.childCount).map {
+            ((root.getChildAt(it) as DefaultMutableTreeNode).userObject as ModuleTreeNode).path
+        }
+        assertEquals(listOf("z.py", "a.py", "m.py"), paths)
+    }
+
+    @Test
     fun `fixture tree with no dependencies`() {
         val fixtureMap = mapOf(
             "db" to CollectedFixture("db", "function", "conftest.py", "db", emptyList()),
@@ -314,12 +353,14 @@ class PytestExplorerTreeBuilderTest {
         val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
         val moduleNode = root.getChildAt(0) as DefaultMutableTreeNode
         assertEquals(2, moduleNode.childCount)
-        val plainNode = moduleNode.getChildAt(0) as DefaultMutableTreeNode
-        assertTrue(plainNode.userObject is TestTreeNode)
-        assertTrue(plainNode.isLeaf)
-        val paramNode = moduleNode.getChildAt(1) as DefaultMutableTreeNode
+        val paramNode = moduleNode.getChildAt(0) as DefaultMutableTreeNode
         assertTrue(paramNode.userObject is TestTreeNode)
+        assertEquals("test_param", (paramNode.userObject as TestTreeNode).test.functionName)
         assertEquals(2, paramNode.childCount)
+        val plainNode = moduleNode.getChildAt(1) as DefaultMutableTreeNode
+        assertTrue(plainNode.userObject is TestTreeNode)
+        assertEquals("test_plain", (plainNode.userObject as TestTreeNode).test.functionName)
+        assertTrue(plainNode.isLeaf)
     }
 
     @Test
