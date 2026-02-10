@@ -12,6 +12,7 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.ui.JBUI
+import com.jetbrains.python.psi.PyFunction
 import com.jetbrains.python.psi.types.TypeEvalContext
 import java.awt.BorderLayout
 import java.awt.event.MouseAdapter
@@ -51,7 +52,7 @@ class FixtureDetailPanel(private val project: Project) : JPanel(BorderLayout()) 
     fun showFixturesFor(test: CollectedTest, snapshot: CollectionSnapshot) {
         titleLabel.text = "Fixtures for ${test.functionName}"
         currentTest = test
-        currentFixtureMap = resolveClosestFixtures(test, snapshot.fixtures)
+        currentFixtureMap = resolveFixtureMapViaPsi(test, snapshot.fixtures)
         val root = PytestExplorerTreeBuilder.buildFixtureTree(test.fixtures, currentFixtureMap)
         fixtureTree.model = DefaultTreeModel(root)
         for (i in 0 until fixtureTree.rowCount.coerceAtMost(20)) {
@@ -59,33 +60,49 @@ class FixtureDetailPanel(private val project: Project) : JPanel(BorderLayout()) 
         }
     }
 
-    companion object {
-        /**
-         * For each fixture name, pick the definition whose directory is the closest
-         * ancestor of the test's module directory. This follows pytest's fixture resolution
-         * order: class-level > module-level > conftest in same dir > conftest in parent dir.
-         */
-        fun resolveClosestFixtures(
-            test: CollectedTest,
-            fixtures: List<CollectedFixture>
-        ): Map<String, CollectedFixture> {
-            val testDir = test.modulePath.substringBeforeLast("/", "")
-            return fixtures
-                .groupBy { it.name }
-                .mapValues { (_, candidates) ->
-                    candidates.maxByOrNull { candidate ->
-                        val baseid = candidate.definedIn
-                        // For class-level fixtures: baseid is "file.py::Class", use file part
-                        val filePart = if ("::" in baseid) baseid.substringBefore("::") else baseid
-                        val fixtureDir = filePart.substringBeforeLast("/", "")
-                        if (testDir == fixtureDir || testDir.startsWith("$fixtureDir/") || (fixtureDir.isEmpty() && testDir.isNotEmpty())) {
-                            // Same directory or ancestor directory — prefer closer (longer path)
-                            fixtureDir.length * 1000 + if ("::" in baseid) 1 else 0
-                        } else {
-                            -1
-                        }
-                    } ?: candidates.last()
+    /**
+     * Resolves the best fixture for each name using [PytestFixtureResolver.findFixtureChain]
+     * (PSI-based, follows full pytest precedence). Falls back to picking the first collected
+     * candidate when PSI resolution is unavailable.
+     */
+    private fun resolveFixtureMapViaPsi(
+        test: CollectedTest,
+        fixtures: List<CollectedFixture>
+    ): Map<String, CollectedFixture> {
+        val fixturesByName = fixtures.groupBy { it.name }
+        val testFunction = ReadAction.compute<PyFunction?, Throwable> {
+            PytestPsiResolver.resolveTestElement(project, test)
+        }
+
+        if (testFunction == null) {
+            // No PSI available — just pick first candidate per name
+            return fixturesByName.mapValues { (_, candidates) -> candidates.first() }
+        }
+
+        return fixturesByName.mapValues { (fixtureName, candidates) ->
+            if (candidates.size == 1) return@mapValues candidates.first()
+
+            // Use the advanced resolver to find the winning fixture
+            val resolved = ReadAction.compute<PyFunction?, Throwable> {
+                val context = TypeEvalContext.codeAnalysis(project, testFunction.containingFile)
+                PytestFixtureResolver.findFixtureChain(testFunction, fixtureName, context)
+                    .firstOrNull()?.fixtureFunction
+            }
+
+            if (resolved != null) {
+                // Match the resolved PSI function back to a CollectedFixture
+                val resolvedPath = ReadAction.compute<String?, Throwable> {
+                    resolved.containingFile?.virtualFile?.path
                 }
+                val resolvedName = ReadAction.compute<String?, Throwable> { resolved.name }
+                candidates.firstOrNull { candidate ->
+                    resolvedName == candidate.functionName && resolvedPath?.endsWith(
+                        candidate.definedIn.substringBefore("::")
+                    ) == true
+                } ?: candidates.first()
+            } else {
+                candidates.first()
+            }
         }
     }
 
