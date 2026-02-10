@@ -4,7 +4,6 @@ import com.github.chbndrhnns.betterpy.features.pytest.explorer.model.CollectedFi
 import com.github.chbndrhnns.betterpy.features.pytest.explorer.model.CollectedTest
 import com.github.chbndrhnns.betterpy.features.pytest.explorer.model.CollectionSnapshot
 import com.github.chbndrhnns.betterpy.features.pytest.explorer.psi.PytestPsiResolver
-import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.pom.Navigatable
 import com.intellij.ui.components.JBLabel
@@ -63,11 +62,7 @@ class FixtureDetailPanel(private val project: Project) : JPanel(BorderLayout()) 
 
     private fun navigateToFixture(node: FixtureDisplayNode) {
         val fixture = currentFixtureMap[node.name] ?: return
-        ReadAction.run<Throwable> {
-            val pointer = PytestPsiResolver.resolveFixture(project, fixture)
-            pointer?.element?.let {
-                (it as? Navigatable)?.navigate(true)
-            }
-        }
+        val element = PytestPsiResolver.resolveFixtureElement(project, fixture)
+        (element as? Navigatable)?.navigate(true)
     }
 }

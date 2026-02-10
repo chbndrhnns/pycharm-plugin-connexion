@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.betterpy.features.pytest.explorer.ui
 
 import com.github.chbndrhnns.betterpy.features.pytest.explorer.collection.PytestCollectorTask
+import com.github.chbndrhnns.betterpy.features.pytest.explorer.model.CollectedTest
 import com.github.chbndrhnns.betterpy.features.pytest.explorer.model.CollectionSnapshot
 import com.github.chbndrhnns.betterpy.features.pytest.explorer.psi.PytestPsiResolver
 import com.github.chbndrhnns.betterpy.features.pytest.explorer.service.CollectionListener
@@ -32,6 +33,8 @@ import com.intellij.util.ui.tree.TreeUtil
 import com.jetbrains.python.psi.PyClass
 import com.jetbrains.python.psi.PyFunction
 import java.awt.BorderLayout
+import java.awt.event.KeyAdapter
+import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.JLabel
@@ -153,12 +156,16 @@ class PytestExplorerPanel(
         testTree.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
                 if (e.clickCount == 2) {
-                    val node = testTree.lastSelectedPathComponent as? DefaultMutableTreeNode ?: return
-                    when (val userObj = node.userObject) {
-                        is TestTreeNode -> navigateToTest(userObj)
-                        is FlatTestTreeNode -> navigateToTest(TestTreeNode(userObj.test))
-                        is ParametrizeTreeNode -> navigateToTest(TestTreeNode(userObj.test))
-                    }
+                    navigateToSelectedTest()
+                }
+            }
+        })
+
+        testTree.addKeyListener(object : KeyAdapter() {
+            override fun keyPressed(e: KeyEvent) {
+                if (e.keyCode == KeyEvent.VK_ENTER) {
+                    navigateToSelectedTest()
+                    e.consume()
                 }
             }
         })
@@ -225,14 +232,21 @@ class PytestExplorerPanel(
         }
     }
 
-    private fun navigateToTest(node: TestTreeNode) {
-        LOG.debug("Navigating to test: ${node.test.nodeId}")
-        ReadAction.run<Throwable> {
-            val pointer = PytestPsiResolver.resolveTest(project, node.test)
-            pointer?.element?.let {
-                (it as? com.intellij.pom.Navigatable)?.navigate(true)
-            }
+    private fun navigateToSelectedTest() {
+        val node = testTree.lastSelectedPathComponent as? DefaultMutableTreeNode ?: return
+        val test = when (val userObj = node.userObject) {
+            is TestTreeNode -> userObj.test
+            is FlatTestTreeNode -> userObj.test
+            is ParametrizeTreeNode -> userObj.test
+            else -> return
         }
+        navigateToTest(test)
+    }
+
+    private fun navigateToTest(test: CollectedTest) {
+        LOG.debug("Navigating to test: ${test.nodeId}")
+        val element = PytestPsiResolver.resolveTestElement(project, test)
+        (element as? com.intellij.pom.Navigatable)?.navigate(true)
     }
 
     private fun openErrorsInScratchFile() {
