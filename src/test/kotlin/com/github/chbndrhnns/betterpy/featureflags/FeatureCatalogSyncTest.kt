@@ -170,7 +170,7 @@ class FeatureCatalogSyncTest : TestBase() {
         for (i in 0 until elements.length) {
             val element = elements.item(i) as? Element ?: continue
             val tag = element.tagName
-            for (attribute in listOf("implementationClass", "implementation", "className")) {
+            for (attribute in listOf("implementationClass", "implementation", "className", "factoryClass")) {
                 if (element.hasAttribute(attribute)) {
                     val className = element.getAttribute(attribute).trim()
                     if (className.startsWith("com.github.chbndrhnns.betterpy")) {

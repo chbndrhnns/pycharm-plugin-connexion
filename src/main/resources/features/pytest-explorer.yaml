@@ -1,0 +1,21 @@
+id: pytest-explorer
+displayName: Pytest Explorer
+description: Collects pytest tests and fixtures via pytest --collect-only and provides an interactive explorer
+category: PYTEST
+maturity: INCUBATING
+youtrackIssues: [ ]
+loggingCategories:
+  - com.github.chbndrhnns.betterpy.features.pytest.explorer
+  - com.github.chbndrhnns.betterpy.features.pytest.explorer.collection
+  - com.github.chbndrhnns.betterpy.features.pytest.explorer.psi
+  - com.github.chbndrhnns.betterpy.features.pytest.explorer.service
+  - com.github.chbndrhnns.betterpy.features.pytest.explorer.trigger
+  - com.github.chbndrhnns.betterpy.features.pytest.explorer.ui
+since: ''
+removeIn: ''
+defaultEnabled: false
+registrations:
+  - type: toolWindow
+    className: com.github.chbndrhnns.betterpy.features.pytest.explorer.ui.PytestExplorerToolWindowFactory
+  - type: postStartupActivity
+    className: com.github.chbndrhnns.betterpy.features.pytest.explorer.trigger.PytestExplorerStartupActivity

@@ -321,6 +321,9 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         @Feature("pytest-fixture-to-usefixtures-inspection")
         var enablePytestFixtureToUsefixturesInspection: Boolean = FeatureDefaults.defaultEnabled("pytest-fixture-to-usefixtures-inspection"),
 
+        @Feature("pytest-explorer")
+        var enablePytestExplorer: Boolean = FeatureDefaults.defaultEnabled("pytest-explorer"),
+
         @Feature("pytest-parametrize-count-mismatch-inspection")
         var enablePytestParametrizeCountMismatchInspection: Boolean = FeatureDefaults.defaultEnabled("pytest-parametrize-count-mismatch-inspection"),
 

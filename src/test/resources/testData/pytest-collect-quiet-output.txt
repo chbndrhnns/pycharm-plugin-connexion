@@ -1,0 +1,7 @@
+test_auth.py::TestLogin::test_success
+test_auth.py::TestLogin::test_failure
+test_auth.py::test_standalone
+test_auth.py::test_add[1-2-3]
+test_auth.py::test_add[4-5-9]
+
+5 tests collected in 0.00s
