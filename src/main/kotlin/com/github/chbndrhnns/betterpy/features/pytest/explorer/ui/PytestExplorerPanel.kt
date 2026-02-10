@@ -153,7 +153,16 @@ class PytestExplorerPanel(
         LOG.debug("Updating tree: ${snapshot.tests.size} tests, ${snapshot.fixtures.size} fixtures")
         val displaySnapshot = if (scopeToCurrentFile) filterToCurrentFile(snapshot) else snapshot
         val root = PytestExplorerTreeBuilder.buildTestTree(displaySnapshot, collapseModuleNode = scopeToCurrentFile)
+
+        val expandedKeys = TreeStatePreserver.captureExpandedKeys(testTree)
+        val selectedKey = TreeStatePreserver.captureSelectedKey(testTree)
+
         testTree.model = DefaultTreeModel(root)
+
+        if (expandedKeys.isNotEmpty()) {
+            TreeStatePreserver.restoreExpandedState(testTree, root, expandedKeys)
+            selectedKey?.let { TreeStatePreserver.restoreSelectedState(testTree, root, it) }
+        }
 
         lastErrors = displaySnapshot.errors
         if (displaySnapshot.errors.isNotEmpty()) {
