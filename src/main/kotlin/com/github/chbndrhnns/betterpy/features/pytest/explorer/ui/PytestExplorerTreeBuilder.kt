@@ -8,12 +8,16 @@ import javax.swing.tree.DefaultMutableTreeNode
 object PytestExplorerTreeBuilder {
 
     fun buildTestTree(snapshot: CollectionSnapshot, collapseModuleNode: Boolean = false): DefaultMutableTreeNode {
-        val root = DefaultMutableTreeNode("Tests")
-
         val byModule = snapshot.tests.groupBy { it.modulePath }
-        val skipModuleLevel = collapseModuleNode && byModule.size == 1
+        val useModuleAsRoot = collapseModuleNode && byModule.size == 1
+        val root = if (useModuleAsRoot) {
+            DefaultMutableTreeNode(ModuleTreeNode(byModule.keys.first()))
+        } else {
+            DefaultMutableTreeNode("Tests")
+        }
+
         for ((modulePath, tests) in byModule.toSortedMap()) {
-            val moduleNode = if (skipModuleLevel) root else DefaultMutableTreeNode(ModuleTreeNode(modulePath))
+            val moduleNode = if (useModuleAsRoot) root else DefaultMutableTreeNode(ModuleTreeNode(modulePath))
 
             for (test in tests) {
                 val classChain = extractClassChain(test)
@@ -21,7 +25,7 @@ object PytestExplorerTreeBuilder {
                 addTestToParent(parent, test)
             }
 
-            if (!skipModuleLevel) {
+            if (!useModuleAsRoot) {
                 root.add(moduleNode)
             }
         }

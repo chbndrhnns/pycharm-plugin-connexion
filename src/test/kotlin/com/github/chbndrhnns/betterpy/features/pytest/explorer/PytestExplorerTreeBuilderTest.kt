@@ -152,7 +152,7 @@ class PytestExplorerTreeBuilderTest {
     // --- collapseModuleNode tests ---
 
     @Test
-    fun `collapseModuleNode removes single module node`() {
+    fun `collapseModuleNode uses module as root node`() {
         val snapshot = CollectionSnapshot(
             timestamp = 0,
             tests = listOf(
@@ -163,7 +163,10 @@ class PytestExplorerTreeBuilderTest {
             errors = emptyList(),
         )
         val root = PytestExplorerTreeBuilder.buildTestTree(snapshot, collapseModuleNode = true)
-        // Tests should be directly under root, no module node
+        // Root should be the module node itself
+        assertTrue(root.userObject is ModuleTreeNode)
+        assertEquals("a.py", (root.userObject as ModuleTreeNode).path)
+        // Tests should be directly under root
         assertEquals(2, root.childCount)
         assertTrue((root.getChildAt(0) as DefaultMutableTreeNode).userObject is TestTreeNode)
     }

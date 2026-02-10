@@ -40,8 +40,11 @@ import java.awt.event.MouseEvent
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
+import javax.swing.event.TreeExpansionEvent
+import javax.swing.event.TreeWillExpandListener
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
+import javax.swing.tree.ExpandVetoException
 
 class PytestExplorerPanel(
     private val project: Project,
@@ -55,7 +58,7 @@ class PytestExplorerPanel(
     private val statusLabel = JLabel("Ready")
 
     private var lastErrors: List<String> = emptyList()
-    private var scopeToCurrentFile = false
+    private var scopeToCurrentFile = true
     private var flatView = false
     private var followCaret = false
     private var filterText: String? = null
@@ -170,6 +173,16 @@ class PytestExplorerPanel(
             }
         })
 
+        testTree.addTreeWillExpandListener(object : TreeWillExpandListener {
+            override fun treeWillExpand(event: TreeExpansionEvent) {}
+            override fun treeWillCollapse(event: TreeExpansionEvent) {
+                val node = event.path.lastPathComponent as? DefaultMutableTreeNode ?: return
+                if (node.isRoot && node.userObject is ModuleTreeNode) {
+                    throw ExpandVetoException(event)
+                }
+            }
+        })
+
         testTree.addTreeSelectionListener {
             val node = testTree.lastSelectedPathComponent as? DefaultMutableTreeNode ?: return@addTreeSelectionListener
             val snapshot = service.getSnapshot() ?: return@addTreeSelectionListener
@@ -211,7 +224,12 @@ class PytestExplorerPanel(
         val expandedKeys = TreeStatePreserver.captureExpandedKeys(testTree)
         val selectedKey = TreeStatePreserver.captureSelectedKey(testTree)
 
+        val moduleRoot = scopeToCurrentFile && !flatView && root.userObject is ModuleTreeNode
+        testTree.isRootVisible = moduleRoot
         testTree.model = DefaultTreeModel(root)
+        if (moduleRoot) {
+            testTree.expandRow(0)
+        }
 
         if (expandedKeys.isNotEmpty()) {
             TreeStatePreserver.restoreExpandedState(testTree, root, expandedKeys)
