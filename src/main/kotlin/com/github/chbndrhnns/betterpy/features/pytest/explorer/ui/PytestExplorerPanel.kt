@@ -37,6 +37,8 @@ import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
@@ -85,7 +87,14 @@ class PytestExplorerPanel(
             FileEditorManagerListener.FILE_EDITOR_MANAGER,
             object : FileEditorManagerListener {
                 override fun selectionChanged(event: FileEditorManagerEvent) {
-                    currentEditorFile = event.newFile
+                    val newFile = event.newFile
+                    currentEditorFile = newFile
+
+                    if (!scopePinManager.onEditorChanged(newFile)) {
+                        reattachCaretListener()
+                        return
+                    }
+
                     if (scopeToCurrentFile) {
                         lastSnapshot?.let { applyTreeUpdate(it) }
                     }
@@ -275,12 +284,14 @@ class PytestExplorerPanel(
 
     private fun openErrorsInScratchFile() {
         val content = lastErrors.joinToString("\n\n")
+        val timestamp = LocalDateTime.now()
+            .format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
         val scratchFile = ScratchRootType.getInstance().createScratchFile(
             project,
-            "pytest-collection-errors.txt",
+            "pytest-collection-errors-$timestamp.txt",
             com.intellij.lang.Language.ANY,
             content,
-            ScratchFileService.Option.create_if_missing,
+            ScratchFileService.Option.create_new_always,
         )
         if (scratchFile != null) {
             FileEditorManager.getInstance(project).openFile(scratchFile, true)
