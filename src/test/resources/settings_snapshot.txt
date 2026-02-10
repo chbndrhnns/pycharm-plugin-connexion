@@ -1900,7 +1900,7 @@ DialogPanel
   </body>
 </html>
 '
-  CheckBox: [ ] 'Pytest Explorer'
+  CheckBox: [x] 'Pytest Explorer'
   MaturityTagLabel
     Label: 'Incubating'
   TextField: '<html>

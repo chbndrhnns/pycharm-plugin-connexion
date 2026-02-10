@@ -13,7 +13,7 @@ loggingCategories:
   - com.github.chbndrhnns.betterpy.features.pytest.explorer.ui
 since: ''
 removeIn: ''
-defaultEnabled: false
+defaultEnabled: true
 registrations:
   - type: toolWindow
     className: com.github.chbndrhnns.betterpy.features.pytest.explorer.ui.PytestExplorerToolWindowFactory
