@@ -18,6 +18,10 @@ fun interface CollectionListener {
     fun onCollectionUpdated(snapshot: CollectionSnapshot)
 }
 
+fun interface CollectionStartedListener {
+    fun onCollectionStarted()
+}
+
 @Service(Service.Level.PROJECT)
 @com.intellij.openapi.components.State(
     name = "PytestExplorerService",
@@ -36,6 +40,7 @@ class PytestExplorerService : PersistentStateComponent<PytestExplorerService.Sta
 
     private val currentSnapshot = AtomicReference<CollectionSnapshot?>(null)
     private val listeners = CopyOnWriteArrayList<CollectionListener>()
+    private val startListeners = CopyOnWriteArrayList<CollectionStartedListener>()
     private var myState = State()
 
     private val mapper = ObjectMapper()
@@ -73,6 +78,18 @@ class PytestExplorerService : PersistentStateComponent<PytestExplorerService.Sta
 
     fun removeListener(listener: CollectionListener) {
         listeners.remove(listener)
+    }
+
+    fun addStartListener(listener: CollectionStartedListener) {
+        startListeners.add(listener)
+    }
+
+    fun removeStartListener(listener: CollectionStartedListener) {
+        startListeners.remove(listener)
+    }
+
+    fun notifyCollectionStarted() {
+        startListeners.forEach { it.onCollectionStarted() }
     }
 
     private fun restoreFromState() {

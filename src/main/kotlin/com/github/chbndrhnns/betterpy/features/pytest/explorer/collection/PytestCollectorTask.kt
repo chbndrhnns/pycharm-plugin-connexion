@@ -33,6 +33,8 @@ class PytestCollectorTask(
         indicator.text = "Discovering pytest tests and fixtures..."
         indicator.isIndeterminate = true
 
+        PytestExplorerService.getInstance(project).notifyCollectionStarted()
+
         LOG.info("Starting pytest collection for project: ${project.name}")
 
         val pythonPath = findPythonPath() ?: run {

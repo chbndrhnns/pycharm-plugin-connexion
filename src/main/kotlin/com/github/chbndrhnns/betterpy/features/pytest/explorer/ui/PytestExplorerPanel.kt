@@ -4,6 +4,7 @@ import com.github.chbndrhnns.betterpy.features.pytest.explorer.collection.Pytest
 import com.github.chbndrhnns.betterpy.features.pytest.explorer.model.CollectionSnapshot
 import com.github.chbndrhnns.betterpy.features.pytest.explorer.psi.PytestPsiResolver
 import com.github.chbndrhnns.betterpy.features.pytest.explorer.service.CollectionListener
+import com.github.chbndrhnns.betterpy.features.pytest.explorer.service.CollectionStartedListener
 import com.github.chbndrhnns.betterpy.features.pytest.explorer.service.PytestExplorerService
 import com.intellij.icons.AllIcons
 import com.intellij.ide.scratch.ScratchFileService
@@ -63,6 +64,13 @@ class PytestExplorerPanel(
         SwingUtilities.invokeLater { updateTree(snapshot) }
     }
 
+    private val collectionStartedListener = CollectionStartedListener {
+        SwingUtilities.invokeLater {
+            statusLabel.icon = null
+            statusLabel.text = "Collecting..."
+        }
+    }
+
     init {
         currentEditorFile = FileEditorManager.getInstance(project).selectedFiles.firstOrNull()
 
@@ -104,6 +112,7 @@ class PytestExplorerPanel(
         setupTree()
 
         service.addListener(collectionListener)
+        service.addStartListener(collectionStartedListener)
         service.getSnapshot()?.let { updateTree(it) }
     }
 
@@ -242,14 +251,13 @@ class PytestExplorerPanel(
 
     override fun dispose() {
         service.removeListener(collectionListener)
+        service.removeStartListener(collectionStartedListener)
     }
 
     private inner class RefreshAction :
         AnAction("Refresh", "Re-collect pytest tests and fixtures", AllIcons.Actions.Refresh) {
         override fun actionPerformed(e: AnActionEvent) {
             LOG.info("Manual refresh triggered")
-            statusLabel.icon = null
-            statusLabel.text = "Collecting..."
             PytestCollectorTask(project).queue()
         }
 
