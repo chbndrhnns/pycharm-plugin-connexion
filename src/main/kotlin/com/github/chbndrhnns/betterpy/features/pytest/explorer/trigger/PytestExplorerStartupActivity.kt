@@ -8,6 +8,7 @@ import com.intellij.openapi.startup.ProjectActivity
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
+import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.util.messages.MessageBusConnection
 import kotlinx.coroutines.*
 
@@ -20,13 +21,15 @@ import kotlinx.coroutines.*
 class PytestExplorerStartupActivity : ProjectActivity {
 
     override suspend fun execute(project: Project) {
-        if (!PluginSettingsState.instance().state.enablePytestExplorer) {
-            LOG.debug("Pytest Explorer is disabled, skipping startup activity")
-            return
-        }
         LOG.info("Pytest Explorer startup activity executing for project: ${project.name}")
 
-        triggerCollection(project)
+        var wasEnabled = PluginSettingsState.instance().state.enablePytestExplorer
+
+        if (wasEnabled) {
+            triggerCollection(project)
+        } else {
+            LOG.debug("Pytest Explorer is disabled, skipping initial collection")
+        }
 
         val connection: MessageBusConnection = project.messageBus.connect()
         val scope = CoroutineScope(currentCoroutineContext() + SupervisorJob(currentCoroutineContext()[Job]))
@@ -34,7 +37,22 @@ class PytestExplorerStartupActivity : ProjectActivity {
 
         connection.subscribe(VirtualFileManager.VFS_CHANGES, object : BulkFileListener {
             override fun after(events: List<VFileEvent>) {
-                if (!PluginSettingsState.instance().state.enablePytestExplorer) return
+                val isEnabled = PluginSettingsState.instance().state.enablePytestExplorer
+
+                if (!wasEnabled && isEnabled) {
+                    LOG.info("Pytest Explorer was enabled at runtime, triggering initial collection")
+                    wasEnabled = true
+                    updateToolWindowAvailability(project, true)
+                    triggerCollection(project)
+                    return
+                } else if (wasEnabled && !isEnabled) {
+                    LOG.info("Pytest Explorer was disabled at runtime")
+                    wasEnabled = false
+                    updateToolWindowAvailability(project, false)
+                    return
+                }
+
+                if (!isEnabled) return
 
                 val hasTestFileChanges = events.any { event ->
                     PytestFileFilter.isTestRelatedFile(event.file?.name)
@@ -62,6 +80,12 @@ class PytestExplorerStartupActivity : ProjectActivity {
             if (project.isDisposed) return
             LOG.info("Triggering pytest collection for project: ${project.name}")
             PytestCollectorTask(project).queue()
+        }
+
+        private fun updateToolWindowAvailability(project: Project, available: Boolean) {
+            if (project.isDisposed) return
+            val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Pytest Explorer")
+            toolWindow?.setAvailable(available)
         }
     }
 }

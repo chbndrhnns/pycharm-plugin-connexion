@@ -6,10 +6,13 @@ import com.github.chbndrhnns.betterpy.features.pytest.explorer.psi.PytestPsiReso
 import com.github.chbndrhnns.betterpy.features.pytest.explorer.service.CollectionListener
 import com.github.chbndrhnns.betterpy.features.pytest.explorer.service.PytestExplorerService
 import com.intellij.icons.AllIcons
+import com.intellij.ide.scratch.ScratchFileService
+import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBSplitter
 import com.intellij.ui.components.JBScrollPane
@@ -36,6 +39,8 @@ class PytestExplorerPanel(
     private val service = PytestExplorerService.getInstance(project)
     private val statusLabel = JLabel("Ready")
 
+    private var lastErrors: List<String> = emptyList()
+
     private val collectionListener = CollectionListener { snapshot ->
         SwingUtilities.invokeLater { updateTree(snapshot) }
     }
@@ -51,6 +56,13 @@ class PytestExplorerPanel(
         add(splitPane, BorderLayout.CENTER)
 
         statusLabel.border = JBUI.Borders.empty(2, 5)
+        statusLabel.addMouseListener(object : MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent) {
+                if (lastErrors.isNotEmpty()) {
+                    openErrorsInScratchFile()
+                }
+            }
+        })
         add(statusLabel, BorderLayout.SOUTH)
 
         setupTree()
@@ -100,10 +112,13 @@ class PytestExplorerPanel(
         val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
         testTree.model = DefaultTreeModel(root)
 
+        lastErrors = snapshot.errors
         if (snapshot.errors.isNotEmpty()) {
             statusLabel.icon = AllIcons.General.Error
-            statusLabel.text = snapshot.errors.first()
+            statusLabel.text = "<html><a href=''>Collection completed with errors (click to view details)</a></html>"
+            statusLabel.cursor = java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR)
         } else {
+            statusLabel.cursor = java.awt.Cursor.getDefaultCursor()
             statusLabel.icon = null
             val testCount = snapshot.tests.size
             val fixtureCount = snapshot.fixtures.size
@@ -118,6 +133,20 @@ class PytestExplorerPanel(
             pointer?.element?.let {
                 (it as? com.intellij.pom.Navigatable)?.navigate(true)
             }
+        }
+    }
+
+    private fun openErrorsInScratchFile() {
+        val content = lastErrors.joinToString("\n\n")
+        val scratchFile = ScratchRootType.getInstance().createScratchFile(
+            project,
+            "pytest-collection-errors.txt",
+            com.intellij.lang.Language.ANY,
+            content,
+            ScratchFileService.Option.create_if_missing,
+        )
+        if (scratchFile != null) {
+            FileEditorManager.getInstance(project).openFile(scratchFile, true)
         }
     }
 

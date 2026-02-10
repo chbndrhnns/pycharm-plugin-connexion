@@ -104,11 +104,18 @@ class PytestCollectorTask(
         }
 
         val errors = classifyExitCode(exitCode, stderr)
+        val jsonData = PytestOutputParser.parseJsonOutput(stderr)
+
         if (errors.isNotEmpty()) {
-            LOG.warn("pytest collection errors: $errors")
+            if (exitCode == -1) {
+                LOG.error("pytest collection errors: $errors")
+            } else if (jsonData != null) {
+                LOG.info("pytest exited with code $exitCode but collection data was received")
+            } else {
+                LOG.warn("pytest collection problems: $errors")
+            }
         }
 
-        val jsonData = PytestOutputParser.parseJsonOutput(stderr)
         if (jsonData != null) {
             return buildSnapshotFromJson(jsonData, errors)
         }
@@ -198,7 +205,7 @@ class PytestCollectorTask(
                 return listOf("pytest is not installed: $stderr")
             }
             return when (exitCode) {
-                0, 1, 5 -> emptyList()
+                0, 1, 2, 5 -> emptyList()
                 -1 -> listOf("pytest failed to start (exit code -1): $stderr")
                 else -> listOf("pytest exited with code $exitCode: $stderr")
             }

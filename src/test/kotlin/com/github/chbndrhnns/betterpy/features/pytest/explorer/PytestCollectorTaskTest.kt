@@ -46,10 +46,9 @@ class PytestCollectorTaskTest {
     }
 
     @Test
-    fun `classifyExitCode - 2 is usage error`() {
+    fun `classifyExitCode - 2 is not an error`() {
         val result = PytestCollectorTask.classifyExitCode(2, "some error output")
-        assertEquals(1, result.size)
-        assertTrue("Should mention exit code", result[0].contains("2"))
+        assertTrue("Exit code 2 should not be an error", result.isEmpty())
     }
 
     @Test
