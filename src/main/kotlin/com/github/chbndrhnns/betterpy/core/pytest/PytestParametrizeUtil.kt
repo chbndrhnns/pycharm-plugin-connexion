@@ -33,6 +33,10 @@ object PytestParametrizeUtil {
             is PyStringLiteralExpression -> namesArg.stringValue.split(',').map { it.trim() }
             is PyListLiteralExpression -> namesArg.elements.mapNotNull { (it as? PyStringLiteralExpression)?.stringValue }
             is PyTupleExpression -> namesArg.elements.mapNotNull { (it as? PyStringLiteralExpression)?.stringValue }
+            is PyParenthesizedExpression -> {
+                val contained = namesArg.containedExpression
+                if (contained != null) extractParameterNames(contained) else null
+            }
             else -> null
         }
     }
@@ -52,6 +56,23 @@ object PytestParametrizeUtil {
 
         val positionalArgs = args.filterNot { it is PyKeywordArgument }
         return positionalArgs.size == 1
+    }
+
+    fun collectAllParametrizeNames(function: PyFunction): Set<String> {
+        val result = mutableSetOf<String>()
+        val decorators = function.decoratorList?.decorators ?: return result
+        for (decorator in decorators) {
+            if (!isParametrizeDecorator(decorator, allowBareName = true)) continue
+            val args = decorator.argumentList?.arguments ?: continue
+            if (args.isEmpty()) continue
+            val namesArg = if (args[0] !is PyKeywordArgument) {
+                args[0]
+            } else {
+                decorator.getKeywordArgument("argnames") ?: continue
+            }
+            extractParameterNames(namesArg)?.let { result.addAll(it) }
+        }
+        return result
     }
 
     fun ensurePytestImported(file: PyFile) {

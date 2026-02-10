@@ -552,7 +552,29 @@ class PytestFixtureNavigationTest : TestBase() {
         }
     }
 
-    // Test 10: No reference for self/cls parameters
+    // Test 10: No fixture reference for parametrize parameters (tuple style)
+    fun testNoFixtureReferenceForParametrizeTupleParam() {
+        val code = """
+            import pytest
+            
+            @pytest.fixture
+            def my_fixture():
+                return 42
+            
+            @pytest.mark.parametrize(("arg",), [(1,)])
+            def test_something(arg<caret>, my_fixture):
+                assert arg == 1
+        """.trimIndent()
+
+        myFixture.configureByText("test_parametrize_tuple.py", code)
+
+        val resolved = myFixture.elementAtCaret
+        if (resolved is PyFunction) {
+            fail("Should not resolve parametrize parameter 'arg' to a fixture function")
+        }
+    }
+
+    // Test 11: No reference for self/cls parameters
     fun testNoReferenceForSelfParameter() {
         val code = """
             class TestClass:

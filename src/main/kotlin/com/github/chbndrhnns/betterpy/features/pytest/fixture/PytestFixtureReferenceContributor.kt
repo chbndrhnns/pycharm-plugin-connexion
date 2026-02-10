@@ -2,6 +2,7 @@ package com.github.chbndrhnns.betterpy.features.pytest.fixture
 
 import com.github.chbndrhnns.betterpy.core.pytest.PytestFixtureUtil
 import com.github.chbndrhnns.betterpy.core.pytest.PytestNaming
+import com.github.chbndrhnns.betterpy.core.pytest.PytestParametrizeUtil
 import com.github.chbndrhnns.betterpy.featureflags.PluginSettingsState
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.LocalQuickFixProvider
@@ -61,6 +62,11 @@ class FixtureParameterReferenceProvider : PsiReferenceProvider() {
         // Don't provide references for 'self' or 'cls'
         val paramName = parameter.name ?: return PsiReference.EMPTY_ARRAY
         if (paramName == "self" || paramName == "cls") {
+            return PsiReference.EMPTY_ARRAY
+        }
+
+        // Don't provide fixture references for parametrize parameters
+        if (paramName in PytestParametrizeUtil.collectAllParametrizeNames(function)) {
             return PsiReference.EMPTY_ARRAY
         }
 
