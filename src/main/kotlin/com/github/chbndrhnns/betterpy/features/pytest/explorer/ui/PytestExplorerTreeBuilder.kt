@@ -55,6 +55,19 @@ object PytestExplorerTreeBuilder {
         return root
     }
 
+    fun findTestNode(node: DefaultMutableTreeNode, functionName: String, className: String?): DefaultMutableTreeNode? {
+        val userObj = node.userObject
+        if (userObj is TestTreeNode && userObj.test.functionName == functionName && userObj.test.className == className) {
+            return node
+        }
+        for (i in 0 until node.childCount) {
+            val child = node.getChildAt(i) as? DefaultMutableTreeNode ?: continue
+            val found = findTestNode(child, functionName, className)
+            if (found != null) return found
+        }
+        return null
+    }
+
     private fun addDependencies(
         parentNode: DefaultMutableTreeNode,
         fixture: CollectedFixture,

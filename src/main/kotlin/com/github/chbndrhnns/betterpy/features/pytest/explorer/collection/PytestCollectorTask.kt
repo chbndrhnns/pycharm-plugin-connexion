@@ -126,7 +126,7 @@ class PytestCollectorTask(
             tests = quietItems.map { item ->
                 val parts = item.nodeId.split("::")
                 val path = parts[0]
-                val className = if (parts.size == 3) parts[1] else null
+                val className = if (parts.size >= 3) parts[parts.size - 2] else null
                 val funcName = parts.last().substringBefore("[")
                 CollectedTest(
                     nodeId = item.nodeId,

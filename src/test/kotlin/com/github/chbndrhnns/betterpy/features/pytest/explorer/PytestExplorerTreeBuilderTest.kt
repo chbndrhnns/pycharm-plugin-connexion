@@ -4,8 +4,7 @@ import com.github.chbndrhnns.betterpy.features.pytest.explorer.model.CollectedFi
 import com.github.chbndrhnns.betterpy.features.pytest.explorer.model.CollectedTest
 import com.github.chbndrhnns.betterpy.features.pytest.explorer.model.CollectionSnapshot
 import com.github.chbndrhnns.betterpy.features.pytest.explorer.ui.*
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
+import org.junit.Assert.*
 import org.junit.Test
 import javax.swing.tree.DefaultMutableTreeNode
 
@@ -148,5 +147,148 @@ class PytestExplorerTreeBuilderTest {
         assertEquals("unknown", display.name)
         assertEquals("?", display.scope)
         assertEquals("?", display.definedIn)
+    }
+
+    // --- collapseModuleNode tests ---
+
+    @Test
+    fun `collapseModuleNode removes single module node`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("a.py::test_one", "a.py", null, "test_one", emptyList()),
+                CollectedTest("a.py::test_two", "a.py", null, "test_two", emptyList()),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildTestTree(snapshot, collapseModuleNode = true)
+        // Tests should be directly under root, no module node
+        assertEquals(2, root.childCount)
+        assertTrue((root.getChildAt(0) as DefaultMutableTreeNode).userObject is TestTreeNode)
+    }
+
+    @Test
+    fun `collapseModuleNode does not collapse when multiple modules`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("a.py::test_one", "a.py", null, "test_one", emptyList()),
+                CollectedTest("b.py::test_two", "b.py", null, "test_two", emptyList()),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildTestTree(snapshot, collapseModuleNode = true)
+        assertEquals(2, root.childCount)
+        assertTrue((root.getChildAt(0) as DefaultMutableTreeNode).userObject is ModuleTreeNode)
+    }
+
+    // --- findTestNode tests ---
+
+    @Test
+    fun `findTestNode finds standalone test`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("a.py::test_one", "a.py", null, "test_one", emptyList()),
+                CollectedTest("a.py::test_two", "a.py", null, "test_two", emptyList()),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
+        val found = PytestExplorerTreeBuilder.findTestNode(root, "test_two", null)
+        assertNotNull(found)
+        assertEquals("test_two", (found!!.userObject as TestTreeNode).test.functionName)
+    }
+
+    @Test
+    fun `findTestNode finds test inside class`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("t.py::MyClass::test_a", "t.py", "MyClass", "test_a", emptyList()),
+                CollectedTest("t.py::test_standalone", "t.py", null, "test_standalone", emptyList()),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
+        val found = PytestExplorerTreeBuilder.findTestNode(root, "test_a", "MyClass")
+        assertNotNull(found)
+        assertEquals("MyClass", (found!!.userObject as TestTreeNode).test.className)
+    }
+
+    @Test
+    fun `findTestNode returns null for non-existent test`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("a.py::test_one", "a.py", null, "test_one", emptyList()),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
+        val found = PytestExplorerTreeBuilder.findTestNode(root, "test_missing", null)
+        assertNull(found)
+    }
+
+    @Test
+    fun `findTestNode distinguishes same function name with different class`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("t.py::ClassA::test_x", "t.py", "ClassA", "test_x", emptyList()),
+                CollectedTest("t.py::ClassB::test_x", "t.py", "ClassB", "test_x", emptyList()),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
+        val found = PytestExplorerTreeBuilder.findTestNode(root, "test_x", "ClassB")
+        assertNotNull(found)
+        assertEquals("ClassB", (found!!.userObject as TestTreeNode).test.className)
+    }
+
+    @Test
+    fun `findTestNode finds test inside nested class`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("t.py::Outer::Inner::test_nested", "t.py", "Inner", "test_nested", emptyList()),
+                CollectedTest("t.py::Outer::test_outer", "t.py", "Outer", "test_outer", emptyList()),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
+        // Searching with innermost class name should find the nested test
+        val found = PytestExplorerTreeBuilder.findTestNode(root, "test_nested", "Inner")
+        assertNotNull(found)
+        assertEquals("Inner", (found!!.userObject as TestTreeNode).test.className)
+        assertEquals("test_nested", found.userObject.let { (it as TestTreeNode).test.functionName })
+    }
+
+    @Test
+    fun `findTestNode distinguishes nested classes with same method name`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("t.py::Outer::test_x", "t.py", "Outer", "test_x", emptyList()),
+                CollectedTest("t.py::Outer::Inner::test_x", "t.py", "Inner", "test_x", emptyList()),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
+        val foundInner = PytestExplorerTreeBuilder.findTestNode(root, "test_x", "Inner")
+        assertNotNull(foundInner)
+        assertEquals("Inner", (foundInner!!.userObject as TestTreeNode).test.className)
+
+        val foundOuter = PytestExplorerTreeBuilder.findTestNode(root, "test_x", "Outer")
+        assertNotNull(foundOuter)
+        assertEquals("Outer", (foundOuter!!.userObject as TestTreeNode).test.className)
     }
 }

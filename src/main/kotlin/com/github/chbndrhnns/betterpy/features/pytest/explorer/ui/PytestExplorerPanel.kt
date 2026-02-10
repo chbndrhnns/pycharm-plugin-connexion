@@ -12,16 +12,23 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.editor.event.CaretEvent
+import com.intellij.openapi.editor.event.CaretListener
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
+import com.intellij.openapi.fileEditor.TextEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiManager
+import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.ui.JBSplitter
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.tree.TreeUtil
+import com.jetbrains.python.psi.PyClass
+import com.jetbrains.python.psi.PyFunction
 import java.awt.BorderLayout
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -44,8 +51,10 @@ class PytestExplorerPanel(
 
     private var lastErrors: List<String> = emptyList()
     private var scopeToCurrentFile = false
+    private var followCaret = false
     private var lastSnapshot: CollectionSnapshot? = null
     private var currentEditorFile: VirtualFile? = null
+    private var caretListener: CaretListener? = null
 
     private val collectionListener = CollectionListener { snapshot ->
         SwingUtilities.invokeLater { updateTree(snapshot) }
@@ -61,6 +70,10 @@ class PytestExplorerPanel(
                     currentEditorFile = event.newFile
                     if (scopeToCurrentFile) {
                         lastSnapshot?.let { applyTreeUpdate(it) }
+                    }
+                    reattachCaretListener()
+                    if (followCaret) {
+                        followCaretToNode()
                     }
                 }
             }
@@ -95,6 +108,7 @@ class PytestExplorerPanel(
         val group = DefaultActionGroup().apply {
             add(RefreshAction())
             add(ScopeToCurrentFileAction())
+            add(FollowCaretAction())
             addSeparator()
             add(ExpandAllAction())
             add(CollapseAllAction())
@@ -217,6 +231,66 @@ class PytestExplorerPanel(
         override fun setSelected(e: AnActionEvent, state: Boolean) {
             scopeToCurrentFile = state
             lastSnapshot?.let { applyTreeUpdate(it) }
+        }
+
+        override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+    }
+
+    private fun reattachCaretListener() {
+        // Remove old listener
+        caretListener?.let { listener ->
+            FileEditorManager.getInstance(project).allEditors
+                .filterIsInstance<TextEditor>()
+                .forEach { it.editor.caretModel.removeCaretListener(listener) }
+        }
+        if (!followCaret) {
+            caretListener = null
+            return
+        }
+        val editor = (FileEditorManager.getInstance(project).selectedEditor as? TextEditor)?.editor ?: return
+        val listener = object : CaretListener {
+            override fun caretPositionChanged(event: CaretEvent) {
+                SwingUtilities.invokeLater { followCaretToNode() }
+            }
+        }
+        caretListener = listener
+        editor.caretModel.addCaretListener(listener)
+    }
+
+    private fun followCaretToNode() {
+        if (!followCaret) return
+        val editor = (FileEditorManager.getInstance(project).selectedEditor as? TextEditor)?.editor ?: return
+        val vFile = editor.virtualFile ?: return
+        val offset = editor.caretModel.offset
+
+        val match = ReadAction.compute<Pair<String, String?>?, Throwable> {
+            val psiFile = PsiManager.getInstance(project).findFile(vFile) ?: return@compute null
+            val element = psiFile.findElementAt(offset) ?: return@compute null
+            val function = PsiTreeUtil.getParentOfType(element, PyFunction::class.java) ?: return@compute null
+            val functionName = function.name ?: return@compute null
+            val className = PsiTreeUtil.getParentOfType(function, PyClass::class.java)?.name
+            functionName to className
+        } ?: return
+
+        // Find matching node in tree
+        val root = testTree.model.root as? DefaultMutableTreeNode ?: return
+        val targetNode = PytestExplorerTreeBuilder.findTestNode(root, match.first, match.second)
+        if (targetNode != null) {
+            val path = javax.swing.tree.TreePath(targetNode.path)
+            testTree.selectionPath = path
+            testTree.scrollPathToVisible(path)
+        }
+    }
+
+    private inner class FollowCaretAction :
+        ToggleAction("Follow Caret", "Select the test at the current caret position", AllIcons.General.Locate) {
+
+        override fun isSelected(e: AnActionEvent): Boolean = followCaret
+
+        override fun setSelected(e: AnActionEvent, state: Boolean) {
+            followCaret = state
+            reattachCaretListener()
+            if (state) followCaretToNode()
         }
 
         override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
