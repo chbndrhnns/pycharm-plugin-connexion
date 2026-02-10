@@ -212,6 +212,39 @@ class PytestPsiResolverTest : TestBase() {
         assertEquals("Should return empty list for no params", emptyList<String>(), deps)
     }
 
+    fun testExtractFixtureDepsFiltersParametrizeArgs() {
+        myFixture.configureByText(
+            "test_param.py", """
+            import pytest
+            
+            @pytest.mark.parametrize("arg", [1, 2, 3])
+            def test_(arg, my_fixture):
+                pass
+        """.trimIndent()
+        )
+
+        val func = myFixture.findElementByText("test_", PyFunction::class.java)
+        val deps = PytestPsiResolver.extractFixtureDepsFromPsi(func)
+        assertEquals("Should filter out parametrize arg", listOf("my_fixture"), deps)
+    }
+
+    fun testExtractFixtureDepsFiltersMultipleParametrizeArgs() {
+        myFixture.configureByText(
+            "test_param.py", """
+            import pytest
+            
+            @pytest.mark.parametrize("a", [1, 2])
+            @pytest.mark.parametrize("b", [3, 4])
+            def test_(a, b, my_fixture):
+                pass
+        """.trimIndent()
+        )
+
+        val func = myFixture.findElementByText("test_", PyFunction::class.java)
+        val deps = PytestPsiResolver.extractFixtureDepsFromPsi(func)
+        assertEquals("Should filter out all parametrize args", listOf("my_fixture"), deps)
+    }
+
     fun testResolveFixture() {
         myFixture.configureByText(
             "conftest.py", """

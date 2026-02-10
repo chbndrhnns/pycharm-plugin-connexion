@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.betterpy.features.pytest.explorer.psi
 
+import com.github.chbndrhnns.betterpy.core.pytest.PytestParametrizeUtil
 import com.github.chbndrhnns.betterpy.features.pytest.explorer.model.CollectedFixture
 import com.github.chbndrhnns.betterpy.features.pytest.explorer.model.CollectedTest
 import com.intellij.openapi.application.ReadAction
@@ -108,9 +109,26 @@ object PytestPsiResolver {
     }
 
     fun extractFixtureDepsFromPsi(function: PyFunction): List<String> {
+        val parametrizeNames = collectParametrizeArgNames(function)
         return function.parameterList.parameters
             .filter { it.name != "self" && it.name != "request" }
             .mapNotNull { it.name }
+            .filter { it !in parametrizeNames }
+    }
+
+    private fun collectParametrizeArgNames(function: PyFunction): Set<String> {
+        val decorators = function.decoratorList?.decorators ?: return emptySet()
+        val result = mutableSetOf<String>()
+        for (decorator in decorators) {
+            if (!PytestParametrizeUtil.isParametrizeDecorator(decorator, allowBareName = true)) continue
+            val args = decorator.argumentList?.arguments ?: continue
+            if (args.isEmpty()) continue
+            val namesArg = args[0]
+            if (namesArg is com.jetbrains.python.psi.PyKeywordArgument) continue
+            val names = PytestParametrizeUtil.extractParameterNames(namesArg) ?: continue
+            result.addAll(names)
+        }
+        return result
     }
 
     private fun findPyFile(project: Project, relativePath: String): PyFile? {

@@ -24,6 +24,9 @@ def pytest_collection_finish(session):
         })
 
     fm = session._fixturemanager
+    known_fixtures = set(fm._arg2fixturedefs.keys())
+    for test in data["tests"]:
+        test["fixtures"] = [f for f in test["fixtures"] if f in known_fixtures]
     for name, fixturedefs in fm._arg2fixturedefs.items():
         for fdef in fixturedefs:
             data["fixtures"][name] = {
