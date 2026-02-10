@@ -24,8 +24,20 @@ object PytestExplorerTreeBuilder {
                     moduleNode
                 }
 
-                for (test in classTests) {
+                val (parametrized, plain) = classTests.partition { it.parametrizeIds.isNotEmpty() }
+                for (test in plain) {
                     parent.add(DefaultMutableTreeNode(TestTreeNode(test)))
+                }
+                val byFunction = parametrized.groupBy { it.functionName }
+                for ((_, paramTests) in byFunction) {
+                    val representative = paramTests.first()
+                    val testNode = DefaultMutableTreeNode(TestTreeNode(representative))
+                    for (pt in paramTests) {
+                        for (paramId in pt.parametrizeIds) {
+                            testNode.add(DefaultMutableTreeNode(ParametrizeTreeNode(paramId, pt)))
+                        }
+                    }
+                    parent.add(testNode)
                 }
             }
 
@@ -64,6 +76,23 @@ object PytestExplorerTreeBuilder {
             val child = node.getChildAt(i) as? DefaultMutableTreeNode ?: continue
             val found = findTestNode(child, functionName, className)
             if (found != null) return found
+        }
+        return null
+    }
+
+    fun findParametrizeNode(
+        node: DefaultMutableTreeNode,
+        functionName: String,
+        className: String?,
+        parametrizeId: String,
+    ): DefaultMutableTreeNode? {
+        val testNode = findTestNode(node, functionName, className) ?: return null
+        for (i in 0 until testNode.childCount) {
+            val child = testNode.getChildAt(i) as? DefaultMutableTreeNode ?: continue
+            val userObj = child.userObject
+            if (userObj is ParametrizeTreeNode && userObj.parametrizeId == parametrizeId) {
+                return child
+            }
         }
         return null
     }

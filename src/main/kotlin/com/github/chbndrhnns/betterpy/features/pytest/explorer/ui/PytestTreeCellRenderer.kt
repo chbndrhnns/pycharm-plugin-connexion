@@ -38,6 +38,11 @@ class PytestTreeCellRenderer : ColoredTreeCellRenderer() {
                 }
             }
 
+            is ParametrizeTreeNode -> {
+                icon = AllIcons.Nodes.Parameter
+                append(node.parametrizeId, SimpleTextAttributes.REGULAR_ATTRIBUTES)
+            }
+
             is FixtureDisplayNode -> {
                 icon = AllIcons.Nodes.Plugin
                 append(node.name, SimpleTextAttributes.REGULAR_ATTRIBUTES)

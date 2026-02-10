@@ -127,6 +127,7 @@ class PytestExplorerPanel(
                     val node = testTree.lastSelectedPathComponent as? DefaultMutableTreeNode ?: return
                     when (val userObj = node.userObject) {
                         is TestTreeNode -> navigateToTest(userObj)
+                        is ParametrizeTreeNode -> navigateToTest(TestTreeNode(userObj.test))
                     }
                 }
             }
@@ -137,6 +138,7 @@ class PytestExplorerPanel(
             val snapshot = service.getSnapshot() ?: return@addTreeSelectionListener
             when (val userObj = node.userObject) {
                 is TestTreeNode -> fixtureDetailPanel.showFixturesFor(userObj.test, snapshot)
+                is ParametrizeTreeNode -> fixtureDetailPanel.showFixturesFor(userObj.test, snapshot)
                 else -> fixtureDetailPanel.clear()
             }
         }

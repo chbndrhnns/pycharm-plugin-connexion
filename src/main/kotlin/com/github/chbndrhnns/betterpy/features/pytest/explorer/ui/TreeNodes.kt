@@ -14,6 +14,10 @@ data class TestTreeNode(val test: CollectedTest) {
     override fun toString(): String = test.functionName
 }
 
+data class ParametrizeTreeNode(val parametrizeId: String, val test: CollectedTest) {
+    override fun toString(): String = parametrizeId
+}
+
 data class FixtureDisplayNode(
     val name: String,
     val scope: String,

@@ -271,6 +271,124 @@ class PytestExplorerTreeBuilderTest {
         assertEquals("test_nested", found.userObject.let { (it as TestTreeNode).test.functionName })
     }
 
+    // --- parametrized test rendering ---
+
+    @Test
+    fun `parametrized tests rendered as children of test node`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("t.py::test_add", "t.py", null, "test_add", emptyList(), listOf("1-2-3", "4-5-9")),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
+        val moduleNode = root.getChildAt(0) as DefaultMutableTreeNode
+        assertEquals(1, moduleNode.childCount)
+        val testNode = moduleNode.getChildAt(0) as DefaultMutableTreeNode
+        assertTrue(testNode.userObject is TestTreeNode)
+        assertEquals("test_add", (testNode.userObject as TestTreeNode).test.functionName)
+        assertEquals(2, testNode.childCount)
+        val param0 = testNode.getChildAt(0) as DefaultMutableTreeNode
+        assertTrue(param0.userObject is ParametrizeTreeNode)
+        assertEquals("1-2-3", (param0.userObject as ParametrizeTreeNode).parametrizeId)
+        val param1 = testNode.getChildAt(1) as DefaultMutableTreeNode
+        assertEquals("4-5-9", (param1.userObject as ParametrizeTreeNode).parametrizeId)
+    }
+
+    @Test
+    fun `non-parametrized tests remain flat alongside parametrized`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("t.py::test_plain", "t.py", null, "test_plain", emptyList()),
+                CollectedTest("t.py::test_param", "t.py", null, "test_param", emptyList(), listOf("a", "b")),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
+        val moduleNode = root.getChildAt(0) as DefaultMutableTreeNode
+        assertEquals(2, moduleNode.childCount)
+        val plainNode = moduleNode.getChildAt(0) as DefaultMutableTreeNode
+        assertTrue(plainNode.userObject is TestTreeNode)
+        assertTrue(plainNode.isLeaf)
+        val paramNode = moduleNode.getChildAt(1) as DefaultMutableTreeNode
+        assertTrue(paramNode.userObject is TestTreeNode)
+        assertEquals(2, paramNode.childCount)
+    }
+
+    @Test
+    fun `parametrized tests inside class`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("t.py::MyClass::test_x", "t.py", "MyClass", "test_x", emptyList(), listOf("p1", "p2")),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
+        val moduleNode = root.getChildAt(0) as DefaultMutableTreeNode
+        val classNode = moduleNode.getChildAt(0) as DefaultMutableTreeNode
+        assertTrue(classNode.userObject is ClassTreeNode)
+        val testNode = classNode.getChildAt(0) as DefaultMutableTreeNode
+        assertEquals(2, testNode.childCount)
+        assertEquals(
+            "p1",
+            (((testNode.getChildAt(0) as DefaultMutableTreeNode).userObject) as ParametrizeTreeNode).parametrizeId
+        )
+    }
+
+    // --- findParametrizeNode tests ---
+
+    @Test
+    fun `findParametrizeNode finds specific param`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("t.py::test_add", "t.py", null, "test_add", emptyList(), listOf("1-2-3", "4-5-9")),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
+        val found = PytestExplorerTreeBuilder.findParametrizeNode(root, "test_add", null, "4-5-9")
+        assertNotNull(found)
+        assertEquals("4-5-9", (found!!.userObject as ParametrizeTreeNode).parametrizeId)
+    }
+
+    @Test
+    fun `findParametrizeNode returns null for non-existent param`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("t.py::test_add", "t.py", null, "test_add", emptyList(), listOf("1-2-3")),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
+        val found = PytestExplorerTreeBuilder.findParametrizeNode(root, "test_add", null, "missing")
+        assertNull(found)
+    }
+
+    @Test
+    fun `findParametrizeNode returns null when test has no params`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("t.py::test_plain", "t.py", null, "test_plain", emptyList()),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
+        val found = PytestExplorerTreeBuilder.findParametrizeNode(root, "test_plain", null, "x")
+        assertNull(found)
+    }
+
     @Test
     fun `findTestNode distinguishes nested classes with same method name`() {
         val snapshot = CollectionSnapshot(

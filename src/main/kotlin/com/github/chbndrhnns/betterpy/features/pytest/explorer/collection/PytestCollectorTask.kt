@@ -123,19 +123,22 @@ class PytestCollectorTask(
         val quietItems = PytestOutputParser.parseQuietOutput(stdout, workDir)
         return CollectionSnapshot(
             timestamp = System.currentTimeMillis(),
-            tests = quietItems.map { item ->
+            tests = groupParametrizedTests(quietItems.map { item ->
                 val parts = item.nodeId.split("::")
                 val path = parts[0]
-                val className = if (parts.size >= 3) parts[parts.size - 2] else null
-                val funcName = parts.last().substringBefore("[")
+                val lastPart = parts.last()
+                val className = if (parts.size >= 3) parts[parts.size - 2].substringBefore("[") else null
+                val funcName = lastPart.substringBefore("[")
+                val paramId = if ("[" in lastPart) lastPart.substringAfter("[").removeSuffix("]") else null
                 CollectedTest(
                     nodeId = item.nodeId,
                     modulePath = path,
                     className = className,
                     functionName = funcName,
                     fixtures = emptyList(),
+                    parametrizeIds = listOfNotNull(paramId),
                 )
-            },
+            }),
             fixtures = emptyList(),
             errors = errors,
         )
@@ -145,15 +148,18 @@ class PytestCollectorTask(
         jsonData: CollectionJsonData,
         errors: List<String>,
     ): CollectionSnapshot {
-        val tests = jsonData.tests.map { test ->
+        val tests = groupParametrizedTests(jsonData.tests.map { test ->
+            val funcName = test.name.substringBefore("[")
+            val paramId = if ("[" in test.name) test.name.substringAfter("[").removeSuffix("]") else null
             CollectedTest(
                 nodeId = test.nodeid,
                 modulePath = test.nodeid.substringBefore("::"),
                 className = test.cls,
-                functionName = test.name,
+                functionName = funcName,
                 fixtures = test.fixtures,
+                parametrizeIds = listOfNotNull(paramId),
             )
-        }
+        })
         val fixtures = jsonData.fixtures.values.map { fix ->
             CollectedFixture(
                 name = fix.name,
@@ -178,6 +184,28 @@ class PytestCollectorTask(
         } else {
             PytestExplorerService.getInstance(project).updateSnapshot(snapshot)
         }
+    }
+
+    private fun groupParametrizedTests(tests: List<CollectedTest>): List<CollectedTest> {
+        val result = mutableListOf<CollectedTest>()
+        val grouped = mutableMapOf<String, MutableList<CollectedTest>>()
+        for (test in tests) {
+            if (test.parametrizeIds.isNotEmpty()) {
+                val key = "${test.modulePath}::${test.className ?: ""}::${test.functionName}"
+                grouped.getOrPut(key) { mutableListOf() }.add(test)
+            } else {
+                result.add(test)
+            }
+        }
+        for ((_, group) in grouped) {
+            val first = group.first()
+            result.add(
+                first.copy(
+                    parametrizeIds = group.flatMap { it.parametrizeIds },
+                )
+            )
+        }
+        return result
     }
 
     companion object {
