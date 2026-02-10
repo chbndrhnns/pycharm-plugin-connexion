@@ -5,12 +5,14 @@ import com.github.chbndrhnns.betterpy.features.pytest.explorer.model.CollectedTe
 import com.github.chbndrhnns.betterpy.features.pytest.explorer.model.CollectionSnapshot
 import com.github.chbndrhnns.betterpy.features.pytest.explorer.psi.PytestPsiResolver
 import com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureResolver
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.pom.Navigatable
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.treeStructure.Tree
+import com.intellij.util.concurrency.AppExecutorUtil
 import com.intellij.util.ui.JBUI
 import com.jetbrains.python.psi.PyFunction
 import com.jetbrains.python.psi.types.TypeEvalContext
@@ -52,11 +54,30 @@ class FixtureDetailPanel(private val project: Project) : JPanel(BorderLayout()) 
     fun showFixturesFor(test: CollectedTest, snapshot: CollectionSnapshot) {
         titleLabel.text = "Fixtures for ${test.functionName}"
         currentTest = test
-        currentFixtureMap = resolveFixtureMapViaPsi(test, snapshot.fixtures)
-        val root = PytestExplorerTreeBuilder.buildFixtureTree(test.fixtures, currentFixtureMap)
-        fixtureTree.model = DefaultTreeModel(root)
+
+        // Show immediate tree with simple first-candidate mapping
+        val quickMap = snapshot.fixtures.groupBy { it.name }.mapValues { (_, v) -> v.first() }
+        currentFixtureMap = quickMap
+        val quickRoot = PytestExplorerTreeBuilder.buildFixtureTree(test.fixtures, quickMap)
+        fixtureTree.model = DefaultTreeModel(quickRoot)
         for (i in 0 until fixtureTree.rowCount.coerceAtMost(20)) {
             fixtureTree.expandRow(i)
+        }
+
+        // Resolve full PSI-based fixture map in background, then update UI
+        val fixtures = snapshot.fixtures
+        AppExecutorUtil.getAppExecutorService().execute {
+            val resolvedMap = resolveFixtureMapViaPsi(test, fixtures)
+            ApplicationManager.getApplication().invokeLater {
+                if (currentTest == test) {
+                    currentFixtureMap = resolvedMap
+                    val root = PytestExplorerTreeBuilder.buildFixtureTree(test.fixtures, resolvedMap)
+                    fixtureTree.model = DefaultTreeModel(root)
+                    for (i in 0 until fixtureTree.rowCount.coerceAtMost(20)) {
+                        fixtureTree.expandRow(i)
+                    }
+                }
+            }
         }
     }
 
