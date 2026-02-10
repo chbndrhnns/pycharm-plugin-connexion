@@ -66,6 +66,29 @@ class PytestCollectorTaskTest {
     }
 
     @Test
+    fun `classifyExitCode - minus 1 is error`() {
+        val result = PytestCollectorTask.classifyExitCode(-1, "some failure")
+        assertEquals(1, result.size)
+        assertTrue("Should mention exit code -1", result[0].contains("-1"))
+    }
+
+    @Test
+    fun `classifyExitCode - pytest not installed detected from stderr`() {
+        val stderr = "ModuleNotFoundError: No module named 'pytest'"
+        val result = PytestCollectorTask.classifyExitCode(1, stderr)
+        assertEquals(1, result.size)
+        assertTrue("Should mention pytest not installed", result[0].contains("not installed"))
+    }
+
+    @Test
+    fun `classifyExitCode - No module named pytest detected`() {
+        val stderr = "/usr/bin/python3: No module named pytest"
+        val result = PytestCollectorTask.classifyExitCode(0, stderr)
+        assertEquals(1, result.size)
+        assertTrue("Should mention pytest not installed", result[0].contains("not installed"))
+    }
+
+    @Test
     fun `collectorScriptPath returns path to bundled script`() {
         val path = PytestCollectorTask.collectorScriptPath()
         assertNotNull("Should find collector script", path)

@@ -10,6 +10,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.jetbrains.python.sdk.PythonSdkUtil
 import java.io.File
@@ -26,7 +27,7 @@ import java.nio.file.Files
 class PytestCollectorTask(
     project: Project,
     private val onComplete: ((CollectionSnapshot) -> Unit)? = null,
-) : Task.Backgroundable(project, "Collecting Pytest Tests", true) {
+) : Task.Backgroundable(project, "Collecting Pytest Tests", true), DumbAware {
 
     override fun run(indicator: ProgressIndicator) {
         indicator.text = "Discovering pytest tests and fixtures..."
@@ -193,10 +194,19 @@ class PytestCollectorTask(
         }
 
         fun classifyExitCode(exitCode: Int, stderr: String): List<String> {
+            if (isPytestNotInstalled(stderr)) {
+                return listOf("pytest is not installed: $stderr")
+            }
             return when (exitCode) {
                 0, 1, 5 -> emptyList()
+                -1 -> listOf("pytest failed to start (exit code -1): $stderr")
                 else -> listOf("pytest exited with code $exitCode: $stderr")
             }
+        }
+
+        private fun isPytestNotInstalled(stderr: String): Boolean {
+            return stderr.contains("No module named pytest") ||
+                    stderr.contains("ModuleNotFoundError") && stderr.contains("pytest")
         }
 
         /**

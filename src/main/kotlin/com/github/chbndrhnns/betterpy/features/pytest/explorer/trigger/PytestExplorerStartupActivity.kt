@@ -26,7 +26,6 @@ class PytestExplorerStartupActivity : ProjectActivity {
         }
         LOG.info("Pytest Explorer startup activity executing for project: ${project.name}")
 
-        delay(INITIAL_DELAY_MS.toLong())
         triggerCollection(project)
 
         val connection: MessageBusConnection = project.messageBus.connect()
@@ -57,7 +56,6 @@ class PytestExplorerStartupActivity : ProjectActivity {
 
     companion object {
         private val LOG = Logger.getInstance(PytestExplorerStartupActivity::class.java)
-        const val INITIAL_DELAY_MS = 5000
         const val DEBOUNCE_DELAY_MS = 3000
 
         fun triggerCollection(project: Project) {

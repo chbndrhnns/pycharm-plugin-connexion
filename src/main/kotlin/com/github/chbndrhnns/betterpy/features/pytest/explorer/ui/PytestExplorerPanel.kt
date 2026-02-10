@@ -99,9 +99,16 @@ class PytestExplorerPanel(
         LOG.debug("Updating tree: ${snapshot.tests.size} tests, ${snapshot.fixtures.size} fixtures")
         val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
         testTree.model = DefaultTreeModel(root)
-        val testCount = snapshot.tests.size
-        val fixtureCount = snapshot.fixtures.size
-        statusLabel.text = "$testCount tests, $fixtureCount fixtures collected"
+
+        if (snapshot.errors.isNotEmpty()) {
+            statusLabel.icon = AllIcons.General.Error
+            statusLabel.text = snapshot.errors.first()
+        } else {
+            statusLabel.icon = null
+            val testCount = snapshot.tests.size
+            val fixtureCount = snapshot.fixtures.size
+            statusLabel.text = "$testCount tests, $fixtureCount fixtures collected"
+        }
     }
 
     private fun navigateToTest(node: TestTreeNode) {
@@ -122,6 +129,7 @@ class PytestExplorerPanel(
         AnAction("Refresh", "Re-collect pytest tests and fixtures", AllIcons.Actions.Refresh) {
         override fun actionPerformed(e: AnActionEvent) {
             LOG.info("Manual refresh triggered")
+            statusLabel.icon = null
             statusLabel.text = "Collecting..."
             PytestCollectorTask(project).queue()
         }
