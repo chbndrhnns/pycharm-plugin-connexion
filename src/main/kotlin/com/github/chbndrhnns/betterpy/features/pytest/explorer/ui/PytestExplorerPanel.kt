@@ -346,18 +346,23 @@ class PytestExplorerPanel(
         val vFile = editor.virtualFile ?: return
         val offset = editor.caretModel.offset
 
-        val match = ReadAction.compute<Pair<String, String?>?, Throwable> {
+        val match = ReadAction.compute<Pair<String, List<String>>?, Throwable> {
             val psiFile = PsiManager.getInstance(project).findFile(vFile) ?: return@compute null
             val element = psiFile.findElementAt(offset) ?: return@compute null
             val function = PsiTreeUtil.getParentOfType(element, PyFunction::class.java) ?: return@compute null
             val functionName = function.name ?: return@compute null
-            val className = PsiTreeUtil.getParentOfType(function, PyClass::class.java)?.name
-            functionName to className
+            val classChain = mutableListOf<String>()
+            var pyClass = PsiTreeUtil.getParentOfType(function, PyClass::class.java)
+            while (pyClass != null) {
+                pyClass.name?.let { classChain.add(0, it) }
+                pyClass = PsiTreeUtil.getParentOfType(pyClass, PyClass::class.java)
+            }
+            functionName to classChain
         } ?: return
 
         // Find matching node in tree
         val root = testTree.model.root as? DefaultMutableTreeNode ?: return
-        val targetNode = PytestExplorerTreeBuilder.findTestNode(root, match.first, match.second)
+        val targetNode = PytestExplorerTreeBuilder.findTestNodeByClassChain(root, match.first, match.second)
         if (targetNode != null) {
             val path = javax.swing.tree.TreePath(targetNode.path)
             testTree.selectionPath = path

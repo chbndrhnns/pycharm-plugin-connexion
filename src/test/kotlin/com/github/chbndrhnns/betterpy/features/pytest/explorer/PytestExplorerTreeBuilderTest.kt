@@ -410,6 +410,61 @@ class PytestExplorerTreeBuilderTest {
         assertEquals("Outer", (foundOuter!!.userObject as TestTreeNode).test.className)
     }
 
+    @Test
+    fun `findTestNodeByClassChain distinguishes nested from top-level class with same name`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("t.py::Test1::Test2::test_", "t.py", "Test2", "test_", emptyList()),
+                CollectedTest("t.py::Test2::test_", "t.py", "Test2", "test_", emptyList()),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
+
+        // Searching with full chain ["Test1", "Test2"] should find the nested one
+        val foundNested = PytestExplorerTreeBuilder.findTestNodeByClassChain(root, "test_", listOf("Test1", "Test2"))
+        assertNotNull(foundNested)
+        assertEquals("t.py::Test1::Test2::test_", (foundNested!!.userObject as TestTreeNode).test.nodeId)
+
+        // Searching with chain ["Test2"] should find the top-level one
+        val foundTopLevel = PytestExplorerTreeBuilder.findTestNodeByClassChain(root, "test_", listOf("Test2"))
+        assertNotNull(foundTopLevel)
+        assertEquals("t.py::Test2::test_", (foundTopLevel!!.userObject as TestTreeNode).test.nodeId)
+
+        // Searching with empty chain should find standalone (none here, so null)
+        val foundNone = PytestExplorerTreeBuilder.findTestNodeByClassChain(root, "test_", emptyList())
+        assertNull(foundNone)
+    }
+
+    @Test
+    fun `nested classes render as hierarchy not flat`() {
+        // Reproduces: "class Test1: class Test2: def test_" should show Test1 -> Test2 -> test_
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("t.py::Test1::Test2::test_", "t.py", "Test2", "test_", emptyList()),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
+        val moduleNode = root.getChildAt(0) as DefaultMutableTreeNode
+        assertEquals(1, moduleNode.childCount)
+        val outerClass = moduleNode.getChildAt(0) as DefaultMutableTreeNode
+        assertTrue(outerClass.userObject is ClassTreeNode)
+        assertEquals("Test1", (outerClass.userObject as ClassTreeNode).name)
+        assertEquals(1, outerClass.childCount)
+        val innerClass = outerClass.getChildAt(0) as DefaultMutableTreeNode
+        assertTrue(innerClass.userObject is ClassTreeNode)
+        assertEquals("Test2", (innerClass.userObject as ClassTreeNode).name)
+        assertEquals(1, innerClass.childCount)
+        val testNode = innerClass.getChildAt(0) as DefaultMutableTreeNode
+        assertTrue(testNode.userObject is TestTreeNode)
+        assertEquals("test_", (testNode.userObject as TestTreeNode).test.functionName)
+    }
+
     // --- flat view tests ---
 
     @Test

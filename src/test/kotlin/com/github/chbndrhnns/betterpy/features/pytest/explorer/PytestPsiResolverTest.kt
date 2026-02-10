@@ -3,6 +3,8 @@ package com.github.chbndrhnns.betterpy.features.pytest.explorer
 import com.github.chbndrhnns.betterpy.features.pytest.explorer.model.CollectedFixture
 import com.github.chbndrhnns.betterpy.features.pytest.explorer.model.CollectedTest
 import com.github.chbndrhnns.betterpy.features.pytest.explorer.psi.PytestPsiResolver
+import com.intellij.psi.util.PsiTreeUtil
+import com.jetbrains.python.psi.PyClass
 import com.jetbrains.python.psi.PyFunction
 import fixtures.TestBase
 
@@ -82,6 +84,58 @@ class PytestPsiResolverTest : TestBase() {
 
         val pointer = PytestPsiResolver.resolveTest(project, test)
         assertNull("Should return null for non-existent file", pointer)
+    }
+
+    fun testResolveNestedClassDistinguishesSameClassName() {
+        myFixture.configureByText(
+            "test_nested.py", """
+            class Test1:
+                class Test2:
+                    def test_(self):
+                        assert 1 == 2
+
+            class Test2:
+                def test_(self):
+                    assert 1 == 2
+        """.trimIndent()
+        )
+
+        val nestedTest = CollectedTest(
+            nodeId = "test_nested.py::Test1::Test2::test_",
+            modulePath = "test_nested.py",
+            className = "Test2",
+            functionName = "test_",
+            fixtures = emptyList(),
+        )
+
+        val topLevelTest = CollectedTest(
+            nodeId = "test_nested.py::Test2::test_",
+            modulePath = "test_nested.py",
+            className = "Test2",
+            functionName = "test_",
+            fixtures = emptyList(),
+        )
+
+        val nestedElement = PytestPsiResolver.resolveTestElement(project, nestedTest)
+        assertNotNull("Should resolve nested class method", nestedElement)
+        val nestedClass = nestedElement!!.containingClass
+        assertNotNull(nestedClass)
+        assertEquals("Test2", nestedClass!!.name)
+        // The nested Test2's parent should be Test1
+        val parentClass = PsiTreeUtil.getParentOfType(nestedClass, PyClass::class.java)
+        assertNotNull("Nested Test2 should have parent class Test1", parentClass)
+        assertEquals("Test1", parentClass!!.name)
+
+        val topLevelElement = PytestPsiResolver.resolveTestElement(project, topLevelTest)
+        assertNotNull("Should resolve top-level class method", topLevelElement)
+        val topLevelClass = topLevelElement!!.containingClass
+        assertNotNull(topLevelClass)
+        assertEquals("Test2", topLevelClass!!.name)
+        // The top-level Test2 should NOT have a parent class
+        assertNull(
+            "Top-level Test2 should not have parent class",
+            PsiTreeUtil.getParentOfType(topLevelClass, PyClass::class.java)
+        )
     }
 
     fun testResolveNonExistentClass() {

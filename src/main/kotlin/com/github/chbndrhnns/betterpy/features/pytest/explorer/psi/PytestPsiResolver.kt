@@ -30,14 +30,7 @@ object PytestPsiResolver {
             return@compute null
         }
 
-        val function = if (test.className != null) {
-            val pyClass = psiFile.findTopLevelClass(test.className)
-                ?: PsiTreeUtil.findChildrenOfType(psiFile, PyClass::class.java)
-                    .firstOrNull { it.name == test.className }
-            pyClass?.findMethodByName(test.functionName, false, null)
-        } else {
-            psiFile.findTopLevelFunction(test.functionName)
-        }
+        val function = resolveFunction(psiFile, test)
 
         function?.let { fn ->
             LOG.debug("Resolved test ${test.functionName} to PSI element")
@@ -55,16 +48,7 @@ object PytestPsiResolver {
         LOG.debug("Resolving test element: ${test.nodeId}")
         val psiFile = findPyFile(project, test.modulePath) ?: return@compute null
 
-        val function = if (test.className != null) {
-            val pyClass = psiFile.findTopLevelClass(test.className)
-                ?: PsiTreeUtil.findChildrenOfType(psiFile, PyClass::class.java)
-                    .firstOrNull { it.name == test.className }
-            pyClass?.findMethodByName(test.functionName, false, null)
-        } else {
-            psiFile.findTopLevelFunction(test.functionName)
-        }
-
-        function
+        resolveFunction(psiFile, test)
     }
 
     fun resolveFixture(
@@ -96,6 +80,31 @@ object PytestPsiResolver {
         psiFile.findTopLevelFunction(fixture.functionName)
             ?: PsiTreeUtil.findChildrenOfType(psiFile, PyFunction::class.java)
                 .firstOrNull { it.name == fixture.functionName }
+    }
+
+    /**
+     * Resolves a test function by walking the full class chain from nodeId.
+     * For "t.py::Test1::Test2::test_func", walks Test1 -> Test2 -> test_func.
+     */
+    private fun resolveFunction(psiFile: PyFile, test: CollectedTest): PyFunction? {
+        val parts = test.nodeId.split("::")
+        // parts[0] = module, last = function, middle = class chain
+        val classChain = if (parts.size > 2) parts.subList(1, parts.size - 1) else emptyList()
+
+        if (classChain.isEmpty()) {
+            return psiFile.findTopLevelFunction(test.functionName)
+        }
+
+        // Walk the class chain
+        var currentClass: PyClass? = psiFile.findTopLevelClass(classChain[0])
+            ?: PsiTreeUtil.findChildrenOfType(psiFile, PyClass::class.java)
+                .firstOrNull { it.name == classChain[0] }
+
+        for (i in 1 until classChain.size) {
+            currentClass = currentClass?.nestedClasses?.firstOrNull { it.name == classChain[i] }
+        }
+
+        return currentClass?.findMethodByName(test.functionName, false, null)
     }
 
     fun extractFixtureDepsFromPsi(function: PyFunction): List<String> {
