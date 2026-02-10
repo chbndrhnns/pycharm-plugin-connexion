@@ -38,6 +38,15 @@ class PytestTreeCellRenderer : ColoredTreeCellRenderer() {
                 }
             }
 
+            is FlatTestTreeNode -> {
+                icon = AllIcons.Nodes.Method
+                append(node.label, SimpleTextAttributes.REGULAR_ATTRIBUTES)
+                if (node.test.fixtures.isNotEmpty()) {
+                    append("  ", SimpleTextAttributes.REGULAR_ATTRIBUTES)
+                    append("(${node.test.fixtures.size} fixtures)", SimpleTextAttributes.GRAYED_ATTRIBUTES)
+                }
+            }
+
             is ParametrizeTreeNode -> {
                 icon = AllIcons.Nodes.Parameter
                 append(node.parametrizeId, SimpleTextAttributes.REGULAR_ATTRIBUTES)

@@ -49,6 +49,29 @@ object PytestExplorerTreeBuilder {
         return root
     }
 
+    fun buildFlatTestTree(snapshot: CollectionSnapshot): DefaultMutableTreeNode {
+        val root = DefaultMutableTreeNode("Tests")
+        val sorted =
+            snapshot.tests.sortedWith(compareBy({ it.modulePath }, { it.className ?: "" }, { it.functionName }))
+        for (test in sorted) {
+            val label = buildString {
+                append(test.modulePath)
+                if (test.className != null) {
+                    append("::")
+                    append(test.className)
+                }
+                append("::")
+                append(test.functionName)
+            }
+            val node = DefaultMutableTreeNode(FlatTestTreeNode(label, test))
+            for (paramId in test.parametrizeIds) {
+                node.add(DefaultMutableTreeNode(ParametrizeTreeNode(paramId, test)))
+            }
+            root.add(node)
+        }
+        return root
+    }
+
     fun buildFixtureTree(
         fixtureNames: List<String>,
         fixtureMap: Map<String, CollectedFixture>,

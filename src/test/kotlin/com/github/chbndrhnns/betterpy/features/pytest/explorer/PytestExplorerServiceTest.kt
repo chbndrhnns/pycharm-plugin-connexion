@@ -12,6 +12,11 @@ class PytestExplorerServiceTest : TestBase() {
     private fun getService(): PytestExplorerService =
         PytestExplorerService.getInstance(project)
 
+    override fun setUp() {
+        super.setUp()
+        getService().clearSnapshot()
+    }
+
     private fun createSnapshot(
         timestamp: Long = System.currentTimeMillis(),
         tests: List<CollectedTest> = emptyList(),

@@ -8,6 +8,7 @@ import com.github.chbndrhnns.betterpy.features.pytest.explorer.ui.TreeStatePrese
 import org.junit.Assert.*
 import org.junit.Test
 import javax.swing.JTree
+import javax.swing.SwingUtilities
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreePath
@@ -110,26 +111,25 @@ class TreeStatePreserverTest {
         val t1 = testNode("test_login")
         val t2 = testNode("test_logout")
 
-        val root1 = node("root", node(mod, node(t1), node(t2)))
-        val tree = JTree(DefaultTreeModel(root1))
-        expandAll(tree)
+        // Build a selected key directly via stableIdentity logic (captureSelectedKey
+        // relies on JTree row expansion which is unreliable in headless mode).
+        val selectedKey = TreeStatePreserver.collectAllKeys(
+            node("root", node(mod, node(t1), node(t2)))
+        ).first { key -> key.last().toString().contains("test_logout") }
 
-        // Select test_logout
-        val t2Node = (root1.getChildAt(0) as DefaultMutableTreeNode).getChildAt(1) as DefaultMutableTreeNode
-        tree.selectionPath = TreePath(arrayOf(root1, root1.getChildAt(0), t2Node))
-        val selectedKey = TreeStatePreserver.captureSelectedKey(tree)
-        assertNotNull(selectedKey)
-
-        // Replace model (same structure)
+        // Replace model (same structure) and restore selection
         val root2 = node("root", node(mod, node(t1), node(t2)))
-        tree.model = DefaultTreeModel(root2)
-        TreeStatePreserver.restoreExpandedState(tree, root2, TreeStatePreserver.captureExpandedKeys(tree))
-        TreeStatePreserver.restoreSelectedState(tree, root2, selectedKey!!)
 
-        val sel = tree.selectionPath
-        assertNotNull("Selection should be restored", sel)
-        val selNode = sel!!.lastPathComponent as DefaultMutableTreeNode
-        assertEquals(t2, selNode.userObject)
+        // IntelliJ's DefaultTreeUI requires EDT for selection changes
+        SwingUtilities.invokeAndWait {
+            val tree = JTree(DefaultTreeModel(root2))
+            TreeStatePreserver.restoreSelectedState(tree, root2, selectedKey)
+
+            val sel = tree.selectionPath
+            assertNotNull("Selection should be restored", sel)
+            val selNode = sel!!.lastPathComponent as DefaultMutableTreeNode
+            assertEquals(t2, selNode.userObject)
+        }
     }
 
     @Test

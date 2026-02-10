@@ -409,4 +409,66 @@ class PytestExplorerTreeBuilderTest {
         assertNotNull(foundOuter)
         assertEquals("Outer", (foundOuter!!.userObject as TestTreeNode).test.className)
     }
+
+    // --- flat view tests ---
+
+    @Test
+    fun `flat view produces flat list of tests`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("a.py::TestClass::test_one", "a.py", "TestClass", "test_one", emptyList()),
+                CollectedTest("b.py::test_two", "b.py", null, "test_two", emptyList()),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildFlatTestTree(snapshot)
+        assertEquals(2, root.childCount)
+        val first = root.getChildAt(0) as DefaultMutableTreeNode
+        val second = root.getChildAt(1) as DefaultMutableTreeNode
+        assertTrue(first.userObject is FlatTestTreeNode)
+        assertTrue(second.userObject is FlatTestTreeNode)
+        assertEquals("a.py::TestClass::test_one", (first.userObject as FlatTestTreeNode).label)
+        assertEquals("b.py::test_two", (second.userObject as FlatTestTreeNode).label)
+        assertTrue(first.isLeaf)
+        assertTrue(second.isLeaf)
+    }
+
+    @Test
+    fun `flat view sorts by module then class then function`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("z.py::test_z", "z.py", null, "test_z", emptyList()),
+                CollectedTest("a.py::test_a", "a.py", null, "test_a", emptyList()),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildFlatTestTree(snapshot)
+        val labels = (0 until root.childCount).map {
+            ((root.getChildAt(it) as DefaultMutableTreeNode).userObject as FlatTestTreeNode).label
+        }
+        assertEquals(listOf("a.py::test_a", "z.py::test_z"), labels)
+    }
+
+    @Test
+    fun `flat view includes parametrize ids as children`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("t.py::test_p", "t.py", null, "test_p", emptyList(), listOf("x", "y")),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildFlatTestTree(snapshot)
+        assertEquals(1, root.childCount)
+        val testNode = root.getChildAt(0) as DefaultMutableTreeNode
+        assertEquals(2, testNode.childCount)
+        assertEquals(
+            "x", ((testNode.getChildAt(0) as DefaultMutableTreeNode).userObject as ParametrizeTreeNode).parametrizeId
+        )
+    }
 }

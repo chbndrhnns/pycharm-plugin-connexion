@@ -52,6 +52,11 @@ class PytestExplorerService : PersistentStateComponent<PytestExplorerService.Sta
 
     fun getSnapshot(): CollectionSnapshot? = currentSnapshot.get()
 
+    fun clearSnapshot() {
+        currentSnapshot.set(null)
+        myState = State()
+    }
+
     fun updateSnapshot(snapshot: CollectionSnapshot) {
         LOG.info("Updating snapshot: ${snapshot.tests.size} tests, ${snapshot.fixtures.size} fixtures, ${snapshot.errors.size} errors")
         currentSnapshot.set(snapshot)

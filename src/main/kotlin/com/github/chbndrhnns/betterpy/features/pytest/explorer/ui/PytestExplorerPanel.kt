@@ -23,6 +23,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.ui.JBSplitter
+import com.intellij.ui.TreeSpeedSearch
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.ui.JBUI
@@ -51,7 +52,9 @@ class PytestExplorerPanel(
 
     private var lastErrors: List<String> = emptyList()
     private var scopeToCurrentFile = false
+    private var flatView = false
     private var followCaret = false
+    private var filterText: String? = null
     private var lastSnapshot: CollectionSnapshot? = null
     private var currentEditorFile: VirtualFile? = null
     private var caretListener: CaretListener? = null
@@ -108,6 +111,7 @@ class PytestExplorerPanel(
         val group = DefaultActionGroup().apply {
             add(RefreshAction())
             add(ScopeToCurrentFileAction())
+            add(FlatViewAction())
             add(FollowCaretAction())
             addSeparator()
             add(ExpandAllAction())
@@ -120,6 +124,22 @@ class PytestExplorerPanel(
     private fun setupTree() {
         testTree.isRootVisible = false
         testTree.cellRenderer = PytestTreeCellRenderer()
+        val speedSearch = TreeSpeedSearch.installOn(testTree)
+        speedSearch.addChangeListener {
+            val newFilter = if (speedSearch.isPopupActive) {
+                val text = speedSearch.enteredPrefix
+                if (text.isNullOrBlank()) null else text
+            } else {
+                null
+            }
+            if (newFilter != filterText) {
+                filterText = newFilter
+                lastSnapshot?.let { applyTreeUpdate(it) }
+                if (newFilter != null) {
+                    TreeUtil.expandAll(testTree)
+                }
+            }
+        }
 
         testTree.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
@@ -127,6 +147,7 @@ class PytestExplorerPanel(
                     val node = testTree.lastSelectedPathComponent as? DefaultMutableTreeNode ?: return
                     when (val userObj = node.userObject) {
                         is TestTreeNode -> navigateToTest(userObj)
+                        is FlatTestTreeNode -> navigateToTest(TestTreeNode(userObj.test))
                         is ParametrizeTreeNode -> navigateToTest(TestTreeNode(userObj.test))
                     }
                 }
@@ -138,6 +159,7 @@ class PytestExplorerPanel(
             val snapshot = service.getSnapshot() ?: return@addTreeSelectionListener
             when (val userObj = node.userObject) {
                 is TestTreeNode -> fixtureDetailPanel.showFixturesFor(userObj.test, snapshot)
+                is FlatTestTreeNode -> fixtureDetailPanel.showFixturesFor(userObj.test, snapshot)
                 is ParametrizeTreeNode -> fixtureDetailPanel.showFixturesFor(userObj.test, snapshot)
                 else -> fixtureDetailPanel.clear()
             }
@@ -151,8 +173,24 @@ class PytestExplorerPanel(
 
     private fun applyTreeUpdate(snapshot: CollectionSnapshot) {
         LOG.debug("Updating tree: ${snapshot.tests.size} tests, ${snapshot.fixtures.size} fixtures")
-        val displaySnapshot = if (scopeToCurrentFile) filterToCurrentFile(snapshot) else snapshot
-        val root = PytestExplorerTreeBuilder.buildTestTree(displaySnapshot, collapseModuleNode = scopeToCurrentFile)
+        var displaySnapshot = if (scopeToCurrentFile) filterToCurrentFile(snapshot) else snapshot
+        val query = filterText
+        if (query != null) {
+            val lowerQuery = query.lowercase()
+            displaySnapshot = displaySnapshot.copy(
+                tests = displaySnapshot.tests.filter { test ->
+                    test.functionName.lowercase().contains(lowerQuery) ||
+                            test.className?.lowercase()?.contains(lowerQuery) == true ||
+                            test.modulePath.lowercase().contains(lowerQuery) ||
+                            test.nodeId.lowercase().contains(lowerQuery)
+                }
+            )
+        }
+        val root = if (flatView) {
+            PytestExplorerTreeBuilder.buildFlatTestTree(displaySnapshot)
+        } else {
+            PytestExplorerTreeBuilder.buildTestTree(displaySnapshot, collapseModuleNode = scopeToCurrentFile)
+        }
 
         val expandedKeys = TreeStatePreserver.captureExpandedKeys(testTree)
         val selectedKey = TreeStatePreserver.captureSelectedKey(testTree)
@@ -221,6 +259,18 @@ class PytestExplorerPanel(
     private inner class ExpandAllAction : AnAction("Expand All", null, AllIcons.Actions.Expandall) {
         override fun actionPerformed(e: AnActionEvent) {
             TreeUtil.expandAll(testTree)
+        }
+
+        override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+    }
+
+    private inner class FlatViewAction :
+        ToggleAction("Flat View", "Show tests in a flat list", AllIcons.Actions.ShowAsTree) {
+        override fun isSelected(e: AnActionEvent): Boolean = flatView
+
+        override fun setSelected(e: AnActionEvent, state: Boolean) {
+            flatView = state
+            lastSnapshot?.let { applyTreeUpdate(it) }
         }
 
         override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
