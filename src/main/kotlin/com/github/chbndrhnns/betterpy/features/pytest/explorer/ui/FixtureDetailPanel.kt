@@ -8,6 +8,7 @@ import com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureResol
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.pom.Navigatable
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
@@ -23,7 +24,10 @@ import javax.swing.JPanel
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
 
-class FixtureDetailPanel(private val project: Project) : JPanel(BorderLayout()) {
+class FixtureDetailPanel(
+    private val project: Project,
+    private val onFixtureNavigated: ((VirtualFile) -> Unit)? = null,
+) : JPanel(BorderLayout()) {
 
     private val titleLabel = JBLabel("Select a test to view fixtures")
     private val fixtureTree = Tree()
@@ -147,6 +151,7 @@ class FixtureDetailPanel(private val project: Project) : JPanel(BorderLayout()) 
                 chain.firstOrNull()?.fixtureFunction as? Navigatable
             }
             if (resolved != null) {
+                notifyNavigation(resolved)
                 resolved.navigate(true)
                 return
             }
@@ -155,6 +160,18 @@ class FixtureDetailPanel(private val project: Project) : JPanel(BorderLayout()) 
         // Fallback: use collected fixture data
         val fixture = currentFixtureMap[fixtureName] ?: return
         val element = PytestPsiResolver.resolveFixtureElement(project, fixture)
-        (element as? Navigatable)?.navigate(true)
+        val navigatable = element as? Navigatable ?: return
+        notifyNavigation(navigatable)
+        navigatable.navigate(true)
+    }
+
+    private fun notifyNavigation(target: Any) {
+        if (onFixtureNavigated == null) return
+        val file = ReadAction.compute<VirtualFile?, Throwable> {
+            (target as? PyFunction)?.containingFile?.virtualFile
+        }
+        if (file != null) {
+            onFixtureNavigated.invoke(file)
+        }
     }
 }

@@ -55,7 +55,9 @@ class PytestExplorerPanel(
     private val LOG = Logger.getInstance(PytestExplorerPanel::class.java)
 
     private val testTree = Tree()
-    private val fixtureDetailPanel = FixtureDetailPanel(project)
+    private val fixtureDetailPanel = FixtureDetailPanel(project) { targetFile ->
+        onFixtureNavigated(targetFile)
+    }
     private val service = PytestExplorerService.getInstance(project)
     private val statusLabel = JLabel("Ready")
 
@@ -68,6 +70,7 @@ class PytestExplorerPanel(
     private var lastSnapshot: CollectionSnapshot? = null
     private var currentEditorFile: VirtualFile? = null
     private var caretListener: CaretListener? = null
+    private val scopePinManager = ScopePinManager { file -> hasTestsForFile(file) }
 
     private val collectionListener = CollectionListener { snapshot ->
         SwingUtilities.invokeLater { updateTree(snapshot) }
@@ -436,10 +439,20 @@ class PytestExplorerPanel(
     }
 
     private fun filterToCurrentFile(snapshot: CollectionSnapshot): CollectionSnapshot {
-        val file = currentEditorFile ?: return snapshot
+        val scopeFile = scopePinManager.scopeFile() ?: currentEditorFile ?: return snapshot
         val basePath = project.basePath ?: return snapshot
-        val relativePath = file.path.removePrefix("$basePath/")
+        val relativePath = scopeFile.path.removePrefix("$basePath/")
         val filteredTests = snapshot.tests.filter { it.modulePath == relativePath }
         return snapshot.copy(tests = filteredTests)
+    }
+
+    private fun onFixtureNavigated(targetFile: VirtualFile) {
+        scopePinManager.onFixtureNavigated(currentEditorFile, targetFile, scopeToCurrentFile, followCaret)
+    }
+
+    private fun hasTestsForFile(file: VirtualFile): Boolean {
+        val basePath = project.basePath ?: return false
+        val relativePath = file.path.removePrefix("$basePath/")
+        return lastSnapshot?.tests?.any { it.modulePath == relativePath } == true
     }
 }
