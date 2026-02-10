@@ -197,7 +197,7 @@
         <toolWindow id="Pytest Explorer"
                     anchor="bottom"
                     factoryClass="com.github.chbndrhnns.betterpy.features.pytest.explorer.ui.PytestExplorerToolWindowFactory"
-                    icon="AllIcons.Toolwindows.ToolWindowStructure"/>
+                    icon="/icons/pytest_explorer.svg"/>
 
         <notificationGroup id="BetterPy" displayType="BALLOON" isLogByDefault="true"/>
         <notificationGroup id="BetterPy Notifications" displayType="BALLOON" isLogByDefault="true"/>
