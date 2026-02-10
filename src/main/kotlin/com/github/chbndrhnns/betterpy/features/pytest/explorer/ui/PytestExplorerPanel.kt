@@ -13,7 +13,10 @@ import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.fileEditor.FileEditorManagerEvent
+import com.intellij.openapi.fileEditor.FileEditorManagerListener
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.JBSplitter
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.treeStructure.Tree
@@ -35,17 +38,34 @@ class PytestExplorerPanel(
     private val LOG = Logger.getInstance(PytestExplorerPanel::class.java)
 
     private val testTree = Tree()
-    private val fixtureDetailPanel = FixtureDetailPanel()
+    private val fixtureDetailPanel = FixtureDetailPanel(project)
     private val service = PytestExplorerService.getInstance(project)
     private val statusLabel = JLabel("Ready")
 
     private var lastErrors: List<String> = emptyList()
+    private var scopeToCurrentFile = false
+    private var lastSnapshot: CollectionSnapshot? = null
+    private var currentEditorFile: VirtualFile? = null
 
     private val collectionListener = CollectionListener { snapshot ->
         SwingUtilities.invokeLater { updateTree(snapshot) }
     }
 
     init {
+        currentEditorFile = FileEditorManager.getInstance(project).selectedFiles.firstOrNull()
+
+        project.messageBus.connect(this).subscribe(
+            FileEditorManagerListener.FILE_EDITOR_MANAGER,
+            object : FileEditorManagerListener {
+                override fun selectionChanged(event: FileEditorManagerEvent) {
+                    currentEditorFile = event.newFile
+                    if (scopeToCurrentFile) {
+                        lastSnapshot?.let { applyTreeUpdate(it) }
+                    }
+                }
+            }
+        )
+
         val toolbar = createToolbar()
         add(toolbar.component, BorderLayout.NORTH)
 
@@ -74,6 +94,7 @@ class PytestExplorerPanel(
     private fun createToolbar(): ActionToolbar {
         val group = DefaultActionGroup().apply {
             add(RefreshAction())
+            add(ScopeToCurrentFileAction())
             addSeparator()
             add(ExpandAllAction())
             add(CollapseAllAction())
@@ -108,20 +129,26 @@ class PytestExplorerPanel(
     }
 
     private fun updateTree(snapshot: CollectionSnapshot) {
+        lastSnapshot = snapshot
+        applyTreeUpdate(snapshot)
+    }
+
+    private fun applyTreeUpdate(snapshot: CollectionSnapshot) {
         LOG.debug("Updating tree: ${snapshot.tests.size} tests, ${snapshot.fixtures.size} fixtures")
-        val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
+        val displaySnapshot = if (scopeToCurrentFile) filterToCurrentFile(snapshot) else snapshot
+        val root = PytestExplorerTreeBuilder.buildTestTree(displaySnapshot, collapseModuleNode = scopeToCurrentFile)
         testTree.model = DefaultTreeModel(root)
 
-        lastErrors = snapshot.errors
-        if (snapshot.errors.isNotEmpty()) {
+        lastErrors = displaySnapshot.errors
+        if (displaySnapshot.errors.isNotEmpty()) {
             statusLabel.icon = AllIcons.General.Error
             statusLabel.text = "<html><a href=''>Collection completed with errors (click to view details)</a></html>"
             statusLabel.cursor = java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR)
         } else {
             statusLabel.cursor = java.awt.Cursor.getDefaultCursor()
             statusLabel.icon = null
-            val testCount = snapshot.tests.size
-            val fixtureCount = snapshot.fixtures.size
+            val testCount = displaySnapshot.tests.size
+            val fixtureCount = displaySnapshot.fixtures.size
             statusLabel.text = "$testCount tests, $fixtureCount fixtures collected"
         }
     }
@@ -180,5 +207,26 @@ class PytestExplorerPanel(
         }
 
         override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+    }
+
+    private inner class ScopeToCurrentFileAction :
+        ToggleAction("Scope to Current File", "Show only tests from the current editor file", AllIcons.General.Filter) {
+
+        override fun isSelected(e: AnActionEvent): Boolean = scopeToCurrentFile
+
+        override fun setSelected(e: AnActionEvent, state: Boolean) {
+            scopeToCurrentFile = state
+            lastSnapshot?.let { applyTreeUpdate(it) }
+        }
+
+        override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+    }
+
+    private fun filterToCurrentFile(snapshot: CollectionSnapshot): CollectionSnapshot {
+        val file = currentEditorFile ?: return snapshot
+        val basePath = project.basePath ?: return snapshot
+        val relativePath = file.path.removePrefix("$basePath/")
+        val filteredTests = snapshot.tests.filter { it.modulePath == relativePath }
+        return snapshot.copy(tests = filteredTests)
     }
 }
