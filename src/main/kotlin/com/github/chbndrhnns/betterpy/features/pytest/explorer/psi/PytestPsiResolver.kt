@@ -57,18 +57,12 @@ object PytestPsiResolver {
         fixture: CollectedFixture,
     ): SmartPsiElementPointer<PyFunction>? = ReadAction.compute<SmartPsiElementPointer<PyFunction>?, Throwable> {
         LOG.debug("Resolving fixture: ${fixture.name} in ${fixture.definedIn}")
-        val psiFile = findPyFile(project, fixture.definedIn) ?: run {
-            LOG.debug("Could not find file for fixture: ${fixture.definedIn}")
+        val function = resolveFixtureFunction(project, fixture) ?: run {
+            LOG.debug("Could not resolve fixture: ${fixture.name} in ${fixture.definedIn}")
             return@compute null
         }
 
-        val function = psiFile.findTopLevelFunction(fixture.functionName)
-            ?: PsiTreeUtil.findChildrenOfType(psiFile, PyFunction::class.java)
-                .firstOrNull { it.name == fixture.functionName }
-
-        function?.let { fn ->
-            SmartPointerManager.getInstance(project).createSmartPsiElementPointer(fn)
-        }
+        SmartPointerManager.getInstance(project).createSmartPsiElementPointer(function)
     }
 
     fun resolveFixtureElement(
@@ -76,11 +70,7 @@ object PytestPsiResolver {
         fixture: CollectedFixture,
     ): PyFunction? = ReadAction.compute<PyFunction?, Throwable> {
         LOG.debug("Resolving fixture element: ${fixture.name} in ${fixture.definedIn}")
-        val psiFile = findPyFile(project, fixture.definedIn) ?: return@compute null
-
-        psiFile.findTopLevelFunction(fixture.functionName)
-            ?: PsiTreeUtil.findChildrenOfType(psiFile, PyFunction::class.java)
-                .firstOrNull { it.name == fixture.functionName }
+        resolveFixtureFunction(project, fixture)
     }
 
     /**
@@ -106,6 +96,39 @@ object PytestPsiResolver {
         }
 
         return currentClass?.findMethodByName(test.functionName, false, null)
+    }
+
+    /**
+     * Resolves a fixture function, handling both top-level and class-level fixtures.
+     * The [CollectedFixture.definedIn] field (pytest's baseid) may contain a class path
+     * like "test_file.py::TestClass" for class-level fixtures.
+     */
+    private fun resolveFixtureFunction(project: Project, fixture: CollectedFixture): PyFunction? {
+        val definedIn = fixture.definedIn
+        val separatorIndex = definedIn.indexOf("::")
+
+        if (separatorIndex >= 0) {
+            // Class-level fixture: baseid is "path/to/file.py::ClassName" or "path/to/file.py::Outer::Inner"
+            val filePath = definedIn.substring(0, separatorIndex)
+            val classChain = definedIn.substring(separatorIndex + 2).split("::")
+            val psiFile = findPyFile(project, filePath) ?: return null
+
+            var currentClass: PyClass? = psiFile.findTopLevelClass(classChain[0])
+                ?: PsiTreeUtil.findChildrenOfType(psiFile, PyClass::class.java)
+                    .firstOrNull { it.name == classChain[0] }
+
+            for (i in 1 until classChain.size) {
+                currentClass = currentClass?.nestedClasses?.firstOrNull { it.name == classChain[i] }
+            }
+
+            return currentClass?.findMethodByName(fixture.functionName, false, null)
+        }
+
+        // Top-level fixture
+        val psiFile = findPyFile(project, definedIn) ?: return null
+        return psiFile.findTopLevelFunction(fixture.functionName)
+            ?: PsiTreeUtil.findChildrenOfType(psiFile, PyFunction::class.java)
+                .firstOrNull { it.name == fixture.functionName }
     }
 
     fun extractFixtureDepsFromPsi(function: PyFunction): List<String> {

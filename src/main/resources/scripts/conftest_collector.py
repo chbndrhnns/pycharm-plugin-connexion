@@ -29,7 +29,8 @@ def pytest_collection_finish(session):
         test["fixtures"] = [f for f in test["fixtures"] if f in known_fixtures]
     for name, fixturedefs in fm._arg2fixturedefs.items():
         for fdef in fixturedefs:
-            data["fixtures"][name] = {
+            key = f"{fdef.baseid}::{name}" if fdef.baseid else name
+            data["fixtures"][key] = {
                 "name": name,
                 "scope": fdef.scope,
                 "baseid": fdef.baseid,
