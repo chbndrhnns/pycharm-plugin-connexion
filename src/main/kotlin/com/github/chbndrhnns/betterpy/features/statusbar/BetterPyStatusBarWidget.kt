@@ -8,6 +8,7 @@ import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionUiKind
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DataContext
+import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootEvent
@@ -177,7 +178,7 @@ class BetterPyStatusBarWidget(
             if (com.intellij.openapi.actionSystem.CommonDataKeys.PROJECT.name == dataId) project else null
         }
         val event = AnActionEvent.createEvent(action, dataContext, null, "BetterPyStatusBar", ActionUiKind.NONE, null)
-        action.actionPerformed(event)
+        ActionUtil.performAction(action, event)
     }
 }
 
