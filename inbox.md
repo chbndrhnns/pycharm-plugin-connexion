@@ -2,6 +2,13 @@
 
 ## Pending Issues
 
+- [ ] fix: Choose implementation should strip the common prefix for all items IF it's the same for all items
+- [ ] fix: Link leads nowhere
+
+```py
+
+```
+
 - [ ] fix: Rendering of links for pytest, now blue and dotted.
   `tests/unit/test_integrity.py::test_no_skip_markers_on_adapter_fixture[<class 'src.adapters.outbound.HttpRepository'>] ✓                51% █████▏`
 - [ ] fix: Introduce custom type needs to wrap usage sites
@@ -34,6 +41,7 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Pending Features
 
+- [ ] feat: Suggest to toggle `self` when moving a code block which is a function inside a class
 - [ ] feat: Unwrap try/except block (consider finally!)
 - [ ] feat: Copy as import statement]
 - [ ] feat: For unresolved logger, offer to add logging skeleton on top
