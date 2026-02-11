@@ -7,17 +7,22 @@ import com.intellij.ide.structureView.TreeBasedStructureViewBuilder
 import com.intellij.lang.LanguageStructureViewBuilder
 import com.intellij.lang.PsiStructureViewFactory
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.util.RecursionManager
 import com.intellij.psi.PsiFile
 
 class MyPythonStructureViewFactory : PsiStructureViewFactory {
+    private val recursionGuard = RecursionManager.createGuard<PsiFile>("MyPythonStructureViewFactory")
+
     override fun getStructureViewBuilder(psiFile: PsiFile): StructureViewBuilder? {
         // 1. Get the original builder from the default Python implementation
         // We use LanguageStructureViewBuilder to find all implementations and pick the one that isn't ours
-        val originalBuilder = LanguageStructureViewBuilder.getInstance()
-            .allForLanguage(psiFile.language).asSequence()
-            .filter { factory -> factory !is MyPythonStructureViewFactory }
-            .map { factory -> factory.getStructureViewBuilder(psiFile) }
-            .firstOrNull() ?: return null
+        val originalBuilder = recursionGuard.doPreventingRecursion(psiFile, false) {
+            LanguageStructureViewBuilder.getInstance()
+                .allForLanguage(psiFile.language).asSequence()
+                .filter { factory -> factory !is MyPythonStructureViewFactory }
+                .map { factory -> factory.getStructureViewBuilder(psiFile) }
+                .firstOrNull()
+        } ?: return null
 
         if (!PluginSettingsState.instance().state.enableEnhancedPythonStructureView) {
             return originalBuilder
