@@ -52,6 +52,20 @@ class PythonClassConsoleFilterTest : TestBase() {
         assertEquals(line.indexOf("MyClass") + "MyClass".length, item.highlightEndOffset)
     }
 
+    fun testParseAttributeErrorClass() {
+        val filter = PythonClassConsoleFilter(project)
+        val line = "E   AttributeError: 'GetCephFileSystemsQuery' object has no attribute 'name'"
+        val result = filter.applyFilter(line, line.length)
+        assertNotNull(result)
+        val item = result!!.resultItems.first()
+        assertEquals(line.indexOf("GetCephFileSystemsQuery"), item.highlightStartOffset)
+        assertEquals(
+            line.indexOf("GetCephFileSystemsQuery") + "GetCephFileSystemsQuery".length,
+            item.highlightEndOffset
+        )
+        assertEquals(EffectType.BOLD_DOTTED_LINE, item.highlightAttributes?.effectType)
+    }
+
     fun testParseNestedClass() {
         val filter = PythonClassConsoleFilter(project)
         val line = "<class 'module.path.OuterClass.InnerClass'>"

@@ -23,6 +23,8 @@ class PythonClassConsoleFilter(private val project: Project) : Filter {
     companion object {
         // Matches <class 'dotted.path.to.Class'> or <class "dotted.path.to.Class">
         private val PATTERN = Pattern.compile("<class ['\"]([\\w.]+)['\"]>")
+        private val ATTRIBUTE_ERROR_PATTERN =
+            Pattern.compile("AttributeError: ['\"]([\\w.]+)['\"] object has no attribute")
         private val CLASS_HIGHLIGHT_ATTRIBUTES: TextAttributes by lazy {
             val base = ConsoleViewContentType.NORMAL_OUTPUT.attributes
             val scheme = EditorColorsManager.getInstance().globalScheme
@@ -88,6 +90,19 @@ class PythonClassConsoleFilter(private val project: Project) : Filter {
             val classNameStart = matcher.end(1) - className.length
             val startOffset = entireLength - line.length + classNameStart
             val endOffset = entireLength - line.length + matcher.end(1)
+
+            return Filter.Result(
+                startOffset,
+                endOffset,
+                PythonClassHyperlinkInfo(project, classQName),
+                CLASS_HIGHLIGHT_ATTRIBUTES
+            )
+        }
+        val attributeErrorMatcher = ATTRIBUTE_ERROR_PATTERN.matcher(line)
+        if (attributeErrorMatcher.find()) {
+            val classQName = attributeErrorMatcher.group(1)
+            val startOffset = entireLength - line.length + attributeErrorMatcher.start(1)
+            val endOffset = entireLength - line.length + attributeErrorMatcher.end(1)
 
             return Filter.Result(
                 startOffset,
