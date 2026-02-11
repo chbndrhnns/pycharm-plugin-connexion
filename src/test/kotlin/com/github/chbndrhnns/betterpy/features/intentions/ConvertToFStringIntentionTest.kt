@@ -74,6 +74,19 @@ class ConvertToFStringIntentionTest : TestBase() {
         assertNull(action)
     }
 
+    fun testNotAvailableWhenTString() {
+        myFixture.configureByText(
+            "test_fstring.py",
+            """
+            def greet(name):
+                message = t"<caret>Hello {name}"
+            """.trimIndent()
+        )
+
+        val action = myFixture.availableIntentions.find { it.text == "BetterPy: Convert to f-string" }
+        assertNull(action)
+    }
+
     fun testNotAvailableForNumericPlaceholder() {
         myFixture.configureByText(
             "test_numeric.py",

@@ -35,6 +35,7 @@ class ConvertToFStringIntention : IntentionAction, HighPriorityAction, DumbAware
         if (prefix.contains('f', ignoreCase = true)) return false
         if (prefix.contains('b', ignoreCase = true)) return false
         if (prefix.contains('u', ignoreCase = true)) return false
+        if (prefix.contains('t', ignoreCase = true)) return false
         return containsFStringIdentifier(literal.stringValue)
     }
 
