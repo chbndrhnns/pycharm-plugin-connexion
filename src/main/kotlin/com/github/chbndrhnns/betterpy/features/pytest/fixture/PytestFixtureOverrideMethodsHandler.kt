@@ -9,6 +9,8 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
+import com.intellij.platform.ide.progress.ModalTaskOwner
+import com.intellij.platform.ide.progress.runWithModalProgressBlocking
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiParserFacade
 import com.intellij.psi.util.PsiTreeUtil
@@ -52,17 +54,27 @@ class PytestFixtureOverrideMethodsHandler : LanguageCodeInsightActionHandler {
         return candidates.isNotEmpty() || delegate.isValidFor(editor, file)
     }
 
+    private fun invokeDelegateWithProgress(project: Project, editor: Editor, file: PsiFile) {
+        if (ApplicationManager.getApplication().isUnitTestMode) {
+            delegate.invoke(project, editor, file)
+        } else {
+            runWithModalProgressBlocking(ModalTaskOwner.project(project), "Override Methods") {
+                delegate.invoke(project, editor, file)
+            }
+        }
+    }
+
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
         if (!PytestFixtureFeatureToggle.isEnabled()) {
-            return delegate.invoke(project, editor, file)
+            return invokeDelegateWithProgress(project, editor, file)
         }
-        val pyFile = file as? PyFile ?: return delegate.invoke(project, editor, file)
+        val pyFile = file as? PyFile ?: return invokeDelegateWithProgress(project, editor, file)
         if (!isPytestOverrideContext(pyFile)) {
-            return delegate.invoke(project, editor, file)
+            return invokeDelegateWithProgress(project, editor, file)
         }
 
         if (!isValidCaretPosition(editor, pyFile)) {
-            return delegate.invoke(project, editor, file)
+            return invokeDelegateWithProgress(project, editor, file)
         }
 
         val element = pyFile.findElementAt(editor.caretModel.offset) ?: pyFile
@@ -78,7 +90,7 @@ class PytestFixtureOverrideMethodsHandler : LanguageCodeInsightActionHandler {
             if (log.isDebugEnabled) {
                 log.debug("PytestFixtureOverrideMethodsHandler.invoke: no fixtures found, delegating to default override")
             }
-            return delegate.invoke(project, editor, file)
+            return invokeDelegateWithProgress(project, editor, file)
         }
         if (log.isDebugEnabled) {
             log.debug("PytestFixtureOverrideMethodsHandler.invoke: showing ${candidates.size} fixture override(s)")
@@ -101,7 +113,7 @@ class PytestFixtureOverrideMethodsHandler : LanguageCodeInsightActionHandler {
             .setItemChosenCallback { item ->
                 when (item) {
                     is PopupItem.Fixture -> insertFixtureAtCaret(project, editor, pyFile, targetClass, item.link)
-                    PopupItem.DefaultOverride -> delegate.invoke(project, editor, file)
+                    PopupItem.DefaultOverride -> invokeDelegateWithProgress(project, editor, file)
                 }
             }
             .setRenderer(SimpleListCellRenderer.create<PopupItem> { label, value, _ ->
