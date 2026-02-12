@@ -643,6 +643,12 @@
             <add-to-group group-id="Copy.Paste.Special" anchor="last"/>
         </action>
 
+        <action id="MyPlugin.CopyAsImportStatementAction"
+                class="com.github.chbndrhnns.betterpy.features.actions.CopyAsImportStatementAction"
+                text="BetterPy: Copy as Import Statement">
+            <add-to-group group-id="Copy.Paste.Special" anchor="last"/>
+        </action>
+
         <group id="MyPlugin.CopySpecialGroup" text="BetterPy: Copy Special" popup="true">
             <add-to-group group-id="TestTreePopupMenu" anchor="last"/>
             <action id="MyPlugin.CopyPytestNodeIds"

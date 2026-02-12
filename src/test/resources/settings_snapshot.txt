@@ -801,6 +801,25 @@ DialogPanel
   
     Label: 'Actions'
     JSeparator
+  CheckBox: [x] 'Copy as import statement'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body width="560">
+    Copies a from-style absolute import statement for the symbol at the caret
+  </body>
+</html>
+'
   CheckBox: [x] 'Copy block with dependencies'
   TextField: '<html>
   <head>

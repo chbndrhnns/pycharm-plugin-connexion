@@ -181,6 +181,9 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         @Feature("copy-stacktrace")
         var enableCopyStacktraceAction: Boolean = FeatureDefaults.defaultEnabled("copy-stacktrace"),
 
+        @Feature("copy-as-import-statement")
+        var enableCopyAsImportStatementAction: Boolean = FeatureDefaults.defaultEnabled("copy-as-import-statement"),
+
         // ---- Refactoring Actions ----
         var parameterObject: ParameterObjectFeatureSettings =
             ParameterObjectFeatureSettings(),
