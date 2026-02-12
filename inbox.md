@@ -38,7 +38,6 @@ do(frozenset({<caret>1, 2, 3}))
 - [ ] feat: Do not move logger when moving code
 - [ ] feat: Suggest to toggle `self` when moving a code block which is a function inside a class
 - [ ] feat: Unwrap try/except block (consider finally!)
-- [ ] feat: Copy as import statement]
 - [ ] feat: For unresolved logger, offer to add logging skeleton on top
 - [ ] feat: pytest fixtures: Add rename option to rename not in hierarchy
 - [ ] feat: Copy special should offer copy single node id/reference (no children)
@@ -105,6 +104,7 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Copy as import statement
 - [x] fix: Choose implementation should strip the common prefix for all items IF it's the same for all items
 - [x] fix: Do not mark test params as invalid fixtures
 
