@@ -56,11 +56,11 @@ class PyGotoImplementationPresentationTest : TestBase() {
 
         val presentation1 = provider!!.getTargetPresentation(impl1, false)
         assertNotNull(presentation1)
-        assertEquals("a.Impl1.execute", presentation1!!.presentableText)
+        assertEquals("Impl1.execute", presentation1!!.presentableText)
 
         val presentation2 = provider.getTargetPresentation(impl2, false)
         assertNotNull(presentation2)
-        assertEquals("a.Impl2.execute", presentation2!!.presentableText)
+        assertEquals("Impl2.execute", presentation2!!.presentableText)
     }
 
     fun testGotoImplementationPresentationWithDifferentMethodNames() {
@@ -86,6 +86,30 @@ class PyGotoImplementationPresentationTest : TestBase() {
         assertEquals("a.Base.execute", presentation!!.presentableText)
     }
 
+    fun testGotoImplementationPresentationKeepsModuleWhenDifferentNamesFlagIsTrue() {
+        myFixture.configureByText(
+            "a.py",
+            """
+            class Base:
+                def execute(self):
+                    pass
+
+            class Impl1(Base):
+                def execute(self):
+                    pass
+            """.trimIndent()
+        )
+
+        val provider =
+            GotoTargetPresentationProvider.EP_NAME.extensionList.find { it is PyGotoTargetPresentationProvider }
+        val functions = PsiTreeUtil.findChildrenOfType(myFixture.file, PyFunction::class.java)
+        val impl1 = functions.find { it.containingClass?.name == "Impl1" }!!
+
+        val presentation = provider!!.getTargetPresentation(impl1, true)
+        assertNotNull(presentation)
+        assertEquals("a.Impl1.execute", presentation!!.presentableText)
+    }
+
     fun testGotoImplementationPresentationForNestedClassMethod() {
         myFixture.configureByText(
             "test_a.py",
@@ -104,6 +128,6 @@ class PyGotoImplementationPresentationTest : TestBase() {
 
         val presentation = provider!!.getTargetPresentation(innerFoo, false)
         assertNotNull(presentation)
-        assertEquals("test_a.TestBla.TestInner.foo", presentation!!.presentableText)
+        assertEquals("TestBla.TestInner.foo", presentation!!.presentableText)
     }
 }

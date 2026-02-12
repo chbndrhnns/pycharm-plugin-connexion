@@ -32,7 +32,8 @@ class PyGotoTargetPresentationProvider : GotoTargetPresentationProvider {
         val fqn =
             canonicalName(element, name) ?: classFqn?.let { "$it.$name" } ?: moduleName(element)?.let { "$it.$name" }
 
-        val text = fqn ?: if (!differentNames && cls != null) "${cls.name}.$name" else name
+        val rawText = fqn ?: if (!differentNames && cls != null) "${cls.name}.$name" else name
+        val text = if (!differentNames) stripCommonPrefix(rawText, moduleName(element)) else rawText
 
         return TargetPresentation.builder(text).containerText(if (fqn == null) cls?.name else null)
             .locationText(QualifiedNameFinder.findShortestImportableName(element, element.containingFile.virtualFile))
@@ -59,7 +60,8 @@ class PyGotoTargetPresentationProvider : GotoTargetPresentationProvider {
         }
         val fqn =
             canonicalName(element, name) ?: classFqn?.let { "$it.$name" } ?: moduleName(element)?.let { "$it.$name" }
-        val text = fqn ?: name
+        val rawText = fqn ?: name
+        val text = stripCommonPrefix(rawText, moduleName(element))
 
         return TargetPresentation.builder(text).containerText(if (fqn == null) containingClass?.name else null)
             .locationText(QualifiedNameFinder.findShortestImportableName(element, element.containingFile.virtualFile))
@@ -85,5 +87,11 @@ class PyGotoTargetPresentationProvider : GotoTargetPresentationProvider {
     private fun moduleName(element: PsiElement): String? {
         val file = element.containingFile ?: return null
         return QualifiedNameFinder.findCanonicalImportPath(file, null)?.toString()
+    }
+
+    private fun stripCommonPrefix(text: String, moduleName: String?): String {
+        val module = moduleName?.takeIf { it.isNotBlank() } ?: return text
+        val prefix = "$module."
+        return if (text.startsWith(prefix) && text.length > prefix.length) text.removePrefix(prefix) else text
     }
 }
