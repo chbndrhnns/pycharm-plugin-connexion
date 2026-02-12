@@ -195,6 +195,9 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         @Feature("toggle-pytest-skip-from-test-tree")
         var enableTogglePytestSkipFromTestTreeAction: Boolean = FeatureDefaults.defaultEnabled("toggle-pytest-skip-from-test-tree"),
 
+        @Feature("run-with-debug-logging")
+        var enableRunWithDebugLoggingFromTestTreeAction: Boolean = FeatureDefaults.defaultEnabled("run-with-debug-logging"),
+
         // ---- Completion & Reference Contributors ----
         @Feature("return-completion")
         var enablePyReturnCompletionContributor: Boolean = FeatureDefaults.defaultEnabled("return-completion"),

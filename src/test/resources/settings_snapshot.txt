@@ -1752,6 +1752,26 @@ DialogPanel
   </body>
 </html>
 '
+  CheckBox: [x] 'Run pytest with debug logging'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body width="560">
+    Duplicates the selected pytest run configuration with debug logging flags 
+    for the chosen test tree node
+  </body>
+</html>
+'
   CheckBox: [x] 'Surround with pytest.raises()'
   TextField: '<html>
   <head>

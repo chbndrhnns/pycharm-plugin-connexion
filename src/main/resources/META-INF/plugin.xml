@@ -663,6 +663,13 @@
             <add-to-group group-id="TestTreePopupMenu" anchor="last"/>
         </action>
 
+        <action id="MyPlugin.RunPytestNodeWithDebugLogging"
+                class="com.github.chbndrhnns.betterpy.features.pytest.testtree.RunPytestNodeWithDebugLoggingAction"
+                text="BetterPy: Run Pytest with DEBUG logging"
+                description="Duplicates the selected pytest run configuration with debug logging flags and runs the selected test node">
+            <add-to-group group-id="TestTreePopupMenu" anchor="last"/>
+        </action>
+
 
         <action id="MyPlugin.JumpToPytestNodeInTestTree"
                 class="com.github.chbndrhnns.betterpy.features.pytest.testtree.JumpToPytestNodeInTestTreeAction"
