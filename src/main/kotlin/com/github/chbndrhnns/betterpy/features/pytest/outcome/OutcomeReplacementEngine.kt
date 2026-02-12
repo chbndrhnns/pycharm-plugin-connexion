@@ -252,12 +252,16 @@ class OutcomeReplacementEngine {
     }
 
     private fun getParameterIndex(namesArg: PyExpression, paramName: String): Int {
-        if (namesArg is PyStringLiteralExpression) {
-            val names = namesArg.stringValue.split(",").map { it.trim() }
+        var current = namesArg
+        while (current is PyParenthesizedExpression) {
+            current = current.containedExpression ?: return -1
+        }
+        if (current is PyStringLiteralExpression) {
+            val names = current.stringValue.split(",").map { it.trim() }
             return names.indexOf(paramName)
         }
-        if (namesArg is PyListLiteralExpression || namesArg is PyTupleExpression) {
-            val elements = namesArg.elements
+        if (current is PyListLiteralExpression || current is PyTupleExpression) {
+            val elements = current.elements
             return elements.indexOfFirst {
                 it is PyStringLiteralExpression && it.stringValue == paramName
             }

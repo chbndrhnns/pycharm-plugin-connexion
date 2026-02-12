@@ -134,6 +134,37 @@ class ParametrizeFixTest : TestBase() {
         )
     }
 
+    fun `test parametrize with tuple of argnames`() {
+        myFixture.configureByText(
+            "test_tuple_args.py", """
+            import pytest
+            
+            @pytest.mark.parametrize(("arg", "expected"), [
+                ("input", "exp")
+            ], ids=["input-exp"])
+            def test_foo(arg, expected):
+                assert arg == expec<caret>ted
+        """.trimIndent()
+        )
+
+        setDiffData("test_tuple_args.test_foo[input-exp]", "exp", "input")
+
+        val intention = myFixture.findSingleIntention("BetterPy: Use actual test outcome")
+        myFixture.launchAction(intention)
+
+        myFixture.checkResult(
+            """
+            import pytest
+            
+            @pytest.mark.parametrize(("arg", "expected"), [
+                ("input", "input")
+            ], ids=["input-exp"])
+            def test_foo(arg, expected):
+                assert arg == expected
+        """.trimIndent()
+        )
+    }
+
     fun `test parametrize replaces dict literal in decorator`() {
         myFixture.configureByText(
             "test_dict.py", """
