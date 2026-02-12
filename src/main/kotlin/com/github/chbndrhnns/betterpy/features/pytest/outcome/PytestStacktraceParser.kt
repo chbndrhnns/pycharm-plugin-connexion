@@ -1,7 +1,6 @@
 package com.github.chbndrhnns.betterpy.features.pytest.outcome
 
 import com.github.chbndrhnns.betterpy.core.pytest.PytestNaming
-import com.github.chbndrhnns.betterpy.features.pytest.outcome.PytestStacktraceParser.parseLineNumberFromPattern
 import com.intellij.openapi.diagnostic.Logger
 
 /**
@@ -105,35 +104,6 @@ object PytestStacktraceParser {
         val fileName = "$moduleName.py"
         LOG.debug("PytestStacktraceParser.extractFileNameFromLocationUrl: extracted fileName='$fileName'")
         return fileName
-    }
-
-    /**
-     * Parses line number using the pattern "filename:lineNumber: ErrorType" or "filename:lineNumber: in function_name"
-     * Examples:
-     * - "test_sample.py:4: AssertionError"
-     * - "test_.py:3: in test_"
-     */
-    private fun parseLineNumberFromPattern(stacktrace: String, fileName: String): Int {
-        LOG.debug("PytestStacktraceParser.parseLineNumberFromPattern: searching for pattern '$fileName:(\\d+):' in stacktrace")
-
-        // Escape special regex characters in filename
-        val escapedFileName = Regex.escape(fileName)
-        val regex = Regex("""$escapedFileName:(\d+):""")
-
-        val matches = regex.findAll(stacktrace)
-        val allLines = matches.map { it.groupValues[1].toIntOrNull() ?: -1 }.filter { it != -1 }.toList()
-
-        if (allLines.isNotEmpty()) {
-            LOG.debug("PytestStacktraceParser.parseLineNumberFromPattern: found ${allLines.size} line number(s): $allLines")
-            // Return the last one, as it's typically the most specific error location
-            // The marker method (called before this) handles finding the test call site
-            val result = allLines.last()
-            LOG.debug("PytestStacktraceParser.parseLineNumberFromPattern: returning last line number: $result")
-            return result
-        }
-
-        LOG.debug("PytestStacktraceParser.parseLineNumberFromPattern: no line numbers found")
-        return -1
     }
 
     /**
