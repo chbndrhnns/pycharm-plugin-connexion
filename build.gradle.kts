@@ -1,6 +1,8 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 plugins {
     id("java") // Java support
@@ -13,6 +15,18 @@ plugins {
 
 group = providers.gradleProperty("pluginGroup").get()
 version = providers.gradleProperty("pluginVersion").get()
+
+fun computeDevVersion(baseVersion: String): String {
+    val branch = providers.exec {
+        commandLine("git", "rev-parse", "--abbrev-ref", "HEAD")
+    }.standardOutput.asText.get().trim().replace(Regex("[^a-zA-Z0-9._-]"), "-")
+    val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
+    return "$baseVersion+$branch.$timestamp"
+}
+
+if (gradle.startParameter.taskNames.any { it.contains("buildPlugin") }) {
+    version = computeDevVersion(version.toString())
+}
 // set in ~/.gradle/gradle.properties, e.g. `/Users/me/Applications/PyCharm X.app/Contents`
 val localIdePath = project.findProperty("localIdePath") as? String
 
@@ -78,7 +92,7 @@ intellijPlatform {
 
     pluginConfiguration {
         name = providers.gradleProperty("pluginName")
-        version = providers.gradleProperty("pluginVersion")
+        version = provider { project.version.toString() }
 
         // Extract the <!-- Plugin description --> section from README.md and provide for the plugin's manifest
         description = providers.fileContents(layout.projectDirectory.file("README.md")).asText.map {
