@@ -42,7 +42,6 @@ do(frozenset({<caret>1, 2, 3}))
 - [ ] feat: pytest fixtures: Add rename option to rename not in hierarchy
 - [ ] feat: Copy special should offer copy single node id/reference (no children)
 - [ ] feat: In __all__, offer to delete item + import
-- [ ] feat: Copy annotations from parent
 - [ ] feat: https://youtrack.jetbrains.com/issue/PY-66243/Refactor-Inline-for-pytest-fixtures
 - [ ] feat: https://youtrack.jetbrains.com/issue/PY-60973/Detect-invalid-fixture-names
 - [ ] feat: https://youtrack.jetbrains.com/issue/PY-66245/Does-not-render-documentation-for-pytest-fixtures
@@ -55,9 +54,7 @@ do(frozenset({<caret>1, 2, 3}))
 - [ ] feat: Qualify imports using last segment, available on import statements
 - [ ] feat: Convert bunch of assert statements to dict and vice versa
 - [ ] feat: Go to declaration in new tab
-- [ ] feat: Re-run test with debug logging (add --log-cli-level=DEBUG in temporary run config)
 - [ ] feat: Find usages in current file
-- [ ] feat: Add surround with... pytest.raises()
 - [ ] feat: Add field to dataclass/typeddict/pydantic if missing
 - [ ] feat: Iterate by warning type through IDE errors
 - [ ] feat: Search in changed files only
@@ -78,7 +75,6 @@ do(frozenset({<caret>1, 2, 3}))
 - [ ] feat: When suggesting the expected type and it is an inner class, reference it using outer_class.inner_class
   syntax, recursively
 - [ ] feat: Ignore third-party packages in import suggestions
-- [ ] feat: Treat unresolved references as errors
 - [ ] feat: Move symbol to top level (or one scope up?)
 - [ ] feat: Add pytest nodes to separate view in search everywhere (currently, `pytest` seems not respected)
 - [ ] feat: When implementing abstract method, present dialog to choose or show edits
@@ -104,6 +100,10 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Re-run test with debug logging (add --log-cli-level=DEBUG in temporary run config)
+- [x] feat: Copy annotations from parent
+- [x] feat: Treat unresolved references as errors
+- [x] feat: Add surround with... pytest.raises()
 - [x] feat: Copy as import statement
 - [x] fix: Choose implementation should strip the common prefix for all items IF it's the same for all items
 - [x] fix: Do not mark test params as invalid fixtures
