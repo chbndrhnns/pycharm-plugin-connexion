@@ -62,22 +62,41 @@ object PytestLocationUrlFactory {
         }
 
         // Add content root based URL if different from source root
-        // Use the original qualified name for backward compatibility
         if (contentRoot != null && contentRoot.path != sourceRoot?.path) {
-            val url = "python<${contentRoot.path}>://$functionQName"
+            // Use buildQualifiedName for content root to properly handle subdirectories
+            val qName = buildQualifiedName(virtualFile, contentRoot, function, isSourceRoot = false)
+            val url = "python<${contentRoot.path}>://$qName"
             urls.add(url)
             LOG.debug("PytestLocationUrlFactory.fromPyFunction: added content root URL: '$url'")
+
+            // Also add backward-compatible URL using PSI qualified name
+            // This ensures existing tests/configurations continue to work
+            val url2 = "python<${contentRoot.path}>://$functionQName"
+            if (url2 != url) {
+                urls.add(url2)
+                LOG.debug("PytestLocationUrlFactory.fromPyFunction: added backward-compatible content root URL: '$url2'")
+            }
         }
 
         // Add project root based URL if different from both source and content roots
-        // Use the original qualified name for backward compatibility
         if (projectBasePath != null &&
             projectBasePath != sourceRoot?.path &&
             projectBasePath != contentRoot?.path
         ) {
-            val url = "python<$projectBasePath>://$functionQName"
-            urls.add(url)
-            LOG.debug("PytestLocationUrlFactory.fromPyFunction: added project base path URL: '$url'")
+            val projectRootFile = com.intellij.openapi.vfs.LocalFileSystem.getInstance().findFileByPath(projectBasePath)
+            if (projectRootFile != null) {
+                val qName = buildQualifiedName(virtualFile, projectRootFile, function, isSourceRoot = false)
+                val url = "python<$projectBasePath>://$qName"
+                urls.add(url)
+                LOG.debug("PytestLocationUrlFactory.fromPyFunction: added project base path URL: '$url'")
+
+                // Also add backward-compatible URL using PSI qualified name
+                val url2 = "python<$projectBasePath>://$functionQName"
+                if (url2 != url) {
+                    urls.add(url2)
+                    LOG.debug("PytestLocationUrlFactory.fromPyFunction: added backward-compatible project base path URL: '$url2'")
+                }
+            }
         }
 
         LOG.debug("PytestLocationUrlFactory.fromPyFunction: returning ${urls.size} URL(s): $urls")
@@ -114,17 +133,13 @@ object PytestLocationUrlFactory {
             .replace('/', '.')
 
         // Special handling for source roots:
-        // Pytest always includes the source root directory name in the qualified name
+        // When a source root is set (e.g., "tests" directory), pytest reports paths
+        // relative to that source root WITHOUT including the source root name itself.
         // For example, if "tests" is a source root:
-        //   - tests/test_.py -> tests.test_
-        //   - tests/unit/test_.py -> tests.unit.test_
-        // For content/project roots, we never prepend the root name
-        val finalModulePath = if (isSourceRoot) {
-            val rootName = root.name
-            "$rootName.$modulePath"
-        } else {
-            modulePath
-        }
+        //   - tests/test_.py -> test_ (NOT tests.test_)
+        //   - tests/unit/test_.py -> unit.test_ (NOT tests.unit.test_)
+        // So we should NOT prepend the root name for source roots.
+        val finalModulePath = modulePath
 
         // Combine module path with function name
         // Handle nested classes: Class1.Class2.method

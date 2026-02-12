@@ -38,11 +38,8 @@ class PyTestFailedLineInspection : LocalInspectionTool() {
         val project = element.project
         val diffService = TestOutcomeDiffService.getInstance(project)
         val locationUrls = PytestLocationUrlFactory.fromPyFunction(pyFunction)
-        LOG.debug("PyTestFailedLineInspection.checkGeneralElement: checking element $element in function ${pyFunction.name}, locationUrls=$locationUrls")
-        val (diff, _) = diffService.findWithKeys(locationUrls, null) ?: run {
-            LOG.debug("PyTestFailedLineInspection.checkGeneralElement: no diff found for locationUrls=$locationUrls")
-            return
-        }
+        LOG.debug("PyTestFailedLineInspection.checkGeneralElement: checking element in function ${pyFunction.name}, locationUrls=$locationUrls")
+        val (diff, _) = diffService.findWithKeys(locationUrls, null) ?: return
 
         if (diff.failedLine != -1) {
             val document = element.containingFile.viewProvider.document ?: return
@@ -71,10 +68,7 @@ class PyTestFailedLineInspection : LocalInspectionTool() {
         val diffService = TestOutcomeDiffService.getInstance(project)
         val locationUrls = PytestLocationUrlFactory.fromPyFunction(element)
         LOG.debug("PyTestFailedLineInspection.checkElement: checking function ${element.name}, locationUrls=$locationUrls")
-        val (diff, _) = diffService.findWithKeys(locationUrls, null) ?: run {
-            LOG.debug("PyTestFailedLineInspection.checkElement: no diff found for locationUrls=$locationUrls")
-            return
-        }
+        val (diff, _) = diffService.findWithKeys(locationUrls, null) ?: return
 
         if (diff.failedLine != -1) {
             val document = element.containingFile.viewProvider.document ?: return

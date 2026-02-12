@@ -98,9 +98,9 @@ class UseActualOutcomeAvailabilityTest : TestBase() {
                 myFixture.file.text.indexOf("assert") + 3
             )
 
-            // The qualified name should now include the package path: tests.test_.test_
+            // The qualified name is relative to the source root: test_.test_ (NOT tests.test_.test_)
             // Store the diff data with the source root path (matching pytest's behavior)
-            setDiffData("tests.test_.test_", "2", "1", rootPath = testsDir.path)
+            setDiffData("test_.test_", "2", "1", rootPath = testsDir.path)
 
             val intention = myFixture.getAvailableIntention("BetterPy: Use actual test outcome")
             assertNotNull(
@@ -129,9 +129,9 @@ class UseActualOutcomeAvailabilityTest : TestBase() {
                 myFixture.file.text.indexOf("assert") + 3
             )
 
-            // The qualified name should include the full package path: tests.unit.test_.test_
+            // The qualified name is relative to the source root: unit.test_.test_ (NOT tests.unit.test_.test_)
             // Store the diff data with the source root path (matching pytest's behavior)
-            setDiffData("tests.unit.test_.test_", "2", "1", rootPath = testsDir.path)
+            setDiffData("unit.test_.test_", "2", "1", rootPath = testsDir.path)
 
             val intention = myFixture.getAvailableIntention("BetterPy: Use actual test outcome")
             assertNotNull(

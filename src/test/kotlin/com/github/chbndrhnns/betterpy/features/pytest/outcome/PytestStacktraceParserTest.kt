@@ -230,4 +230,26 @@ class PytestStacktraceParserTest : TestBase() {
 
         assertEquals(5, result)
     }
+
+    fun `test parseFailedLine shows failure at call site not in helper`() {
+        val stacktrace = """
+            def test_():
+            >       helper()
+
+            test_.py:5:
+            _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+                def helper():
+            >       1/0
+            E       ZeroDivisionError: division by zero
+
+            test_.py:2: ZeroDivisionError
+        """.trimIndent()
+
+        val locationUrl = "python</path>://test_.test_"
+
+        val result = PytestStacktraceParser.parseFailedLine(stacktrace, locationUrl)
+
+        assertEquals("Should return line 5 (call site in test) not line 2 (error in helper)", 5, result)
+    }
 }

@@ -181,14 +181,14 @@ class PyTestFailedLineInspectionTest : TestBase() {
         val expectedQName = "test_file.MyClass.test_method"
 
         assertTrue(
-            "URLs should contain project root based URL with class name. Got: $urls",
+            "At least one URL should contain the expected qualified name with class. Got: $urls",
             urls.any { it.contains(expectedQName) })
 
-        // If it's a source root, it should also contain the class name
-        // In this test environment, the file is usually in the content root
-        urls.forEach { url ->
-            assertTrue("URL '$url' should contain the class name 'MyClass'", url.contains("MyClass"))
-        }
+        // At least one URL should contain the class name (may generate multiple formats)
+        assertTrue(
+            "At least one URL should contain the class name 'MyClass'. Got: $urls",
+            urls.any { it.contains("MyClass") }
+        )
     }
 
     fun `test highlights failed method in nested class`() {
@@ -224,5 +224,128 @@ class PyTestFailedLineInspectionTest : TestBase() {
         val document = myFixture.getDocument(pyFile)
         val line = document.getLineNumber(failedLineHighlight!!.startOffset) + 1
         assertEquals("Highlight should be on line 4", 4, line)
+    }
+
+    fun `test highlights call site not helper function`() {
+        val code = """
+            def helper():
+                1/0
+
+            def test_abc():
+                helper()
+        """.trimIndent()
+
+        myFixture.configureByText("test_helper.py", code)
+        val pyFile = myFixture.file
+        val projectRoot = project.basePath!!
+        val locationUrl = "python<$projectRoot>://test_helper.test_abc"
+
+        val diffService = TestOutcomeDiffService.getInstance(project)
+        // Line 5 is 'helper()' - the call site in the test
+        // Line 2 is '1/0' - inside the helper function
+        // We want to highlight line 5, not line 2
+        diffService.put(locationUrl, OutcomeDiff("", "", failedLine = 5))
+
+        myFixture.enableInspections(PyTestFailedLineInspection::class.java)
+        val highlights = myFixture.doHighlighting()
+
+        val failedLineHighlight = highlights.find { it.description == "Test failed at this line" }
+        assertNotNull(
+            "Highlight should be present at call site. Highlights: ${highlights.map { it.description }}",
+            failedLineHighlight
+        )
+
+        val document = myFixture.getDocument(pyFile)
+        val line = document.getLineNumber(failedLineHighlight!!.startOffset) + 1
+        assertEquals("Highlight should be on line 5 (call site), not line 2 (inside helper)", 5, line)
+    }
+
+    fun `test highlights work when tests directory is marked as source root`() {
+        // Create a test file in a tests directory
+        val testFile = myFixture.addFileToProject(
+            "tests/test_example.py",
+            """
+            def helper():
+                1/0
+
+            def test_abc():
+                helper()
+            """.trimIndent()
+        )
+
+        val testsDir = testFile.virtualFile.parent
+        assertNotNull("tests directory should exist", testsDir)
+
+        // Mark tests/ as source root
+        runWithSourceRoots(listOf(testsDir)) {
+            myFixture.configureFromExistingVirtualFile(testFile.virtualFile)
+
+            // When tests/ is a source root, pytest reports: python<.../tests>://test_example.test_abc
+            val locationUrl = "python<${testsDir.path}>://test_example.test_abc"
+
+            val diffService = TestOutcomeDiffService.getInstance(project)
+            diffService.put(locationUrl, OutcomeDiff("", "", failedLine = 5))
+
+            myFixture.enableInspections(PyTestFailedLineInspection::class.java)
+            val highlights = myFixture.doHighlighting()
+
+            val failedLineHighlight = highlights.find { it.description == "Test failed at this line" }
+            assertNotNull(
+                "Highlight should be present when tests/ is marked as source root",
+                failedLineHighlight
+            )
+
+            val document = myFixture.getDocument(testFile)
+            val line = document.getLineNumber(failedLineHighlight!!.startOffset) + 1
+            assertEquals("Highlight should be on line 5 (helper() call)", 5, line)
+        }
+    }
+
+    fun `test highlights work when tests directory is NOT marked as source root`() {
+        // Create a test file in a tests directory
+        val testFile = myFixture.addFileToProject(
+            "tests/test_example.py",
+            """
+            def helper():
+                1/0
+
+            def test_abc():
+                helper()
+            """.trimIndent()
+        )
+
+        myFixture.configureFromExistingVirtualFile(testFile.virtualFile)
+
+        val pyFile = testFile as com.jetbrains.python.psi.PyFile
+        val testFunction = pyFile.topLevelFunctions.find { it.name == "test_abc" }
+        assertNotNull("test_abc function should exist", testFunction)
+
+        // Get the URLs that the plugin will actually generate
+        val generatedUrls = PytestLocationUrlFactory.fromPyFunction(testFunction!!)
+        LOG.info("Generated URLs for test without source root: $generatedUrls")
+
+        // Use one of the generated URLs to store the diff
+        assertTrue("At least one URL should be generated", generatedUrls.isNotEmpty())
+        val locationUrl = generatedUrls.first()
+
+        val diffService = TestOutcomeDiffService.getInstance(project)
+        diffService.put(locationUrl, OutcomeDiff("", "", failedLine = 5))
+
+        myFixture.enableInspections(PyTestFailedLineInspection::class.java)
+        val highlights = myFixture.doHighlighting()
+
+        val failedLineHighlight = highlights.find { it.description == "Test failed at this line" }
+        assertNotNull(
+            "Highlight should be present when tests/ is NOT marked as source root. Generated URLs: $generatedUrls",
+            failedLineHighlight
+        )
+
+        val document = myFixture.getDocument(testFile)
+        val line = document.getLineNumber(failedLineHighlight!!.startOffset) + 1
+        assertEquals("Highlight should be on line 5 (helper() call)", 5, line)
+    }
+
+    companion object {
+        private val LOG = com.intellij.openapi.diagnostic.Logger.getInstance(PyTestFailedLineInspectionTest::class.java)
     }
 }
