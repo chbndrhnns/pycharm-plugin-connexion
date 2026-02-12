@@ -354,6 +354,20 @@
 
         <intentionAction>
             <className>
+                com.github.chbndrhnns.betterpy.features.intentions.pytest.AddParametrizeParameterIntention
+            </className>
+            <category>Test</category>
+        </intentionAction>
+
+        <intentionAction>
+            <className>
+                com.github.chbndrhnns.betterpy.features.intentions.pytest.RemoveParametrizeParameterIntention
+            </className>
+            <category>Test</category>
+        </intentionAction>
+
+        <intentionAction>
+            <className>
                 com.github.chbndrhnns.betterpy.features.pytest.fixture.CreateFixtureFromParameterIntention
             </className>
             <category>Test</category>

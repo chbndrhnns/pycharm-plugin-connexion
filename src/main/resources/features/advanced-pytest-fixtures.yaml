@@ -11,6 +11,10 @@ since: ''
 removeIn: ''
 defaultEnabled: true
 registrations:
+  - type: intentionAction
+    className: com.github.chbndrhnns.betterpy.features.intentions.pytest.AddParametrizeParameterIntention
+  - type: intentionAction
+    className: com.github.chbndrhnns.betterpy.features.intentions.pytest.RemoveParametrizeParameterIntention
   - type: codeInsight.gotoSuper
     className: com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureGotoSuperHandler
   - type: codeInsight.lineMarkerProvider
