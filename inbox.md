@@ -71,7 +71,6 @@ do(frozenset({<caret>1, 2, 3}))
 - [ ] feat: Convert parametrized test to multiple unparametrized tests
 - [ ] feat: Add field to dataclass/model in case of unexpected argument
 - [ ] feat: Suggest expected type for container types, like `vals: set[MyType] = set(<caret>)`
-- [ ] feat: pytest param: treat text as ref
 - [ ] feat: When suggesting the expected type and it is an inner class, reference it using outer_class.inner_class
   syntax, recursively
 - [ ] feat: Ignore third-party packages in import suggestions
@@ -100,6 +99,7 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Completed Tasks (newest first)
 
+- [x] feat: pytest param: treat text as ref
 - [x] feat: Re-run test with debug logging (add --log-cli-level=DEBUG in temporary run config)
 - [x] feat: Copy annotations from parent
 - [x] feat: Treat unresolved references as errors
