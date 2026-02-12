@@ -168,7 +168,16 @@ class PyMakeSymbolPublicAndUseExportedSymbolQuickFix(
             newImportText,
         )
 
-        fromImport.replace(newFromImport)
+        val hasOtherImports = fromImport.importElements.size > 1
+        if (hasOtherImports) {
+            // When the statement imports multiple symbols, only remove the
+            // target element and add a new import statement for the
+            // rewritten symbol, preserving the other imports.
+            importElement.delete()
+            fromImport.parent.addAfter(newFromImport, fromImport)
+        } else {
+            fromImport.replace(newFromImport)
+        }
     }
 
     private fun buildImportedFragment(name: String, alias: String?): String =

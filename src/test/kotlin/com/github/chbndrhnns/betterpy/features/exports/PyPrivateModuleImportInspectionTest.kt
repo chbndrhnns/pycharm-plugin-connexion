@@ -46,6 +46,32 @@ class PyPrivateModuleImportInspectionTest : TestBase() {
         )
     }
 
+    fun testMakeSymbolPublicAndUseExportedSymbolQuickFix_MultiImport() {
+        val path = "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_MultiImport"
+        myFixture.configureByFiles(
+            "$path/mypackage/__init__.py", "$path/mypackage/_lib.py", "$path/cli.py"
+        )
+        myFixture.enableInspections(PyPrivateModuleImportInspection::class.java)
+
+        val targetVFile = myFixture.findFileInTempDir("$path/cli.py")!!
+        myFixture.openFileInEditor(targetVFile)
+
+        val fixes = myFixture.getAllQuickFixes()
+        val matchingFixes = fixes.filter { it.familyName == "Make symbol public and import from package" }
+        assertTrue("Expected at least one fix", matchingFixes.isNotEmpty())
+
+        // Apply only the first fix (for Client), not all of them.
+        myFixture.launchAction(matchingFixes.first())
+
+        for ((fileToCheck, expected) in mapOf(
+            "$path/cli.py" to "$path/cli_after.py", "$path/mypackage/__init__.py" to "$path/mypackage/__init___after.py"
+        )) {
+            val file = myFixture.findFileInTempDir(fileToCheck)!!
+            myFixture.openFileInEditor(file)
+            myFixture.checkResultByFile(expected)
+        }
+    }
+
     fun testMakeSymbolPublicAndUseExportedSymbolQuickFix_MultipleSites() {
         val path = "inspections/PyPrivateModuleImportInspection/MakeSymbolPublicAndUseExportedSymbol_MultipleSites"
         myFixture.doMultiFileInspectionTest(
