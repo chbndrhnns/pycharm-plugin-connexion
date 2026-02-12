@@ -2,13 +2,6 @@
 
 ## Pending Issues
 
-- [ ] fix: Choose implementation should strip the common prefix for all items IF it's the same for all items
-- [ ] fix: Link leads nowhere
-
-```py
-
-```
-
 - [ ] fix: Rendering of links for pytest, now blue and dotted.
   `tests/unit/test_integrity.py::test_no_skip_markers_on_adapter_fixture[<class 'src.adapters.outbound.HttpRepository'>] ✓                51% █████▏`
 - [ ] fix: Introduce custom type needs to wrap usage sites
@@ -110,6 +103,7 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Choose implementation should strip the common prefix for all items IF it's the same for all items
 - [x] fix: Do not mark test params as invalid fixtures
 
 ```python
