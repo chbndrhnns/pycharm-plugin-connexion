@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.betterpy.features.pytest.outcome
 
 import com.github.chbndrhnns.betterpy.core.pytest.PytestNaming
+import com.github.chbndrhnns.betterpy.features.pytest.outcome.PytestStacktraceParser.parseLineNumberFromPattern
 import com.intellij.openapi.diagnostic.Logger
 
 /**
@@ -45,7 +46,7 @@ object PytestStacktraceParser {
 
         LOG.debug("PytestStacktraceParser.parseFailedLine: extracted filename='$fileName' from locationUrl")
 
-        // Try method 1: Parse from traceback marker (>) - more precise, looks for call site
+        // Try method 1: Parse from traceback marker (>) - more precise, finds the call site in the test
         val lineFromMarker = parseLineNumberFromMarker(stacktrace, fileName)
         if (lineFromMarker != -1) {
             LOG.debug("PytestStacktraceParser.parseFailedLine: found line number $lineFromMarker using marker parsing")
@@ -53,6 +54,7 @@ object PytestStacktraceParser {
         }
 
         // Try method 2: Parse "filename:lineNumber:" pattern - fallback for cases without markers
+        // (e.g., non-assertion errors like RuntimeError, ValueError)
         val lineFromPattern = parseLineNumberFromPattern(stacktrace, fileName)
         if (lineFromPattern != -1) {
             LOG.debug("PytestStacktraceParser.parseFailedLine: found line number $lineFromPattern using pattern matching")
@@ -135,6 +137,37 @@ object PytestStacktraceParser {
     }
 
     /**
+     * Parses line number using the pattern "filename:lineNumber:" anywhere in the stacktrace.
+     * Returns the last occurrence found (typically the most relevant).
+     *
+     * Used as a fallback for cases without '>' markers (e.g., RuntimeError, ValueError).
+     * Examples:
+     * - "test_sample.py:4: AssertionError"
+     * - "test_.py:3: in test_"
+     */
+    private fun parseLineNumberFromPattern(stacktrace: String, fileName: String): Int {
+        LOG.debug("PytestStacktraceParser.parseLineNumberFromPattern: searching for pattern '$fileName:(\\d+):' in stacktrace")
+
+        // Escape special regex characters in filename
+        val escapedFileName = Regex.escape(fileName)
+        val regex = Regex("""$escapedFileName:(\d+):""")
+
+        val matches = regex.findAll(stacktrace)
+        val allLines = matches.map { it.groupValues[1].toIntOrNull() ?: -1 }.filter { it != -1 }.toList()
+
+        if (allLines.isNotEmpty()) {
+            LOG.debug("PytestStacktraceParser.parseLineNumberFromPattern: found ${allLines.size} line number(s): $allLines")
+            // Return the last one, as it's typically the most specific error location
+            val result = allLines.last()
+            LOG.debug("PytestStacktraceParser.parseLineNumberFromPattern: returning last line number: $result")
+            return result
+        }
+
+        LOG.debug("PytestStacktraceParser.parseLineNumberFromPattern: no line numbers found")
+        return -1
+    }
+
+    /**
      * Parses line number by looking for the pytest marker (>) and finding the file:line reference near it.
      *
      * Strategy: Find the FIRST '>' marker, which represents the call site in the test.
@@ -178,10 +211,9 @@ object PytestStacktraceParser {
             return -1
         }
 
-        // Look forward from the marker (within a few lines) for filename:line: before hitting a separator
-        val searchLimit = kotlin.math.min(firstMarkerIndex + 5, lines.size)
-        for (j in (firstMarkerIndex + 1) until searchLimit) {
-            // Stop at section separators
+        // Look forward from the marker for filename:line: before hitting a separator
+        for (j in (firstMarkerIndex + 1) until lines.size) {
+            // Stop at section separators (indicates we've moved to a different stack frame)
             if (lines[j].trim().matches(Regex("^_+$"))) {
                 LOG.debug("PytestStacktraceParser.parseLineNumberFromMarker: hit section separator at line $j, stopping forward search")
                 break
@@ -197,19 +229,7 @@ object PytestStacktraceParser {
             }
         }
 
-        // Fall back to looking for filename:line: after the marker anywhere (old behavior)
-        for (j in (firstMarkerIndex + 1) until lines.size) {
-            val match = regex.find(lines[j])
-            if (match != null) {
-                val lineNumber = match.groupValues[1].toIntOrNull()
-                if (lineNumber != null) {
-                    LOG.debug("PytestStacktraceParser.parseLineNumberFromMarker: found line number $lineNumber after marker (fallback) at line $j: '${lines[j]}'")
-                    return lineNumber
-                }
-            }
-        }
-
-        LOG.debug("PytestStacktraceParser.parseLineNumberFromMarker: no line number found using marker method")
+        LOG.debug("PytestStacktraceParser.parseLineNumberFromMarker: no line number found after marker in same frame")
         return -1
     }
 }
