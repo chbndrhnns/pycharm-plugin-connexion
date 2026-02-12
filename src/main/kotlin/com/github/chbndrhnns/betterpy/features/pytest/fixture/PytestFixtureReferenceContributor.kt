@@ -36,6 +36,12 @@ class PytestFixtureReferenceContributor : PsiReferenceContributor() {
             PlatformPatterns.psiElement(PyStringLiteralExpression::class.java),
             UsefixturesStringReferenceProvider()
         )
+
+        // Register for string literals in @pytest.mark.parametrize (parameter name references)
+        registrar.registerReferenceProvider(
+            PlatformPatterns.psiElement(PyStringLiteralExpression::class.java),
+            ParametrizeNameReferenceProvider()
+        )
     }
 }
 
@@ -191,6 +197,116 @@ class PytestFixtureReference(
         }
         return arrayOf(CreateFixtureFromParameterQuickFix(fixtureName))
     }
+}
+
+/**
+ * Provides references from parametrize name strings to function parameters.
+ * E.g. @pytest.mark.parametrize("param_name", [...]) -> function parameter param_name.
+ */
+class ParametrizeNameReferenceProvider : PsiReferenceProvider() {
+    override fun getReferencesByElement(
+        element: PsiElement,
+        context: ProcessingContext
+    ): Array<PsiReference> {
+        if (!PytestFixtureFeatureToggle.isEnabled()) {
+            return PsiReference.EMPTY_ARRAY
+        }
+        val literal = element as? PyStringLiteralExpression ?: return PsiReference.EMPTY_ARRAY
+
+        val decorator = PsiTreeUtil.getParentOfType(literal, PyDecorator::class.java)
+            ?: return PsiReference.EMPTY_ARRAY
+        if (!PytestParametrizeUtil.isParametrizeDecorator(decorator, allowBareName = true)) {
+            return PsiReference.EMPTY_ARRAY
+        }
+
+        // Check this is the argnames argument (first positional or argnames= keyword)
+        if (!isArgnamesArgument(literal, decorator)) {
+            return PsiReference.EMPTY_ARRAY
+        }
+
+        val function = PsiTreeUtil.getParentOfType(decorator, PyFunction::class.java)
+            ?: return PsiReference.EMPTY_ARRAY
+
+        val stringValue = literal.stringValue
+        if (stringValue.isEmpty()) return PsiReference.EMPTY_ARRAY
+
+        // Split comma-delimited names and create a reference for each
+        val names = stringValue.split(',').map { it.trim() }
+        val references = mutableListOf<PsiReference>()
+        val valueRange = literal.stringValueTextRange
+        var searchFrom = valueRange.startOffset
+
+        for (name in names) {
+            if (name.isEmpty()) continue
+            val param = function.parameterList.findParameterByName(name) ?: continue
+
+            // Find the offset of this name within the string element text
+            val nameOffset = literal.text.indexOf(name, searchFrom)
+            if (nameOffset < 0) continue
+            val range = TextRange(nameOffset, nameOffset + name.length)
+            searchFrom = nameOffset + name.length
+
+            references.add(ParametrizeNameReference(literal, range, name, param))
+        }
+
+        return references.toTypedArray()
+    }
+
+    private fun isArgnamesArgument(literal: PyStringLiteralExpression, decorator: PyDecorator): Boolean {
+        // Check if it's the argnames= keyword argument
+        val keywordArg = literal.parent as? PyKeywordArgument
+        if (keywordArg != null) {
+            return keywordArg.keyword == "argnames"
+        }
+        // Check if it's the first positional argument
+        val argumentList = literal.parent as? PyArgumentList
+        if (argumentList != null) {
+            val args = argumentList.arguments
+            return args.isNotEmpty() && args[0] === literal
+        }
+        // Check if it's inside a tuple/list/parenthesized expr that is the first positional argument
+        val container = literal.parent ?: return false
+        val firstArgCandidate: PsiElement = when (container) {
+            is com.jetbrains.python.psi.PyTupleExpression,
+            is com.jetbrains.python.psi.PyListLiteralExpression -> {
+                // Tuple/list may be directly in arglist, or wrapped in PyParenthesizedExpression
+                val upper = container.parent
+                if (upper is com.jetbrains.python.psi.PyParenthesizedExpression) upper else container
+            }
+
+            is com.jetbrains.python.psi.PyParenthesizedExpression -> container
+            else -> return false
+        }
+        val argList = firstArgCandidate.parent as? PyArgumentList ?: return false
+        val args = argList.arguments
+        return args.isNotEmpty() && args[0] === firstArgCandidate
+    }
+}
+
+/**
+ * Hard reference from a parametrize name string to a function parameter.
+ */
+class ParametrizeNameReference(
+    element: PyStringLiteralExpression,
+    rangeInElement: TextRange,
+    private val paramName: String,
+    private val target: PyNamedParameter
+) : PsiReferenceBase<PyStringLiteralExpression>(element, rangeInElement, false) {
+
+    override fun resolve(): PsiElement = target
+
+    override fun handleElementRename(newElementName: String): PsiElement {
+        val oldText = element.text
+        val rangeInText = rangeInElement
+        val newText = oldText.substring(0, rangeInText.startOffset) +
+                newElementName +
+                oldText.substring(rangeInText.endOffset)
+        val generator = PyElementGenerator.getInstance(element.project)
+        val newLiteral = generator.createStringLiteralAlreadyEscaped(newText)
+        return element.replace(newLiteral)
+    }
+
+    override fun getVariants(): Array<Any> = emptyArray()
 }
 
 /**
