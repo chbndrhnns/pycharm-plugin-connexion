@@ -34,6 +34,8 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Pending Features
 
+- [ ] feat: Generate module-level logger
+- [ ] feat: Do not move logger when moving code
 - [ ] feat: Suggest to toggle `self` when moving a code block which is a function inside a class
 - [ ] feat: Unwrap try/except block (consider finally!)
 - [ ] feat: Copy as import statement]
