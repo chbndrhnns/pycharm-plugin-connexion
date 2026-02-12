@@ -1,0 +1,3 @@
+@pytest.mark.usefixtures("db")
+def test_foo():
+    assert True

@@ -309,6 +309,9 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         @Feature("pytest-fixture-uninjected-reference-inspection")
         var enablePytestFixtureUninjectedReferenceInspection: Boolean = FeatureDefaults.defaultEnabled("pytest-fixture-uninjected-reference-inspection"),
 
+        @Feature("pytest-fixture-to-usefixtures-inspection")
+        var enablePytestFixtureToUsefixturesInspection: Boolean = FeatureDefaults.defaultEnabled("pytest-fixture-to-usefixtures-inspection"),
+
         /**
          * Snapshotted state before "Mute All" was activated.
          * If non-null, it means the plugin is currently in "Mute All" mode.

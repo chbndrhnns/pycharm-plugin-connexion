@@ -145,6 +145,14 @@
                          shortName="PytestFixtureScopeInspection"/>
 
         <localInspection language="Python"
+                         implementationClass="com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureToUsefixturesInspection"
+                         displayName="BetterPy: Pytest fixture to usefixtures"
+                         groupName="Python"
+                         enabledByDefault="true"
+                         level="WEAK WARNING"
+                         shortName="PytestFixtureToUsefixturesInspection"/>
+
+        <localInspection language="Python"
                          implementationClass="com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureUninjectedReferenceInspection"
                          displayName="BetterPy: Pytest fixture uninjected reference"
                          groupName="Python"
@@ -348,6 +356,20 @@
         <intentionAction>
             <className>
                 com.github.chbndrhnns.betterpy.features.intentions.pytest.ConvertToPlainParametrizeValuesIntention
+            </className>
+            <category>Test</category>
+        </intentionAction>
+
+        <intentionAction>
+            <className>
+                com.github.chbndrhnns.betterpy.features.intentions.pytest.ConvertFixtureParamToUsefixturesIntention
+            </className>
+            <category>Test</category>
+        </intentionAction>
+
+        <intentionAction>
+            <className>
+                com.github.chbndrhnns.betterpy.features.intentions.pytest.ConvertUsefixturesToTestArgumentIntention
             </className>
             <category>Test</category>
         </intentionAction>

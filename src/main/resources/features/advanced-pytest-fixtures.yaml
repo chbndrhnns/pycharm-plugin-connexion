@@ -29,5 +29,9 @@ registrations:
     className: com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureReferenceContributor
   - type: pySuperMethodsSearch
     className: com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureSuperMethodsSearchExecutor
+  - type: intentionAction
+    className: com.github.chbndrhnns.betterpy.features.intentions.pytest.ConvertFixtureParamToUsefixturesIntention
+  - type: intentionAction
+    className: com.github.chbndrhnns.betterpy.features.intentions.pytest.ConvertUsefixturesToTestArgumentIntention
   - type: renamePsiElementProcessor
     className: com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureRenameProcessor

@@ -740,6 +740,29 @@ DialogPanel
   </body>
 </html>
 '
+  CheckBox: [x] 'Pytest fixture to usefixtures inspection'
+  MaturityTagLabel
+    Label: 'Incubating'
+  Button: 'PY-55931'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body width="560">
+    Reports unused fixture parameters in test functions and offers conversion 
+    to @pytest.mark.usefixtures()
+  </body>
+</html>
+'
   CheckBox: [x] 'Pytest fixture uninjected reference inspection'
   TextField: '<html>
   <head>
