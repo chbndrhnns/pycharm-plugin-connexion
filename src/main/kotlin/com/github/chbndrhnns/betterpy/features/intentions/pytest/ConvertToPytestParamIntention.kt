@@ -96,6 +96,10 @@ class ConvertToPytestParamIntention : IntentionAction, HighPriorityAction {
 
         val argumentList = decorator.argumentList ?: return null
         val listArg = findParameterValuesListArgument(argumentList) ?: return null
+
+        // Only available when the caret is inside the argvalues parameter (the list literal)
+        if (!PsiTreeUtil.isAncestor(listArg, element, false)) return null
+
         return Pair(decorator, listArg)
     }
 

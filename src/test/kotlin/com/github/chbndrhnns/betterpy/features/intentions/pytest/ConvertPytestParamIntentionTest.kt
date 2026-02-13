@@ -386,6 +386,24 @@ class ConvertPytestParamIntentionTest : TestBase() {
         assertTrue("ConvertToPlain should not be available outside decorator", toPlain.isEmpty())
     }
 
+    fun testConvertToPytestParamNotAvailableWhenCaretOnParamNames() {
+        myFixture.configureByText(
+            "test_example.py", """
+            import pytest
+            
+            @pytest.mark.parametrize("<caret>x", [1, 2, 3])
+            def test_example(x):
+                assert x > 0
+        """.trimIndent()
+        )
+
+        val intentions = myFixture.filterAvailableIntentions("BetterPy: Convert argument to pytest.param()")
+        assertTrue(
+            "Should not be available when caret is on the parameter names string, not inside argvalues",
+            intentions.isEmpty()
+        )
+    }
+
     fun testConvertToPytestParamNotAvailableWhenCaretInFunctionBody() {
         myFixture.configureByText(
             "test_example.py", """
