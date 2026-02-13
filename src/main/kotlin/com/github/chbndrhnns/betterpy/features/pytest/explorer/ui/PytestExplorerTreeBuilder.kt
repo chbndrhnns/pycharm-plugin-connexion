@@ -442,4 +442,56 @@ object PytestExplorerTreeBuilder {
             parentNode.add(depNode)
         }
     }
+
+    /**
+     * Renders a tree to a textual representation for testing.
+     * Each node is on its own line, indented by depth.
+     * Format: "  " per level + node label
+     */
+    fun toTextualTree(
+        node: DefaultMutableTreeNode,
+        hideParameters: Boolean = false,
+        indent: Int = 0
+    ): String {
+        val sb = StringBuilder()
+        val prefix = "  ".repeat(indent)
+        val label = nodeLabel(node)
+        val isLeafDueToHiddenParams = hideParameters && hasOnlyParametrizeChildren(node)
+        sb.append(prefix).append(label)
+        if (isLeafDueToHiddenParams) {
+            sb.append(" [leaf]")
+        }
+        sb.append("\n")
+        if (!isLeafDueToHiddenParams) {
+            for (i in 0 until node.childCount) {
+                val child = node.getChildAt(i) as DefaultMutableTreeNode
+                sb.append(toTextualTree(child, hideParameters, indent + 1))
+            }
+        }
+        return sb.toString()
+    }
+
+    private fun nodeLabel(node: DefaultMutableTreeNode): String {
+        return when (val obj = node.userObject) {
+            is ModuleTreeNode -> "[module] ${obj.path}"
+            is ClassTreeNode -> "[class] ${obj.name}"
+            is TestTreeNode -> "[test] ${obj.test.functionName}"
+            is FlatTestTreeNode -> "[flat] ${obj.label}"
+            is ParametrizeTreeNode -> "[param] ${obj.parametrizeId}"
+            is FixtureDisplayNode -> "[fixture] ${obj.name}"
+            is ScopeGroupNode -> "[scope] ${obj.scope}"
+            is OverrideGroupNode -> "[override] ${obj.fixtureName}"
+            is FixtureModuleGroupNode -> "[fixtureModule] ${obj.modulePath}"
+            is TestConsumerNode -> "[consumer] ${obj.test.nodeId}"
+            is String -> obj
+            else -> obj.toString()
+        }
+    }
+
+    private fun hasOnlyParametrizeChildren(node: DefaultMutableTreeNode): Boolean {
+        return node.childCount > 0 && (0 until node.childCount).all {
+            val child = node.getChildAt(it) as? DefaultMutableTreeNode
+            child?.userObject is ParametrizeTreeNode
+        }
+    }
 }

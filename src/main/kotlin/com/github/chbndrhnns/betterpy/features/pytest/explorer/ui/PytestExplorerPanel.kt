@@ -145,6 +145,7 @@ class PytestExplorerPanel(
             addSeparator()
             add(ExpandAllAction())
             add(CollapseAllAction())
+            add(HideTestParametersAction())
         }
         return ActionManager.getInstance()
             .createActionToolbar("PytestExplorer", group, true)
@@ -188,7 +189,17 @@ class PytestExplorerPanel(
         })
 
         testTree.addTreeWillExpandListener(object : TreeWillExpandListener {
-            override fun treeWillExpand(event: TreeExpansionEvent) {}
+            override fun treeWillExpand(event: TreeExpansionEvent) {
+                if (!service.state.hideTestParameters) return
+                val node = event.path.lastPathComponent as? DefaultMutableTreeNode ?: return
+                val hasParametrizeChildren = (0 until node.childCount).any {
+                    val child = node.getChildAt(it) as? DefaultMutableTreeNode
+                    child?.userObject is ParametrizeTreeNode
+                }
+                if (hasParametrizeChildren) {
+                    throw ExpandVetoException(event)
+                }
+            }
             override fun treeWillCollapse(event: TreeExpansionEvent) {
                 val node = event.path.lastPathComponent as? DefaultMutableTreeNode ?: return
                 if (node.isRoot && node.userObject is ModuleTreeNode) {
@@ -244,7 +255,17 @@ class PytestExplorerPanel(
 
         val moduleRoot = scopeToCurrentFile && !flatView && root.userObject is ModuleTreeNode
         testTree.isRootVisible = moduleRoot
-        testTree.model = DefaultTreeModel(root)
+        testTree.model = object : DefaultTreeModel(root) {
+            override fun isLeaf(node: Any?): Boolean {
+                if (!service.state.hideTestParameters) return super.isLeaf(node)
+                val treeNode = node as? DefaultMutableTreeNode ?: return super.isLeaf(node)
+                val hasOnlyParametrizeChildren = treeNode.childCount > 0 && (0 until treeNode.childCount).all {
+                    val child = treeNode.getChildAt(it) as? DefaultMutableTreeNode
+                    child?.userObject is ParametrizeTreeNode
+                }
+                return if (hasOnlyParametrizeChildren) true else super.isLeaf(node)
+            }
+        }
         if (moduleRoot) {
             testTree.expandRow(0)
         }
@@ -318,10 +339,36 @@ class PytestExplorerPanel(
 
     private inner class ExpandAllAction : AnAction("Expand All", null, AllIcons.Actions.Expandall) {
         override fun actionPerformed(e: AnActionEvent) {
-            TreeUtil.expandAll(testTree)
+            if (service.state.hideTestParameters) {
+                expandAllExceptParameters()
+            } else {
+                TreeUtil.expandAll(testTree)
+            }
         }
 
         override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+    }
+
+    private fun expandAllExceptParameters() {
+        val root = testTree.model.root as? DefaultMutableTreeNode ?: return
+        expandNodeExceptParameters(root)
+    }
+
+    private fun expandNodeExceptParameters(node: DefaultMutableTreeNode) {
+        val userObj = node.userObject
+        // Don't expand nodes that contain ParametrizeTreeNode children (i.e., TestTreeNode or FlatTestTreeNode with params)
+        val hasParametrizeChildren = (0 until node.childCount).any {
+            val child = node.getChildAt(it) as? DefaultMutableTreeNode
+            child?.userObject is ParametrizeTreeNode
+        }
+        if (!hasParametrizeChildren) {
+            val path = javax.swing.tree.TreePath(node.path)
+            testTree.expandPath(path)
+        }
+        for (i in 0 until node.childCount) {
+            val child = node.getChildAt(i) as? DefaultMutableTreeNode ?: continue
+            expandNodeExceptParameters(child)
+        }
     }
 
     private inner class FileOrderAction :
@@ -433,6 +480,23 @@ class PytestExplorerPanel(
             followCaret = state
             reattachCaretListener()
             if (state) followCaretToNode()
+        }
+
+        override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+    }
+
+    private inner class HideTestParametersAction :
+        ToggleAction(
+            "Hide Test Parameters",
+            "Keep parametrized test variants collapsed when expanding",
+            AllIcons.Actions.GroupByPrefix
+        ) {
+
+        override fun isSelected(e: AnActionEvent): Boolean = service.state.hideTestParameters
+
+        override fun setSelected(e: AnActionEvent, state: Boolean) {
+            service.state.hideTestParameters = state
+            lastSnapshot?.let { applyTreeUpdate(it) }
         }
 
         override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT

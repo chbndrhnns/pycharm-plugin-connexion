@@ -980,4 +980,109 @@ class PytestExplorerTreeBuilderTest {
             "x", ((testNode.getChildAt(0) as DefaultMutableTreeNode).userObject as ParametrizeTreeNode).parametrizeId
         )
     }
+
+    // --- toTextualTree and hideParameters tests ---
+
+    @Test
+    fun `toTextualTree renders simple tree structure`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("t.py::TestClass::test_one", "t.py", "TestClass", "test_one", emptyList()),
+                CollectedTest("t.py::test_standalone", "t.py", null, "test_standalone", emptyList()),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
+        val text = PytestExplorerTreeBuilder.toTextualTree(root)
+        val expected = """
+            |Tests
+            |  [module] t.py
+            |    [class] TestClass
+            |      [test] test_one
+            |    [test] test_standalone
+            |""".trimMargin()
+        assertEquals(expected, text)
+    }
+
+    @Test
+    fun `toTextualTree with parametrized tests shows params`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("t.py::test_param", "t.py", null, "test_param", emptyList(), listOf("[1]", "[2]")),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
+        val text = PytestExplorerTreeBuilder.toTextualTree(root)
+        val expected = """
+            |Tests
+            |  [module] t.py
+            |    [test] test_param
+            |      [param] [1]
+            |      [param] [2]
+            |""".trimMargin()
+        assertEquals(expected, text)
+    }
+
+    @Test
+    fun `toTextualTree with hideParameters marks parametrized tests as leaf`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("t.py::test_param", "t.py", null, "test_param", emptyList(), listOf("[1]", "[2]")),
+                CollectedTest("t.py::test_normal", "t.py", null, "test_normal", emptyList()),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
+        val text = PytestExplorerTreeBuilder.toTextualTree(root, hideParameters = true)
+        val expected = """
+            |Tests
+            |  [module] t.py
+            |    [test] test_normal
+            |    [test] test_param [leaf]
+            |""".trimMargin()
+        assertEquals(expected, text)
+    }
+
+    @Test
+    fun `toTextualTree hideParameters does not affect non-parametrized tests`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("t.py::TestClass::test_a", "t.py", "TestClass", "test_a", emptyList()),
+                CollectedTest("t.py::TestClass::test_b", "t.py", "TestClass", "test_b", emptyList()),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
+        val textWithHide = PytestExplorerTreeBuilder.toTextualTree(root, hideParameters = true)
+        val textWithoutHide = PytestExplorerTreeBuilder.toTextualTree(root, hideParameters = false)
+        assertEquals(textWithoutHide, textWithHide)
+    }
+
+    @Test
+    fun `toTextualTree flat view with hideParameters`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("t.py::test_param", "t.py", null, "test_param", emptyList(), listOf("[a]", "[b]")),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildFlatTestTree(snapshot)
+        val text = PytestExplorerTreeBuilder.toTextualTree(root, hideParameters = true)
+        val expected = """
+            |Tests
+            |  [flat] t.py::test_param [leaf]
+            |""".trimMargin()
+        assertEquals(expected, text)
+    }
 }

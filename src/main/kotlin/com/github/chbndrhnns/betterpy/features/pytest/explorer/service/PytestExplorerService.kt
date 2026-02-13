@@ -36,6 +36,7 @@ class PytestExplorerService : PersistentStateComponent<PytestExplorerService.Sta
         var serializedTests: String = "",
         var serializedFixtures: String = "",
         var serializedErrors: String = "",
+        var hideTestParameters: Boolean = true,
     )
 
     private val currentSnapshot = AtomicReference<CollectionSnapshot?>(null)
