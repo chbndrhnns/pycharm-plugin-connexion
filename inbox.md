@@ -2,6 +2,8 @@
 
 ## Pending Issues
 
+- [ ] fix: Investigate `parse_data_fn=lambda <caret>x: x` in 261
+- [ ] fix: No Python SDK configured should be displayed directly in pytest explorer, or greyed out?
 - [ ] fix: Rendering of links for pytest, now blue and dotted.
   `tests/unit/test_integrity.py::test_no_skip_markers_on_adapter_fixture[<class 'src.adapters.outbound.HttpRepository'>] ✓                51% █████▏`
 - [ ] fix: Introduce custom type needs to wrap usage sites
