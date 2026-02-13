@@ -146,12 +146,29 @@ internal object CopyTypeAnnotationsFromParentSupport {
     private fun updateParameterAnnotation(project: Project, parameter: PyNamedParameter, annotationText: String) {
         val paramName = parameter.name ?: return
         val generator = PyElementGenerator.getInstance(project)
-        val newParam = generator.createParameter(
-            paramName,
-            parameter.defaultValueText,
-            annotationText,
-            LanguageLevel.forElement(parameter)
+        val languageLevel = LanguageLevel.forElement(parameter)
+
+        val prefix = when {
+            parameter.isPositionalContainer -> "*"
+            parameter.isKeywordContainer -> "**"
+            else -> ""
+        }
+        val paramText = buildString {
+            append(prefix)
+            append(paramName)
+            append(": ")
+            append(annotationText)
+            if (parameter.defaultValueText != null) {
+                append(" = ")
+                append(parameter.defaultValueText)
+            }
+        }
+        val dummyFunction = generator.createFromText(
+            languageLevel,
+            PyFunction::class.java,
+            "def _dummy($paramText): pass"
         )
+        val newParam = dummyFunction.parameterList.parameters.firstOrNull() ?: return
         parameter.replace(newParam)
     }
 

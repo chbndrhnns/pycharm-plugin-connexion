@@ -109,6 +109,31 @@ class CopyMethodAnnotationsFromParentIntentionTest : TestBase() {
         }
     }
 
+    fun testCopiesAnnotationsForArgsAndKwargs() {
+        myFixture.doIntentionTest(
+            "a.py",
+            """
+            class Base:
+                def met<caret>hod(self, *args: int, **kwargs: str) -> bool:
+                    pass
+
+            class Child(Base):
+                def method(self, *args, **kwargs):
+                    pass
+            """,
+            """
+            class Base:
+                def method(self, *args: int, **kwargs: str) -> bool:
+                    pass
+
+            class Child(Base):
+                def method(self, *args: int, **kwargs: str) -> bool:
+                    pass
+            """,
+            copyToSubclasses
+        )
+    }
+
     fun testIntentionHiddenWhenDisabled() {
         withPluginSettings({ enableCopyMethodAnnotationsFromParentIntention = false }) {
             myFixture.assertIntentionNotAvailable(

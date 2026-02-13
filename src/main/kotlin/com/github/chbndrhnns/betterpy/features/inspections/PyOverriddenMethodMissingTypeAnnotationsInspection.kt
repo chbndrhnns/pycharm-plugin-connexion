@@ -4,11 +4,7 @@ import com.github.chbndrhnns.betterpy.core.PluginConstants
 import com.github.chbndrhnns.betterpy.core.util.isOwnCode
 import com.github.chbndrhnns.betterpy.featureflags.PluginSettingsState
 import com.github.chbndrhnns.betterpy.features.intentions.annotations.CopyTypeAnnotationsFromParentSupport
-import com.intellij.codeInspection.LocalInspectionToolSession
-import com.intellij.codeInspection.LocalQuickFix
-import com.intellij.codeInspection.ProblemDescriptor
-import com.intellij.codeInspection.ProblemHighlightType
-import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.codeInspection.*
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.command.WriteCommandAction
@@ -62,23 +58,7 @@ class PyOverriddenMethodMissingTypeAnnotationsInspection : PyInspection() {
                     }
                 }
 
-                val anchor = when {
-                    hasMissing -> {
-                        targetPlan.parameters
-                            .firstOrNull { it.parameter.annotation == null }
-                            ?.parameter
-                            ?.nameIdentifier
-                            ?: node.parameterList
-                    }
-
-                    else -> {
-                        targetPlan.parameters
-                            .firstOrNull { it.parameter.annotation?.value?.text != it.annotationText }
-                            ?.parameter
-                            ?.nameIdentifier
-                            ?: node.parameterList
-                    }
-                } ?: return
+                val anchor = node.nameIdentifier ?: return
 
                 val highlightType = if (hasMissing) {
                     ProblemHighlightType.WEAK_WARNING
