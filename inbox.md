@@ -16,9 +16,6 @@ def test_new(othername2):
     pass
 ```
 
-- [ ] fix: Copy annotations loses *args, **kwargs, /, *
-- [ ] fix: Copy annotations should render the line on the function name, not arguments
-- [ ] fix: Investigate `parse_data_fn=lambda <caret>x: x` in 261
 - [ ] fix: No Python SDK configured should be displayed directly in pytest explorer, or greyed out?
 - [ ] fix: Rendering of links for pytest, now blue and dotted.
   `tests/unit/test_integrity.py::test_no_skip_markers_on_adapter_fixture[<class 'src.adapters.outbound.HttpRepository'>] ✓                51% █████▏`
@@ -118,7 +115,11 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## In Progress Tasks
 
-- [-] feat: https://youtrack.jetbrains.com/issue/PY-55931/Add-quickfix-Convert-between-fixture-injection-variants
 - [ ] feat: Block list: Do not allow names from typing or collections.abc.
 
 ## Completed Tasks (newest first)
+
+- [x] feat: https://youtrack.jetbrains.com/issue/PY-55931/Add-quickfix-Convert-between-fixture-injection-variants
+- [x] fix: Copy annotations loses *args, **kwargs, /, *
+- [x] fix: Copy annotations should render the line on the function name, not arguments
+- [x] fix: Investigate `parse_data_fn=lambda <caret>x: x` in 261
