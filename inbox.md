@@ -2,6 +2,8 @@
 
 ## Pending Issues
 
+- [ ] fix: Copy annotations loses *args, **kwargs, /, *
+- [ ] fix: Copy annotations should render the line on the function name, not arguments
 - [ ] fix: Investigate `parse_data_fn=lambda <caret>x: x` in 261
 - [ ] fix: No Python SDK configured should be displayed directly in pytest explorer, or greyed out?
 - [ ] fix: Rendering of links for pytest, now blue and dotted.
@@ -35,6 +37,11 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Pending Features
 
+- [ ] feat: Attach run node context menu in pytest explorer
+- [ ] feat: Only discover tests when SDK is set up
+- [ ] feat: Also, render tests different based on their skip/skipif markers
+- [ ] feat: Manage markers in new tab
+- [ ] feat: Navigate to request fixture
 - [ ] feat: Generate module-level logger
 - [ ] feat: Do not move logger when moving code
 - [ ] feat: Suggest to toggle `self` when moving a code block which is a function inside a class
