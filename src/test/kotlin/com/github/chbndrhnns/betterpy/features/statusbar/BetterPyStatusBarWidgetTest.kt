@@ -160,7 +160,7 @@ class BetterPyStatusBarWidgetTest : TestBase() {
         ) {
         }
 
-        override fun editConfigurable(project: Project, configurable: Configurable): Boolean = false
+        override fun editConfigurable(project: Project?, configurable: Configurable): Boolean = false
         override fun editConfigurable(
             project: Project?,
             configurable: Configurable,
@@ -182,16 +182,16 @@ class BetterPyStatusBarWidgetTest : TestBase() {
         ): Boolean = false
 
         override fun editConfigurable(
-            component: Component,
+            component: Component?,
             configurable: Configurable,
-            advancedSettings: Runnable
+            advancedSettings: Runnable?
         ): Boolean = false
 
-        override fun editConfigurable(project: Project, nameToSelect: String, configurable: Configurable): Boolean =
+        override fun editConfigurable(project: Project?, nameToSelect: String, configurable: Configurable): Boolean =
             false
 
         override fun editConfigurable(
-            project: Project,
+            project: Project?,
             nameToSelect: String,
             configurable: Configurable,
             showApplyButton: Boolean
