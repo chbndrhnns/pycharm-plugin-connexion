@@ -783,6 +783,28 @@ DialogPanel
   </body>
 </html>
 '
+  CheckBox: [x] 'Pytest parametrize count mismatch inspection'
+  MaturityTagLabel
+    Label: 'Incubating'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body width="560">
+    Reports when the number of values in a pytest.mark.parametrize value set 
+    does not match the number of parameter names
+  </body>
+</html>
+'
   CheckBox: [x] 'Shadowing stdlib module inspection'
   TextField: '<html>
   <head>
