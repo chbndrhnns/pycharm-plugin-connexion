@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.betterpy.core.pytest
 
 import com.github.chbndrhnns.betterpy.core.psi.PyImportService
+import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.*
 
 object PytestParametrizeUtil {
@@ -60,7 +61,19 @@ object PytestParametrizeUtil {
 
     fun collectAllParametrizeNames(function: PyFunction): Set<String> {
         val result = mutableSetOf<String>()
-        val decorators = function.decoratorList?.decorators ?: return result
+        collectParametrizeNamesFromDecorators(function.decoratorList?.decorators, result)
+
+        // Also collect parametrize names from enclosing classes (nested class parametrize)
+        var parent = PsiTreeUtil.getParentOfType(function, PyClass::class.java)
+        while (parent != null) {
+            collectParametrizeNamesFromDecorators(parent.decoratorList?.decorators, result)
+            parent = PsiTreeUtil.getParentOfType(parent, PyClass::class.java)
+        }
+        return result
+    }
+
+    private fun collectParametrizeNamesFromDecorators(decorators: Array<PyDecorator>?, result: MutableSet<String>) {
+        if (decorators == null) return
         for (decorator in decorators) {
             if (!isParametrizeDecorator(decorator, allowBareName = true)) continue
             val args = decorator.argumentList?.arguments ?: continue
@@ -72,7 +85,6 @@ object PytestParametrizeUtil {
             }
             extractParameterNames(namesArg)?.let { result.addAll(it) }
         }
-        return result
     }
 
     fun ensurePytestImported(file: PyFile) {

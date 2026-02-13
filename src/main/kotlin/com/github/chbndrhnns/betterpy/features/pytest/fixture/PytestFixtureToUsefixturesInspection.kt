@@ -2,6 +2,7 @@ package com.github.chbndrhnns.betterpy.features.pytest.fixture
 
 import com.github.chbndrhnns.betterpy.core.PluginConstants
 import com.github.chbndrhnns.betterpy.core.pytest.PytestFixtureUtil
+import com.github.chbndrhnns.betterpy.core.pytest.PytestParametrizeUtil
 import com.github.chbndrhnns.betterpy.core.util.isOwnCode
 import com.github.chbndrhnns.betterpy.featureflags.PluginSettingsState
 import com.intellij.codeInspection.LocalInspectionToolSession
@@ -65,27 +66,7 @@ class PytestFixtureToUsefixturesInspection : PyInspection() {
     }
 
     private fun getParametrizeArgNames(function: PyFunction): Set<String> {
-        val decorators = function.decoratorList?.decorators ?: return emptySet()
-        val names = mutableSetOf<String>()
-        for (decorator in decorators) {
-            val qualifiedName =
-                decorator.callee?.let { (it as? PyQualifiedExpression)?.asQualifiedName()?.toString() }
-            if (qualifiedName != "pytest.mark.parametrize") continue
-            val args = decorator.argumentList?.arguments ?: continue
-            val firstArg = args.firstOrNull() ?: continue
-            when (firstArg) {
-                is PyStringLiteralExpression -> firstArg.stringValue.split(",").forEach { names.add(it.trim()) }
-                is PyTupleExpression -> firstArg.elements.filterIsInstance<PyStringLiteralExpression>().forEach { names.add(it.stringValue.trim()) }
-                is PyListLiteralExpression -> firstArg.elements.filterIsInstance<PyStringLiteralExpression>().forEach { names.add(it.stringValue.trim()) }
-                is PyParenthesizedExpression -> {
-                    val contained = firstArg.containedExpression
-                    if (contained is PyTupleExpression) {
-                        contained.elements.filterIsInstance<PyStringLiteralExpression>().forEach { names.add(it.stringValue.trim()) }
-                    }
-                }
-            }
-        }
-        return names
+        return PytestParametrizeUtil.collectAllParametrizeNames(function)
     }
 
     private fun isParameterUsedInBody(paramName: String, statementList: PyStatementList): Boolean {

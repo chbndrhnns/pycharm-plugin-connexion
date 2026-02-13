@@ -64,6 +64,38 @@ class PytestFixtureUninjectedReferenceInspectionTest : TestBase() {
         assertNull("Lambda parameter should not be treated as a fixture reference", error)
     }
 
+    fun testParametrizeArgsOnNestedClassesNotFlaggedAsFixtures() {
+        myFixture.configureByText(
+            "test_.py",
+            """
+            import pytest
+
+            @pytest.mark.parametrize("arg", [1, 2])
+            class Test:
+                @pytest.mark.parametrize("arg2", [1, 2])
+                class TestInner:
+                    @pytest.mark.parametrize("arg3", [1, 2])
+                    class TestInner:
+                        def test_(self, arg, arg2, arg3):
+                            ...
+            """.trimIndent()
+        )
+        // Find the 'arg' parameter in test_ function
+        val file = myFixture.file as com.jetbrains.python.psi.PyFile
+        val testFunc = com.intellij.psi.util.PsiTreeUtil.findChildrenOfType(
+            file, com.jetbrains.python.psi.PyFunction::class.java
+        ).first { it.name == "test_" }
+
+        for (paramName in listOf("arg", "arg2", "arg3")) {
+            val param = testFunc.parameterList.parameters.first { it.name == paramName }
+            val fixtureRefs = param.references.filterIsInstance<PytestFixtureReference>()
+            assertTrue(
+                "Parameter '$paramName' from class parametrize should NOT have a fixture reference",
+                fixtureRefs.isEmpty()
+            )
+        }
+    }
+
     fun testLambdaParameterHasNoFixtureReference() {
         myFixture.configureByText(
             "test_.py",
