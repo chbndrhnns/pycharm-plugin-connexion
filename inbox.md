@@ -2,6 +2,20 @@
 
 ## Pending Issues
 
+- [ ] fix: Go to declaration fails
+
+```
+import pytest
+
+
+@pytest.fixture
+def othername2(ot<caret>hername2):
+    return othername2
+
+def test_new(othername2):
+    pass
+```
+
 - [ ] fix: Copy annotations loses *args, **kwargs, /, *
 - [ ] fix: Copy annotations should render the line on the function name, not arguments
 - [ ] fix: Investigate `parse_data_fn=lambda <caret>x: x` in 261
@@ -37,6 +51,7 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Pending Features
 
+- [ ] feat: Copy with inspection results in xml format
 - [ ] feat: Attach run node context menu in pytest explorer
 - [ ] feat: Only discover tests when SDK is set up
 - [ ] feat: Also, render tests different based on their skip/skipif markers
