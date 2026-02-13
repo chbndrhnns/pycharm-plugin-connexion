@@ -1,6 +1,7 @@
 package fixtures
 
 import com.intellij.codeInspection.LocalInspectionTool
+import com.intellij.testFramework.PlatformTestUtil
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.ui.UiInterceptors
 
@@ -40,9 +41,16 @@ fun CodeInsightTestFixture.doInspectionTest(
             throw AssertionError("Fix '$fixFamilyName' not found. Available: ${fixes.map { it.familyName }}")
         }
 
+        val textBefore = file.text
         fixesToApply.forEach { launchAction(it) }
 
         if (expectedResultFile != null) {
+            // Wait for async quick fixes (e.g. ReadAction.nonBlocking) to complete.
+            val deadline = System.currentTimeMillis() + 10_000
+            while (file.text == textBefore && System.currentTimeMillis() < deadline) {
+                PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
+                Thread.sleep(50)
+            }
             checkResultByFile(expectedResultFile)
         }
     }

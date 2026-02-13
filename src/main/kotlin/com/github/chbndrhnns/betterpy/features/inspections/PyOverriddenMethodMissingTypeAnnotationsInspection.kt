@@ -5,13 +5,13 @@ import com.github.chbndrhnns.betterpy.core.util.isOwnCode
 import com.github.chbndrhnns.betterpy.featureflags.PluginSettingsState
 import com.github.chbndrhnns.betterpy.features.intentions.annotations.CopyTypeAnnotationsFromParentSupport
 import com.intellij.codeInspection.*
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.SmartPsiElementPointer
+import com.intellij.util.concurrency.AppExecutorUtil
 import com.jetbrains.python.inspections.PyInspection
 import com.jetbrains.python.psi.PyElementVisitor
 import com.jetbrains.python.psi.PyFunction
@@ -88,31 +88,28 @@ class PyOverriddenMethodMissingTypeAnnotationsInspection : PyInspection() {
             PluginConstants.ACTION_PREFIX + "Copy type annotations from parent"
 
         override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
-            val function = functionPointer.element ?: return
-            if (ApplicationManager.getApplication().isWriteAccessAllowed) {
-                ApplicationManager.getApplication().invokeLater {
-                    applyFixInternal(project)
-                }
-                return
-            }
+            val pointer = functionPointer
+            val familyName = familyName
 
-            applyFixInternal(project)
-        }
-
-        private fun applyFixInternal(project: Project) {
-            val function = functionPointer.element ?: return
-            val plan = ReadAction.compute<CopyTypeAnnotationsFromParentSupport.CopyPlan?, RuntimeException> {
+            ReadAction.nonBlocking<CopyTypeAnnotationsFromParentSupport.CopyPlan?> {
+                val function = pointer.element ?: return@nonBlocking null
                 CopyTypeAnnotationsFromParentSupport.buildCopyPlan(function)
-            } ?: return
-            if (plan.source == function) return
-
-            if (!CopyTypeAnnotationsFromParentSupport.showConflictsDialog(project, plan.conflicts, familyName)) {
-                return
             }
+                .expireWith(project)
+                .finishOnUiThread(com.intellij.openapi.application.ModalityState.defaultModalityState()) { plan ->
+                    if (plan == null) return@finishOnUiThread
+                    val function = pointer.element ?: return@finishOnUiThread
+                    if (plan.source == function) return@finishOnUiThread
 
-            WriteCommandAction.runWriteCommandAction(project, familyName, null, {
-                CopyTypeAnnotationsFromParentSupport.applyPlan(project, plan)
-            }, function.containingFile)
+                    if (!CopyTypeAnnotationsFromParentSupport.showConflictsDialog(project, plan.conflicts, familyName)) {
+                        return@finishOnUiThread
+                    }
+
+                    WriteCommandAction.runWriteCommandAction(project, familyName, null, {
+                        CopyTypeAnnotationsFromParentSupport.applyPlan(project, plan)
+                    }, function.containingFile)
+                }
+                .submit(AppExecutorUtil.getAppExecutorService())
         }
     }
 }
