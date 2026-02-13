@@ -64,27 +64,7 @@ class PytestParametrizeCountMismatchInspection : PyInspection() {
                         )
                     }
                 }
-
-                // Check ids length matches argvalues length
-                checkIdsLength(node, valuesList.size, holder)
             }
-        }
-    }
-
-    private fun checkIdsLength(decorator: PyDecorator, argvaluesCount: Int, holder: ProblemsHolder) {
-        val idsValue = decorator.getKeywordArgument("ids") ?: return
-
-        val idsCount = when (idsValue) {
-            is PyListLiteralExpression -> idsValue.elements.size
-            is PyTupleExpression -> idsValue.elements.size
-            else -> return
-        }
-
-        if (idsCount != argvaluesCount) {
-            holder.registerProblem(
-                idsValue,
-                "Expected $argvaluesCount ids (one per parameter set), but got $idsCount"
-            )
         }
     }
 

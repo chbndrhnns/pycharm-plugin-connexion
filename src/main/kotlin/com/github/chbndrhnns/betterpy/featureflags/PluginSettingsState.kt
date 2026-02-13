@@ -315,6 +315,9 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         @Feature("pytest-parametrize-count-mismatch-inspection")
         var enablePytestParametrizeCountMismatchInspection: Boolean = FeatureDefaults.defaultEnabled("pytest-parametrize-count-mismatch-inspection"),
 
+        @Feature("pytest-parametrize-ids-count-inspection")
+        var enablePytestParametrizeIdsCountInspection: Boolean = FeatureDefaults.defaultEnabled("pytest-parametrize-ids-count-inspection"),
+
         /**
          * Snapshotted state before "Mute All" was activated.
          * If non-null, it means the plugin is currently in "Mute All" mode.
