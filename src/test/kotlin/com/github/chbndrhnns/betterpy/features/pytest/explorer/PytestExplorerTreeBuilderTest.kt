@@ -30,11 +30,14 @@ class PytestExplorerTreeBuilderTest {
             errors = emptyList(),
         )
         val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
-        assertEquals(2, root.childCount)
-        val first = root.getChildAt(0) as DefaultMutableTreeNode
-        assertEquals("a.py", (first.userObject as ModuleTreeNode).path)
-        val second = root.getChildAt(1) as DefaultMutableTreeNode
-        assertEquals("b.py", (second.userObject as ModuleTreeNode).path)
+        val expected = """
+            |Tests
+            |  [module] a.py
+            |    [test] test_one
+            |  [module] b.py
+            |    [test] test_two
+            |""".trimMargin()
+        assertEquals(expected, PytestExplorerTreeBuilder.toTextualTree(root))
     }
 
     @Test
@@ -50,19 +53,15 @@ class PytestExplorerTreeBuilderTest {
             errors = emptyList(),
         )
         val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
-        assertEquals(1, root.childCount)
-        val moduleNode = root.getChildAt(0) as DefaultMutableTreeNode
-        // Module should have: ClassNode + standalone test
-        assertEquals(2, moduleNode.childCount)
-
-        val classNode = moduleNode.getChildAt(0) as DefaultMutableTreeNode
-        assertTrue(classNode.userObject is ClassTreeNode)
-        assertEquals("MyClass", (classNode.userObject as ClassTreeNode).name)
-        assertEquals(2, classNode.childCount)
-
-        val standaloneNode = moduleNode.getChildAt(1) as DefaultMutableTreeNode
-        assertTrue(standaloneNode.userObject is TestTreeNode)
-        assertEquals("test_standalone", (standaloneNode.userObject as TestTreeNode).test.functionName)
+        val expected = """
+            |Tests
+            |  [module] t.py
+            |    [class] MyClass
+            |      [test] test_a
+            |      [test] test_b
+            |    [test] test_standalone
+            |""".trimMargin()
+        assertEquals(expected, PytestExplorerTreeBuilder.toTextualTree(root))
     }
 
     @Test
@@ -78,10 +77,16 @@ class PytestExplorerTreeBuilderTest {
             errors = emptyList(),
         )
         val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
-        val paths = (0 until root.childCount).map {
-            ((root.getChildAt(it) as DefaultMutableTreeNode).userObject as ModuleTreeNode).path
-        }
-        assertEquals(listOf("a.py", "m.py", "z.py"), paths)
+        val expected = """
+            |Tests
+            |  [module] a.py
+            |    [test] test_a
+            |  [module] m.py
+            |    [test] test_m
+            |  [module] z.py
+            |    [test] test_z
+            |""".trimMargin()
+        assertEquals(expected, PytestExplorerTreeBuilder.toTextualTree(root))
     }
 
     @Test
@@ -97,11 +102,14 @@ class PytestExplorerTreeBuilderTest {
             errors = emptyList(),
         )
         val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
-        val moduleNode = root.getChildAt(0) as DefaultMutableTreeNode
-        val names = (0 until moduleNode.childCount).map {
-            ((moduleNode.getChildAt(it) as DefaultMutableTreeNode).userObject as TestTreeNode).test.functionName
-        }
-        assertEquals(listOf("test_a", "test_m", "test_z"), names)
+        val expected = """
+            |Tests
+            |  [module] a.py
+            |    [test] test_a
+            |    [test] test_m
+            |    [test] test_z
+            |""".trimMargin()
+        assertEquals(expected, PytestExplorerTreeBuilder.toTextualTree(root))
     }
 
     @Test
@@ -117,10 +125,16 @@ class PytestExplorerTreeBuilderTest {
             errors = emptyList(),
         )
         val root = PytestExplorerTreeBuilder.buildTestTree(snapshot, fileOrder = true)
-        val paths = (0 until root.childCount).map {
-            ((root.getChildAt(it) as DefaultMutableTreeNode).userObject as ModuleTreeNode).path
-        }
-        assertEquals(listOf("z.py", "a.py", "m.py"), paths)
+        val expected = """
+            |Tests
+            |  [module] z.py
+            |    [test] test_z
+            |  [module] a.py
+            |    [test] test_a
+            |  [module] m.py
+            |    [test] test_m
+            |""".trimMargin()
+        assertEquals(expected, PytestExplorerTreeBuilder.toTextualTree(root))
     }
 
     @Test
@@ -326,17 +340,14 @@ class PytestExplorerTreeBuilderTest {
             errors = emptyList(),
         )
         val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
-        val moduleNode = root.getChildAt(0) as DefaultMutableTreeNode
-        assertEquals(1, moduleNode.childCount)
-        val testNode = moduleNode.getChildAt(0) as DefaultMutableTreeNode
-        assertTrue(testNode.userObject is TestTreeNode)
-        assertEquals("test_add", (testNode.userObject as TestTreeNode).test.functionName)
-        assertEquals(2, testNode.childCount)
-        val param0 = testNode.getChildAt(0) as DefaultMutableTreeNode
-        assertTrue(param0.userObject is ParametrizeTreeNode)
-        assertEquals("1-2-3", (param0.userObject as ParametrizeTreeNode).parametrizeId)
-        val param1 = testNode.getChildAt(1) as DefaultMutableTreeNode
-        assertEquals("4-5-9", (param1.userObject as ParametrizeTreeNode).parametrizeId)
+        val expected = """
+            |Tests
+            |  [module] t.py
+            |    [test] test_add
+            |      [param] 1-2-3
+            |      [param] 4-5-9
+            |""".trimMargin()
+        assertEquals(expected, PytestExplorerTreeBuilder.toTextualTree(root))
     }
 
     @Test
@@ -351,16 +362,15 @@ class PytestExplorerTreeBuilderTest {
             errors = emptyList(),
         )
         val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
-        val moduleNode = root.getChildAt(0) as DefaultMutableTreeNode
-        assertEquals(2, moduleNode.childCount)
-        val paramNode = moduleNode.getChildAt(0) as DefaultMutableTreeNode
-        assertTrue(paramNode.userObject is TestTreeNode)
-        assertEquals("test_param", (paramNode.userObject as TestTreeNode).test.functionName)
-        assertEquals(2, paramNode.childCount)
-        val plainNode = moduleNode.getChildAt(1) as DefaultMutableTreeNode
-        assertTrue(plainNode.userObject is TestTreeNode)
-        assertEquals("test_plain", (plainNode.userObject as TestTreeNode).test.functionName)
-        assertTrue(plainNode.isLeaf)
+        val expected = """
+            |Tests
+            |  [module] t.py
+            |    [test] test_param
+            |      [param] a
+            |      [param] b
+            |    [test] test_plain
+            |""".trimMargin()
+        assertEquals(expected, PytestExplorerTreeBuilder.toTextualTree(root))
     }
 
     @Test
@@ -374,15 +384,15 @@ class PytestExplorerTreeBuilderTest {
             errors = emptyList(),
         )
         val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
-        val moduleNode = root.getChildAt(0) as DefaultMutableTreeNode
-        val classNode = moduleNode.getChildAt(0) as DefaultMutableTreeNode
-        assertTrue(classNode.userObject is ClassTreeNode)
-        val testNode = classNode.getChildAt(0) as DefaultMutableTreeNode
-        assertEquals(2, testNode.childCount)
-        assertEquals(
-            "p1",
-            (((testNode.getChildAt(0) as DefaultMutableTreeNode).userObject) as ParametrizeTreeNode).parametrizeId
-        )
+        val expected = """
+            |Tests
+            |  [module] t.py
+            |    [class] MyClass
+            |      [test] test_x
+            |        [param] p1
+            |        [param] p2
+            |""".trimMargin()
+        assertEquals(expected, PytestExplorerTreeBuilder.toTextualTree(root))
     }
 
     // --- findParametrizeNode tests ---
@@ -494,19 +504,14 @@ class PytestExplorerTreeBuilderTest {
             errors = emptyList(),
         )
         val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
-        val moduleNode = root.getChildAt(0) as DefaultMutableTreeNode
-        assertEquals(1, moduleNode.childCount)
-        val outerClass = moduleNode.getChildAt(0) as DefaultMutableTreeNode
-        assertTrue(outerClass.userObject is ClassTreeNode)
-        assertEquals("Test1", (outerClass.userObject as ClassTreeNode).name)
-        assertEquals(1, outerClass.childCount)
-        val innerClass = outerClass.getChildAt(0) as DefaultMutableTreeNode
-        assertTrue(innerClass.userObject is ClassTreeNode)
-        assertEquals("Test2", (innerClass.userObject as ClassTreeNode).name)
-        assertEquals(1, innerClass.childCount)
-        val testNode = innerClass.getChildAt(0) as DefaultMutableTreeNode
-        assertTrue(testNode.userObject is TestTreeNode)
-        assertEquals("test_", (testNode.userObject as TestTreeNode).test.functionName)
+        val expected = """
+            |Tests
+            |  [module] t.py
+            |    [class] Test1
+            |      [class] Test2
+            |        [test] test_
+            |""".trimMargin()
+        assertEquals(expected, PytestExplorerTreeBuilder.toTextualTree(root))
     }
 
     // --- flat view tests ---
