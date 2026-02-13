@@ -5,6 +5,7 @@ category: PYTEST
 maturity: INCUBATING
 youtrackIssues:
   - PY-81495
+  - PY-60973
 loggingCategories:
   - com.github.chbndrhnns.betterpy.features.pytest.fixture
 since: ''
