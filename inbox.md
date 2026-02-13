@@ -2,6 +2,7 @@
 
 ## Pending Issues
 
+- [ ] fix: Should mark fixture as unresolved if no parent fixture exists
 - [ ] fix: Go to declaration fails
 
 ```
