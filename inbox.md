@@ -51,6 +51,7 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Pending Features
 
+- [ ] feat: Recognize methods like `assert_called_once_with` in mocks
 - [ ] feat: Copy with inspection results in xml format
 - [ ] feat: Attach run node context menu in pytest explorer
 - [ ] feat: Only discover tests when SDK is set up
