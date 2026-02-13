@@ -29,3 +29,15 @@ data class FixtureDisplayNode(
 ) {
     override fun toString(): String = "$name [$scope] — $definedIn"
 }
+
+data class ScopeGroupNode(val scope: String) {
+    override fun toString(): String = scope
+}
+
+data class OverrideGroupNode(val fixtureName: String, val count: Int) {
+    override fun toString(): String = "$fixtureName ($count definitions)"
+}
+
+data class TestConsumerNode(val test: CollectedTest) {
+    override fun toString(): String = test.nodeId
+}

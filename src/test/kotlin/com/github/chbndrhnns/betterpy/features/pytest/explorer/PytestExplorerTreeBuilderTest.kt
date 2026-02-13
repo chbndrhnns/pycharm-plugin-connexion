@@ -552,6 +552,170 @@ class PytestExplorerTreeBuilderTest {
         assertEquals(listOf("a.py::test_a", "z.py::test_z"), labels)
     }
 
+    // --- fixture explorer tree tests ---
+
+    @Test
+    fun `fixture explorer groups by scope`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = emptyList(),
+            fixtures = listOf(
+                CollectedFixture("db", "session", "conftest.py", "db", emptyList()),
+                CollectedFixture("client", "function", "conftest.py", "client", emptyList()),
+            ),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildFixtureExplorerTree(snapshot)
+        assertEquals("Fixtures", root.userObject)
+        assertEquals(2, root.childCount)
+        val sessionScope = root.getChildAt(0) as DefaultMutableTreeNode
+        assertTrue(sessionScope.userObject is ScopeGroupNode)
+        assertEquals("session", (sessionScope.userObject as ScopeGroupNode).scope)
+        val functionScope = root.getChildAt(1) as DefaultMutableTreeNode
+        assertEquals("function", (functionScope.userObject as ScopeGroupNode).scope)
+    }
+
+    @Test
+    fun `fixture explorer shows fixtures under scope`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = emptyList(),
+            fixtures = listOf(
+                CollectedFixture("db", "session", "conftest.py", "db", emptyList()),
+                CollectedFixture("cache", "session", "conftest.py", "cache", emptyList()),
+            ),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildFixtureExplorerTree(snapshot)
+        assertEquals(1, root.childCount)
+        val sessionScope = root.getChildAt(0) as DefaultMutableTreeNode
+        assertEquals(2, sessionScope.childCount)
+        val names = (0 until sessionScope.childCount).map {
+            ((sessionScope.getChildAt(it) as DefaultMutableTreeNode).userObject as FixtureDisplayNode).name
+        }
+        assertEquals(listOf("cache", "db"), names) // sorted alphabetically
+    }
+
+    @Test
+    fun `fixture explorer detects overrides`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = emptyList(),
+            fixtures = listOf(
+                CollectedFixture("db", "function", "conftest.py", "db", emptyList()),
+                CollectedFixture("db", "function", "tests/conftest.py", "db", emptyList()),
+            ),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildFixtureExplorerTree(snapshot)
+        val functionScope = root.getChildAt(0) as DefaultMutableTreeNode
+        assertEquals(1, functionScope.childCount)
+        val overrideGroup = functionScope.getChildAt(0) as DefaultMutableTreeNode
+        assertTrue(overrideGroup.userObject is OverrideGroupNode)
+        assertEquals("db", (overrideGroup.userObject as OverrideGroupNode).fixtureName)
+        assertEquals(2, (overrideGroup.userObject as OverrideGroupNode).count)
+        // Children are the two definitions
+        val defNodes = (0 until overrideGroup.childCount)
+            .map { (overrideGroup.getChildAt(it) as DefaultMutableTreeNode).userObject }
+            .filterIsInstance<FixtureDisplayNode>()
+        assertEquals(2, defNodes.size)
+        assertEquals(setOf("conftest.py", "tests/conftest.py"), defNodes.map { it.definedIn }.toSet())
+    }
+
+    @Test
+    fun `fixture explorer shows test consumers`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("t.py::test_one", "t.py", null, "test_one", listOf("db")),
+                CollectedTest("t.py::test_two", "t.py", null, "test_two", listOf("db")),
+            ),
+            fixtures = listOf(
+                CollectedFixture("db", "session", "conftest.py", "db", emptyList()),
+            ),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildFixtureExplorerTree(snapshot)
+        val sessionScope = root.getChildAt(0) as DefaultMutableTreeNode
+        val dbNode = sessionScope.getChildAt(0) as DefaultMutableTreeNode
+        // Should have 2 test consumer children
+        val consumers = (0 until dbNode.childCount)
+            .map { (dbNode.getChildAt(it) as DefaultMutableTreeNode).userObject }
+            .filterIsInstance<TestConsumerNode>()
+        assertEquals(2, consumers.size)
+        assertEquals("t.py::test_one", consumers[0].test.nodeId)
+        assertEquals("t.py::test_two", consumers[1].test.nodeId)
+    }
+
+    @Test
+    fun `fixture explorer empty snapshot`() {
+        val snapshot = CollectionSnapshot(0, emptyList(), emptyList(), emptyList())
+        val root = PytestExplorerTreeBuilder.buildFixtureExplorerTree(snapshot)
+        assertEquals("Fixtures", root.userObject)
+        assertEquals(0, root.childCount)
+    }
+
+    @Test
+    fun `fixture explorer scope ordering follows session-package-module-class-function`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = emptyList(),
+            fixtures = listOf(
+                CollectedFixture("f1", "function", "c.py", "f1", emptyList()),
+                CollectedFixture("f2", "session", "c.py", "f2", emptyList()),
+                CollectedFixture("f3", "module", "c.py", "f3", emptyList()),
+                CollectedFixture("f4", "class", "c.py", "f4", emptyList()),
+            ),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildFixtureExplorerTree(snapshot)
+        val scopes = (0 until root.childCount).map {
+            ((root.getChildAt(it) as DefaultMutableTreeNode).userObject as ScopeGroupNode).scope
+        }
+        assertEquals(listOf("session", "module", "class", "function"), scopes)
+    }
+
+    @Test
+    fun `fixture explorer includes dependencies under fixture node`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = emptyList(),
+            fixtures = listOf(
+                CollectedFixture("db_session", "function", "conftest.py", "db_session", listOf("db_engine")),
+                CollectedFixture("db_engine", "session", "conftest.py", "db_engine", emptyList()),
+            ),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildFixtureExplorerTree(snapshot)
+        // function scope has db_session
+        val functionScope = (0 until root.childCount)
+            .map { root.getChildAt(it) as DefaultMutableTreeNode }
+            .first { (it.userObject as ScopeGroupNode).scope == "function" }
+        val dbSessionNode = functionScope.getChildAt(0) as DefaultMutableTreeNode
+        assertEquals("db_session", (dbSessionNode.userObject as FixtureDisplayNode).name)
+        // Should have db_engine as dependency child
+        val depNodes = (0 until dbSessionNode.childCount)
+            .map { (dbSessionNode.getChildAt(it) as DefaultMutableTreeNode).userObject }
+            .filterIsInstance<FixtureDisplayNode>()
+        assertTrue(depNodes.any { it.name == "db_engine" })
+    }
+
+    @Test
+    fun `fixture explorer handles unknown scope`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = emptyList(),
+            fixtures = listOf(
+                CollectedFixture("f1", "custom_scope", "c.py", "f1", emptyList()),
+            ),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildFixtureExplorerTree(snapshot)
+        assertEquals(1, root.childCount)
+        val scopeNode = root.getChildAt(0) as DefaultMutableTreeNode
+        assertEquals("custom_scope", (scopeNode.userObject as ScopeGroupNode).scope)
+    }
+
     @Test
     fun `flat view includes parametrize ids as children`() {
         val snapshot = CollectionSnapshot(

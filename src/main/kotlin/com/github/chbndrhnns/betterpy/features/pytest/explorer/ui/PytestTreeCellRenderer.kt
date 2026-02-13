@@ -58,6 +58,22 @@ class PytestTreeCellRenderer : ColoredTreeCellRenderer() {
                 append("  [${node.scope}]", SimpleTextAttributes.GRAYED_ATTRIBUTES)
             }
 
+            is ScopeGroupNode -> {
+                icon = AllIcons.Nodes.Folder
+                append(node.scope, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+            }
+
+            is OverrideGroupNode -> {
+                icon = AllIcons.General.OverridingMethod
+                append(node.fixtureName, SimpleTextAttributes.REGULAR_ATTRIBUTES)
+                append("  (${node.count} definitions)", SimpleTextAttributes.GRAYED_ATTRIBUTES)
+            }
+
+            is TestConsumerNode -> {
+                icon = AllIcons.Nodes.Method
+                append(node.test.nodeId, SimpleTextAttributes.GRAYED_ATTRIBUTES)
+            }
+
             is String -> {
                 append(node, SimpleTextAttributes.REGULAR_ATTRIBUTES)
             }

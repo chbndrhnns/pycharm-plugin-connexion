@@ -208,6 +208,112 @@ object PytestExplorerTreeBuilder {
         return null
     }
 
+    private val SCOPE_ORDER = listOf("session", "package", "module", "class", "function")
+
+    /**
+     * Builds a fixture explorer tree grouped by scope, with override detection and test consumers.
+     *
+     * Structure:
+     *   Fixtures
+     *     ├── session
+     *     │   ├── db_engine [session] — conftest.py
+     *     │   │   └── tests/test_db.py::test_query  (consumer)
+     *     │   ...
+     *     ├── function
+     *     │   ├── my_fixture (2 definitions)   ← override group
+     *     │   │   ├── my_fixture [function] — conftest.py
+     *     │   │   └── my_fixture [function] — tests/conftest.py
+     *     │   ...
+     */
+    fun buildFixtureExplorerTree(
+        snapshot: CollectionSnapshot,
+    ): DefaultMutableTreeNode {
+        val root = DefaultMutableTreeNode("Fixtures")
+        val fixtureMap = snapshot.fixtures.associateBy { it.name }
+
+        // Build reverse map: fixture name -> tests that use it
+        val fixtureConsumers = mutableMapOf<String, MutableList<CollectedTest>>()
+        for (test in snapshot.tests) {
+            for (fixtureName in test.fixtures) {
+                fixtureConsumers.getOrPut(fixtureName) { mutableListOf() }.add(test)
+            }
+        }
+
+        // Group fixtures by scope
+        val byScope = snapshot.fixtures.groupBy { it.scope }
+
+        // Detect overrides: same name, different definedIn
+        val byName = snapshot.fixtures.groupBy { it.name }
+
+        for (scope in SCOPE_ORDER) {
+            val fixturesInScope = byScope[scope] ?: continue
+            val scopeNode = DefaultMutableTreeNode(ScopeGroupNode(scope))
+
+            val sorted = fixturesInScope.sortedBy { it.name }
+            for (fixture in sorted) {
+                val overrides = byName[fixture.name] ?: listOf(fixture)
+                // Only show override group if there are multiple definitions
+                if (overrides.size > 1) {
+                    // Check if we already added an override group for this name under this scope
+                    val alreadyAdded = (0 until scopeNode.childCount).any {
+                        val obj = (scopeNode.getChildAt(it) as DefaultMutableTreeNode).userObject
+                        obj is OverrideGroupNode && obj.fixtureName == fixture.name
+                    }
+                    if (alreadyAdded) continue
+
+                    val overrideNode = DefaultMutableTreeNode(
+                        OverrideGroupNode(fixture.name, overrides.size)
+                    )
+                    for (ov in overrides) {
+                        val ovNode = DefaultMutableTreeNode(
+                            FixtureDisplayNode(ov.name, ov.scope, ov.definedIn)
+                        )
+                        overrideNode.add(ovNode)
+                    }
+                    addConsumers(overrideNode, fixture.name, fixtureConsumers)
+                    scopeNode.add(overrideNode)
+                } else {
+                    val fixtureNode = DefaultMutableTreeNode(
+                        FixtureDisplayNode(fixture.name, fixture.scope, fixture.definedIn)
+                    )
+                    addDependencies(fixtureNode, fixture, fixtureMap, mutableSetOf(fixture.name))
+                    addConsumers(fixtureNode, fixture.name, fixtureConsumers)
+                    scopeNode.add(fixtureNode)
+                }
+            }
+
+            root.add(scopeNode)
+        }
+
+        // Handle unknown scopes
+        val knownScopes = SCOPE_ORDER.toSet()
+        for ((scope, fixturesInScope) in byScope) {
+            if (scope in knownScopes) continue
+            val scopeNode = DefaultMutableTreeNode(ScopeGroupNode(scope))
+            for (fixture in fixturesInScope.sortedBy { it.name }) {
+                val fixtureNode = DefaultMutableTreeNode(
+                    FixtureDisplayNode(fixture.name, fixture.scope, fixture.definedIn)
+                )
+                addConsumers(fixtureNode, fixture.name, fixtureConsumers)
+                scopeNode.add(fixtureNode)
+            }
+            root.add(scopeNode)
+        }
+
+        return root
+    }
+
+    private fun addConsumers(
+        parentNode: DefaultMutableTreeNode,
+        fixtureName: String,
+        fixtureConsumers: Map<String, List<CollectedTest>>,
+    ) {
+        val consumers = fixtureConsumers[fixtureName] ?: return
+        for (test in consumers.sortedBy { it.nodeId }) {
+            parentNode.add(DefaultMutableTreeNode(TestConsumerNode(test)))
+        }
+    }
+
     private fun addDependencies(
         parentNode: DefaultMutableTreeNode,
         fixture: CollectedFixture,

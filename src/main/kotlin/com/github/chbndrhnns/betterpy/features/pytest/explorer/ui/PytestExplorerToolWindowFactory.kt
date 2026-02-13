@@ -14,10 +14,15 @@ class PytestExplorerToolWindowFactory : ToolWindowFactory, DumbAware {
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         LOG.info("Creating Pytest Explorer tool window for project: ${project.name}")
-        val panel = PytestExplorerPanel(project)
-        val content = ContentFactory.getInstance().createContent(panel, "", false)
-        content.setDisposer(panel)
-        toolWindow.contentManager.addContent(content)
+        val testPanel = PytestExplorerPanel(project)
+        val testContent = ContentFactory.getInstance().createContent(testPanel, "Tests", false)
+        testContent.setDisposer(testPanel)
+        toolWindow.contentManager.addContent(testContent)
+
+        val fixturePanel = PytestFixtureExplorerPanel(project)
+        val fixtureContent = ContentFactory.getInstance().createContent(fixturePanel, "Fixtures", false)
+        fixtureContent.setDisposer(fixturePanel)
+        toolWindow.contentManager.addContent(fixtureContent)
     }
 
     override fun shouldBeAvailable(project: Project): Boolean {
