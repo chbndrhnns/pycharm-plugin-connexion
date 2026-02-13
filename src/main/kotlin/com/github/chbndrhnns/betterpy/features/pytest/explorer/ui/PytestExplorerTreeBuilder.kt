@@ -227,6 +227,30 @@ object PytestExplorerTreeBuilder {
      */
     fun buildFixtureExplorerTree(
         snapshot: CollectionSnapshot,
+        grouping: FixtureGrouping = FixtureGrouping.BY_SCOPE,
+        scopeToModule: String? = null,
+    ): DefaultMutableTreeNode {
+        val filtered = if (scopeToModule != null) {
+            val fixtureNamesUsedByModule = snapshot.tests
+                .filter { it.modulePath == scopeToModule }
+                .flatMap { it.fixtures }
+                .toSet()
+            snapshot.copy(
+                fixtures = snapshot.fixtures.filter { it.name in fixtureNamesUsedByModule },
+                tests = snapshot.tests,
+            )
+        } else {
+            snapshot
+        }
+        return when (grouping) {
+            FixtureGrouping.BY_SCOPE -> buildFixtureExplorerByScope(filtered)
+            FixtureGrouping.BY_TEST_MODULE -> buildFixtureExplorerByTestModule(filtered)
+            FixtureGrouping.FLAT -> buildFixtureExplorerFlat(filtered)
+        }
+    }
+
+    private fun buildFixtureExplorerByScope(
+        snapshot: CollectionSnapshot,
     ): DefaultMutableTreeNode {
         val root = DefaultMutableTreeNode("Fixtures")
         val fixtureMap = snapshot.fixtures.associateBy { it.name }
@@ -298,6 +322,85 @@ object PytestExplorerTreeBuilder {
                 scopeNode.add(fixtureNode)
             }
             root.add(scopeNode)
+        }
+
+        return root
+    }
+
+    /**
+     * Groups fixtures by the test module that uses them.
+     * Structure: Fixtures > module_path > fixture [scope] — definedIn
+     */
+    private fun buildFixtureExplorerByTestModule(
+        snapshot: CollectionSnapshot,
+    ): DefaultMutableTreeNode {
+        val root = DefaultMutableTreeNode("Fixtures")
+        val fixtureMap = snapshot.fixtures.associateBy { it.name }
+
+        // module -> set of fixture names used by tests in that module
+        val moduleFixtures = mutableMapOf<String, MutableSet<String>>()
+        for (test in snapshot.tests) {
+            for (fixtureName in test.fixtures) {
+                moduleFixtures.getOrPut(test.modulePath) { mutableSetOf() }.add(fixtureName)
+            }
+        }
+
+        for (modulePath in moduleFixtures.keys.sorted()) {
+            val moduleNode = DefaultMutableTreeNode(FixtureModuleGroupNode(modulePath))
+            val fixtureNames = moduleFixtures[modulePath]!!.sorted()
+            for (name in fixtureNames) {
+                val fixture = fixtureMap[name]
+                val fixtureNode = DefaultMutableTreeNode(
+                    FixtureDisplayNode(name, fixture?.scope ?: "?", fixture?.definedIn ?: "?")
+                )
+                if (fixture != null) {
+                    addDependencies(fixtureNode, fixture, fixtureMap, mutableSetOf(name))
+                }
+                moduleNode.add(fixtureNode)
+            }
+            root.add(moduleNode)
+        }
+
+        // Add fixtures not used by any test under an "(unused)" group
+        val usedNames = moduleFixtures.values.flatten().toSet()
+        val unused = snapshot.fixtures.filter { it.name !in usedNames }.sortedBy { it.name }
+        if (unused.isNotEmpty()) {
+            val unusedNode = DefaultMutableTreeNode(FixtureModuleGroupNode("(unused)"))
+            for (fixture in unused) {
+                unusedNode.add(
+                    DefaultMutableTreeNode(
+                        FixtureDisplayNode(fixture.name, fixture.scope, fixture.definedIn)
+                    )
+                )
+            }
+            root.add(unusedNode)
+        }
+
+        return root
+    }
+
+    /**
+     * Flat alphabetical list of all fixtures.
+     */
+    private fun buildFixtureExplorerFlat(
+        snapshot: CollectionSnapshot,
+    ): DefaultMutableTreeNode {
+        val root = DefaultMutableTreeNode("Fixtures")
+        val fixtureMap = snapshot.fixtures.associateBy { it.name }
+        val fixtureConsumers = mutableMapOf<String, MutableList<CollectedTest>>()
+        for (test in snapshot.tests) {
+            for (fixtureName in test.fixtures) {
+                fixtureConsumers.getOrPut(fixtureName) { mutableListOf() }.add(test)
+            }
+        }
+
+        for (fixture in snapshot.fixtures.sortedBy { it.name }) {
+            val fixtureNode = DefaultMutableTreeNode(
+                FixtureDisplayNode(fixture.name, fixture.scope, fixture.definedIn)
+            )
+            addDependencies(fixtureNode, fixture, fixtureMap, mutableSetOf(fixture.name))
+            addConsumers(fixtureNode, fixture.name, fixtureConsumers)
+            root.add(fixtureNode)
         }
 
         return root

@@ -716,6 +716,252 @@ class PytestExplorerTreeBuilderTest {
         assertEquals("custom_scope", (scopeNode.userObject as ScopeGroupNode).scope)
     }
 
+    // --- fixture explorer grouping strategy tests ---
+
+    @Test
+    fun `fixture explorer by-test-module groups fixtures under test modules`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("a.py::test_one", "a.py", null, "test_one", listOf("db")),
+                CollectedTest("b.py::test_two", "b.py", null, "test_two", listOf("cache")),
+            ),
+            fixtures = listOf(
+                CollectedFixture("db", "session", "conftest.py", "db", emptyList()),
+                CollectedFixture("cache", "function", "conftest.py", "cache", emptyList()),
+            ),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildFixtureExplorerTree(snapshot, FixtureGrouping.BY_TEST_MODULE)
+        assertEquals("Fixtures", root.userObject)
+        assertEquals(2, root.childCount)
+        val aModule = root.getChildAt(0) as DefaultMutableTreeNode
+        assertTrue(aModule.userObject is FixtureModuleGroupNode)
+        assertEquals("a.py", (aModule.userObject as FixtureModuleGroupNode).modulePath)
+        assertEquals(1, aModule.childCount)
+        assertEquals("db", ((aModule.getChildAt(0) as DefaultMutableTreeNode).userObject as FixtureDisplayNode).name)
+        val bModule = root.getChildAt(1) as DefaultMutableTreeNode
+        assertEquals("b.py", (bModule.userObject as FixtureModuleGroupNode).modulePath)
+        assertEquals("cache", ((bModule.getChildAt(0) as DefaultMutableTreeNode).userObject as FixtureDisplayNode).name)
+    }
+
+    @Test
+    fun `fixture explorer by-test-module shows unused fixtures`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("a.py::test_one", "a.py", null, "test_one", listOf("db")),
+            ),
+            fixtures = listOf(
+                CollectedFixture("db", "session", "conftest.py", "db", emptyList()),
+                CollectedFixture("orphan", "function", "conftest.py", "orphan", emptyList()),
+            ),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildFixtureExplorerTree(snapshot, FixtureGrouping.BY_TEST_MODULE)
+        assertEquals(2, root.childCount)
+        val unusedNode = root.getChildAt(1) as DefaultMutableTreeNode
+        assertEquals("(unused)", (unusedNode.userObject as FixtureModuleGroupNode).modulePath)
+        assertEquals(1, unusedNode.childCount)
+        assertEquals("orphan", ((unusedNode.getChildAt(0) as DefaultMutableTreeNode).userObject as FixtureDisplayNode).name)
+    }
+
+    @Test
+    fun `fixture explorer by-test-module modules sorted alphabetically`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("z.py::test_z", "z.py", null, "test_z", listOf("f1")),
+                CollectedTest("a.py::test_a", "a.py", null, "test_a", listOf("f2")),
+            ),
+            fixtures = listOf(
+                CollectedFixture("f1", "function", "c.py", "f1", emptyList()),
+                CollectedFixture("f2", "function", "c.py", "f2", emptyList()),
+            ),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildFixtureExplorerTree(snapshot, FixtureGrouping.BY_TEST_MODULE)
+        val modules = (0 until root.childCount).map {
+            ((root.getChildAt(it) as DefaultMutableTreeNode).userObject as FixtureModuleGroupNode).modulePath
+        }
+        assertEquals(listOf("a.py", "z.py"), modules)
+    }
+
+    @Test
+    fun `fixture explorer by-test-module shared fixture appears under both modules`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("a.py::test_a", "a.py", null, "test_a", listOf("db")),
+                CollectedTest("b.py::test_b", "b.py", null, "test_b", listOf("db")),
+            ),
+            fixtures = listOf(
+                CollectedFixture("db", "session", "conftest.py", "db", emptyList()),
+            ),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildFixtureExplorerTree(snapshot, FixtureGrouping.BY_TEST_MODULE)
+        assertEquals(2, root.childCount)
+        val aModule = root.getChildAt(0) as DefaultMutableTreeNode
+        val bModule = root.getChildAt(1) as DefaultMutableTreeNode
+        assertEquals("db", ((aModule.getChildAt(0) as DefaultMutableTreeNode).userObject as FixtureDisplayNode).name)
+        assertEquals("db", ((bModule.getChildAt(0) as DefaultMutableTreeNode).userObject as FixtureDisplayNode).name)
+    }
+
+    @Test
+    fun `fixture explorer flat lists all fixtures alphabetically`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = emptyList(),
+            fixtures = listOf(
+                CollectedFixture("zebra", "function", "c.py", "zebra", emptyList()),
+                CollectedFixture("alpha", "session", "c.py", "alpha", emptyList()),
+            ),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildFixtureExplorerTree(snapshot, FixtureGrouping.FLAT)
+        assertEquals("Fixtures", root.userObject)
+        assertEquals(2, root.childCount)
+        val names = (0 until root.childCount).map {
+            ((root.getChildAt(it) as DefaultMutableTreeNode).userObject as FixtureDisplayNode).name
+        }
+        assertEquals(listOf("alpha", "zebra"), names)
+    }
+
+    @Test
+    fun `fixture explorer flat includes dependencies and consumers`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("t.py::test_one", "t.py", null, "test_one", listOf("db")),
+            ),
+            fixtures = listOf(
+                CollectedFixture("db", "session", "conftest.py", "db", listOf("engine")),
+                CollectedFixture("engine", "session", "conftest.py", "engine", emptyList()),
+            ),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildFixtureExplorerTree(snapshot, FixtureGrouping.FLAT)
+        val dbNode = root.getChildAt(0) as DefaultMutableTreeNode
+        assertEquals("db", (dbNode.userObject as FixtureDisplayNode).name)
+        // Should have dependency (engine) + consumer (test_one)
+        val children = (0 until dbNode.childCount).map {
+            (dbNode.getChildAt(it) as DefaultMutableTreeNode).userObject
+        }
+        assertTrue(children.any { it is FixtureDisplayNode && it.name == "engine" })
+        assertTrue(children.any { it is TestConsumerNode && it.test.nodeId == "t.py::test_one" })
+    }
+
+    @Test
+    fun `fixture explorer flat has no grouping nodes`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = emptyList(),
+            fixtures = listOf(
+                CollectedFixture("db", "session", "c.py", "db", emptyList()),
+                CollectedFixture("client", "function", "c.py", "client", emptyList()),
+            ),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildFixtureExplorerTree(snapshot, FixtureGrouping.FLAT)
+        // All children should be FixtureDisplayNode, no ScopeGroupNode or FixtureModuleGroupNode
+        for (i in 0 until root.childCount) {
+            val child = (root.getChildAt(i) as DefaultMutableTreeNode).userObject
+            assertTrue("Expected FixtureDisplayNode but got ${child::class.simpleName}", child is FixtureDisplayNode)
+        }
+    }
+
+    // --- scopeToModule filter tests ---
+
+    @Test
+    fun `fixture explorer scopeToModule filters to fixtures used by that module`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("a.py::test_a", "a.py", null, "test_a", listOf("db")),
+                CollectedTest("b.py::test_b", "b.py", null, "test_b", listOf("cache")),
+            ),
+            fixtures = listOf(
+                CollectedFixture("db", "session", "conftest.py", "db", emptyList()),
+                CollectedFixture("cache", "function", "conftest.py", "cache", emptyList()),
+            ),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildFixtureExplorerTree(snapshot, scopeToModule = "a.py")
+        // Only session scope with db should appear
+        assertEquals(1, root.childCount)
+        val scopeNode = root.getChildAt(0) as DefaultMutableTreeNode
+        assertEquals("session", (scopeNode.userObject as ScopeGroupNode).scope)
+        assertEquals(1, scopeNode.childCount)
+        assertEquals("db", ((scopeNode.getChildAt(0) as DefaultMutableTreeNode).userObject as FixtureDisplayNode).name)
+    }
+
+    @Test
+    fun `fixture explorer scopeToModule with no matching tests produces empty tree`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("a.py::test_a", "a.py", null, "test_a", listOf("db")),
+            ),
+            fixtures = listOf(
+                CollectedFixture("db", "session", "conftest.py", "db", emptyList()),
+            ),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildFixtureExplorerTree(snapshot, scopeToModule = "nonexistent.py")
+        assertEquals(0, root.childCount)
+    }
+
+    @Test
+    fun `fixture explorer scopeToModule works with flat grouping`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("a.py::test_a", "a.py", null, "test_a", listOf("db", "cache")),
+                CollectedTest("b.py::test_b", "b.py", null, "test_b", listOf("other")),
+            ),
+            fixtures = listOf(
+                CollectedFixture("db", "session", "conftest.py", "db", emptyList()),
+                CollectedFixture("cache", "function", "conftest.py", "cache", emptyList()),
+                CollectedFixture("other", "function", "conftest.py", "other", emptyList()),
+            ),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildFixtureExplorerTree(
+            snapshot, grouping = FixtureGrouping.FLAT, scopeToModule = "a.py"
+        )
+        val names = (0 until root.childCount).map {
+            ((root.getChildAt(it) as DefaultMutableTreeNode).userObject as FixtureDisplayNode).name
+        }
+        assertEquals(listOf("cache", "db"), names)
+    }
+
+    @Test
+    fun `fixture explorer scopeToModule works with by-test-module grouping`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("a.py::test_a", "a.py", null, "test_a", listOf("db")),
+                CollectedTest("b.py::test_b", "b.py", null, "test_b", listOf("db", "cache")),
+            ),
+            fixtures = listOf(
+                CollectedFixture("db", "session", "conftest.py", "db", emptyList()),
+                CollectedFixture("cache", "function", "conftest.py", "cache", emptyList()),
+            ),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildFixtureExplorerTree(
+            snapshot, grouping = FixtureGrouping.BY_TEST_MODULE, scopeToModule = "a.py"
+        )
+        // Only db fixture remains after filtering; both a.py and b.py use db
+        assertEquals(2, root.childCount)
+        val aModule = root.getChildAt(0) as DefaultMutableTreeNode
+        assertEquals("a.py", (aModule.userObject as FixtureModuleGroupNode).modulePath)
+        // a.py should only show db (the only fixture remaining)
+        assertEquals(1, aModule.childCount)
+        assertEquals("db", ((aModule.getChildAt(0) as DefaultMutableTreeNode).userObject as FixtureDisplayNode).name)
+    }
+
     @Test
     fun `flat view includes parametrize ids as children`() {
         val snapshot = CollectionSnapshot(

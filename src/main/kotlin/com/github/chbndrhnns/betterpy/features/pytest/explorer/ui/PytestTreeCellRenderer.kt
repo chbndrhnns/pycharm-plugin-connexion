@@ -58,6 +58,11 @@ class PytestTreeCellRenderer : ColoredTreeCellRenderer() {
                 append("  [${node.scope}]", SimpleTextAttributes.GRAYED_ATTRIBUTES)
             }
 
+            is FixtureModuleGroupNode -> {
+                icon = AllIcons.Nodes.Module
+                append(node.modulePath, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+            }
+
             is ScopeGroupNode -> {
                 icon = AllIcons.Nodes.Folder
                 append(node.scope, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)

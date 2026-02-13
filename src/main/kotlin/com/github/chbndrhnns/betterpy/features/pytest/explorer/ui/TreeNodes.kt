@@ -2,6 +2,16 @@ package com.github.chbndrhnns.betterpy.features.pytest.explorer.ui
 
 import com.github.chbndrhnns.betterpy.features.pytest.explorer.model.CollectedTest
 
+enum class FixtureGrouping {
+    BY_SCOPE,
+    BY_TEST_MODULE,
+    FLAT,
+}
+
+data class FixtureModuleGroupNode(val modulePath: String) {
+    override fun toString(): String = modulePath
+}
+
 data class ModuleTreeNode(val path: String) {
     override fun toString(): String = path
 }
