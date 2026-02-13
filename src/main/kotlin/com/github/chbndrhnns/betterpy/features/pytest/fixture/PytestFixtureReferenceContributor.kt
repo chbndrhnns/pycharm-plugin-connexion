@@ -58,6 +58,12 @@ class FixtureParameterReferenceProvider : PsiReferenceProvider() {
         }
         val parameter = element as? PyNamedParameter ?: return PsiReference.EMPTY_ARRAY
 
+        // Check if this parameter belongs to a lambda - if so, skip it
+        val parameterList = parameter.parent as? PyParameterList
+        if (parameterList?.parent is PyLambdaExpression) {
+            return PsiReference.EMPTY_ARRAY
+        }
+
         // Check if this parameter is in a test or fixture function
         val function = PsiTreeUtil.getParentOfType(parameter, PyFunction::class.java)
             ?: return PsiReference.EMPTY_ARRAY

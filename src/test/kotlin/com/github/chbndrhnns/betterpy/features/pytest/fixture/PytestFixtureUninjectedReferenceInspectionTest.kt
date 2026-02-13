@@ -49,4 +49,43 @@ class PytestFixtureUninjectedReferenceInspectionTest : TestBase() {
             PluginSettingsState.instance().state.enablePytestFixtureUninjectedReferenceInspection = true
         }
     }
+
+    fun testLambdaParameterNotTreatedAsFixtureUsageInTest() {
+        myFixture.configureByText(
+            "test_.py",
+            """
+            def test_():
+                assert lambda x: x
+            """.trimIndent()
+        )
+        myFixture.enableInspections(inspection)
+        val highlights = myFixture.doHighlighting()
+        val error = highlights.find { it.description?.contains("Fixture 'x' is not injected") == true }
+        assertNull("Lambda parameter should not be treated as a fixture reference", error)
+    }
+
+    fun testLambdaParameterHasNoFixtureReference() {
+        myFixture.configureByText(
+            "test_.py",
+            """
+            def test_():
+                assert lambda x: x
+            """.trimIndent()
+        )
+        // Find the lambda parameter 'x'
+        val file = myFixture.file as com.jetbrains.python.psi.PyFile
+        val lambdaExpr = com.intellij.psi.util.PsiTreeUtil.findChildOfType(
+            file,
+            com.jetbrains.python.psi.PyLambdaExpression::class.java
+        )
+        assertNotNull("Lambda expression should exist", lambdaExpr)
+
+        val parameter = lambdaExpr?.parameterList?.parameters?.firstOrNull()
+        assertNotNull("Lambda parameter 'x' should exist", parameter)
+
+        // Check that the parameter doesn't have a PytestFixtureReference
+        val references = parameter?.references ?: emptyArray()
+        val fixtureReferences = references.filterIsInstance<PytestFixtureReference>()
+        assertTrue("Lambda parameter should not have a PytestFixtureReference", fixtureReferences.isEmpty())
+    }
 }
