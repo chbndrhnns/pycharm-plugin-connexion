@@ -153,6 +153,14 @@
                          shortName="PytestFixtureToUsefixturesInspection"/>
 
         <localInspection language="Python"
+                         implementationClass="com.github.chbndrhnns.betterpy.features.pytest.parametrize.PytestParametrizeCountMismatchInspection"
+                         displayName="BetterPy: Pytest parametrize count mismatch"
+                         groupName="Python"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         shortName="PytestParametrizeCountMismatchInspection"/>
+
+        <localInspection language="Python"
                          implementationClass="com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureUninjectedReferenceInspection"
                          displayName="BetterPy: Pytest fixture uninjected reference"
                          groupName="Python"

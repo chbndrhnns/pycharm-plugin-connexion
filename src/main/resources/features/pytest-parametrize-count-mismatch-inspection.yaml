@@ -1,0 +1,14 @@
+id: pytest-parametrize-count-mismatch-inspection
+displayName: Pytest parametrize count mismatch inspection
+description: Reports when the number of values in a pytest.mark.parametrize value set does not match the number of parameter names
+category: INSPECTIONS
+maturity: INCUBATING
+youtrackIssues: []
+loggingCategories:
+  - com.github.chbndrhnns.betterpy.features.pytest.parametrize.PytestParametrizeCountMismatchInspection
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: localInspection
+    className: com.github.chbndrhnns.betterpy.features.pytest.parametrize.PytestParametrizeCountMismatchInspection
