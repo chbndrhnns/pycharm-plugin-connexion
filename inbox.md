@@ -51,6 +51,7 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Pending Features
 
+- [ ] feat: Parse class names in errors from anyio.TaskGroup
 - [ ] feat: Recognize methods like `assert_called_once_with` in mocks
 - [ ] feat: Copy with inspection results in xml format
 - [ ] feat: Attach run node context menu in pytest explorer
