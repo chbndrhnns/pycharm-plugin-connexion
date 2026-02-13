@@ -166,14 +166,24 @@ class PytestFixtureReference(
         }
         val context = TypeEvalContext.codeAnalysis(element.project, element.containingFile)
         val chain = PytestFixtureResolver.findFixtureChain(element, fixtureName, context)
+
+        // When a fixture parameter has the same name as its containing fixture (override pattern),
+        // filter out the containing function so that navigation goes to the parent fixture.
+        val containingFunction = PsiTreeUtil.getParentOfType(element, PyFunction::class.java)
+        val filtered = if (containingFunction != null && PytestFixtureUtil.isFixtureFunction(containingFunction)) {
+            chain.filter { it.fixtureFunction !== containingFunction }
+        } else {
+            chain
+        }
+
         if (LOG.isDebugEnabled) {
             val fileName = element.containingFile?.virtualFile?.path ?: "<unknown>"
             LOG.debug(
-                "PytestFixtureReference: fixtureName='$fixtureName', file='$fileName', resolved=${chain.size}"
+                "PytestFixtureReference: fixtureName='$fixtureName', file='$fileName', resolved=${filtered.size}"
             )
         }
 
-        return chain.map { link ->
+        return filtered.map { link ->
             PsiElementResolveResult(link.fixtureFunction)
         }.toTypedArray()
     }

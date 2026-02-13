@@ -2,8 +2,10 @@ package com.github.chbndrhnns.betterpy.features.pytest.fixture
 
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess
+import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.testFramework.PsiTestUtil
 import com.jetbrains.python.psi.PyFunction
+import com.jetbrains.python.psi.PyNamedParameter
 import com.jetbrains.python.sdk.PythonSdkUtil
 import fixtures.TestBase
 import java.nio.file.Files
@@ -489,6 +491,68 @@ class PytestFixtureNavigationTest : TestBase() {
         assertNotNull("Should resolve to SDK plugin fixture function", resolved)
         assertInstanceOf(resolved, PyFunction::class.java)
         assertEquals("Should resolve to sdk_fixture", "sdk_fixture", (resolved as PyFunction).name)
+    }
+
+    // Test: Fixture override - parameter should navigate to parent fixture in conftest
+    fun testFixtureOverrideNavigatesToParentFixture() {
+        // Create conftest.py with the parent fixture
+        myFixture.addFileToProject(
+            "conftest.py", """
+            import pytest
+            
+            @pytest.fixture
+            def othername2():
+                return ...
+        """.trimIndent()
+        )
+
+        // Create test file with overriding fixture that takes the parent as parameter
+        val code = """
+            import pytest
+            
+            @pytest.fixture
+            def othername2(othername2<caret>):
+                return othername2
+            
+            def test_new(othername2):
+                pass
+        """.trimIndent()
+
+        myFixture.configureByText("test_override.py", code)
+
+        // Should resolve to the conftest fixture (parent), not the local overriding fixture
+        val resolved = myFixture.elementAtCaret
+        assertNotNull("Should resolve to parent fixture function", resolved)
+        assertInstanceOf(resolved, PyFunction::class.java)
+        assertEquals(
+            "Should resolve to conftest.py fixture",
+            "conftest.py",
+            (resolved as PyFunction).containingFile.name
+        )
+    }
+
+    fun testFixtureOverrideWithNoParentIsUnresolved() {
+        val code = """
+            import pytest
+            
+            @pytest.fixture
+            def othername2(oth<caret>ername2):
+                return othername2
+            
+            def test_new(othername2):
+                pass
+        """.trimIndent()
+
+        myFixture.configureByText("test_no_parent.py", code)
+
+        // The parameter references itself with no parent fixture - should be unresolved
+        val element = myFixture.file.findElementAt(myFixture.caretOffset)
+        assertNotNull("Should find element at caret", element)
+        val param = PsiTreeUtil.getParentOfType(element, PyNamedParameter::class.java)
+        assertNotNull("Should find PyNamedParameter", param)
+        val ref = param!!.references.firstOrNull { it is PytestFixtureReference }
+        assertNotNull("Should have a PytestFixtureReference", ref)
+        assertNull("Reference should be unresolved (no parent fixture)", ref!!.resolve())
     }
 
     // Test 7: Fixture with name= argument
