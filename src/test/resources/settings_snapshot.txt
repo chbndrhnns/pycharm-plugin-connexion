@@ -1702,7 +1702,7 @@ DialogPanel
   CheckBox: [x] 'Advanced pytest fixture features'
   MaturityTagLabel
     Label: 'Incubating'
-  Button: 'PY-81495'
+  Button: '2 issues'
   TextField: '<html>
   <head>
     <style type="text/css">
