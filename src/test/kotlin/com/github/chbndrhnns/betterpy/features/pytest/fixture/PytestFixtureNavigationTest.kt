@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.betterpy.features.pytest.fixture
 
+import com.intellij.codeInsight.navigation.actions.GotoDeclarationAction
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess
 import com.intellij.psi.util.PsiTreeUtil
@@ -636,6 +637,43 @@ class PytestFixtureNavigationTest : TestBase() {
         if (resolved is PyFunction) {
             fail("Should not resolve parametrize parameter 'arg' to a fixture function")
         }
+    }
+
+    // Test: Class fixture override navigates to parent (module-level) fixture
+    fun testClassFixtureOverrideNavigatesToParentFixture() {
+        val code = """
+            import pytest
+            
+            @pytest.fixture
+            def othername2():
+                return ...
+            
+            class TestNew:
+                @pytest.fixture
+                def othername2(self, other<caret>name2):
+                    return othername2
+            
+                @pytest.mark.usefixtures("othername2")
+                def test_new(self):
+                    pass
+        """.trimIndent()
+
+        myFixture.configureByText("test_class_override.py", code)
+
+        val targets = GotoDeclarationAction.findAllTargetElements(project, myFixture.editor, myFixture.caretOffset)
+        assertNotNull("Should find targets", targets)
+        assertTrue("Should have at least one target", targets.isNotEmpty())
+
+        // Should resolve to the module-level fixture, not the class method
+        val fixtureTargets = targets.filterIsInstance<PyFunction>()
+            .filter { it.containingClass == null }
+        assertTrue("Should have module-level fixture target", fixtureTargets.isNotEmpty())
+        val resolvedFn = fixtureTargets[0]
+        assertNull(
+            "Should resolve to module-level fixture (no containing class)",
+            resolvedFn.containingClass
+        )
+        assertEquals("othername2", resolvedFn.name)
     }
 
     // Test 11: No reference for self/cls parameters

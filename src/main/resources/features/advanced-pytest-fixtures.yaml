@@ -26,6 +26,8 @@ registrations:
     className: com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureImplementationSearch
   - type: findUsagesHandlerFactory
     className: com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureFindUsagesHandlerFactory
+  - type: gotoDeclarationHandler
+    className: com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureGotoDeclarationHandler
   - type: psi.referenceContributor
     className: com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureReferenceContributor
   - type: pySuperMethodsSearch

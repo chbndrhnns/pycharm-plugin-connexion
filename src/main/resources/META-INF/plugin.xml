@@ -102,6 +102,9 @@
         <codeInsight.gotoSuper language="Python"
                                implementationClass="com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureGotoSuperHandler"
                                order="first"/>
+        <gotoDeclarationHandler
+                implementation="com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureGotoDeclarationHandler"
+                order="first"/>
 
         <definitionsScopedSearch
                 implementation="com.github.chbndrhnns.betterpy.features.search.PyProtocolDefinitionsSearchExecutor"/>

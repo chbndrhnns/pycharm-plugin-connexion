@@ -152,7 +152,7 @@ class UsefixturesStringReferenceProvider : PsiReferenceProvider() {
 class PytestFixtureReference(
     element: PyNamedParameter,
     private val fixtureName: String
-) : PsiPolyVariantReferenceBase<PyNamedParameter>(element, TextRange(0, element.textLength), false),
+) : PsiPolyVariantReferenceBase<PyNamedParameter>(element, TextRange(0, fixtureName.length), false),
     LocalQuickFixProvider {
 
     override fun resolve(): PsiElement? {
@@ -164,14 +164,14 @@ class PytestFixtureReference(
         if (!PytestFixtureFeatureToggle.isEnabled()) {
             return ResolveResult.EMPTY_ARRAY
         }
-        val context = TypeEvalContext.codeAnalysis(element.project, element.containingFile)
+        val context = TypeEvalContext.userInitiated(element.project, element.containingFile)
         val chain = PytestFixtureResolver.findFixtureChain(element, fixtureName, context)
 
         // When a fixture parameter has the same name as its containing fixture (override pattern),
         // filter out the containing function so that navigation goes to the parent fixture.
         val containingFunction = PsiTreeUtil.getParentOfType(element, PyFunction::class.java)
         val filtered = if (containingFunction != null && PytestFixtureUtil.isFixtureFunction(containingFunction)) {
-            chain.filter { it.fixtureFunction !== containingFunction }
+            chain.filter { !it.fixtureFunction.isEquivalentTo(containingFunction) }
         } else {
             chain
         }
@@ -343,7 +343,7 @@ class PytestFixtureStringReference(
         if (!PytestFixtureFeatureToggle.isEnabled()) {
             return ResolveResult.EMPTY_ARRAY
         }
-        val context = TypeEvalContext.codeAnalysis(element.project, element.containingFile)
+        val context = TypeEvalContext.userInitiated(element.project, element.containingFile)
         val chain = PytestFixtureResolver.findFixtureChain(element, fixtureName, context)
         if (LOG.isDebugEnabled) {
             val fileName = element.containingFile?.virtualFile?.path ?: "<unknown>"
