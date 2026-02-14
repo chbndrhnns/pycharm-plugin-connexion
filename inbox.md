@@ -2,21 +2,6 @@
 
 ## Pending Issues
 
-- [ ] fix: Should mark fixture as unresolved if no parent fixture exists
-- [ ] fix: Go to declaration fails
-
-```
-import pytest
-
-
-@pytest.fixture
-def othername2(ot<caret>hername2):
-    return othername2
-
-def test_new(othername2):
-    pass
-```
-
 - [ ] fix: No Python SDK configured should be displayed directly in pytest explorer, or greyed out?
 - [ ] fix: Rendering of links for pytest, now blue and dotted.
   `tests/unit/test_integrity.py::test_no_skip_markers_on_adapter_fixture[<class 'src.adapters.outbound.HttpRepository'>] ✓                51% █████▏`
@@ -120,6 +105,20 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Completed Tasks (newest first)
 
+- [x] fix: Should mark fixture as unresolved if no parent fixture exists
+- [x] fix: Go to declaration fails
+
+```
+import pytest
+
+
+@pytest.fixture
+def othername2(ot<caret>hername2):
+    return othername2
+
+def test_new(othername2):
+    pass
+```
 - [x] feat: https://youtrack.jetbrains.com/issue/PY-55931/Add-quickfix-Convert-between-fixture-injection-variants
 - [x] fix: Copy annotations loses *args, **kwargs, /, *
 - [x] fix: Copy annotations should render the line on the function name, not arguments
