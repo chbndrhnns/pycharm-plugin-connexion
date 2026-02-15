@@ -332,13 +332,15 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
     )
 
     private var myState = State()
+    private var incubatingBackup: Map<String, Boolean>? = null
 
     override fun getState(): State = myState
 
     override fun loadState(state: State) {
         myState = state
-        if (isIncubatingOverrideActive()) {
-            restoreIncubatingState()
+        // Clear any persisted incubating snapshot (it's a runtime-only override)
+        myState.incubatingState?.let {
+            myState = it
         }
         if (isMuted()) {
             unmute()
@@ -347,7 +349,7 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
 
     fun isMuted(): Boolean = myState.originalState != null
 
-    fun isIncubatingOverrideActive(): Boolean = myState.incubatingState != null
+    fun isIncubatingOverrideActive(): Boolean = incubatingBackup != null
 
     fun mute() {
         if (isMuted()) return
@@ -419,20 +421,23 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
             return
         }
 
-        val backup = myState.copy(incubatingState = null)
-        myState.incubatingState = backup
-
         val registry = FeatureRegistry.instance()
-        registry.getIncubatingFeatures().forEach { feature ->
+        val features = registry.getIncubatingFeatures()
+        incubatingBackup = features.associate { it.id to it.isEnabled() }
+
+        features.forEach { feature ->
             feature.setEnabled(false)
         }
         LOG.info("Incubating feature overrides activated.")
     }
 
     private fun restoreIncubatingState() {
-        myState.incubatingState?.let {
-            myState = it
+        val backup = incubatingBackup ?: return
+        val registry = FeatureRegistry.instance()
+        backup.forEach { (id, enabled) ->
+            registry.setFeatureEnabled(id, enabled)
         }
+        incubatingBackup = null
     }
 
     companion object {

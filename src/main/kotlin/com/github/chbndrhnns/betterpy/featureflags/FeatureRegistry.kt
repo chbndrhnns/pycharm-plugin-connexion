@@ -2,6 +2,7 @@ package com.github.chbndrhnns.betterpy.featureflags
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
+import org.jetbrains.annotations.TestOnly
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.memberProperties
@@ -56,20 +57,23 @@ class FeatureRegistry {
     )
 
     private val features: Map<String, FeatureInfo> by lazy { buildFeatureMap() }
+    private val additionalFeatures: MutableMap<String, FeatureInfo> = mutableMapOf()
+
+    private fun allFeatures(): Map<String, FeatureInfo> = features + additionalFeatures
 
     /** Returns all registered features. */
-    fun getAllFeatures(): List<FeatureInfo> = features.values.toList()
+    fun getAllFeatures(): List<FeatureInfo> = allFeatures().values.toList()
 
     /** Returns a feature by its ID, or null if not found. */
-    fun getFeature(id: String): FeatureInfo? = features[id]
+    fun getFeature(id: String): FeatureInfo? = allFeatures()[id]
 
     /** Returns all features in the specified category. */
     fun getFeaturesByCategory(category: FeatureCategory): List<FeatureInfo> =
-        features.values.filter { it.category == category }
+        allFeatures().values.filter { it.category == category }
 
     /** Returns all features with the specified maturity level. */
     fun getFeaturesByMaturity(maturity: FeatureMaturity): List<FeatureInfo> =
-        features.values.filter { it.maturity == maturity }
+        allFeatures().values.filter { it.maturity == maturity }
 
     /** Returns all incubating features. */
     fun getIncubatingFeatures(): List<FeatureInfo> =
@@ -81,7 +85,7 @@ class FeatureRegistry {
 
     /** Returns all features that should be visible in the settings UI (excludes HIDDEN). */
     fun getVisibleFeatures(): List<FeatureInfo> =
-        features.values.filter { it.maturity != FeatureMaturity.HIDDEN }
+        allFeatures().values.filter { it.maturity != FeatureMaturity.HIDDEN }
 
     /** Returns all hidden features. */
     fun getHiddenFeatures(): List<FeatureInfo> =
@@ -89,11 +93,11 @@ class FeatureRegistry {
 
     /** Returns whether a feature is enabled by its ID. Returns false if feature not found. */
     fun isFeatureEnabled(id: String): Boolean =
-        features[id]?.isEnabled() ?: false
+        allFeatures()[id]?.isEnabled() ?: false
 
     /** Sets whether a feature is enabled by its ID. Does nothing if feature not found. */
     fun setFeatureEnabled(id: String, enabled: Boolean) {
-        features[id]?.setEnabled(enabled)
+        allFeatures()[id]?.setEnabled(enabled)
     }
 
     /** Returns all enabled incubating features. */
@@ -106,7 +110,7 @@ class FeatureRegistry {
 
     /** Returns features grouped by category. */
     fun getFeaturesByCategories(): Map<FeatureCategory, List<FeatureInfo>> =
-        features.values.groupBy { it.category }
+        allFeatures().values.groupBy { it.category }
 
     /** Returns visible features grouped by category. */
     fun getVisibleFeaturesByCategories(): Map<FeatureCategory, List<FeatureInfo>> =
@@ -114,11 +118,21 @@ class FeatureRegistry {
 
     /** Returns all unique YouTrack issue IDs referenced by features. */
     fun getAllYouTrackIssues(): Set<String> =
-        features.values.flatMap { it.youtrackIssues }.toSet()
+        allFeatures().values.flatMap { it.youtrackIssues }.toSet()
 
     /** Returns features that reference a specific YouTrack issue. */
     fun getFeaturesByYouTrackIssue(issueId: String): List<FeatureInfo> =
-        features.values.filter { issueId in it.youtrackIssues }
+        allFeatures().values.filter { issueId in it.youtrackIssues }
+
+    @TestOnly
+    fun registerAdditionalFeature(feature: FeatureInfo) {
+        additionalFeatures[feature.id] = feature
+    }
+
+    @TestOnly
+    fun unregisterAdditionalFeature(id: String) {
+        additionalFeatures.remove(id)
+    }
 
     @Suppress("UNCHECKED_CAST")
     private fun buildFeatureMap(): Map<String, FeatureInfo> {

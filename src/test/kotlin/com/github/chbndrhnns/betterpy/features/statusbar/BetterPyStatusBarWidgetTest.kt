@@ -1,8 +1,7 @@
 package com.github.chbndrhnns.betterpy.features.statusbar
 
 import com.github.chbndrhnns.betterpy.core.python.PythonVersionGuard
-import com.github.chbndrhnns.betterpy.featureflags.PluginSettingsConfigurable
-import com.github.chbndrhnns.betterpy.featureflags.PluginSettingsState
+import com.github.chbndrhnns.betterpy.featureflags.*
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.options.ConfigurableGroup
 import com.intellij.openapi.options.ShowSettingsUtil
@@ -119,6 +118,9 @@ class BetterPyStatusBarWidgetTest : TestBase() {
     fun testIncubatingToggleChangesPopupLabel() {
         val settings = PluginSettingsState.instance()
         settings.unmute()
+        val registry = FeatureRegistry.instance()
+        val fakeFeature = createFakeIncubatingFeature()
+        registry.registerAdditionalFeature(fakeFeature)
         try {
             val widget = createWidget()
 
@@ -151,13 +153,18 @@ class BetterPyStatusBarWidgetTest : TestBase() {
             if (settings.isIncubatingOverrideActive()) {
                 settings.toggleIncubatingFeatures()
             }
+            registry.unregisterAdditionalFeature(fakeFeature.id)
         }
     }
 
     fun testIncubatingToggleWorksWhenOneFeatureAlreadyDisabled() {
         val settings = PluginSettingsState.instance()
         settings.unmute()
-        val registry = com.github.chbndrhnns.betterpy.featureflags.FeatureRegistry.instance()
+        val registry = FeatureRegistry.instance()
+        val fakeFeature1 = createFakeIncubatingFeature("test-incubating-1")
+        val fakeFeature2 = createFakeIncubatingFeature("test-incubating-2")
+        registry.registerAdditionalFeature(fakeFeature1)
+        registry.registerAdditionalFeature(fakeFeature2)
         val incubatingFeatures = registry.getIncubatingFeatures()
         assertTrue("Need at least one incubating feature for this test", incubatingFeatures.isNotEmpty())
 
@@ -208,6 +215,8 @@ class BetterPyStatusBarWidgetTest : TestBase() {
                 settings.toggleIncubatingFeatures()
             }
             firstFeature.setEnabled(originalValue)
+            registry.unregisterAdditionalFeature(fakeFeature1.id)
+            registry.unregisterAdditionalFeature(fakeFeature2.id)
         }
     }
 
@@ -227,6 +236,24 @@ class BetterPyStatusBarWidgetTest : TestBase() {
 
     private fun createWidget(): BetterPyStatusBarWidget {
         return BetterPyStatusBarWidget(project, CoroutineScope(SupervisorJob() + Dispatchers.Unconfined))
+    }
+
+    private fun createFakeIncubatingFeature(id: String = "test-incubating-feature"): FeatureRegistry.FeatureInfo {
+        var enabled = true
+        return FeatureRegistry.FeatureInfo(
+            id = id,
+            displayName = "Test Incubating Feature",
+            description = "A fake incubating feature for testing",
+            maturity = FeatureMaturity.INCUBATING,
+            category = FeatureCategory.OTHER,
+            youtrackIssues = emptyList(),
+            loggingCategories = emptyList(),
+            since = "",
+            removeIn = "",
+            propertyName = id,
+            getter = { enabled },
+            setter = { enabled = it }
+        )
     }
 
     class FakeShowSettingsUtil : ShowSettingsUtil() {
