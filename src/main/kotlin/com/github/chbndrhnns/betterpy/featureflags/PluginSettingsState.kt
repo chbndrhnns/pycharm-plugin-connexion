@@ -141,6 +141,9 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         @Feature("constant-final-inspection")
         var enableConstantFinalInspection: Boolean = FeatureDefaults.defaultEnabled("constant-final-inspection"),
 
+        @Feature("missing-f-string-prefix-inspection")
+        var enableMissingFStringPrefixInspection: Boolean = FeatureDefaults.defaultEnabled("missing-f-string-prefix-inspection"),
+
         @Feature("shadowing-stdlib-module-inspection")
         var enableShadowingStdlibModuleInspection: Boolean = FeatureDefaults.defaultEnabled("shadowing-stdlib-module-inspection"),
 

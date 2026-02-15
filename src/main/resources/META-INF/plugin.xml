@@ -520,6 +520,16 @@
 
         <localInspection
                 language="Python"
+                shortName="PyMissingFStringPrefixInspection"
+                displayName="BetterPy: String with placeholders is missing f-string prefix"
+                groupPath="Python"
+                groupName="Python"
+                enabledByDefault="true"
+                level="WEAK WARNING"
+                implementationClass="com.github.chbndrhnns.betterpy.features.inspections.PyMissingFStringPrefixInspection"/>
+
+        <localInspection
+                language="Python"
                 shortName="PyShadowingStdlibModuleInspection"
                 displayName="BetterPy: File name shadows a Python standard library module"
                 groupPath="Python"

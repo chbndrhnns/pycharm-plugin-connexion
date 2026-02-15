@@ -569,6 +569,26 @@ DialogPanel
   </body>
 </html>
 '
+  CheckBox: [x] 'Missing f-string prefix inspection'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body width="560">
+    Reports strings that contain interpolation-like placeholders but are 
+    missing the f-string prefix
+  </body>
+</html>
+'
   CheckBox: [x] 'Overridden method missing type annotations inspection'
   TextField: '<html>
   <head>

@@ -1,0 +1,13 @@
+id: missing-f-string-prefix-inspection
+displayName: Missing f-string prefix inspection
+description: Reports strings that contain interpolation-like placeholders but are missing the f-string prefix
+category: INSPECTIONS
+maturity: STABLE
+youtrackIssues: [ ]
+loggingCategories: [ ]
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: localInspection
+    className: com.github.chbndrhnns.betterpy.features.inspections.PyMissingFStringPrefixInspection

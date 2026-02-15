@@ -12,8 +12,6 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
-import com.jetbrains.python.psi.LanguageLevel
-import com.jetbrains.python.psi.PyElementGenerator
 import com.jetbrains.python.psi.PyFile
 import com.jetbrains.python.psi.PyStringLiteralExpression
 
@@ -29,37 +27,23 @@ class ConvertToFStringIntention : IntentionAction, HighPriorityAction, DumbAware
         if (!file.isOwnCode()) return false
         if (!PluginSettingsState.instance().state.enableConvertToFStringIntention) return false
 
-        val element = file.findElementAt(editor.caretModel.offset) ?: return false
-        val literal = PsiTreeUtil.getParentOfType(element, PyStringLiteralExpression::class.java) ?: return false
-        val prefix = parsePrefix(literal.text) ?: return false
-        if (prefix.contains('f', ignoreCase = true)) return false
-        if (prefix.contains('b', ignoreCase = true)) return false
-        if (prefix.contains('u', ignoreCase = true)) return false
-        if (prefix.contains('t', ignoreCase = true)) return false
-        return containsFStringIdentifier(literal.stringValue)
+        val literal = findLiteral(editor, file) ?: return false
+        val prefix = FStringConversionUtil.parsePrefix(literal.text) ?: return false
+        if (FStringConversionUtil.shouldSkip(prefix)) return false
+        return FStringConversionUtil.containsFStringPlaceholder(literal.stringValue)
     }
 
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
         if (file !is PyFile) return
         if (!PluginSettingsState.instance().state.enableConvertToFStringIntention) return
 
-        val element = file.findElementAt(editor.caretModel.offset) ?: return
-        val literal = PsiTreeUtil.getParentOfType(element, PyStringLiteralExpression::class.java) ?: return
-        val prefix = parsePrefix(literal.text) ?: return
-        if (prefix.contains('f', ignoreCase = true)) return
-        if (prefix.contains('b', ignoreCase = true)) return
-        if (prefix.contains('u', ignoreCase = true)) return
-        if (!containsFStringIdentifier(literal.stringValue)) return
-
-        val updatedText = "f${literal.text}"
-        val generator = PyElementGenerator.getInstance(project)
-        val replacement = generator.createExpressionFromText(
-            LanguageLevel.forElement(literal),
-            updatedText
-        )
+        val literal = findLiteral(editor, file) ?: return
+        val prefix = FStringConversionUtil.parsePrefix(literal.text) ?: return
+        if (FStringConversionUtil.shouldSkip(prefix)) return
+        if (!FStringConversionUtil.containsFStringPlaceholder(literal.stringValue)) return
 
         WriteCommandAction.runWriteCommandAction(project, text, null, Runnable {
-            literal.replace(replacement)
+            FStringConversionUtil.convertToFString(literal)
         }, file)
     }
 
@@ -67,47 +51,8 @@ class ConvertToFStringIntention : IntentionAction, HighPriorityAction, DumbAware
         return IntentionPreviewInfo.DIFF
     }
 
-    private fun parsePrefix(text: String): String? {
-        val match = PREFIX_REGEX.find(text) ?: return null
-        return match.groupValues[1]
-    }
-
-    private fun containsFStringIdentifier(value: String): Boolean {
-        var idx = 0
-        while (idx < value.length) {
-            val ch = value[idx]
-            if (ch == '{') {
-                if (idx + 1 < value.length && value[idx + 1] == '{') {
-                    idx += 2
-                    continue
-                }
-                val end = value.indexOf('}', idx + 1)
-                if (end == -1) return false
-                val content = value.substring(idx + 1, end).trim()
-                val name = content.takeWhile { it.isLetterOrDigit() || it == '_' }
-                if (isValidIdentifier(name) && content.startsWith(name)) {
-                    return true
-                }
-                idx = end + 1
-                continue
-            }
-            if (ch == '}' && idx + 1 < value.length && value[idx + 1] == '}') {
-                idx += 2
-                continue
-            }
-            idx++
-        }
-        return false
-    }
-
-    private fun isValidIdentifier(name: String): Boolean {
-        if (name.isEmpty()) return false
-        val first = name[0]
-        if (!(first == '_' || first.isLetter())) return false
-        return name.all { it == '_' || it.isLetterOrDigit() }
-    }
-
-    private companion object {
-        val PREFIX_REGEX = Regex("^([rRuUbBfF]*)(\"\"\"|'''|\"|')")
+    private fun findLiteral(editor: Editor, file: PsiFile): PyStringLiteralExpression? {
+        val element = file.findElementAt(editor.caretModel.offset) ?: return null
+        return PsiTreeUtil.getParentOfType(element, PyStringLiteralExpression::class.java)
     }
 }
