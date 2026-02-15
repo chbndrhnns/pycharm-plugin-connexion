@@ -60,6 +60,14 @@ object PytestStacktraceParser {
             return lineFromPattern
         }
 
+        // Try method 3: Parse exception group style tracebacks with File "path", line N format
+        // (e.g., ExceptionGroup from anyio/trio task groups)
+        val lineFromExceptionGroup = parseLineNumberFromExceptionGroup(stacktrace, fileName)
+        if (lineFromExceptionGroup != -1) {
+            LOG.debug("PytestStacktraceParser.parseFailedLine: found line number $lineFromExceptionGroup using exception group parsing")
+            return lineFromExceptionGroup
+        }
+
         LOG.debug("PytestStacktraceParser.parseFailedLine: could not extract line number, returning -1")
         return -1
     }
@@ -134,6 +142,35 @@ object PytestStacktraceParser {
         }
 
         LOG.debug("PytestStacktraceParser.parseLineNumberFromPattern: no line numbers found")
+        return -1
+    }
+
+    /**
+     * Parses line number from exception group style tracebacks.
+     *
+     * Exception groups use a different format with '|' prefixed lines and
+     * 'File "path/to/file.py", line N' references instead of the usual 'file.py:N:' pattern.
+     *
+     * Returns the last occurrence of the test file reference in the main traceback
+     * (before sub-exceptions), which represents the call site in the test.
+     */
+    private fun parseLineNumberFromExceptionGroup(stacktrace: String, fileName: String): Int {
+        LOG.debug("PytestStacktraceParser.parseLineNumberFromExceptionGroup: searching for File \"...$fileName\", line N")
+
+        val escapedFileName = Regex.escape(fileName)
+        val regex = Regex("""File "[^"]*$escapedFileName", line (\d+)""")
+
+        val matches = regex.findAll(stacktrace)
+        val allLines = matches.map { it.groupValues[1].toIntOrNull() ?: -1 }.filter { it != -1 }.toList()
+
+        if (allLines.isNotEmpty()) {
+            LOG.debug("PytestStacktraceParser.parseLineNumberFromExceptionGroup: found ${allLines.size} line number(s): $allLines")
+            val result = allLines.first()
+            LOG.debug("PytestStacktraceParser.parseLineNumberFromExceptionGroup: returning first line number: $result")
+            return result
+        }
+
+        LOG.debug("PytestStacktraceParser.parseLineNumberFromExceptionGroup: no line numbers found")
         return -1
     }
 

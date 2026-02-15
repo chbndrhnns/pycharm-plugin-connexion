@@ -252,4 +252,37 @@ class PytestStacktraceParserTest : TestBase() {
 
         assertEquals("Should return line 5 (call site in test) not line 2 (error in helper)", 5, result)
     }
+
+    fun `test parseFailedLine with exception group traceback`() {
+        val stacktrace = """
+            FAILED           [ 50%]
+            tests/test_anyio.py:15 (test_task_group_exception[asyncio])
+            + Exception Group Traceback (most recent call last):
+              |   File "/Users/jo/PycharmProjects/PythonProject24/tests/test_anyio.py", line 18, in test_task_group_exception
+              |     async with anyio.create_task_group() as tg:
+              |                ~~~~~~~~~~~~~~~~~~~~~~~^^
+              |   File "/Users/jo/PycharmProjects/PythonProject24/.venv/lib/python3.13/site-packages/anyio/_backends/_asyncio.py", line 772, in __aexit__
+              |     raise BaseExceptionGroup(
+              |         "unhandled errors in a TaskGroup", self._exceptions
+              |     ) from None
+              | ExceptionGroup: unhandled errors in a TaskGroup (2 sub-exceptions)
+              +-+---------------- 1 ----------------
+                | Traceback (most recent call last):
+                |   File "/Users/jo/PycharmProjects/PythonProject24/tests/test_anyio.py", line 19, in test_task_group_exception
+                |     await tg.start_soon(failing_task)
+                | TypeError: object NoneType can't be used in 'await' expression
+                +---------------- 2 ----------------
+                | Traceback (most recent call last):
+                |   File "/Users/jo/PycharmProjects/PythonProject24/tests/test_anyio.py", line 12, in failing_task
+                |     raise ValueError(msg)
+                | ValueError: Something went wrong inside the task group!: <class 'tests.test_anyio.C'>
+                +------------------------------------
+        """.trimIndent()
+
+        val locationUrl = "python</Users/jo/PycharmProjects/PythonProject24/tests>://tests.test_anyio.test_task_group_exception"
+
+        val result = PytestStacktraceParser.parseFailedLine(stacktrace, locationUrl)
+
+        assertEquals("Should return line 18 (call site in the test function)", 18, result)
+    }
 }
