@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.betterpy.featureflags
 
+import com.intellij.openapi.application.ApplicationInfo
 import fixtures.TestBase
 
 /**
@@ -156,6 +157,113 @@ class FeatureRegistryTest : TestBase() {
         enabledIncubating.forEach { feature ->
             assertEquals(FeatureMaturity.INCUBATING, feature.maturity)
             assertTrue("Feature should be enabled", feature.isEnabled())
+        }
+    }
+
+    fun testBundledInFeatureIsUnavailableAndHidden() {
+        val currentBuild = ApplicationInfo.getInstance().build.asString()
+        val id = "test-bundled-in-feature"
+        var enabled = true
+
+        val feature = FeatureRegistry.FeatureInfo(
+            id = id,
+            displayName = "Test Bundled Feature",
+            description = "A fake bundled feature for testing",
+            maturity = FeatureMaturity.STABLE,
+            category = FeatureCategory.OTHER,
+            youtrackIssues = emptyList(),
+            loggingCategories = emptyList(),
+            since = "",
+            removeIn = "",
+            minBuild = "",
+            bundledIn = currentBuild,
+            propertyName = id,
+            getter = { enabled },
+            setter = { enabled = it }
+        )
+
+        registry.registerAdditionalFeature(feature)
+        try {
+            assertFalse("Feature should be unavailable for current build", feature.isAvailable())
+            assertFalse("Feature should not be enabled when unavailable", feature.isEnabled())
+            assertFalse("Registry should report unavailable feature as disabled", registry.isFeatureEnabled(id))
+            assertFalse(
+                "Unavailable features should be excluded from visible list",
+                registry.getVisibleFeatures().any { it.id == id }
+            )
+        } finally {
+            registry.unregisterAdditionalFeature(id)
+        }
+    }
+
+    fun testDisableUnavailableFeaturesForcesStateOff() {
+        val currentBuild = ApplicationInfo.getInstance().build.asString()
+        val id = "test-bundled-in-feature-disable"
+        var enabled = true
+
+        val feature = FeatureRegistry.FeatureInfo(
+            id = id,
+            displayName = "Test Bundled Feature Disable",
+            description = "A fake bundled feature for testing disable",
+            maturity = FeatureMaturity.STABLE,
+            category = FeatureCategory.OTHER,
+            youtrackIssues = emptyList(),
+            loggingCategories = emptyList(),
+            since = "",
+            removeIn = "",
+            minBuild = "",
+            bundledIn = currentBuild,
+            propertyName = id,
+            getter = { enabled },
+            setter = { enabled = it }
+        )
+
+        registry.registerAdditionalFeature(feature)
+        try {
+            assertTrue("Test setup should start enabled", enabled)
+            registry.disableUnavailableFeatures()
+            assertFalse("disableUnavailableFeatures should turn off state", enabled)
+        } finally {
+            registry.unregisterAdditionalFeature(id)
+        }
+    }
+
+    fun testMinBuildUnavailableFeatureIsHidden() {
+        val id = "test-min-build-feature"
+        var enabled = true
+
+        val feature = FeatureRegistry.FeatureInfo(
+            id = id,
+            displayName = "Test Min Build Feature",
+            description = "A fake min build feature for testing",
+            maturity = FeatureMaturity.STABLE,
+            category = FeatureCategory.OTHER,
+            youtrackIssues = emptyList(),
+            loggingCategories = emptyList(),
+            since = "",
+            removeIn = "",
+            minBuild = "999.99999",
+            bundledIn = "",
+            propertyName = id,
+            getter = { enabled },
+            setter = { enabled = it }
+        )
+
+        registry.registerAdditionalFeature(feature)
+        try {
+            assertFalse("Feature should be unavailable for current build", feature.isAvailable())
+            assertFalse("Feature should not be enabled when unavailable", feature.isEnabled())
+            assertNotNull("Unavailable feature should have a reason", feature.unavailabilityReason())
+            assertTrue(
+                "Reason should mention minimum build",
+                feature.unavailabilityReason()!!.contains("Requires IDE build >=")
+            )
+            assertFalse(
+                "Unavailable features should be excluded from visible list",
+                registry.getVisibleFeatures().any { it.id == id }
+            )
+        } finally {
+            registry.unregisterAdditionalFeature(id)
         }
     }
 

@@ -2,6 +2,7 @@ package com.github.chbndrhnns.betterpy.featureflags
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.Logger
 import org.jetbrains.annotations.TestOnly
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.full.findAnnotation
@@ -15,6 +16,7 @@ import kotlin.reflect.jvm.javaField
  */
 @Service
 class FeatureRegistry {
+    private val logger = Logger.getInstance(FeatureRegistry::class.java)
 
     /**
      * Information about a single feature, combining annotation metadata with runtime accessors.
@@ -29,12 +31,24 @@ class FeatureRegistry {
         val loggingCategories: List<String>,
         val since: String,
         val removeIn: String,
+        val minBuild: String,
+        val bundledIn: String,
         val propertyName: String,
         private val getter: () -> Boolean,
         private val setter: (Boolean) -> Unit
     ) {
+        private val availability: FeatureAvailability.Availability by lazy {
+            FeatureAvailability.evaluate(minBuild, bundledIn)
+        }
+
         /** Returns whether this feature is currently enabled. */
-        fun isEnabled(): Boolean = getter()
+        fun isEnabled(): Boolean = isAvailable() && getter()
+
+        /** Returns whether this feature is available on the current IDE build. */
+        fun isAvailable(): Boolean = availability.available
+
+        /** Returns the reason this feature is unavailable, if any. */
+        fun unavailabilityReason(): String? = availability.reason
 
         /** Sets whether this feature is enabled. */
         fun setEnabled(value: Boolean) = setter(value)
@@ -85,7 +99,7 @@ class FeatureRegistry {
 
     /** Returns all features that should be visible in the settings UI (excludes HIDDEN). */
     fun getVisibleFeatures(): List<FeatureInfo> =
-        allFeatures().values.filter { it.maturity != FeatureMaturity.HIDDEN }
+        allFeatures().values.filter { it.maturity != FeatureMaturity.HIDDEN && it.isAvailable() }
 
     /** Returns all hidden features. */
     fun getHiddenFeatures(): List<FeatureInfo> =
@@ -97,7 +111,14 @@ class FeatureRegistry {
 
     /** Sets whether a feature is enabled by its ID. Does nothing if feature not found. */
     fun setFeatureEnabled(id: String, enabled: Boolean) {
-        allFeatures()[id]?.setEnabled(enabled)
+        val feature = allFeatures()[id] ?: return
+        if (!feature.isAvailable()) {
+            if (!enabled) {
+                feature.setEnabled(false)
+            }
+            return
+        }
+        feature.setEnabled(enabled)
     }
 
     /** Returns all enabled incubating features. */
@@ -115,6 +136,17 @@ class FeatureRegistry {
     /** Returns visible features grouped by category. */
     fun getVisibleFeaturesByCategories(): Map<FeatureCategory, List<FeatureInfo>> =
         getVisibleFeatures().groupBy { it.category }
+
+    /** Disables all features that are unavailable in the current IDE version. */
+    fun disableUnavailableFeatures() {
+        allFeatures().values
+            .filterNot { it.isAvailable() }
+            .forEach { it.setEnabled(false) }
+    }
+
+    /** Returns features that are unavailable on the current IDE build. */
+    fun getUnavailableFeatures(): List<FeatureInfo> =
+        allFeatures().values.filterNot { it.isAvailable() }
 
     /** Returns all unique YouTrack issue IDs referenced by features. */
     fun getAllYouTrackIssues(): Set<String> =
@@ -154,6 +186,13 @@ class FeatureRegistry {
         bindings.forEach { binding ->
             val declaration = declarationsById[binding.id]
                 ?: error("Feature declaration not found for id: ${binding.id}")
+            val availability = FeatureAvailability.evaluate(declaration.minBuild, declaration.bundledIn)
+            if (declaration.minBuild.isNotBlank() || declaration.bundledIn.isNotBlank()) {
+                logger.debug(
+                    "Feature ${declaration.id} minBuild=${declaration.minBuild} bundledIn=${declaration.bundledIn} " +
+                        "available=${availability.available} reason=${availability.reason}"
+                )
+            }
             result[binding.id] = FeatureInfo(
                 id = declaration.id,
                 displayName = declaration.displayName,
@@ -164,6 +203,8 @@ class FeatureRegistry {
                 loggingCategories = declaration.loggingCategories,
                 since = declaration.since,
                 removeIn = declaration.removeIn,
+                minBuild = declaration.minBuild,
+                bundledIn = declaration.bundledIn,
                 propertyName = binding.propertyName,
                 getter = binding.getter,
                 setter = binding.setter

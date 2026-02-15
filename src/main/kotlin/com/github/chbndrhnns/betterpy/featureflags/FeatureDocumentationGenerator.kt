@@ -87,6 +87,12 @@ object FeatureDocumentationGenerator {
                         if (feature.since.isNotEmpty()) {
                             appendLine("| Since | ${feature.since} |")
                         }
+                        if (feature.minBuild.isNotEmpty()) {
+                            appendLine("| Min Build | ${feature.minBuild} |")
+                        }
+                        if (feature.bundledIn.isNotEmpty()) {
+                            appendLine("| Bundled In | ${feature.bundledIn} |")
+                        }
 
                         // YouTrack issues
                         if (feature.youtrackIssues.isNotEmpty()) {
@@ -149,6 +155,8 @@ object FeatureDocumentationGenerator {
                 appendLine("      \"propertyName\": \"${feature.propertyName}\",")
                 appendLine("      \"since\": \"${feature.since}\",")
                 appendLine("      \"removeIn\": \"${feature.removeIn}\",")
+                appendLine("      \"minBuild\": \"${feature.minBuild}\",")
+                appendLine("      \"bundledIn\": \"${feature.bundledIn}\",")
                 appendLine("      \"youtrackIssues\": [${feature.youtrackIssues.joinToString(", ") { "\"$it\"" }}],")
                 appendLine("      \"enabled\": ${feature.isEnabled()}")
                 append("    }")

@@ -250,6 +250,8 @@ class BetterPyStatusBarWidgetTest : TestBase() {
             loggingCategories = emptyList(),
             since = "",
             removeIn = "",
+            minBuild = "",
+            bundledIn = "",
             propertyName = id,
             getter = { enabled },
             setter = { enabled = it }

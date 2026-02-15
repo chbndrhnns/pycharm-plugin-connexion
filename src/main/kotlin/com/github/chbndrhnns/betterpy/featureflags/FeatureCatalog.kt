@@ -16,6 +16,8 @@ data class FeatureDeclaration(
     val loggingCategories: List<String> = emptyList(),
     val since: String = "",
     val removeIn: String = "",
+    val minBuild: String = "",
+    val bundledIn: String = "",
     val defaultEnabled: Boolean = true,
     val registrations: List<FeatureRegistration> = emptyList()
 )

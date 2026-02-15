@@ -345,6 +345,7 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         if (isMuted()) {
             unmute()
         }
+        FeatureRegistry.instance().disableUnavailableFeatures()
     }
 
     fun isMuted(): Boolean = myState.originalState != null

@@ -6,7 +6,10 @@ object FeatureDefaults {
         declarations.associateBy { it.id }
     }
 
-    fun defaultEnabled(id: String): Boolean =
-        declarationsById[id]?.defaultEnabled
+    fun defaultEnabled(id: String): Boolean {
+        val declaration = declarationsById[id]
             ?: error("Feature declaration not found for id: $id")
+        return declaration.defaultEnabled &&
+            FeatureAvailability.isAvailable(declaration.minBuild, declaration.bundledIn)
+    }
 }

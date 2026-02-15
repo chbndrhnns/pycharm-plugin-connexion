@@ -72,6 +72,12 @@
     "removeIn": {
       "type": "string"
     },
+    "minBuild": {
+      "type": "string"
+    },
+    "bundledIn": {
+      "type": "string"
+    },
     "defaultEnabled": {
       "type": "boolean"
     },

@@ -43,6 +43,25 @@ class PluginSettingsConfigurable : BoundConfigurable("BetterPy"), SearchableConf
                 }
             }
 
+            val unavailableFeatures = registry.getUnavailableFeatures()
+                .filter { it.maturity != FeatureMaturity.HIDDEN }
+                .sortedBy { it.displayName }
+            if (unavailableFeatures.isNotEmpty()) {
+                group("Unavailable features") {
+                    row {
+                        label("These features are disabled for this IDE build.")
+                    }
+                    unavailableFeatures.forEach { feature ->
+                        val reason = feature.unavailabilityReason()
+                            ?: "Unavailable for the current IDE build"
+                        row {
+                            label(feature.displayName)
+                                .comment(reason)
+                        }
+                    }
+                }
+            }
+
             rows
         }.asDialogPanel()
     }
