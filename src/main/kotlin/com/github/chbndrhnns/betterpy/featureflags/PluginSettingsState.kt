@@ -330,6 +330,9 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         @Feature("move-to-outer-scope")
         var enableMoveToOuterScopeIntention: Boolean = FeatureDefaults.defaultEnabled("move-to-outer-scope"),
 
+        @Feature("move-to-inner-scope")
+        var enableMoveToInnerScopeIntention: Boolean = FeatureDefaults.defaultEnabled("move-to-inner-scope"),
+
         /**
          * Snapshotted state before "Mute All" was activated.
          * If non-null, it means the plugin is currently in "Mute All" mode.

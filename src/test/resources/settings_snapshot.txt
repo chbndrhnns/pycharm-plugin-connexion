@@ -392,6 +392,48 @@ DialogPanel
   </body>
 </html>
 '
+  CheckBox: [x] 'Move to inner scope'
+  MaturityTagLabel
+    Label: 'Incubating'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Moves a top-level function into a class as a method
+  </body>
+</html>
+'
+  CheckBox: [x] 'Move to outer scope'
+  MaturityTagLabel
+    Label: 'Incubating'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Moves a nested class to the outer (top-level) scope
+  </body>
+</html>
+'
   CheckBox: [x] 'NewType/TypeVar/ParamSpec rename'
   TextField: '<html>
   <head>
