@@ -149,14 +149,17 @@ class BetterPyStatusBarWidget(
         } else {
             actions.add(PopupAction("Disable all features (temporary until restart)"))
         }
-        val incubatingEnabled = isEnvironmentSupported() && !settings.isMuted()
-        val incubatingActive = FeatureRegistry.instance().getEnabledIncubatingFeatures().isNotEmpty()
-        val incubatingLabel = if (incubatingActive) {
-            "Turn incubating features off (temporary until restart)"
-        } else {
-            "Turn incubating features on"
+        val hasIncubating = FeatureRegistry.instance().getIncubatingFeatures().isNotEmpty()
+        if (hasIncubating) {
+            val incubatingEnabled = isEnvironmentSupported() && !settings.isMuted()
+            val incubatingActive = FeatureRegistry.instance().getEnabledIncubatingFeatures().isNotEmpty()
+            val incubatingLabel = if (incubatingActive) {
+                "Turn incubating features off (temporary until restart)"
+            } else {
+                "Turn incubating features on"
+            }
+            actions.add(PopupAction(incubatingLabel, incubatingEnabled))
         }
-        actions.add(PopupAction(incubatingLabel, incubatingEnabled))
         return actions
     }
 
