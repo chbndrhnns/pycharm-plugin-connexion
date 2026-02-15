@@ -23,6 +23,16 @@ class PyMoveToInnerScopeIntention : PsiElementBaseIntentionAction() {
         if (!PluginSettingsState.instance().state.enableMoveToInnerScopeIntention) return false
         if (!element.isOwnCode()) return false
 
+        // Check for top-level function → move into class
+        if (isAvailableForFunction(element)) return true
+
+        // Check for top-level class → move into another class
+        if (isAvailableForClass(element)) return true
+
+        return false
+    }
+
+    private fun isAvailableForFunction(element: PsiElement): Boolean {
         val pyFunction = PsiTreeUtil.getParentOfType(element, PyFunction::class.java) ?: return false
         val nameIdentifier = pyFunction.nameIdentifier ?: return false
         if (!PsiTreeUtil.isAncestor(nameIdentifier, element, false)) return false
@@ -48,14 +58,59 @@ class PyMoveToInnerScopeIntention : PsiElementBaseIntentionAction() {
         return true
     }
 
+    private fun isAvailableForClass(element: PsiElement): Boolean {
+        val pyClass = PsiTreeUtil.getParentOfType(element, PyClass::class.java) ?: return false
+        val nameIdentifier = pyClass.nameIdentifier ?: return false
+        if (!PsiTreeUtil.isAncestor(nameIdentifier, element, false)) return false
+
+        // Must be a top-level class
+        val outerClass = PsiTreeUtil.getParentOfType(pyClass, PyClass::class.java, true)
+        if (outerClass != null) return false
+        val enclosingFunc = PsiTreeUtil.getParentOfType(pyClass, PyFunction::class.java, true)
+        if (enclosingFunc != null) return false
+
+        val file = pyClass.containingFile as? PyFile ?: return false
+        val className = pyClass.name ?: return false
+
+        // Must have at least one other top-level class in the file to move into
+        val otherClasses = file.topLevelClasses.filter { it !== pyClass }
+        if (otherClasses.isEmpty()) return false
+
+        // Find the target class
+        val targetClass = findTargetClassForClass(pyClass, otherClasses) ?: return false
+
+        // D5: Name collision — check if target class already has a nested class with the same name
+        if (hasNameCollision(className, targetClass)) return false
+
+        return true
+    }
+
     override fun invoke(project: Project, editor: Editor?, element: PsiElement) {
-        val pyFunction = PsiTreeUtil.getParentOfType(element, PyFunction::class.java) ?: return
-        val file = pyFunction.containingFile as? PyFile ?: return
-        val classes = file.topLevelClasses
+        // Try function first
+        val pyFunction = PsiTreeUtil.getParentOfType(element, PyFunction::class.java)
+        if (pyFunction != null && pyFunction.containingClass == null) {
+            val nameId = pyFunction.nameIdentifier
+            if (nameId != null && PsiTreeUtil.isAncestor(nameId, element, false)) {
+                val file = pyFunction.containingFile as? PyFile ?: return
+                val classes = file.topLevelClasses
+                val targetClass = findTargetClass(pyFunction, classes) ?: return
+                PyMoveFunctionIntoClassProcessor(project, pyFunction, targetClass).run()
+                return
+            }
+        }
 
-        val targetClass = findTargetClass(pyFunction, classes) ?: return
-
-        PyMoveFunctionIntoClassProcessor(project, pyFunction, targetClass).run()
+        // Try class
+        val pyClass = PsiTreeUtil.getParentOfType(element, PyClass::class.java)
+        if (pyClass != null && PsiTreeUtil.getParentOfType(pyClass, PyClass::class.java, true) == null) {
+            val nameId = pyClass.nameIdentifier
+            if (nameId != null && PsiTreeUtil.isAncestor(nameId, element, false)) {
+                val file = pyClass.containingFile as? PyFile ?: return
+                val otherClasses = file.topLevelClasses.filter { it !== pyClass }
+                val targetClass = findTargetClassForClass(pyClass, otherClasses) ?: return
+                PyMoveClassIntoClassProcessor(project, pyClass, targetClass).run()
+                return
+            }
+        }
     }
 
     companion object {
@@ -86,10 +141,20 @@ class PyMoveToInnerScopeIntention : PsiElementBaseIntentionAction() {
         /**
          * Check if the target class already has a method with the given name.
          */
-        fun hasNameCollision(funcName: String, targetClass: PyClass): Boolean {
+        fun hasNameCollision(name: String, targetClass: PyClass): Boolean {
             return targetClass.statementList.statements.any { stmt ->
-                stmt is PyFunction && stmt.name == funcName
+                (stmt is PyFunction && stmt.name == name) ||
+                    (stmt is PyClass && stmt.name == name)
             }
+        }
+
+        /**
+         * Find the target class for moving a top-level class into.
+         * If there's exactly one other top-level class, use it.
+         */
+        fun findTargetClassForClass(classToMove: PyClass, otherClasses: List<PyClass>): PyClass? {
+            if (otherClasses.size == 1) return otherClasses[0]
+            return null
         }
     }
 }
