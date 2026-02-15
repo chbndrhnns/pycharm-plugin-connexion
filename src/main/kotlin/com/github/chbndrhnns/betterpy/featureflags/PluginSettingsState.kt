@@ -424,7 +424,7 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
 
         val registry = FeatureRegistry.instance()
         registry.getIncubatingFeatures().forEach { feature ->
-            feature.setEnabled(!feature.isEnabled())
+            feature.setEnabled(false)
         }
         LOG.info("Incubating feature overrides activated.")
     }

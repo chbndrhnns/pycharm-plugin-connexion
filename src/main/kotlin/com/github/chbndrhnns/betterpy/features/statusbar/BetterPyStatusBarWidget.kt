@@ -98,17 +98,6 @@ class BetterPyStatusBarWidget(
 
             override fun onChosen(selectedValue: PopupAction?, finalChoice: Boolean): PopupStep<*>? {
                 lastSelectedValue = selectedValue
-                when (selectedValue?.label) {
-                    "Disable all features" -> {
-                        PluginSettingsState.instance().mute()
-                        updateIcon()
-                    }
-
-                    "Enable all features" -> {
-                        PluginSettingsState.instance().unmute()
-                        updateIcon()
-                    }
-                }
                 return FINAL_CHOICE
             }
 
@@ -117,8 +106,19 @@ class BetterPyStatusBarWidget(
                 return when {
                     label == "Copy Diagnostic Data" -> Runnable { invokeCopyDiagnosticDataAction() }
                     label == "Settings" -> Runnable { invokeShowSettingsAction() }
+                    label?.startsWith("Disable all features") == true -> Runnable {
+                        PluginSettingsState.instance().mute()
+                        updateIcon()
+                    }
+                    label == "Enable all features" -> Runnable {
+                        PluginSettingsState.instance().unmute()
+                        updateIcon()
+                    }
                     label?.startsWith("Turn incubating features ") == true ->
-                        Runnable { invokeToggleIncubatingFeaturesAction() }
+                        Runnable {
+                            PluginSettingsState.instance().toggleIncubatingFeatures()
+                            updateIcon()
+                        }
                     else -> null
                 }
             }

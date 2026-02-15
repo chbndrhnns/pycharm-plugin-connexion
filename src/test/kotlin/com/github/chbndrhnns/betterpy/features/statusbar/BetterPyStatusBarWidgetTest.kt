@@ -116,6 +116,101 @@ class BetterPyStatusBarWidgetTest : TestBase() {
         }
     }
 
+    fun testIncubatingToggleChangesPopupLabel() {
+        val settings = PluginSettingsState.instance()
+        settings.unmute()
+        try {
+            val widget = createWidget()
+
+            // Initially incubating features should be enabled (defaultEnabled: true in yaml)
+            val actionsBefore = widget.getPopupActions().map { it.label }
+            assertTrue(
+                "Should show 'Turn incubating features off' initially",
+                actionsBefore.any { it.startsWith("Turn incubating features off") }
+            )
+
+            // Toggle incubating features off
+            settings.toggleIncubatingFeatures()
+
+            val actionsAfter = widget.getPopupActions().map { it.label }
+            assertTrue(
+                "Should show 'Turn incubating features on' after toggling off, but got: $actionsAfter",
+                actionsAfter.any { it.startsWith("Turn incubating features on") }
+            )
+
+            // Toggle back
+            settings.toggleIncubatingFeatures()
+
+            val actionsRestored = widget.getPopupActions().map { it.label }
+            assertTrue(
+                "Should show 'Turn incubating features off' after restoring",
+                actionsRestored.any { it.startsWith("Turn incubating features off") }
+            )
+        } finally {
+            // Ensure clean state
+            if (settings.isIncubatingOverrideActive()) {
+                settings.toggleIncubatingFeatures()
+            }
+        }
+    }
+
+    fun testIncubatingToggleWorksWhenOneFeatureAlreadyDisabled() {
+        val settings = PluginSettingsState.instance()
+        settings.unmute()
+        val registry = com.github.chbndrhnns.betterpy.featureflags.FeatureRegistry.instance()
+        val incubatingFeatures = registry.getIncubatingFeatures()
+        assertTrue("Need at least one incubating feature for this test", incubatingFeatures.isNotEmpty())
+
+        // Disable one incubating feature via settings (simulating user turning it off)
+        val firstFeature = incubatingFeatures.first()
+        val originalValue = firstFeature.isEnabled()
+        firstFeature.setEnabled(false)
+
+        try {
+            val widget = createWidget()
+
+            // Some incubating features are still enabled, so popup should show "off"
+            if (incubatingFeatures.size > 1) {
+                val actionsBefore = widget.getPopupActions().map { it.label }
+                assertTrue(
+                    "Should show 'Turn incubating features off' when some are still enabled, got: $actionsBefore",
+                    actionsBefore.any { it.startsWith("Turn incubating features off") }
+                )
+            }
+
+            // Toggle incubating features off
+            settings.toggleIncubatingFeatures()
+
+            // ALL incubating features should now be disabled
+            incubatingFeatures.forEach { feature ->
+                assertFalse(
+                    "Incubating feature '${feature.id}' should be disabled after toggle off",
+                    feature.isEnabled()
+                )
+            }
+
+            val actionsAfter = widget.getPopupActions().map { it.label }
+            assertTrue(
+                "Should show 'Turn incubating features on' after toggling off, got: $actionsAfter",
+                actionsAfter.any { it.startsWith("Turn incubating features on") }
+            )
+
+            // Restore
+            settings.toggleIncubatingFeatures()
+
+            // The first feature should be restored to its pre-toggle state (disabled)
+            assertFalse(
+                "First feature should still be disabled after restore (was disabled before toggle)",
+                firstFeature.isEnabled()
+            )
+        } finally {
+            if (settings.isIncubatingOverrideActive()) {
+                settings.toggleIncubatingFeatures()
+            }
+            firstFeature.setEnabled(originalValue)
+        }
+    }
+
     fun testInvokeShowSettingsActionOpensPluginConfigurable() {
         val fakeShowSettingsUtil = FakeShowSettingsUtil()
 
