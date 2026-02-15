@@ -92,15 +92,23 @@ class PyMoveToOuterScopeIntentionTest : TestBase() {
         )
     }
 
-    // Not available when caret is not on class name
-    fun testNotAvailableOnMethodInsideNestedClass() {
-        myFixture.assertIntentionNotAvailable(
+    // Caret on method inside nested class — now available as "move method to top-level" (Phase 3)
+    fun testAvailableOnMethodInsideNestedClass() {
+        myFixture.doIntentionTest(
             filename = "a.py",
-            text = """
+            before = """
                 class Outer:
                     class Inner:
                         def meth<caret>od(self):
                             pass
+            """,
+            after = """
+                class Outer:
+                    class Inner:
+                        pass
+
+                def method(self: Inner):
+                    pass
             """,
             intentionName = intentionName
         )

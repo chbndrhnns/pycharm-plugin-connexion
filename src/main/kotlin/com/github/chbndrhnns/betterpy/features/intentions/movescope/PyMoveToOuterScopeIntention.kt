@@ -26,6 +26,9 @@ class PyMoveToOuterScopeIntention : PsiElementBaseIntentionAction() {
         // Check for local function case
         if (isAvailableForLocalFunction(element)) return true
 
+        // Check for method case
+        if (isAvailableForMethod(element)) return true
+
         return false
     }
 
@@ -95,6 +98,61 @@ class PyMoveToOuterScopeIntention : PsiElementBaseIntentionAction() {
         return false
     }
 
+    private fun isAvailableForMethod(element: PsiElement): Boolean {
+        val pyFunction = PsiTreeUtil.getParentOfType(element, PyFunction::class.java) ?: return false
+        val nameIdentifier = pyFunction.nameIdentifier ?: return false
+        if (!PsiTreeUtil.isAncestor(nameIdentifier, element, false)) return false
+        // Must be a method (inside a class, not inside another function)
+        val containingClass = pyFunction.containingClass ?: return false
+        val enclosingFunc = PsiTreeUtil.getParentOfType(pyFunction, PyFunction::class.java, true)
+        if (enclosingFunc != null) return false // local function case handled separately
+        val funcName = pyFunction.name ?: return false
+
+        // Name collision at module level
+        val file = pyFunction.containingFile as? PyFile ?: return false
+        if (file.topLevelFunctions.any { it.name == funcName }) return false
+
+        // Block if method uses super()
+        if (usesSuperCall(pyFunction)) return false
+
+        // Block if method is a @property
+        if (isPropertyMethod(pyFunction)) return false
+
+        // Block dunder methods
+        if (funcName.startsWith("__") && funcName.endsWith("__")) return false
+
+        // Block @staticmethod and @classmethod
+        val decorators = pyFunction.decoratorList?.decorators ?: emptyArray()
+        if (decorators.any { it.name == "staticmethod" || it.name == "classmethod" }) return false
+
+        // Must have self parameter
+        val params = pyFunction.parameterList.parameters
+        if (params.isEmpty() || params[0].name != "self") return false
+
+        return true
+    }
+
+    private fun usesSuperCall(function: PyFunction): Boolean {
+        val calls = PsiTreeUtil.findChildrenOfType(function.statementList, PyCallExpression::class.java)
+        return calls.any { call ->
+            val callee = call.callee
+            callee is PyReferenceExpression && callee.referencedName == "super"
+        }
+    }
+
+    private fun isPropertyMethod(function: PyFunction): Boolean {
+        val decorators = function.decoratorList?.decorators ?: return false
+        return decorators.any { dec ->
+            val name = dec.name
+            val qualifiedName = dec.qualifiedName?.toString()
+            name == "property" ||
+                qualifiedName?.endsWith(".setter") == true ||
+                qualifiedName?.endsWith(".deleter") == true ||
+                dec.text.contains(".setter") ||
+                dec.text.contains(".deleter")
+        }
+    }
+
     private fun referencesOuterMembers(nestedClass: PyClass, outerClass: PyClass): Boolean {
         val outerName = outerClass.name ?: return false
         val refs = PsiTreeUtil.findChildrenOfType(nestedClass, PyReferenceExpression::class.java)
@@ -131,7 +189,7 @@ class PyMoveToOuterScopeIntention : PsiElementBaseIntentionAction() {
             }
         }
 
-        // Try local function
+        // Try local function or method
         val pyFunction = PsiTreeUtil.getParentOfType(element, PyFunction::class.java)
         if (pyFunction != null) {
             val nameId = pyFunction.nameIdentifier
@@ -139,6 +197,11 @@ class PyMoveToOuterScopeIntention : PsiElementBaseIntentionAction() {
                 val outerFunction = PsiTreeUtil.getParentOfType(pyFunction, PyFunction::class.java, true)
                 if (outerFunction != null) {
                     PyMoveLocalFunctionProcessor(project, pyFunction, outerFunction).run()
+                    return
+                }
+                // Method to top-level function
+                if (pyFunction.containingClass != null) {
+                    PyMoveMethodToTopLevelProcessor(project, pyFunction).run()
                     return
                 }
             }
