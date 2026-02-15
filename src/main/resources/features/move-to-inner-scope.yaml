@@ -1,0 +1,14 @@
+id: move-to-inner-scope
+displayName: Move to inner scope
+description: Moves a top-level function into a class as a method
+category: CODE_STRUCTURE
+maturity: INCUBATING
+youtrackIssues: [ ]
+loggingCategories:
+  - com.github.chbndrhnns.betterpy.features.intentions.movescope.PyMoveToInnerScopeIntention
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: intentionAction
+    className: com.github.chbndrhnns.betterpy.features.intentions.movescope.PyMoveToInnerScopeIntention
