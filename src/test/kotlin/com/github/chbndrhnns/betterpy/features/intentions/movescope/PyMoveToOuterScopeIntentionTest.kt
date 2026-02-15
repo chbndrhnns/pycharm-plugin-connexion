@@ -252,6 +252,97 @@ class PyMoveToOuterScopeIntentionTest : TestBase() {
         )
     }
 
+    // U2: Nested class references outer class members — intention blocked
+    fun testNotAvailableWhenNestedClassReferencesOuterMembers() {
+        myFixture.assertIntentionNotAvailable(
+            filename = "a.py",
+            text = """
+                class Outer:
+                    class_var = 42
+
+                    class In<caret>ner:
+                        def method(self):
+                            return Outer.class_var
+            """,
+            intentionName = intentionName
+        )
+    }
+
+    // U2 variant: references outer method
+    fun testNotAvailableWhenNestedClassReferencesOuterMethod() {
+        myFixture.assertIntentionNotAvailable(
+            filename = "a.py",
+            text = """
+                class Outer:
+                    @staticmethod
+                    def helper():
+                        pass
+
+                    class In<caret>ner:
+                        def method(self):
+                            Outer.helper()
+            """,
+            intentionName = intentionName
+        )
+    }
+
+    // U2 variant: referencing Outer itself (not Outer.something) is OK
+    fun testAvailableWhenNestedClassReferencesOuterNameOnly() {
+        myFixture.doIntentionTest(
+            filename = "a.py",
+            before = """
+                class Outer:
+                    class In<caret>ner(Outer):
+                        pass
+            """,
+            after = """
+                class Outer:
+                    pass
+
+                class Inner(Outer):
+                    pass
+            """,
+            intentionName = intentionName
+        )
+    }
+
+    // E9: Nested class with __slots__ referencing outer class member
+    fun testNotAvailableWhenSlotsReferenceOuter() {
+        myFixture.assertIntentionNotAvailable(
+            filename = "a.py",
+            text = """
+                class Outer:
+                    some_attr = "value"
+
+                    class In<caret>ner:
+                        __slots__ = ('x',)
+                        def method(self):
+                            return Outer.some_attr
+            """,
+            intentionName = intentionName
+        )
+    }
+
+    // E12: Moving the only member out of a class — inserts pass
+    fun testMovingOnlyMemberInsertsPass() {
+        myFixture.doIntentionTest(
+            filename = "a.py",
+            before = """
+                class Outer:
+                    class In<caret>ner:
+                        pass
+            """,
+            after = """
+                class Outer:
+                    pass
+
+                class Inner:
+                    pass
+            """,
+            intentionName = intentionName
+        )
+    }
+
     // Multiple nested classes — only the targeted one moves
     fun testMultipleNestedClassesOnlyTargetMoves() {
         myFixture.doIntentionTest(
