@@ -1,0 +1,14 @@
+id: move-to-outer-scope
+displayName: Move to outer scope
+description: Moves a nested class to the outer (top-level) scope
+category: CODE_STRUCTURE
+maturity: INCUBATING
+youtrackIssues: [ ]
+loggingCategories:
+  - com.github.chbndrhnns.betterpy.features.intentions.movescope.PyMoveToOuterScopeIntention
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: intentionAction
+    className: com.github.chbndrhnns.betterpy.features.intentions.movescope.PyMoveToOuterScopeIntention

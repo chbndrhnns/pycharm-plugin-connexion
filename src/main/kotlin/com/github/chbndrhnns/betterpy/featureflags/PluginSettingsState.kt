@@ -327,6 +327,9 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         @Feature("pytest-parametrize-ids-count-inspection")
         var enablePytestParametrizeIdsCountInspection: Boolean = FeatureDefaults.defaultEnabled("pytest-parametrize-ids-count-inspection"),
 
+        @Feature("move-to-outer-scope")
+        var enableMoveToOuterScopeIntention: Boolean = FeatureDefaults.defaultEnabled("move-to-outer-scope"),
+
         /**
          * Snapshotted state before "Mute All" was activated.
          * If non-null, it means the plugin is currently in "Mute All" mode.

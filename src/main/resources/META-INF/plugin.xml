@@ -269,6 +269,11 @@
         </intentionAction>
 
         <intentionAction>
+            <className>com.github.chbndrhnns.betterpy.features.intentions.movescope.PyMoveToOuterScopeIntention</className>
+            <category>Refactorings</category>
+        </intentionAction>
+
+        <intentionAction>
             <className>
                 com.github.chbndrhnns.betterpy.features.intentions.annotations.CopyMethodAnnotationsFromParentIntention
             </className>
