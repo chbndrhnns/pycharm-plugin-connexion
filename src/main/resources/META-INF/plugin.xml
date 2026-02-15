@@ -105,6 +105,9 @@
         <gotoDeclarationHandler
                 implementation="com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureGotoDeclarationHandler"
                 order="first"/>
+        <typeDeclarationProvider
+                implementation="com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureGotoTypeDeclarationHandler"
+                order="first"/>
 
         <definitionsScopedSearch
                 implementation="com.github.chbndrhnns.betterpy.features.search.PyProtocolDefinitionsSearchExecutor"/>

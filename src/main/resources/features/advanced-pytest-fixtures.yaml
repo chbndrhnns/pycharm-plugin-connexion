@@ -6,6 +6,7 @@ maturity: INCUBATING
 youtrackIssues:
   - PY-81495
   - PY-60973
+  - PY-56268
 loggingCategories:
   - com.github.chbndrhnns.betterpy.features.pytest.fixture
 since: ''
@@ -28,6 +29,8 @@ registrations:
     className: com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureFindUsagesHandlerFactory
   - type: gotoDeclarationHandler
     className: com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureGotoDeclarationHandler
+  - type: typeDeclarationProvider
+    className: com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureGotoTypeDeclarationHandler
   - type: psi.referenceContributor
     className: com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureReferenceContributor
   - type: pySuperMethodsSearch

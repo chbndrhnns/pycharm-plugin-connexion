@@ -5,6 +5,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.testFramework.PsiTestUtil
+import com.jetbrains.python.psi.PyClass
 import com.jetbrains.python.psi.PyFunction
 import com.jetbrains.python.psi.PyNamedParameter
 import com.jetbrains.python.sdk.PythonSdkUtil
@@ -674,6 +675,78 @@ class PytestFixtureNavigationTest : TestBase() {
             resolvedFn.containingClass
         )
         assertEquals("othername2", resolvedFn.name)
+    }
+
+    // Test: Go to Type Declaration from fixture parameter in test function signature
+    fun testGotoTypeDeclarationFromFixtureParameter() {
+        val code = """
+            import pytest
+            
+            
+            class A:
+                ...
+            
+            
+            @pytest.fixture
+            def instance():
+                return A()
+            
+            
+            def test_something(inst<caret>ance):
+                assert instance
+        """.trimIndent()
+
+        myFixture.configureByText("test_type_decl.py", code)
+
+        val handler = PytestFixtureGotoTypeDeclarationHandler()
+        val parameter = PsiTreeUtil.getParentOfType(
+            myFixture.file.findElementAt(myFixture.caretOffset),
+            PyNamedParameter::class.java
+        )
+        assertNotNull("Should find parameter at caret", parameter)
+
+        val targets = handler.getSymbolTypeDeclarations(parameter!!)
+        assertNotNull("Should find type declaration targets", targets)
+        assertTrue("Should have at least one target", targets!!.isNotEmpty())
+
+        val classTarget = targets.mapNotNull { it as? PyClass }
+        assertTrue("Should navigate to class A", classTarget.any { it.name == "A" })
+    }
+
+    // Test: Go to Type Declaration from fixture parameter inside test body
+    fun testGotoTypeDeclarationFromFixtureUsageInBody() {
+        val code = """
+            import pytest
+            
+            
+            class MyModel:
+                ...
+            
+            
+            @pytest.fixture
+            def my_model():
+                return MyModel()
+            
+            
+            def test_something(my_mod<caret>el):
+                assert my_model
+        """.trimIndent()
+
+        myFixture.configureByText("test_type_decl_body.py", code)
+
+        val handler = PytestFixtureGotoTypeDeclarationHandler()
+        val parameter = PsiTreeUtil.getParentOfType(
+            myFixture.file.findElementAt(myFixture.caretOffset),
+            PyNamedParameter::class.java
+        )
+        assertNotNull("Should find parameter at caret", parameter)
+
+        val targets = handler.getSymbolTypeDeclarations(parameter!!)
+        assertNotNull("Should find type declaration targets", targets)
+        assertTrue("Should have at least one target", targets!!.isNotEmpty())
+
+        val classTarget = targets.mapNotNull { it as? PyClass }
+        assertTrue("Should navigate to class MyModel", classTarget.any { it.name == "MyModel" })
     }
 
     // Test 11: No reference for self/cls parameters
