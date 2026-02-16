@@ -52,7 +52,6 @@ def do():
 
 
 - [ ] feat: Add stub index to recognize assignment style fixtures, like pytest_mock
-- [ ] feat: Recognize methods like `assert_called_once_with` in mocks
 - [ ] feat: Copy with inspection results in xml format
 - [ ] feat: Attach run node context menu in pytest explorer
 - [ ] feat: Only discover tests when SDK is set up
@@ -122,6 +121,7 @@ def do():
 
 ## Completed Tasks (newest first)
 
+- [x] feat: Recognize methods like `assert_called_once_with` in mocks
 - [x] feat: Parse class names in errors from anyio.TaskGroup
 - [x] fix: Should mark fixture as unresolved if no parent fixture exists
 - [x] fix: Go to declaration fails
