@@ -185,19 +185,6 @@ tasks {
     }
 }
 
-// Custom task to generate feature documentation
-// This runs the GenerateFeatureDocsTest which requires IntelliJ Platform test infrastructure
-tasks.register<Exec>("generateFeatureDocs") {
-    description = "Generates feature documentation from @Feature annotations"
-    group = "documentation"
-
-    workingDir = projectDir
-    commandLine(
-        "./gradlew", "test",
-        "--tests", "com.github.chbndrhnns.betterpy.featureflags.GenerateFeatureDocsTest",
-        "-PrunDocGenTest=true"
-    )
-}
 
 // runIdeForUiTests task for UI testing with Robot Server Plugin
 val runIdeForUiTests by intellijPlatformTesting.runIde.registering {

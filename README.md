@@ -18,20 +18,14 @@
 - [ ] Configure the [CODECOV_TOKEN](https://docs.codecov.com/docs/quick-start) secret for automated test coverage reports on PRs
 
 <!-- Plugin description -->
-Python DDD Toolkit is a productivity plugin for Python codebases (especially DDD-style projects) in PyCharm / IntelliJ-based IDEs.
+Connexion / OpenAPI assistance for Python projects in PyCharm / IntelliJ-based IDEs.
 
 Key features:
 
-- **Intentions / quick-fixes** for common refactorings:
-  - Populate missing arguments.
-  - Introduce a *parameter object*.
-  - Change visibility.
-  - Make parameters optional (type-hint helper).
-- **Type-mismatch helpers**: wrap/unwrap expressions to the expected type.
-- **Connexion / OpenAPI assistance**:
-  - Inspections for unresolved Connexion references (JSON).
-  - Gutter markers and navigation between Python/JSON references and OpenAPI operations.
-- **Protocol-oriented navigation**: custom protocol definition search/caching and an improved Python structure view.
+- **Inspections** for unresolved Connexion references in JSON and YAML OpenAPI specs.
+- **Navigation** between Python handlers and OpenAPI operations.
+- **Line markers** to jump between spec and implementation.
+- **Completion and rename** for operation IDs and controller references.
 
 This section is used as the plugin description for the built `plugin.xml` during the Gradle build.
 <!-- Plugin description end -->
