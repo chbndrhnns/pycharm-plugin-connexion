@@ -75,12 +75,10 @@ class PytestFixtureGotoTypeDeclarationHandler : TypeDeclarationProvider {
         when (type) {
             is PyUnionType -> type.members.forEach { collectClasses(it, classes) }
             is PyCollectionType -> {
-                val pyClass = type.pyClass
-                if (pyClass != null) classes.add(pyClass)
+                classes.add(type.pyClass)
             }
             is PyClassType -> {
-                val pyClass = type.pyClass
-                classes.add(pyClass)
+                classes.add(type.pyClass)
             }
         }
     }

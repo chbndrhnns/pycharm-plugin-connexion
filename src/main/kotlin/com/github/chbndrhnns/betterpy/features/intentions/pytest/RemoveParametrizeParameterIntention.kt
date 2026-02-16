@@ -39,10 +39,12 @@ class RemoveParametrizeParameterIntention : IntentionAction {
         // Check caret is on a specific parameter name
         if (context.caretParamIndex < 0) return false
 
+        val function = context.function ?: return false
+
         // Reject removal if the parameter is used in the function body
         val paramName = names[context.caretParamIndex]
-        val param = context.function?.parameterList?.findParameterByName(paramName) ?: return false
-        val body = context.function?.statementList ?: return true
+        val param = function.parameterList.findParameterByName(paramName) ?: return false
+        val body = function.statementList
         val usages = ReferencesSearch.search(param, LocalSearchScope(body)).findFirst()
         return usages == null
     }

@@ -102,7 +102,7 @@ class PyMockTypeProvider : PyTypeProviderBase() {
                         return Ref.create(PyMockType(null, isAsync = false))
                     }
                     // Then check the entire file for patch.object calls targeting the same class + attribute
-                    val containingClass = (referenceTarget as? PyFunction)?.containingClass
+                    val containingClass = referenceTarget.containingClass
                     if (containingClass != null) {
                         val file = anchor.containingFile
                         if (file != null && isPatchedAttributeByClass(file, containingClass, attrName, context)) {

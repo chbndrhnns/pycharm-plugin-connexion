@@ -62,7 +62,7 @@ class CopyAsImportStatementAction : AnAction() {
 
         // Find the nearest enclosing function or class
         var current = element
-        while (current != null && current !is PyFile) {
+        while (current !is PyFile) {
             if (current is PyFunction || current is PyClass) {
                 // Only return if it's a direct child of the file (top-level)
                 return if (current.parent is PyFile) current else null
