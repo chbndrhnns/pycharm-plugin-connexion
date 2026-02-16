@@ -35,6 +35,22 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Pending Features
 
+- [ ] feat: Support introduce paramter for this case:
+
+```python
+from dataclasses import dataclass
+
+
+@dataclass
+class Instance:
+    val: int = 1
+
+
+def do():
+    <caret>y = Instance()
+```
+
+
 - [ ] feat: Add stub index to recognize assignment style fixtures, like pytest_mock
 - [ ] feat: Recognize methods like `assert_called_once_with` in mocks
 - [ ] feat: Copy with inspection results in xml format
