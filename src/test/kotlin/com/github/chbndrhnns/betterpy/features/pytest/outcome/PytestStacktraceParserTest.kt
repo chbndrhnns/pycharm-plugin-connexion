@@ -283,6 +283,35 @@ class PytestStacktraceParserTest : TestBase() {
 
         val result = PytestStacktraceParser.parseFailedLine(stacktrace, locationUrl)
 
-        assertEquals("Should return line 18 (call site in the test function)", 18, result)
+        assertEquals("Should return line 19 (line inside the test function)", 19, result)
+    }
+
+    fun `test parseFailedLine with exception group traceback from nested calls`() {
+        val stacktrace = """
+            tests/integration/myintegration/test_mything.py:25 (test_ok)+ Exception Group Traceback (most recent call last):
+              |   File "/path/to/site-packages/_pytest/runner.py", line 341, in from_call
+              |     result: Optional[TResult] = func()
+              |   File "/path/to/site-packages/anyio/_backends/_asyncio.py", line 2200, in _run_tests_and_fixtures
+              |     retval = await coro
+              |              ^^^^^^^^^^
+              |   File "/path/to/project/tests/integration/myintegration/test_mything.py", line 27, in test_ok
+              |     await instance.need_this([val])
+              |   File "/path/to/project/src/myintegration/instance.py", line 160, in need_this
+              |     await self._process_items_absent(without_tenants)
+              | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+              +-+---------------- 1 ----------------
+                | Traceback (most recent call last):
+                |   File "/path/to/project/src/myintegration/_resolver.py", line 233, in resolve
+                |     raise ResolveError(msg)
+                | ResolveError: No results found
+                +------------------------------------
+        """.trimIndent()
+
+        val locationUrl =
+            "python</path/to/project/tests/integration/myintegration>://tests.integration.netbox_tester.test_mything.test_ok"
+
+        val result = PytestStacktraceParser.parseFailedLine(stacktrace, locationUrl)
+
+        assertEquals("Should return line 27 (line inside the test function)", 27, result)
     }
 }

@@ -151,8 +151,9 @@ object PytestStacktraceParser {
      * Exception groups use a different format with '|' prefixed lines and
      * 'File "path/to/file.py", line N' references instead of the usual 'file.py:N:' pattern.
      *
-     * Returns the last occurrence of the test file reference in the main traceback
-     * (before sub-exceptions), which represents the call site in the test.
+     * Strategy: Find the first occurrence of the test file in the traceback, then return
+     * the second occurrence (which is typically the actual line inside the test function
+     * where the error originated). If only one occurrence exists, return that.
      */
     private fun parseLineNumberFromExceptionGroup(stacktrace: String, fileName: String): Int {
         LOG.debug("PytestStacktraceParser.parseLineNumberFromExceptionGroup: searching for File \"...$fileName\", line N")
@@ -165,8 +166,10 @@ object PytestStacktraceParser {
 
         if (allLines.isNotEmpty()) {
             LOG.debug("PytestStacktraceParser.parseLineNumberFromExceptionGroup: found ${allLines.size} line number(s): $allLines")
-            val result = allLines.first()
-            LOG.debug("PytestStacktraceParser.parseLineNumberFromExceptionGroup: returning first line number: $result")
+            // Return the second occurrence if available (the line inside the test),
+            // otherwise return the first (and only) occurrence
+            val result = if (allLines.size >= 2) allLines[1] else allLines.first()
+            LOG.debug("PytestStacktraceParser.parseLineNumberFromExceptionGroup: returning line number: $result")
             return result
         }
 
