@@ -3,6 +3,7 @@ package com.github.chbndrhnns.betterpy.features.type
 import com.github.chbndrhnns.betterpy.featureflags.PluginSettingsState
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
+import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.types.PyType
 import com.jetbrains.python.psi.types.PyTypeProviderBase
@@ -46,6 +47,8 @@ class PyMockTypeProvider : PyTypeProviderBase() {
                     return Ref.create(PyMockType(specType, isAsync = isAsync))
                 }
             }
+            // Plain mock without spec - still return PyMockType so mock members resolve
+            return Ref.create(PyMockType(null, isAsync = isAsync))
         }
         return null
     }
@@ -69,20 +72,38 @@ class PyMockTypeProvider : PyTypeProviderBase() {
                 if (resolved is PyClass) {
                     val qname = resolved.qualifiedName
                     if (qname == "unittest.mock.Mock" || qname == "unittest.mock.MagicMock" || qname == "unittest.mock.AsyncMock") {
+                        val isAsync = qname == "unittest.mock.AsyncMock"
                         val specArg =
                             assignedValue.getKeywordArgument("spec") ?: assignedValue.getKeywordArgument("spec_set")
                         if (specArg != null) {
                             val specType = context.getType(specArg)
                             if (specType != null) {
-                                return Ref.create(PyMockType(specType, isAsync = (qname == "unittest.mock.AsyncMock")))
+                                return Ref.create(PyMockType(specType, isAsync = isAsync))
                             }
                         }
+                        // Plain mock without spec
+                        return Ref.create(PyMockType(null, isAsync = isAsync))
                     }
                 }
             }
         }
 
-        // Case 2: Resolving member access on a Mock object
+        // Case 2: Attribute access on an object whose attribute was patched via patch.object
+        if (anchor is PyReferenceExpression && referenceTarget is PyFunction) {
+            val qualifier = anchor.qualifier as? PyReferenceExpression
+            val attrName = anchor.name
+            if (qualifier != null && attrName != null) {
+                val qualifierTarget = qualifier.reference.resolve()
+                if (qualifierTarget != null) {
+                    val containingScope = PsiTreeUtil.getParentOfType(anchor, PyFunction::class.java)
+                    if (containingScope != null && isPatchedAttribute(containingScope, qualifierTarget, attrName)) {
+                        return Ref.create(PyMockType(null, isAsync = false))
+                    }
+                }
+            }
+        }
+
+        // Case 3: Resolving member access on a Mock object
         if (anchor is PyReferenceExpression) {
             val qualifier = anchor.qualifier
             if (qualifier != null) {
@@ -118,5 +139,35 @@ class PyMockTypeProvider : PyTypeProviderBase() {
             }
         }
         return null
+    }
+
+    /**
+     * Checks if the given attribute on the given target was patched via patch.object() in the scope.
+     * Looks for calls like: mocker.patch.object(target, "attrName") or patch.object(target, "attrName")
+     */
+    private fun isPatchedAttribute(scope: PyFunction, qualifierTarget: PsiElement, attrName: String): Boolean {
+        val calls = PsiTreeUtil.findChildrenOfType(scope, PyCallExpression::class.java)
+        for (call in calls) {
+            val callee = call.callee as? PyReferenceExpression ?: continue
+            if (callee.name != "object") continue
+
+            val patchRef = callee.qualifier as? PyReferenceExpression ?: continue
+            if (patchRef.name != "patch") continue
+
+            val args = call.argumentList?.arguments ?: continue
+            if (args.size < 2) continue
+
+            // Check that the first argument resolves to the same target
+            val targetArg = args[0] as? PyReferenceExpression ?: continue
+            val targetResolved = targetArg.reference.resolve() ?: continue
+            if (targetResolved != qualifierTarget) continue
+
+            // Check that the second argument is a string matching the attribute name
+            val attrArg = args[1] as? PyStringLiteralExpression ?: continue
+            if (attrArg.stringValue == attrName) {
+                return true
+            }
+        }
+        return false
     }
 }

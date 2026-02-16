@@ -14,12 +14,12 @@ import com.jetbrains.python.psi.types.PyType
 import com.jetbrains.python.psi.types.TypeEvalContext
 
 class PyMockType(
-    val specType: PyType,
+    val specType: PyType?,
     val isAsync: Boolean
 ) : PyType, PyCallableType {
 
     override fun getName(): String {
-        return "Mock(spec=${specType.name})"
+        return if (specType != null) "Mock(spec=${specType.name})" else "Mock"
     }
 
     override fun getCompletionVariants(
@@ -27,23 +27,28 @@ class PyMockType(
         location: PsiElement?,
         context: ProcessingContext?
     ): Array<Any> {
-        val specVariants = specType.getCompletionVariants(completionPrefix, location, context).toMutableSet()
+        val variants = mutableSetOf<Any>()
+
+        if (specType != null) {
+            variants.addAll(specType.getCompletionVariants(completionPrefix, location, context))
+        }
 
         if (location != null) {
             val project = location.project
-            val mockClass = PyPsiFacade.getInstance(project).createClassByQName("unittest.mock.Mock", location)
+            val mockQName = if (isAsync) "unittest.mock.AsyncMock" else "unittest.mock.MagicMock"
+            val mockClass = PyPsiFacade.getInstance(project).createClassByQName(mockQName, location)
+                ?: PyPsiFacade.getInstance(project).createClassByQName("unittest.mock.Mock", location)
             if (mockClass != null) {
-                // We create a type for Mock class to get its completion variants
                 val mockType =
                     TypeEvalContext.codeAnalysis(project, location.containingFile)
                         .getType(mockClass)
                 if (mockType != null) {
                     val mockVariants = mockType.getCompletionVariants(completionPrefix, location, context)
-                    specVariants.addAll(mockVariants)
+                    variants.addAll(mockVariants)
                 }
             }
         }
-        return specVariants.toTypedArray()
+        return variants.toTypedArray()
     }
 
     override fun resolveMember(
@@ -53,22 +58,32 @@ class PyMockType(
         resolveContext: PyResolveContext
     ): List<RatedResolveResult>? {
         // 1. Try spec
-        val specMembers = specType.resolveMember(name, location, direction, resolveContext)
-        if (!specMembers.isNullOrEmpty()) {
-            return specMembers
+        if (specType != null) {
+            val specMembers = specType.resolveMember(name, location, direction, resolveContext)
+            if (!specMembers.isNullOrEmpty()) {
+                return specMembers
+            }
         }
 
-        // 2. Try unittest.mock.Mock
+        // 2. Try unittest.mock.Mock (or AsyncMock/MagicMock)
         if (location != null) {
             val project = location.project
-            val mockClass = PyPsiFacade.getInstance(project).createClassByQName("unittest.mock.Mock", location)
-            if (mockClass != null) {
-                val context = resolveContext.typeEvalContext
-                val mockType = context.getType(mockClass)
-                if (mockType != null) {
-                    val mockMembers = mockType.resolveMember(name, location, direction, resolveContext)
-                    if (!mockMembers.isNullOrEmpty()) {
-                        return mockMembers
+            // Try the most specific mock class first
+            val mockQNames = if (isAsync) {
+                listOf("unittest.mock.AsyncMock", "unittest.mock.MagicMock", "unittest.mock.Mock")
+            } else {
+                listOf("unittest.mock.MagicMock", "unittest.mock.Mock")
+            }
+            for (qname in mockQNames) {
+                val mockClass = PyPsiFacade.getInstance(project).createClassByQName(qname, location)
+                if (mockClass != null) {
+                    val context = resolveContext.typeEvalContext
+                    val mockType = context.getType(mockClass)
+                    if (mockType != null) {
+                        val mockMembers = mockType.resolveMember(name, location, direction, resolveContext)
+                        if (!mockMembers.isNullOrEmpty()) {
+                            return mockMembers
+                        }
                     }
                 }
             }
@@ -80,15 +95,12 @@ class PyMockType(
     override fun isBuiltin(): Boolean = false
 
     override fun assertValid(value: String?) {
-        specType.assertValid(value)
+        specType?.assertValid(value)
     }
 
     override fun isCallable(): Boolean {
-        // If the spec type is callable, then the mock of it is callable.
-        // Also if it's a Mock object wrapping a function type, it is callable.
-        // If it's a Mock object wrapping a Class, it's callable only if Class has __call__.
+        if (specType == null) return true
         if (specType is PyCallableType && specType.isCallable) return true
-        // For simple delegation:
         return (specType as? PyCallableType)?.isCallable == true
     }
 

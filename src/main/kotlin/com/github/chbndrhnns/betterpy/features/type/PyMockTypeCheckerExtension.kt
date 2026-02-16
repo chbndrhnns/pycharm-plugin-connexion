@@ -15,7 +15,7 @@ class PyMockTypeCheckerExtension : PyTypeCheckerExtension {
         substitutions: PyTypeChecker.GenericSubstitutions
     ): Optional<Boolean> {
         if (actual is PyMockType && expected != null) {
-            val specType = actual.specType
+            val specType = actual.specType ?: return Optional.empty()
             // If the spec type matches the expected type, the mock is compatible
             if (specType is PyClassLikeType && expected is PyClassLikeType) {
                 // Check if spec type is the same as or a subtype of expected
