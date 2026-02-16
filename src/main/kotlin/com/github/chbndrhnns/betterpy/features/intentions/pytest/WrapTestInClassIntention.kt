@@ -4,6 +4,8 @@ import com.github.chbndrhnns.betterpy.core.PluginConstants
 import com.github.chbndrhnns.betterpy.core.pytest.PytestNaming
 import com.github.chbndrhnns.betterpy.core.util.isOwnCode
 import com.github.chbndrhnns.betterpy.featureflags.PluginSettingsState
+import com.github.chbndrhnns.betterpy.features.intentions.movescope.MoveScopeTextBuilder
+import com.github.chbndrhnns.betterpy.features.intentions.movescope.PyMoveFunctionIntoClassProcessor
 import com.github.chbndrhnns.betterpy.features.pytest.testtree.PytestTestContextUtils
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
@@ -38,11 +40,12 @@ class WrapTestInClassIntention : IntentionAction {
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
         val pyFile = file as PyFile
         val function = findTestFunctionAtCaret(editor, pyFile) ?: return
+        val functionName = function.name ?: return
 
-        var suggestedClassName = generateClassName(function.name ?: "TestClass")
+        var suggestedClassName = generateClassName(functionName)
         val existingTestClasses = findTestClassesInFile(pyFile)
         val validTargetClasses = existingTestClasses.filter { targetClass ->
-            targetClass.findMethodByName(function.name, true, null) == null
+            MoveScopeTextBuilder.canInsertMethodIntoClass(functionName, targetClass)
         }
 
         val existingNames = existingTestClasses.mapNotNull { it.name }.toSet()
@@ -57,7 +60,7 @@ class WrapTestInClassIntention : IntentionAction {
         val dialog = WrapTestInClassDialog(
             project,
             suggestedClassName,
-            sourceFunctionName = function.name,
+            sourceFunctionName = functionName,
             existingTestClasses = validTargetClasses
         )
         val dialogResult = if (dialog.isModal) {
@@ -78,7 +81,11 @@ class WrapTestInClassIntention : IntentionAction {
             when (settings) {
                 is WrapTestInClassSettings.CreateNewClass -> {
                     // Build the complete class with method in one go to get proper formatting
-                    val classWithMethodText = buildClassWithMethod(function, settings.className)
+                    val classWithMethodText = MoveScopeTextBuilder.buildClassWithMethod(
+                        function,
+                        settings.className,
+                        MoveScopeTextBuilder.MethodStyle.FORCE_INSTANCE
+                    )
                     val testClass = elementGenerator.createFromText(
                         LanguageLevel.getLatest(), PyClass::class.java, classWithMethodText
                     )
@@ -87,16 +94,13 @@ class WrapTestInClassIntention : IntentionAction {
                 }
 
                 is WrapTestInClassSettings.AddToExistingClass -> {
-                    // Convert function to method
-                    val methodText = buildMethodFromFunction(function)
-                    val method = elementGenerator.createFromText(
-                        LanguageLevel.getLatest(), PyFunction::class.java, methodText
-                    )
-
-                    val statementList = settings.targetClass.statementList
-                    statementList.add(method)
-
-                    function.delete()
+                    PyMoveFunctionIntoClassProcessor(
+                        project,
+                        function,
+                        settings.targetClass,
+                        updateCallSites = false,
+                        methodStyle = MoveScopeTextBuilder.MethodStyle.FORCE_INSTANCE
+                    ).run()
                 }
             }
         }, file)
@@ -126,83 +130,4 @@ class WrapTestInClassIntention : IntentionAction {
         return "TestClass"
     }
 
-    private fun buildMethodFromFunction(function: PyFunction): String {
-        val parameterList = function.parameterList
-        val parameters = parameterList.parameters
-
-        // Build new parameter list with self
-        val newParams = if (parameters.isEmpty()) {
-            "self"
-        } else {
-            "self, " + parameters.joinToString(", ") { it.text }
-        }
-
-        // Get function name
-        val functionName = function.name ?: "test"
-
-        // Get return type annotation if present
-        val returnAnnotation = function.annotation
-        val returnTypeText = if (returnAnnotation != null) {
-            val typeExpr = returnAnnotation.value
-            if (typeExpr != null) " -> ${typeExpr.text}" else ""
-        } else ""
-
-        // Get decorators
-        val decoratorList = function.decoratorList
-        val decoratorsText = if (decoratorList != null && decoratorList.decorators.isNotEmpty()) {
-            decoratorList.decorators.joinToString("\n") { it.text } + "\n"
-        } else {
-            ""
-        }
-
-        // Get function body - need to ensure proper indentation
-        val statementList = function.statementList
-        val bodyLines = statementList.text.lines()
-        val reindentedBody = bodyLines.joinToString("\n") { line ->
-            if (line.isNotEmpty()) "    $line" else line
-        }
-        val asyncModifier = if (function.isAsync) "async " else ""
-        return "${decoratorsText}${asyncModifier}def $functionName($newParams)$returnTypeText:\n$reindentedBody"
-    }
-
-    private fun buildClassWithMethod(function: PyFunction, className: String): String {
-        // Get the function signature
-        val parameterList = function.parameterList
-        val parameters = parameterList.parameters
-
-        // Build new parameter list with self
-        val newParams = if (parameters.isEmpty()) {
-            "self"
-        } else {
-            "self, " + parameters.joinToString(", ") { it.text }
-        }
-
-        // Get function name
-        val functionName = function.name ?: "test"
-        
-        // Get return type annotation if present (annotation.value is the type expression without ->)
-        val returnAnnotation = function.annotation
-        val returnTypeText = if (returnAnnotation != null) {
-            val typeExpr = returnAnnotation.value
-            if (typeExpr != null) " -> ${typeExpr.text}" else ""
-        } else ""
-
-        // Get decorators
-        val decoratorList = function.decoratorList
-        val decoratorsText = if (decoratorList != null) {
-            decoratorList.decorators.joinToString("\n    ", prefix = "    ") { it.text } + "\n"
-        } else {
-            ""
-        }
-
-        // Get function body - need to re-indent each line
-        val statementList = function.statementList
-        val bodyLines = statementList.text.lines()
-        val reindentedBody = bodyLines.joinToString("\n") { line ->
-            if (line.isNotEmpty()) "        $line" else line
-        }
-
-        val asyncModifier = if (function.isAsync) "async " else ""
-        return "class $className:\n${decoratorsText}    ${asyncModifier}def $functionName($newParams)$returnTypeText:\n$reindentedBody"
-    }
 }

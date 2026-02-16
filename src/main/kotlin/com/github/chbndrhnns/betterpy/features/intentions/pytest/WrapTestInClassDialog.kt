@@ -1,6 +1,7 @@
 package com.github.chbndrhnns.betterpy.features.intentions.pytest
 
 import com.github.chbndrhnns.betterpy.core.pytest.PytestNaming
+import com.github.chbndrhnns.betterpy.features.intentions.movescope.MoveScopeTextBuilder
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
@@ -103,7 +104,7 @@ class WrapTestInClassDialog(
             if (selectedIndex >= 0 && selectedIndex < existingTestClasses.size) {
                 val targetClass = existingTestClasses[selectedIndex]
                 val functionName = sourceFunctionName
-                if (functionName != null && targetClass.findMethodByName(functionName, true, null) != null) {
+                if (functionName != null && !MoveScopeTextBuilder.canInsertMethodIntoClass(functionName, targetClass)) {
                     return ValidationInfo(
                         "Class '${targetClass.name}' already has a method named '$functionName' (or inherits it)",
                         existingClassComboBox

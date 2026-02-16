@@ -74,18 +74,7 @@ class PyMoveLocalFunctionProcessor(
         val startOffset = startElement.textRange.startOffset
         val endOffset = localFunc.textRange.endOffset
 
-        // Compute current indentation
-        val lineStart = fileText.lastIndexOf('\n', startOffset - 1) + 1
-        val currentIndent = startOffset - lineStart
-
-        // Extract raw text and dedent
-        val rawText = fileText.substring(lineStart, endOffset)
-        val lines = rawText.lines()
-        val dedented = lines.joinToString("\n") { line ->
-            if (line.isBlank()) ""
-            else if (line.length >= currentIndent) line.drop(currentIndent)
-            else line.trimStart()
-        }
+        val dedented = MoveScopeTextBuilder.reindentRange(fileText, startOffset, endOffset, 0)
 
         // If there are captured variables, add them as parameters
         if (capturedVars.isEmpty()) return dedented

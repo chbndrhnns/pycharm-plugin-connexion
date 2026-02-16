@@ -53,7 +53,7 @@ class PyMoveToInnerScopeIntention : PsiElementBaseIntentionAction() {
         val targetClass = findTargetClass(pyFunction, classes) ?: return false
 
         // D5: Name collision — check if target class already has a method with the same name
-        if (hasNameCollision(funcName, targetClass)) return false
+        if (!MoveScopeTextBuilder.canInsertMethodIntoClass(funcName, targetClass)) return false
 
         return true
     }

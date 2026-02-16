@@ -4,6 +4,7 @@ import com.github.chbndrhnns.betterpy.core.PluginConstants
 import com.github.chbndrhnns.betterpy.core.pytest.PytestNaming
 import com.github.chbndrhnns.betterpy.core.util.isOwnCode
 import com.github.chbndrhnns.betterpy.featureflags.PluginSettingsState
+import com.github.chbndrhnns.betterpy.features.intentions.movescope.MoveScopeTextBuilder
 import com.github.chbndrhnns.betterpy.features.pytest.testtree.PytestTestContextUtils
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
@@ -44,12 +45,13 @@ class MoveTestToClassIntention : IntentionAction {
         val pyFile = file as PyFile
         val function = findTestFunctionAtCaret(editor, pyFile) ?: return
         val currentClass = PsiTreeUtil.getParentOfType(function, PyClass::class.java) ?: return
+        val functionName = function.name ?: return
 
-        var suggestedClassName = generateClassName(function.name ?: "TestClass")
+        var suggestedClassName = generateClassName(functionName)
         val allTestClasses = findTestClassesInFile(pyFile)
         val candidateClasses = allTestClasses.filter { it != currentClass }
         val validTargetClasses = candidateClasses.filter { targetClass ->
-            targetClass.findMethodByName(function.name, true, null) == null
+            MoveScopeTextBuilder.canInsertMethodIntoClass(functionName, targetClass)
         }
 
         val existingNames = allTestClasses.mapNotNull { it.name }.toSet()
@@ -87,12 +89,11 @@ class MoveTestToClassIntention : IntentionAction {
             when (settings) {
                 is WrapTestInClassSettings.CreateNewClass -> {
                     // Create new class with the method
-                    val functionText = function.text
-                    // Indent the function text
-                    val indentedFunction = functionText.lines().joinToString("\n") {
-                        if (it.isBlank()) it else "    $it"
-                    }
-                    val classText = "class ${settings.className}:\n$indentedFunction"
+                    val classText = MoveScopeTextBuilder.buildClassWithMethod(
+                        function,
+                        settings.className,
+                        MoveScopeTextBuilder.MethodStyle.FORCE_INSTANCE
+                    )
 
                     val newClass = elementGenerator.createFromText(
                         LanguageLevel.getLatest(), PyClass::class.java, classText

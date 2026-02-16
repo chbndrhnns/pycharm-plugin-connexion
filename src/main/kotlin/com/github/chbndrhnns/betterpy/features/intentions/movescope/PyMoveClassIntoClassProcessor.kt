@@ -86,25 +86,8 @@ class PyMoveClassIntoClassProcessor(
         val startOffset = startElement.textRange.startOffset
         val endOffset = classToMove.textRange.endOffset
 
-        // Compute current indentation (should be 0 for top-level)
-        val lineStart = fileText.lastIndexOf('\n', startOffset - 1) + 1
-        val currentIndent = startOffset - lineStart
-
-        // Compute target indentation (inside the target class body)
-        val classBodyStart = targetClass.statementList.textRange.startOffset
-        val classBodyLineStart = fileText.lastIndexOf('\n', classBodyStart - 1) + 1
-        val targetIndent = classBodyStart - classBodyLineStart
-
-        // Extract raw text and re-indent
-        val rawText = fileText.substring(lineStart, endOffset)
-        val lines = rawText.lines()
-        return lines.joinToString("\n") { line ->
-            if (line.isBlank()) ""
-            else {
-                val stripped = if (line.length >= currentIndent) line.drop(currentIndent) else line.trimStart()
-                " ".repeat(targetIndent) + stripped
-            }
-        }
+        val targetIndent = MoveScopeTextBuilder.classBodyIndent(targetClass)
+        return MoveScopeTextBuilder.reindentRange(fileText, startOffset, endOffset, targetIndent)
     }
 
     private fun collectReferenceEdits(className: String, targetClassName: String): List<TextEdit> {

@@ -108,30 +108,14 @@ class PyMoveToOuterScopeProcessor(
         val endOffset = pyClass.textRange.endOffset
         val fileText = file.text
 
-        // Compute the column (indentation to strip)
-        val lineStart = fileText.lastIndexOf('\n', startOffset - 1) + 1
-        val currentIndent = startOffset - lineStart
-
-        // Compute target indentation
         val targetIndent = if (grandparentClass != null) {
             // Indent to the level of the outer class (sibling of outerClass within grandparent)
             val outerClass = PsiTreeUtil.getParentOfType(pyClass, PyClass::class.java) ?: return ""
-            val outerStart = (outerClass.decoratorList ?: outerClass).textRange.startOffset
-            val outerLineStart = fileText.lastIndexOf('\n', outerStart - 1) + 1
-            outerStart - outerLineStart
+            MoveScopeTextBuilder.elementLineIndent(outerClass.decoratorList ?: outerClass)
         } else {
             0
         }
 
-        // Extract lines from the file text with full indentation, then adjust
-        val rawText = fileText.substring(lineStart, endOffset)
-        val lines = rawText.lines()
-        return lines.joinToString("\n") { line ->
-            if (line.isBlank()) ""
-            else {
-                val stripped = if (line.length >= currentIndent) line.drop(currentIndent) else line.trimStart()
-                " ".repeat(targetIndent) + stripped
-            }
-        }
+        return MoveScopeTextBuilder.reindentRange(fileText, startOffset, endOffset, targetIndent)
     }
 }

@@ -8,21 +8,21 @@ import com.jetbrains.python.psi.*
 class PyMoveFunctionIntoClassProcessor(
     private val project: Project,
     private val function: PyFunction,
-    private val targetClass: PyClass
+    private val targetClass: PyClass,
+    private val updateCallSites: Boolean = true,
+    private val methodStyle: MoveScopeTextBuilder.MethodStyle = MoveScopeTextBuilder.MethodStyle.INSTANCE_IF_FIRST_PARAM_TYPED
 ) {
     fun run() {
         val file = function.containingFile as? PyFile ?: return
         val funcName = function.name ?: return
         val className = targetClass.name ?: return
 
-        // Determine if first param is typed as the target class → instance method
-        val isInstanceMethod = isFirstParamTypedAsClass(function, className)
-
         // Build the method text (indented into the class)
-        val methodText = buildMethodText(isInstanceMethod, className)
+        val methodText = MoveScopeTextBuilder.buildMethodText(function, targetClass, methodStyle)
+        val isInstanceMethod = MoveScopeTextBuilder.isInstanceMethod(function, className, methodStyle)
 
         // Collect call site edits: func(obj, args) → obj.func(args) for instance methods
-        val callSiteEdits = collectCallSiteEdits(funcName, isInstanceMethod)
+        val callSiteEdits = if (updateCallSites) collectCallSiteEdits(funcName, isInstanceMethod) else emptyList()
 
         val psiDocManager = PsiDocumentManager.getInstance(project)
         val document = psiDocManager.getDocument(file) ?: return
@@ -81,68 +81,6 @@ class PyMoveFunctionIntoClassProcessor(
         val finalText = sb.toString().trimEnd() + "\n"
         document.setText(finalText)
         psiDocManager.commitDocument(document)
-    }
-
-    private fun isFirstParamTypedAsClass(func: PyFunction, className: String): Boolean {
-        val params = func.parameterList.parameters
-        if (params.isEmpty()) return false
-        val firstParam = params[0] as? PyNamedParameter ?: return false
-        val annotationText = firstParam.annotation?.value?.text ?: return false
-        return annotationText == className
-    }
-
-    private fun buildMethodText(isInstanceMethod: Boolean, className: String): String {
-        val fileText = function.containingFile.text
-        val startElement = function.decoratorList ?: function
-        val startOffset = startElement.textRange.startOffset
-        val endOffset = function.textRange.endOffset
-
-        // Compute current indentation (should be 0 for top-level)
-        val lineStart = fileText.lastIndexOf('\n', startOffset - 1) + 1
-        val currentIndent = startOffset - lineStart
-
-        // Compute target indentation (inside the class body)
-        val classBodyStart = targetClass.statementList.textRange.startOffset
-        val classBodyLineStart = fileText.lastIndexOf('\n', classBodyStart - 1) + 1
-        val targetIndent = classBodyStart - classBodyLineStart
-
-        // Extract raw text and re-indent
-        val rawText = fileText.substring(lineStart, endOffset)
-        val lines = rawText.lines()
-        val reindented = lines.joinToString("\n") { line ->
-            if (line.isBlank()) ""
-            else {
-                val stripped = if (line.length >= currentIndent) line.drop(currentIndent) else line.trimStart()
-                " ".repeat(targetIndent) + stripped
-            }
-        }
-
-        if (isInstanceMethod) {
-            // Replace first param (typed as ClassName) with self
-            return replaceFirstParamWithSelf(reindented, className)
-        } else {
-            // Add @staticmethod decorator
-            return " ".repeat(targetIndent) + "@staticmethod\n" + reindented
-        }
-    }
-
-    private fun replaceFirstParamWithSelf(funcText: String, className: String): String {
-        // Match the def line to find and replace the first parameter
-        val defMatch = Regex("""^(\s*(?:async\s+)?def\s+\w+\s*\()([^)]*)\)""").find(funcText)
-            ?: return funcText
-
-        val prefix = defMatch.groupValues[1]
-        val params = defMatch.groupValues[2]
-
-        // Split params and replace first one with self
-        val paramList = params.split(",").map { it.trim() }.toMutableList()
-        if (paramList.isEmpty()) return funcText
-
-        // First param should be like "name: ClassName" — replace with "self"
-        paramList[0] = "self"
-
-        val newParams = paramList.joinToString(", ")
-        return funcText.replaceRange(defMatch.range, "$prefix$newParams)")
     }
 
     private fun collectCallSiteEdits(funcName: String, isInstanceMethod: Boolean): List<TextEdit> {
