@@ -2,6 +2,7 @@
 
 ## Pending Issues
 
+- [ ] fix: Does not know about pytest_mock (mocker) methods
 - [ ] fix: No Python SDK configured should be displayed directly in pytest explorer, or greyed out?
 - [ ] fix: Rendering of links for pytest, now blue and dotted.
   `tests/unit/test_integrity.py::test_no_skip_markers_on_adapter_fixture[<class 'src.adapters.outbound.HttpRepository'>] ✓                51% █████▏`
