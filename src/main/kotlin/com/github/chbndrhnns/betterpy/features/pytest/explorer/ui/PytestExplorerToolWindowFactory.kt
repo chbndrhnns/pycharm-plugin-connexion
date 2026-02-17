@@ -23,6 +23,11 @@ class PytestExplorerToolWindowFactory : ToolWindowFactory, DumbAware {
         val fixtureContent = ContentFactory.getInstance().createContent(fixturePanel, "Fixtures", false)
         fixtureContent.setDisposer(fixturePanel)
         toolWindow.contentManager.addContent(fixtureContent)
+
+        val markerPanel = PytestMarkerExplorerPanel(project)
+        val markerContent = ContentFactory.getInstance().createContent(markerPanel, "Markers", false)
+        markerContent.setDisposer(markerPanel)
+        toolWindow.contentManager.addContent(markerContent)
     }
 
     override fun shouldBeAvailable(project: Project): Boolean {

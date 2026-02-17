@@ -51,3 +51,11 @@ data class OverrideGroupNode(val fixtureName: String, val count: Int) {
 data class TestConsumerNode(val test: CollectedTest) {
     override fun toString(): String = test.nodeId
 }
+
+data class MarkerGroupNode(val markerName: String, val testCount: Int) {
+    override fun toString(): String = "$markerName ($testCount)"
+}
+
+data class MarkerTestNode(val test: CollectedTest) {
+    override fun toString(): String = test.nodeId
+}

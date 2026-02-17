@@ -101,6 +101,17 @@ class PytestTreeCellRenderer : ColoredTreeCellRenderer() {
                 append(node.test.nodeId, SimpleTextAttributes.GRAYED_ATTRIBUTES)
             }
 
+            is MarkerGroupNode -> {
+                icon = AllIcons.Nodes.Tag
+                append(node.markerName, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+                append("  (${node.testCount})", SimpleTextAttributes.GRAYED_ATTRIBUTES)
+            }
+
+            is MarkerTestNode -> {
+                icon = AllIcons.Nodes.Method
+                append(node.test.nodeId, SimpleTextAttributes.REGULAR_ATTRIBUTES)
+            }
+
             is String -> {
                 append(node, SimpleTextAttributes.REGULAR_ATTRIBUTES)
             }

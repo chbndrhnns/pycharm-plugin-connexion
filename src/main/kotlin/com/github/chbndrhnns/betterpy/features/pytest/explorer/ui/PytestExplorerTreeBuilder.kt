@@ -459,6 +459,34 @@ object PytestExplorerTreeBuilder {
     }
 
     /**
+     * Builds a tree grouping tests by their markers.
+     * Each marker becomes a group node with tests underneath.
+     */
+    fun buildMarkerTree(snapshot: CollectionSnapshot): DefaultMutableTreeNode {
+        val root = DefaultMutableTreeNode("Markers")
+
+        // Group tests by marker
+        val markerToTests = mutableMapOf<String, MutableList<CollectedTest>>()
+        for (test in snapshot.tests) {
+            for (marker in test.markers) {
+                markerToTests.getOrPut(marker) { mutableListOf() }.add(test)
+            }
+        }
+
+        // Create nodes sorted by marker name
+        for (markerName in markerToTests.keys.sorted()) {
+            val tests = markerToTests[markerName]!!
+            val markerNode = DefaultMutableTreeNode(MarkerGroupNode(markerName, tests.size))
+            for (test in tests.sortedBy { it.nodeId }) {
+                markerNode.add(DefaultMutableTreeNode(MarkerTestNode(test)))
+            }
+            root.add(markerNode)
+        }
+
+        return root
+    }
+
+    /**
      * Renders a tree to a textual representation for testing.
      * Each node is on its own line, indented by depth.
      * Format: "  " per level + node label
@@ -498,6 +526,8 @@ object PytestExplorerTreeBuilder {
             is OverrideGroupNode -> "[override] ${obj.fixtureName}"
             is FixtureModuleGroupNode -> "[fixtureModule] ${obj.modulePath}"
             is TestConsumerNode -> "[consumer] ${obj.test.nodeId}"
+            is MarkerGroupNode -> "[marker] ${obj.markerName} (${obj.testCount})"
+            is MarkerTestNode -> "[test] ${obj.test.nodeId}"
             is String -> obj
             else -> obj.toString()
         }
