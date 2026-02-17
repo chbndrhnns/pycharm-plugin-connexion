@@ -35,7 +35,8 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Pending Features
 
-- [ ] feat: Support introduce paramter for this case:
+- [ ] feat: Turn static method into instance method
+- [ ] feat: Support introduce parameter for this case:
 
 ```python
 from dataclasses import dataclass
