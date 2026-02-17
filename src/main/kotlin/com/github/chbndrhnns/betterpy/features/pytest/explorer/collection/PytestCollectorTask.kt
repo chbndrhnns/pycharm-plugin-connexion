@@ -39,7 +39,7 @@ class PytestCollectorTask(
 
         val pythonPath = findPythonPath() ?: run {
             LOG.info("No Python SDK configured for project")
-            deliverResult(CollectionSnapshot.empty("No Python SDK configured"))
+            deliverResult(CollectionSnapshot.empty())
             return
         }
 

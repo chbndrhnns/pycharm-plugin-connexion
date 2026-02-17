@@ -7,11 +7,11 @@ data class CollectionSnapshot(
     val errors: List<String>,
 ) {
     companion object {
-        fun empty(reason: String) = CollectionSnapshot(
+        fun empty(reason: String? = null) = CollectionSnapshot(
             timestamp = System.currentTimeMillis(),
             tests = emptyList(),
             fixtures = emptyList(),
-            errors = listOf(reason),
+            errors = listOfNotNull(reason),
         )
     }
 }
