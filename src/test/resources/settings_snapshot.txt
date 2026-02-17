@@ -775,10 +775,10 @@ DialogPanel
         a:active { color: #f00000 }
       -->
     </style>
-
+    
   </head>
   <body width="560">
-    Reports unused fixture parameters in test functions and offers conversion
+    Reports unused fixture parameters in test functions and offers conversion 
     to @pytest.mark.usefixtures()
   </body>
 </html>
@@ -900,7 +900,7 @@ DialogPanel
         a:active { color: #f00000 }
       -->
     </style>
-
+    
   </head>
   <body width="560">
     Copies a from-style absolute import statement for the symbol at the caret
@@ -1880,26 +1880,6 @@ DialogPanel
   </body>
 </html>
 '
-  CheckBox: [x] 'Run pytest with debug logging'
-  TextField: '<html>
-  <head>
-    <style type="text/css">
-      <!--
-        a { color: #589df6 }
-        a:link { color: #589df6 }
-        a:visited { color: #800080 }
-        a:hover { color: #589df6 }
-        a:active { color: #f00000 }
-      -->
-    </style>
-
-  </head>
-  <body width="560">
-    Duplicates the selected pytest run configuration with debug logging flags
-    for the chosen test tree node
-  </body>
-</html>
-'
   CheckBox: [x] 'Pytest Explorer'
   MaturityTagLabel
     Label: 'Incubating'
@@ -1914,11 +1894,31 @@ DialogPanel
         a:active { color: #f00000 }
       -->
     </style>
-
+    
   </head>
   <body width="560">
-    Collects pytest tests and fixtures via pytest --collect-only and provides
+    Collects pytest tests and fixtures via pytest --collect-only and provides 
     an interactive explorer
+  </body>
+</html>
+'
+  CheckBox: [x] 'Run pytest with debug logging'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body width="560">
+    Duplicates the selected pytest run configuration with debug logging flags 
+    for the chosen test tree node
   </body>
 </html>
 '
