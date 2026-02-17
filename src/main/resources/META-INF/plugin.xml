@@ -105,6 +105,8 @@
         <gotoDeclarationHandler
                 implementation="com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureGotoDeclarationHandler"
                 order="first"/>
+        <lang.inspectionSuppressor language="Python"
+                                   implementationClass="com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureInspectionSuppressor"/>
         <typeDeclarationProvider
                 implementation="com.github.chbndrhnns.betterpy.features.pytest.fixture.PytestFixtureGotoTypeDeclarationHandler"
                 order="first"/>
