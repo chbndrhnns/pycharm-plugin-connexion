@@ -12,11 +12,11 @@ data class FixtureModuleGroupNode(val modulePath: String) {
     override fun toString(): String = modulePath
 }
 
-data class ModuleTreeNode(val path: String) {
+data class ModuleTreeNode(val path: String, val isSkipped: Boolean = false) {
     override fun toString(): String = path
 }
 
-data class ClassTreeNode(val name: String) {
+data class ClassTreeNode(val name: String, val isSkipped: Boolean = false) {
     override fun toString(): String = name
 }
 

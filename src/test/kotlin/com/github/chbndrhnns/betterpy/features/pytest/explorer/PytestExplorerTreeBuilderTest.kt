@@ -1090,4 +1090,150 @@ class PytestExplorerTreeBuilderTest {
             |""".trimMargin()
         assertEquals(expected, text)
     }
+
+    // --- Skipped module and class tests ---
+
+    @Test
+    fun `module marked as skipped when all tests are skipped`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("t.py::test_a", "t.py", null, "test_a", emptyList(), markers = listOf("skip")),
+                CollectedTest("t.py::test_b", "t.py", null, "test_b", emptyList(), markers = listOf("skip")),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
+        val moduleNode = root.getChildAt(0) as DefaultMutableTreeNode
+        val module = moduleNode.userObject as ModuleTreeNode
+        assertTrue("Module should be marked as skipped", module.isSkipped)
+    }
+
+    @Test
+    fun `module not marked as skipped when some tests are not skipped`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("t.py::test_a", "t.py", null, "test_a", emptyList(), markers = listOf("skip")),
+                CollectedTest("t.py::test_b", "t.py", null, "test_b", emptyList()),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
+        val moduleNode = root.getChildAt(0) as DefaultMutableTreeNode
+        val module = moduleNode.userObject as ModuleTreeNode
+        assertFalse("Module should not be marked as skipped", module.isSkipped)
+    }
+
+    @Test
+    fun `class marked as skipped when all tests in class are skipped`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest(
+                    "t.py::MyClass::test_a",
+                    "t.py",
+                    "MyClass",
+                    "test_a",
+                    emptyList(),
+                    markers = listOf("skip")
+                ),
+                CollectedTest(
+                    "t.py::MyClass::test_b",
+                    "t.py",
+                    "MyClass",
+                    "test_b",
+                    emptyList(),
+                    markers = listOf("skip")
+                ),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
+        val moduleNode = root.getChildAt(0) as DefaultMutableTreeNode
+        val classNode = moduleNode.getChildAt(0) as DefaultMutableTreeNode
+        val classTreeNode = classNode.userObject as ClassTreeNode
+        assertTrue("Class should be marked as skipped", classTreeNode.isSkipped)
+    }
+
+    @Test
+    fun `class not marked as skipped when some tests are not skipped`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest(
+                    "t.py::MyClass::test_a",
+                    "t.py",
+                    "MyClass",
+                    "test_a",
+                    emptyList(),
+                    markers = listOf("skip")
+                ),
+                CollectedTest("t.py::MyClass::test_b", "t.py", "MyClass", "test_b", emptyList()),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
+        val moduleNode = root.getChildAt(0) as DefaultMutableTreeNode
+        val classNode = moduleNode.getChildAt(0) as DefaultMutableTreeNode
+        val classTreeNode = classNode.userObject as ClassTreeNode
+        assertFalse("Class should not be marked as skipped", classTreeNode.isSkipped)
+    }
+
+    @Test
+    fun `nested class marked as skipped when all its tests are skipped`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest(
+                    "t.py::Outer::Inner::test_a",
+                    "t.py",
+                    "Inner",
+                    "test_a",
+                    emptyList(),
+                    markers = listOf("skip")
+                ),
+                CollectedTest(
+                    "t.py::Outer::Inner::test_b",
+                    "t.py",
+                    "Inner",
+                    "test_b",
+                    emptyList(),
+                    markers = listOf("skip")
+                ),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildTestTree(snapshot)
+        val moduleNode = root.getChildAt(0) as DefaultMutableTreeNode
+        val outerNode = moduleNode.getChildAt(0) as DefaultMutableTreeNode
+        val outerClass = outerNode.userObject as ClassTreeNode
+        assertTrue("Outer class should be marked as skipped (all nested tests skipped)", outerClass.isSkipped)
+
+        val innerNode = outerNode.getChildAt(0) as DefaultMutableTreeNode
+        val innerClass = innerNode.userObject as ClassTreeNode
+        assertTrue("Inner class should be marked as skipped", innerClass.isSkipped)
+    }
+
+
+    @Test
+    fun `collapseModuleNode marks root module as skipped when all tests skipped`() {
+        val snapshot = CollectionSnapshot(
+            timestamp = 0,
+            tests = listOf(
+                CollectedTest("t.py::test_a", "t.py", null, "test_a", emptyList(), markers = listOf("skip")),
+                CollectedTest("t.py::test_b", "t.py", null, "test_b", emptyList(), markers = listOf("skip")),
+            ),
+            fixtures = emptyList(),
+            errors = emptyList(),
+        )
+        val root = PytestExplorerTreeBuilder.buildTestTree(snapshot, collapseModuleNode = true)
+        val module = root.userObject as ModuleTreeNode
+        assertTrue("Collapsed module root should be marked as skipped", module.isSkipped)
+    }
 }

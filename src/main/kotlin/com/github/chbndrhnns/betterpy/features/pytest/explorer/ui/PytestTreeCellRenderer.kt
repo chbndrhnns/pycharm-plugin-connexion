@@ -21,12 +21,24 @@ class PytestTreeCellRenderer : ColoredTreeCellRenderer() {
         when (node) {
             is ModuleTreeNode -> {
                 icon = AllIcons.Nodes.Module
-                append(node.path, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+                val textAttributes =
+                    if (node.isSkipped) SimpleTextAttributes.GRAYED_BOLD_ATTRIBUTES else SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES
+                append(node.path, textAttributes)
+                if (node.isSkipped) {
+                    append("  ", SimpleTextAttributes.REGULAR_ATTRIBUTES)
+                    append("(skipped)", SimpleTextAttributes.GRAYED_ITALIC_ATTRIBUTES)
+                }
             }
 
             is ClassTreeNode -> {
                 icon = AllIcons.Nodes.Class
-                append(node.name, SimpleTextAttributes.REGULAR_ATTRIBUTES)
+                val textAttributes =
+                    if (node.isSkipped) SimpleTextAttributes.GRAYED_ATTRIBUTES else SimpleTextAttributes.REGULAR_ATTRIBUTES
+                append(node.name, textAttributes)
+                if (node.isSkipped) {
+                    append("  ", SimpleTextAttributes.REGULAR_ATTRIBUTES)
+                    append("(skipped)", SimpleTextAttributes.GRAYED_ITALIC_ATTRIBUTES)
+                }
             }
 
             is TestTreeNode -> {

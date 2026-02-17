@@ -15,23 +15,37 @@ object PytestExplorerTreeBuilder {
         val byModule = snapshot.tests.groupBy { it.modulePath }
         val useModuleAsRoot = collapseModuleNode && byModule.size == 1
         val root = if (useModuleAsRoot) {
-            DefaultMutableTreeNode(ModuleTreeNode(byModule.keys.first()))
+            val allSkipped = byModule.values.first().all { it.isSkipped }
+            DefaultMutableTreeNode(ModuleTreeNode(byModule.keys.first(), isSkipped = allSkipped))
         } else {
             DefaultMutableTreeNode("Tests")
         }
 
         val orderedModules = if (fileOrder) byModule.entries else byModule.toSortedMap().entries
         for ((modulePath, tests) in orderedModules) {
-            val moduleNode = if (useModuleAsRoot) root else DefaultMutableTreeNode(ModuleTreeNode(modulePath))
+            val moduleSkipped = tests.all { it.isSkipped }
+            val moduleNode = if (useModuleAsRoot) root else DefaultMutableTreeNode(
+                ModuleTreeNode(
+                    modulePath,
+                    isSkipped = moduleSkipped
+                )
+            )
 
             val orderedTests = if (fileOrder) tests else tests.sortedWith(
                 compareBy<CollectedTest> { extractClassChain(it).isEmpty() }
                     .thenBy { extractClassChain(it).firstOrNull() ?: "" }
                     .thenBy { it.functionName }
             )
+            // Group tests by class chain to determine if entire class is skipped
+            val testsByClassChain = orderedTests.groupBy { extractClassChain(it) }
+            val skippedClassChains = testsByClassChain
+                .filter { (chain, testsInClass) -> chain.isNotEmpty() && testsInClass.all { it.isSkipped } }
+                .keys
+
             for (test in orderedTests) {
                 val classChain = extractClassChain(test)
-                val parent = getOrCreateClassChain(moduleNode, classChain)
+                val classSkipped = classChain in skippedClassChains
+                val parent = getOrCreateClassChain(moduleNode, classChain, isSkipped = classSkipped)
                 addTestToParent(parent, test)
             }
 
@@ -61,7 +75,8 @@ object PytestExplorerTreeBuilder {
      */
     private fun getOrCreateClassChain(
         parent: DefaultMutableTreeNode,
-        classChain: List<String>
+        classChain: List<String>,
+        isSkipped: Boolean = false
     ): DefaultMutableTreeNode {
         var current = parent
         for (className in classChain) {
@@ -71,7 +86,7 @@ object PytestExplorerTreeBuilder {
             current = if (existing != null) {
                 existing
             } else {
-                val classNode = DefaultMutableTreeNode(ClassTreeNode(className))
+                val classNode = DefaultMutableTreeNode(ClassTreeNode(className, isSkipped = isSkipped))
                 current.add(classNode)
                 classNode
             }
