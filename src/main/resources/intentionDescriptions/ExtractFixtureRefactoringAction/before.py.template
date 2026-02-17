@@ -1,0 +1,5 @@
+def test_save(db):
+    item = Item()
+    db.save(item)
+    result = db.get(item.id)
+    assert result is not None

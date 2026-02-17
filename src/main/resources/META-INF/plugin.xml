@@ -678,6 +678,13 @@
             <add-to-group group-id="RefactoringMenu" anchor="last"/>
         </action>
 
+        <action id="com.github.chbndrhnns.betterpy.features.pytest.extractfixture.ExtractFixtureRefactoringAction"
+                class="com.github.chbndrhnns.betterpy.features.pytest.extractfixture.ExtractFixtureRefactoringAction"
+                text="BetterPy: Extract Pytest Fixture..."
+                description="Extracts selected code as a new pytest fixture">
+            <add-to-group group-id="RefactoringMenu" anchor="last"/>
+        </action>
+
         <action id="com.github.chbndrhnns.betterpy.features.actions.CopyBuildNumberAction"
                 class="com.github.chbndrhnns.betterpy.features.actions.CopyBuildNumberAction"
                 text="BetterPy: Copy Build Number"

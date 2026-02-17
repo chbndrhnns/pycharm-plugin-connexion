@@ -1,0 +1,14 @@
+id: extract-pytest-fixture
+displayName: Extract pytest fixture
+description: Extract selected code as a new pytest fixture with proper fixture dependencies
+category: PYTEST
+maturity: INCUBATING
+youtrackIssues: [ ]
+loggingCategories:
+  - com.github.chbndrhnns.betterpy.features.pytest.extractfixture
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: refactoringAction
+    className: com.github.chbndrhnns.betterpy.features.pytest.extractfixture.ExtractFixtureRefactoringAction
