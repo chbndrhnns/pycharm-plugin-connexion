@@ -112,6 +112,9 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         @Feature("surround-with-pytest-raises")
         var enableSurroundWithPytestRaisesIntention: Boolean = FeatureDefaults.defaultEnabled("surround-with-pytest-raises"),
 
+        @Feature("extract-pytest-fixture")
+        var enableExtractPytestFixtureRefactoring: Boolean = FeatureDefaults.defaultEnabled("extract-pytest-fixture"),
+
         @Feature("mock-type-provider")
         var enablePyMockTypeProvider: Boolean = FeatureDefaults.defaultEnabled("mock-type-provider"),
 

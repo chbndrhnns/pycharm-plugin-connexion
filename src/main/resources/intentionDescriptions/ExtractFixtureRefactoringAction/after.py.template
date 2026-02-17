@@ -1,0 +1,8 @@
+@pytest.fixture
+def saved_item(db):
+    item = Item()
+    db.save(item)
+    return db.get(item.id)
+
+def test_save(saved_item):
+    assert saved_item is not None

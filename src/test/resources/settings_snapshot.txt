@@ -1782,6 +1782,28 @@ DialogPanel
   </body>
 </html>
 '
+  CheckBox: [x] 'Extract pytest fixture'
+  MaturityTagLabel
+    Label: 'Incubating'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body width="560">
+    Extract selected code as a new pytest fixture with proper fixture 
+    dependencies
+  </body>
+</html>
+'
   CheckBox: [x] 'Jump to pytest node in test tree'
   TextField: '<html>
   <head>
