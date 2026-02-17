@@ -2,8 +2,8 @@
 
 ## Pending Issues
 
+- [ ] fix: Wrap with Final does not qualify with existing import
 - [ ] fix: Does not know about pytest_mock (mocker) methods
-- [ ] fix: No Python SDK configured should be displayed directly in pytest explorer, or greyed out?
 - [ ] fix: Rendering of links for pytest, now blue and dotted.
   `tests/unit/test_integrity.py::test_no_skip_markers_on_adapter_fixture[<class 'src.adapters.outbound.HttpRepository'>] ✓                51% █████▏`
 - [ ] fix: Introduce custom type needs to wrap usage sites
@@ -57,7 +57,6 @@ def do():
 - [ ] feat: Attach run node context menu in pytest explorer
 - [ ] feat: Only discover tests when SDK is set up
 - [ ] feat: Also, render tests different based on their skip/skipif markers
-- [ ] feat: Manage markers in new tab
 - [ ] feat: Navigate to request fixture
 - [ ] feat: Generate module-level logger
 - [ ] feat: Do not move logger when moving code
@@ -122,6 +121,9 @@ def do():
 
 ## Completed Tasks (newest first)
 
+- [x] fix: No Python SDK configured should be displayed directly in pytest explorer, or greyed out?
+- [x] feat: Manage markers in new tab
+- [x] fix: No Python SDK configured should be displayed directly in pytest explorer, or greyed out?
 - [x] feat: Recognize methods like `assert_called_once_with` in mocks
 - [x] feat: Parse class names in errors from anyio.TaskGroup
 - [x] fix: Should mark fixture as unresolved if no parent fixture exists
