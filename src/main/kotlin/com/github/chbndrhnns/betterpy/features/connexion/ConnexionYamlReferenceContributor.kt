@@ -1,6 +1,5 @@
 package com.github.chbndrhnns.betterpy.features.connexion
 
-import com.github.chbndrhnns.betterpy.featureflags.PluginSettingsState
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.*
 import com.intellij.util.ProcessingContext
@@ -40,7 +39,6 @@ class ConnexionYamlReferenceContributor : PsiReferenceContributor() {
 
 private class ConnexionYamlReferenceProvider : PsiReferenceProvider() {
     override fun getReferencesByElement(element: PsiElement, context: ProcessingContext): Array<PsiReference> {
-        if (!PluginSettingsState.instance().state.enableConnexionCompletion) return PsiReference.EMPTY_ARRAY
         val parent = element.parent
         if (parent is YAMLKeyValue && parent.value != element) return PsiReference.EMPTY_ARRAY
 
@@ -52,7 +50,6 @@ private class ConnexionYamlReferenceProvider : PsiReferenceProvider() {
 
 private class ConnexionYamlControllerReferenceProvider : PsiReferenceProvider() {
     override fun getReferencesByElement(element: PsiElement, context: ProcessingContext): Array<PsiReference> {
-        if (!PluginSettingsState.instance().state.enableConnexionCompletion) return PsiReference.EMPTY_ARRAY
         val parent = element.parent
         if (parent is YAMLKeyValue && parent.value != element) return PsiReference.EMPTY_ARRAY
 

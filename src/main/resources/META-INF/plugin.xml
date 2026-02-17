@@ -1,7 +1,7 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <id>com.github.chbndrhnns.betterpy</id>
-    <name>BetterPy</name>
+    <id>com.github.chbndrhnns.connexion</id>
+    <name>Connexion</name>
     <vendor>chbndrhnns</vendor>
 
     <description><![CDATA[
@@ -22,15 +22,12 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <applicationService
-                serviceImplementation="com.github.chbndrhnns.betterpy.featureflags.PluginSettingsState"/>
-
         <psi.referenceContributor language="JSON"
                                   implementation="com.github.chbndrhnns.betterpy.features.connexion.ConnexionJsonReferenceContributor"/>
 
         <localInspection language="JSON"
                          implementationClass="com.github.chbndrhnns.betterpy.features.connexion.ConnexionJsonInspection"
-                         displayName="BetterPy: Unresolved Connexion reference"
+                         displayName="Connexion: Unresolved reference"
                          groupName="Connexion"
                          enabledByDefault="true"
                          level="ERROR"/>
@@ -44,7 +41,7 @@
     <actions>
         <action id="Connexion.GoToOpenApiOperation"
                 class="com.github.chbndrhnns.betterpy.features.connexion.GoToOpenApiOperationAction"
-                text="BetterPy: Go to OpenAPI Operation"
+                text="Connexion: Go to OpenAPI Operation"
                 description="Navigate to OpenAPI declaration">
             <add-to-group group-id="EditorPopupMenu.GoTo" anchor="after" relative-to-action="FindUsages"/>
         </action>

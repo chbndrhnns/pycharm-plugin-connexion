@@ -1,6 +1,5 @@
 package com.github.chbndrhnns.betterpy.features.connexion
 
-import com.github.chbndrhnns.betterpy.featureflags.PluginSettingsState
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerProvider
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder
@@ -17,7 +16,6 @@ class ConnexionPythonLineMarkerProvider : RelatedItemLineMarkerProvider() {
         element: PsiElement,
         result: MutableCollection<in RelatedItemLineMarkerInfo<*>>
     ) {
-        if (!PluginSettingsState.instance().state.enableConnexionLineMarkers) return
         if (element !is PyFunction) return
 
         val operations = OpenApiSpecUtil.findSpecOperationsForFunction(element)
@@ -36,7 +34,6 @@ class ConnexionJsonLineMarkerProvider : RelatedItemLineMarkerProvider() {
         element: PsiElement,
         result: MutableCollection<in RelatedItemLineMarkerInfo<*>>
     ) {
-        if (!PluginSettingsState.instance().state.enableConnexionLineMarkers) return
         if (element !is JsonStringLiteral) return
 
         if (!isOperationIdValue(element)) return
@@ -57,7 +54,6 @@ class ConnexionYamlLineMarkerProvider : RelatedItemLineMarkerProvider() {
         element: PsiElement,
         result: MutableCollection<in RelatedItemLineMarkerInfo<*>>
     ) {
-        if (!PluginSettingsState.instance().state.enableConnexionLineMarkers) return
         if (element !is YAMLScalar) return
 
         if (!isOperationIdValue(element)) return
