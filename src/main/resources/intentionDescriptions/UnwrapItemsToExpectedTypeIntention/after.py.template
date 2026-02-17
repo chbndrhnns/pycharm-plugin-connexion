@@ -1,5 +1,0 @@
-from typing import NewType
-
-UserId = NewType("UserId", int)
-
-xs: list[int] = [<caret>1, 2]

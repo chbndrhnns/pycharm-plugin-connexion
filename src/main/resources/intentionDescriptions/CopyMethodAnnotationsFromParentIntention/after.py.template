@@ -1,8 +1,0 @@
-class Base:
-    def method(self, value: int) -> str:
-        pass
-
-
-class Child(Base):
-    def method(self, value: int) -> str:
-        pass

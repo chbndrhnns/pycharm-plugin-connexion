@@ -1,5 +1,0 @@
-def test_():
-    try:
-        process()
-    except Exception:
-        raise Exception("Failed") from <spot>err</spot>

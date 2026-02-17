@@ -1,4 +1,0 @@
-MyAlias = List[int]
-
-def foo(x: MyAlias):
-    pass

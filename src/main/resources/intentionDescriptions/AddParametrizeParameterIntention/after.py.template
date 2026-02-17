@@ -1,3 +1,0 @@
-@pytest.mark.parametrize("x, arg2", [(1, None), (2, None)])
-def test_foo(x, arg2):
-    pass

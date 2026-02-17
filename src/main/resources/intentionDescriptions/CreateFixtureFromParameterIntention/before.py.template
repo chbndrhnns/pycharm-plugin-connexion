@@ -1,6 +1,0 @@
-import pytest
-
-
-@pytest.fixture
-def api_client(<spot>user</spot>):
-    return user

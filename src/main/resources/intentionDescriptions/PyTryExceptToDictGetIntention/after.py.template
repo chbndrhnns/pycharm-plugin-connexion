@@ -1,1 +1,0 @@
-value = my_dict.get("key", "default")

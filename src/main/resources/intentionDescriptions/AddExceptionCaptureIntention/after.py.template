@@ -1,5 +1,0 @@
-def test_():
-    try:
-        process()
-    except Exception as err:
-        raise Exception("Failed") from err

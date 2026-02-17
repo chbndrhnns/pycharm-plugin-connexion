@@ -1,8 +1,0 @@
-from typing import NewType
-
-UserId = NewType("UserId", int)
-
-def f(x: int) -> None:
-    pass
-
-f(<caret>42)

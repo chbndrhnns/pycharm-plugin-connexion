@@ -1,3 +1,0 @@
-from mytypes import UserId
-
-users: list[UserId] = [UserId(1), UserId(2), UserId(3)]

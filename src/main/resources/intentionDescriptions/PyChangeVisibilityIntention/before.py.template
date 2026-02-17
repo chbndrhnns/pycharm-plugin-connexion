@@ -1,3 +1,0 @@
-class MyClass:
-    def _my_method(self):
-        pass

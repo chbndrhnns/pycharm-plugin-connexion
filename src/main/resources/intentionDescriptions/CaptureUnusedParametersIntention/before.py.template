@@ -1,2 +1,0 @@
-def handle_request(user_id, token, payload):
-    return <spot>user_id</spot>

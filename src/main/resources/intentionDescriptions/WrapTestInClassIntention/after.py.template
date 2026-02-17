@@ -1,4 +1,0 @@
-class TestUserLogin:
-    def test_user_login(self, username, password):
-        assert username
-        assert password

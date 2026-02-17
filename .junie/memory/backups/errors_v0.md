@@ -777,6 +777,6 @@
 "PROJECT NOTE": "Add <depends optional=\"true\" config-file=\"META-INF/mcp-support.xml\">
 com.intellij.mcpServer</depends> to plugin.xml and, in META-INF/mcp-support.xml, register <extensions
 defaultExtensionNs=\"com.intellij.mcpServer\"><mcpToolset
-implementationClass=\"com.github.chbndrhnns.betterpy.features.intentions.parameterobject.mcp.ParameterObjectToolset\"/></extensions>.",
+implementationClass=\"com.github.chbndrhnns.connexion.features.intentions.parameterobject.mcp.ParameterObjectToolset\"/></extensions>.",
     "NEW INSTRUCTION": "WHEN optional dependency used without config-file THEN create config file and reference it"
 }

@@ -625,7 +625,7 @@
     "MISSING STEPS": "scan project,fix imports/resolve symbol,run existing tests",
     "BOTTLENECK": "Unresolved reference to parser led to test adjustments instead of fixing code/imports.",
 "PROJECT NOTE": "Ensure test imports/reference
-com.github.chbndrhnns.betterpy.features.pytest.outcome.PytestStacktraceParser correctly.",
+com.github.chbndrhnns.connexion.features.pytest.outcome.PytestStacktraceParser correctly.",
     "NEW INSTRUCTION": "WHEN test shows unresolved symbol THEN search project and fix import or create symbol"
 }
 

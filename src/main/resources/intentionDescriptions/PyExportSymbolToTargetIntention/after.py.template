@@ -1,3 +1,0 @@
-# In target __init__.py:
-__all__ = ["my_function"]
-from .module import my_function

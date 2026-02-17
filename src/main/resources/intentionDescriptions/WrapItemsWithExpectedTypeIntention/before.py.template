@@ -1,3 +1,0 @@
-from mytypes import UserId
-
-users: list[UserId] = [<spot>1, 2, 3</spot>]

@@ -1,3 +1,0 @@
-def handle_request(user_id, token, payload):
-    _ = token, payload
-    return user_id
