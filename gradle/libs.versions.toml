@@ -3,7 +3,7 @@
 junit = "4.13.2"
 opentest4j = "1.3.0"
 jackson = "2.17.2"
-jsonSchemaValidator = "1.0.83"
+jsonSchemaValidator = "3.0.0"
 
 # plugins
 changelog = "2.5.0"
