@@ -1,0 +1,910 @@
+<idea-plugin url="https://www.jetbrains.com/pycharm/" package="PythonId" allow-bundled-update="true">
+    <id>Pythonid</id>
+    <version>253.29346.142</version>
+    <idea-version since-build="253.29346.142" until-build="253.29346.142"/>
+    <name>Python</name>
+    <description><![CDATA[The Python plug-in provides smart editing for Python scripts. The feature set of the plugin
+ corresponds to PyCharm IDE with a Pro subscription.
+<br>
+<a href="https://blog.jetbrains.com/pycharm">PyCharm blog</a><br>
+<a href="https://forum.jetbrains.com/forum/PyCharm">Discussion forum</a><br>
+<a href="https://youtrack.jetbrains.com/issues/PY">Issue tracker</a><br>]]></description>
+    <vendor url="https://www.jetbrains.com/pycharm/">JetBrains</vendor>
+    <module value="com.intellij.modules.python.scientific"/>
+    <dependencies>
+        <plugin id="com.intellij.modules.python"/>
+        <plugin id="com.intellij.modules.python-pro-capable"/>
+        <plugin id="com.intellij.modules.ultimate"/>
+    </dependencies>
+    <content namespace="jetbrains">
+        <module name="intellij.python.core.impl"><![CDATA[<idea-plugin visibility="internal">
+  <dependencies>
+    <plugin id="com.intellij.modules.python" />
+  </dependencies>
+  <extensions defaultExtensionNs="com.jetbrains.python">
+    <pythonHelpersLocator implementation="com.jetbrains.python.PythonProHelpersLocator" />
+  </extensions>
+</idea-plugin>]]></module>
+        <module name="intellij.python.scientific"><![CDATA[<idea-plugin visibility="public" package="com.intellij.python.scientific">
+  <resource-bundle>messages.PyScientificBundle</resource-bundle>
+  <dependencies>
+    <plugin id="com.intellij.modules.python" />
+    <plugin id="com.intellij.modules.lang" />
+    <plugin id="com.intellij.modules.python-pro-fleet-not-capable" />
+    <module name="intellij.scientific.py.tables.split.common" />
+    <plugin id="com.intellij.platform.images" />
+    <module name="intellij.scientific.py.tables" />
+    <module name="intellij.scientific.tables" />
+    <module name="intellij.grid.core.impl" />
+    <module name="intellij.grid.impl" />
+  </dependencies>
+  <applicationListeners>
+    <listener class="com.intellij.python.scientific.console.PyConsoleRuntimeEnvService$Companion$ConsoleFrameListener" topic="com.jetbrains.python.debugger.PyFrameListener" />
+  </applicationListeners>
+  <extensionPoints>
+    <extensionPoint qualifiedName="Pythonid.scientific.displayMessageHandler" interface="com.intellij.python.scientific.DisplayMessageHandler" dynamic="true" />
+  </extensionPoints>
+  <extensions defaultExtensionNs="com.intellij">
+    <fileType name="DataViewer" language="Python" implementationClass="com.intellij.python.scientific.powerfuldataviewer.editor.DataViewFileType" fieldName="INSTANCE" />
+    <completion.contributor language="Python" order="before PyDictKeyNames" implementationClass="com.intellij.python.scientific.console.completion.PythonRuntimeCompletionContributor" />
+    <notificationGroup id="Plots" displayType="BALLOON" bundle="messages.PyScientificBundle" key="notification.group" />
+    <statistics.notificationIdsHolder implementation="com.intellij.python.scientific.statistics.PlotsIdsHolder" />
+    <fileEditorProvider implementation="com.intellij.python.scientific.powerfuldataviewer.editor.DataViewEditorProvider" />
+    <applicationConfigurable groupId="tools" instance="com.intellij.python.scientific.PyPlotsConfigurable" id="PyPlotsConfigurable" bundle="messages.PyScientificBundle" key="configurable.PyScientificConfigurable.display.name" nonDefaultProject="true" />
+    <toolWindow id="Plots" factoryClass="com.intellij.python.scientific.PyPlotViewToolWindowFactory" anchor="right" icon="com.jetbrains.python.icons.PythonIcons.Python.DataView" />
+    <toolWindow id="SciView" factoryClass="com.intellij.python.scientific.PyDataViewToolWindowFactory" anchor="right" icon="AllIcons.Toolwindows.ToolWindowDataView" canCloseContents="true" />
+    <registryKey key="python.scientific.always_use_sci_view" description="Use sci view even if it is not enabled explicitly" defaultValue="false" restartRequired="false" />
+    <registryKey key="python.scientific.popup.ads.numpy" defaultValue="false" description="Advertise SciView mode if a file has NumPy import" />
+    <fileEditorProvider implementation="com.intellij.python.scientific.figures.interactive.InteractiveFigureFileEditorProvider" />
+    <statistics.projectUsagesCollector implementation="com.intellij.python.scientific.statistics.PyScientificToolsCollector" />
+    <statistics.counterUsagesCollector implementationClass="com.intellij.python.scientific.statistics.PyPlotsCollector" />
+    <codeInsight.lineMarkerProvider language="Python" implementationClass="com.intellij.python.scientific.cells.PyCellLineMarkerProvider" />
+    <postStartupActivity implementation="com.intellij.python.scientific.cells.PyEditorCellManagerStartupActivity" />
+    <lang.foldingBuilder language="Python" implementationClass="com.intellij.python.scientific.cells.PyCellsFoldingBuilder" />
+    <actionPromoter implementation="com.intellij.python.scientific.cells.PyExecuteCellAction$CellActionPromoter" />
+    <httpRequestHandler implementation="com.intellij.python.scientific.PySciRestService" />
+    <applicationService serviceInterface="com.intellij.python.scientific.PySciApplicationComponent" serviceImplementation="com.intellij.python.scientific.PySciApplicationComponentImpl" headlessImplementation="com.intellij.python.scientific.PyDummySciApplicationComponent" />
+  </extensions>
+  <extensions defaultExtensionNs="com.jetbrains.python.debugger">
+    <numericContainerPopupCustomizer implementation="com.intellij.python.scientific.PyDsDataViewNumericContainerPopupCustomizer" order="first" />
+    <numericContainerPopupCustomizer implementation="com.intellij.python.scientific.PyDataViewNumericContainerPopupCustomizer" />
+  </extensions>
+  <extensions defaultExtensionNs="Pythonid">
+    <dataViewPanelFactory implementation="com.intellij.python.scientific.powerfuldataviewer.PyDataViewerPanelPowerfulFactory" />
+    <pythonCommandLineEnvironmentProvider implementation="com.intellij.python.scientific.figures.PySciEnvironmentProvider" />
+    <runConfigurationExtension implementation="com.intellij.python.scientific.figures.PySciEnvironmentProvider" />
+    <pythonCommandLineTargetEnvironmentProvider implementation="com.intellij.python.scientific.figures.PySciTargetEnvironmentProvider" />
+    <pep8ProblemSuppressor implementation="com.intellij.python.scientific.cells.PyCellsPep8ProblemSuppressor" />
+    <scientific.displayMessageHandler implementation="com.intellij.python.scientific.figures.display.MatplotlibMessageHandler" />
+    <scientific.displayMessageHandler implementation="com.intellij.python.scientific.figures.display.PlotlyMessageHandler" />
+    <scientific.displayMessageHandler implementation="com.intellij.python.scientific.figures.display.AltairMessageHandler" />
+    <inspectionExtension implementation="com.intellij.python.scientific.cells.PyCellInspectionExtension" />
+  </extensions>
+  <actions resource-bundle="messages.PyScientificBundle">
+    <action id="com.intellij.python.scientific.PyPlotsAction" class="com.intellij.python.scientific.PyPlotsAction" icon="com.jetbrains.python.icons.PythonIcons.Python.DataView" />
+    <action id="OpenInEditorAction" class="com.intellij.python.scientific.powerfuldataviewer.actions.OpenInEditorAction" icon="AllIcons.Actions.OpenNewTab" />
+    <action id="ToggleDataViewColoring" class="com.intellij.python.scientific.powerfuldataviewer.actions.ToggleDataViewColoringAction" icon="com.intellij.grid.core.impl.icons.GridCoreImplIcons.TableHeatmap" />
+    <action id="ManualReloadTableAction" class="com.intellij.python.scientific.powerfuldataviewer.actions.ManualReloadTableAction" icon="com.intellij.util.PlatformIcons.SYNCHRONIZE_ICON" />
+    <action id="SwitchBetweenTableModesAction" class="com.intellij.python.scientific.powerfuldataviewer.actions.SwitchBetweenTableModesAction" icon="AllIcons.Actions.SwapPanels" />
+    <action id="ExportTableAction" class="com.intellij.python.scientific.powerfuldataviewer.actions.ExportTableAction" icon="AllIcons.Actions.Download" />
+    <action id="OpenFormattingTableAction" class="com.intellij.python.scientific.powerfuldataviewer.actions.OpenFormattingTableAction" icon="com.intellij.python.scientific.PythonScientificIcons.RenameTable" />
+    <action id="DataViewShowSlicingPanelAction" class="com.intellij.python.scientific.powerfuldataviewer.actions.DataViewShowSlicingPanelAction" icon="AllIcons.Actions.Edit" />
+    <action id="DataViewOpenSlicingDocumentationAction" class="com.intellij.python.scientific.powerfuldataviewer.actions.DataViewOpenSlicingDocumentationAction" />
+    <action id="DataViewHideSlicingPanelAction" class="com.intellij.python.scientific.powerfuldataviewer.actions.DataViewHideSlicingPanelAction" />
+    <action id="OpenPlotInEditorAction" class="com.intellij.python.scientific.actions.OpenPlotInEditorAction" icon="AllIcons.Actions.OpenNewTab">
+      <add-to-group group-id="Images.ScientificGroup" anchor="first" />
+    </action>
+    <group id="InteractiveImageActionsGroup">
+      <reference ref="OpenPlotInEditorAction" />
+    </group>
+    <group id="TableViewMoreActionsGroup" icon="AllIcons.Actions.More" popup="true" class="com.intellij.python.scientific.powerfuldataviewer.actions.TableViewMoreActionsGroup">
+      <reference ref="DataViewShowSlicingPanelAction" />
+      <reference ref="OpenFormattingTableAction" />
+      <separator />
+      <reference ref="DS.Console.TableResult.DSShowDumpDialogGrid" />
+      <separator />
+      <reference ref="OpenInEditorAction" />
+      <separator />
+      <reference ref="DataViewOpenTableDocumentationAction" />
+      <reference ref="DataViews.Settings.Appearance" />
+      <reference ref="SwitchBetweenTableModesAction" />
+    </group>
+    <group id="DataView.Table.Toolbar.Right">
+      <reference ref="DS.TableFiltering.OpenFilterView" />
+      <reference ref="ManualReloadTableAction" />
+      <reference ref="TableViewColoringGroup" />
+      <reference ref="StatisticsPanel.Show" />
+      <reference ref="TableViewMoreActionsGroup" />
+    </group>
+  </actions>
+  <actions resource-bundle="messages.PyBundle">
+    <action id="PyExecuteCellAction" class="com.intellij.python.scientific.cells.PyExecuteCellAction">
+      <keyboard-shortcut keymap="$default" first-keystroke="control ENTER" />
+      <keyboard-shortcut keymap="Mac OS X" first-keystroke="control ENTER" replace-all="true" />
+      <keyboard-shortcut keymap="Mac OS X 10.5+" first-keystroke="control ENTER" replace-all="true" />
+      <add-to-group group-id="EditorPopupMenu" anchor="after" relative-to-action="ExecuteInPyConsoleAction" />
+    </action>
+    <action id="PyExecuteCellActionWithMove" class="com.intellij.python.scientific.cells.PyExecuteCellActionWithMove">
+      <keyboard-shortcut keymap="$default" first-keystroke="shift ENTER" />
+      <keyboard-shortcut keymap="Mac OS X" first-keystroke="shift ENTER" replace-all="true" />
+      <keyboard-shortcut keymap="Mac OS X 10.5+" first-keystroke="shift ENTER" replace-all="true" />
+    </action>
+  </actions>
+</idea-plugin>]]></module>
+        <module name="intellij.python.plugin.java"><![CDATA[<idea-plugin package="com.intellij.python.plugin.java">
+  <dependencies>
+    <plugin id="com.intellij.modules.python" />
+    <module name="intellij.python.community.plugin.java" />
+    <module name="intellij.python" />
+    <module name="intellij.python.core.impl" />
+    <plugin id="com.intellij.java" />
+    <module name="intellij.json.backend" />
+    <plugin id="com.intellij.modules.lang" />
+    <plugin id="com.intellij.modules.python-in-non-pycharm-ide-capable" />
+    <plugin id="com.intellij.modules.python-pro-fleet-not-capable" />
+  </dependencies>
+  <extensions defaultExtensionNs="Pythonid">
+    <pyRootTypeProvider implementation="com.intellij.python.plugin.java.PyPluginResourceRootProvider" />
+  </extensions>
+</idea-plugin>]]></module>
+        <module name="intellij.django.core"><![CDATA[<idea-plugin visibility="internal" package="com.jetbrains.django">
+  <dependencies>
+    <plugin id="com.intellij.modules.python" />
+    <plugin id="com.intellij.modules.lang" />
+    <module name="intellij.spellchecker" />
+    <module name="intellij.json.backend" />
+    <module name="intellij.jinja" />
+    <module name="intellij.template.lang.core" />
+    <module name="intellij.regexp" />
+  </dependencies>
+  <extensions defaultExtensionNs="com.intellij">
+    <lang.parserDefinition language="DjangoUrlPath" implementationClass="com.jetbrains.django.urlPathLanguage.DjangoUrlPathParserDefinition" />
+    <lang.syntaxHighlighterFactory language="DjangoUrlPath" implementationClass="com.jetbrains.django.urlPathLanguage.DjangoUrlPathSyntaxHighlighterFactory" />
+    <editorHighlighterProvider filetype="DjangoTemplate" implementationClass="com.jetbrains.django.lang.template.DjangoTemplateEditorHighlighterProvider" />
+    <lang.parserDefinition language="DjangoTemplate" order="first" implementationClass="com.jetbrains.django.lang.template.parsing.DjangoTemplateParserDefinition" />
+    <lang.syntaxHighlighter language="DjangoTemplate" implementationClass="com.jetbrains.django.lang.template.highlighting.DjangoTemplateFileHighlighter" />
+    <lang.elementManipulator forClass="com.jetbrains.django.urlPathLanguage.DjangoUrlPathFile" implementationClass="com.jetbrains.django.urlPathLanguage.DjangoUrlPathFileManipulator" />
+    <lang.elementManipulator forClass="com.jetbrains.python.codeInsight.regexp.DjangoRegexpFile" implementationClass="com.jetbrains.python.codeInsight.regexp.DjangoRegexpUrlPathFileManipulator" />
+    <moduleService serviceImplementation="com.jetbrains.django.model.DjangoTemplateManager" />
+    <facetType implementation="com.jetbrains.django.facet.DjangoFacetType" />
+    <codeInsight.lineMarkerProvider language="DjangoTemplate" implementationClass="com.jetbrains.django.annotator.ViewLineMarkerProvider" />
+    <codeInsight.lineMarkerProvider language="DjangoTemplate" implementationClass="com.jetbrains.django.lang.template.DjangoBlockInheritorsLineMarkerProvider" />
+    <projectService serviceImplementation="com.jetbrains.django.lang.template.DjangoTemplateElementGenerator" />
+    <xml.zenCodingGenerator implementation="com.jetbrains.django.lang.template.DjangoTemplateZenCodingGenerator" />
+    <lang.psiStructureViewFactory language="DjangoTemplate" implementationClass="com.jetbrains.django.lang.template.structureView.DjangoStructureViewBuilderFactory" />
+    <stubIndex implementation="com.jetbrains.django.model.stubs.DjangoForeignKeyIndex" />
+    <stubIndex implementation="com.jetbrains.django.model.stubs.manager.DjangoManagerIndex" />
+    <fileBasedIndex implementation="com.jetbrains.django.lang.template.DjangoBlockInheritanceIndex" />
+    <fileBasedIndex implementation="com.jetbrains.django.indexing.DjangoAdminRegisterModelIndex" />
+    <html.htmlScriptInjectionBlocker language="DjangoTemplate" implementationClass="com.jetbrains.django.DjangoJsonInjectionBlocker" />
+    <codeInsight.lineMarkerProvider language="Jinja2" implementationClass="com.jetbrains.django.annotator.ViewLineMarkerProvider" />
+    <codeInsight.lineMarkerProvider language="Jinja2" implementationClass="com.jetbrains.django.lang.template.DjangoBlockInheritorsLineMarkerProvider" />
+    <html.htmlScriptInjectionBlocker language="Jinja2" implementationClass="com.jetbrains.django.DjangoJsonInjectionBlocker" />
+    <lang.psiStructureViewFactory language="Jinja2" implementationClass="com.jetbrains.django.lang.template.structureView.DjangoStructureViewBuilderFactory" />
+    <registryKey key="django.separate.imports" defaultValue="false" description="Add imports for Django separately" />
+    <registryKey key="django.model.index.enabled" defaultValue="true" description="Index Django models" />
+    <registryKey key="django.modelAdmin.index.enabled" defaultValue="true" description="Index Django model admins" />
+  </extensions>
+  <extensions defaultExtensionNs="com.intellij.spellchecker">
+    <support language="DjangoTemplate" implementationClass="com.jetbrains.django.lang.template.DjangoTemplateSpellcheckerStrategy" />
+  </extensions>
+  <extensions defaultExtensionNs="Pythonid">
+    <typeProvider implementation="com.jetbrains.django.codeInsight.DjangoTypeProvider" />
+    <typeHintProvider implementation="com.jetbrains.django.codeInsight.DjangoUserModelTypeHintProvider" />
+    <templateLanguageCoreTags language="DjangoTemplate" implementationClass="com.jetbrains.django.model.DjangoTagLibrary" />
+    <importCandidateProvider implementation="com.jetbrains.django.codeInsight.DjangoImportCandidateProvider" />
+    <pyiStubSuppressor implementation="com.jetbrains.django.codeInsight.DjangoPyiStubsSuppressor" />
+  </extensions>
+  <extensions defaultExtensionNs="com.intellij.jinja2">
+    <customizationProvider implementation="com.jetbrains.django.lang.template.DjangoJinja2CustomizationProvider" />
+  </extensions>
+</idea-plugin>]]></module>
+        <module name="intellij.jinja"><![CDATA[<idea-plugin visibility="public" package="com.intellij.jinja">
+  <dependencies>
+    <plugin id="com.intellij.modules.python" />
+    <module name="intellij.template.lang.core" />
+  </dependencies>
+  <extensions defaultExtensionNs="com.intellij">
+    <fileType name="Jinja2" language="Jinja2" extensions="j2;jinja;jinja2" patterns="*-playbook.yml;*-playbook.yaml" implementationClass="com.intellij.jinja.Jinja2FileType" fieldName="INSTANCE" />
+    <editorHighlighterProvider filetype="Jinja2" implementationClass="com.intellij.jinja.highlighting.Jinja2EditorHighlighterProvider" />
+    <lang.syntaxHighlighter language="Jinja2" implementationClass="com.intellij.jinja.highlighting.Jinja2SyntaxHighlighter" />
+    <lang.parserDefinition language="Jinja2" order="first" implementationClass="com.intellij.jinja.parsing.Jinja2ParserDefinition" />
+    <lang.fileViewProviderFactory language="Jinja2" implementationClass="com.intellij.jinja.Jinja2FileViewProviderFactory" />
+    <lang.ast.factory language="DjangoTemplate" implementationClass="com.intellij.jinja.template.psi.impl.DjangoASTFactory" />
+    <annotator language="Jinja2" implementationClass="com.intellij.jinja.highlighting.Jinja2Annotator" />
+    <useScopeEnlarger implementation="com.intellij.jinja.findUsages.Jinja2UseScopeEnlarger" />
+    <usageTypeProvider implementation="com.intellij.jinja.findUsages.Jinja2UsageTypeProvider" />
+    <lang.commenter language="Jinja2" implementationClass="com.intellij.jinja.Jinja2Commenter" />
+    <xml.zenCodingGenerator implementation="com.intellij.jinja.Jinja2ZenCodingGenerator" />
+    <lang.formatter language="Jinja2" implementationClass="com.intellij.jinja.template.formatter.DjangoTemplateFormattingModelBuilder" />
+    <lang.formatter language="DjangoTemplate" implementationClass="com.intellij.jinja.template.formatter.DjangoTemplateFormattingModelBuilder" />
+    <lang.fileViewProviderFactory language="DjangoTemplate" implementationClass="com.intellij.jinja.template.DjangoTemplateFileProviderFactory" />
+    <typedHandler implementation="com.intellij.jinja.template.editor.DjangoBracesInterpolationTypedHandler" id="jinjaBraceInterpolation" />
+    <applicationService serviceImplementation="com.intellij.jinja.Jinja2CodeInsightSettings" />
+  </extensions>
+  <extensions defaultExtensionNs="Pythonid">
+    <templateLanguageCoreTags language="Jinja2" implementationClass="com.intellij.jinja.tags.Jinja2TagLibrary" id="jinja2" />
+  </extensions>
+  <extensionPoints>
+    <extensionPoint qualifiedName="com.intellij.jinja2.customizationProvider" interface="com.intellij.jinja.template.Jinja2CustomizationProvider" dynamic="true" />
+    <extensionPoint qualifiedName="Pythonid.templateLanguageCoreTags" beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+      <with attribute="implementationClass" implements="com.intellij.jinja.model.TemplateLanguageTagLibrary" />
+    </extensionPoint>
+  </extensionPoints>
+</idea-plugin>]]></module>
+        <module name="intellij.python.concurrencyVisualizer"><![CDATA[<idea-plugin package="com.intellij.python.concurrencyVisualizer">
+  <dependencies>
+    <plugin id="com.intellij.modules.python-pro-fleet-not-capable" />
+    <module name="intellij.profiler.common" />
+    <plugin id="com.intellij.modules.python" />
+    <module name="intellij.python" />
+  </dependencies>
+  <extensions defaultExtensionNs="com.intellij">
+    <projectService serviceInterface="com.jetbrains.python.debugger.PyConcurrencyService" serviceImplementation="com.intellij.python.concurrencyVisualizer.PyConcurrencyServiceImpl" />
+    <programRunner implementation="com.intellij.python.concurrencyVisualizer.PyConcurrencyDebugRunner" id="PyConcurrencyDebugRunner" />
+    <profiler.executor implementation="com.intellij.python.concurrencyVisualizer.PyConcurrencyExecutor" order="last" id="ConcurrencyExecutor" />
+  </extensions>
+</idea-plugin>]]></module>
+        <module name="intellij.python.djangoDbConfig"><![CDATA[<idea-plugin package="com.intellij.python.djangoDbConfig">
+  <dependencies>
+    <plugin id="com.intellij.modules.database.core" />
+    <plugin id="com.intellij.modules.database" />
+    <plugin id="com.intellij.modules.python-pro-fleet-not-capable" />
+    <plugin id="com.intellij.python.django" />
+    <plugin id="com.intellij.modules.python" />
+    <module name="intellij.python" />
+    <module name="intellij.django.core" />
+    <module name="intellij.jinja" />
+  </dependencies>
+  <extensions defaultExtensionNs="com.intellij">
+    <database.dataSourceDetector implementation="com.intellij.python.djangoDbConfig.DjangoDataSourceDetector" />
+  </extensions>
+</idea-plugin>]]></module>
+        <module name="intellij.python.huggingFace"><![CDATA[<idea-plugin package="com.intellij.python.huggingFace">
+  <resource-bundle>messages.HuggingFaceProBundle</resource-bundle>
+  <dependencies>
+    <plugin id="com.intellij.modules.python-pro-fleet-not-capable" />
+    <module name="intellij.jupyter.psi" />
+    <module name="intellij.jupyter.core" />
+    <plugin id="com.intellij.modules.python" />
+    <module name="intellij.notebooks.ui" />
+    <module name="intellij.python" />
+    <module name="intellij.python.community.impl.huggingFace" />
+  </dependencies>
+  <extensions defaultExtensionNs="com.intellij">
+    <toolWindow id="HfCacheToolWindow" anchor="bottom" canCloseContents="false" factoryClass="com.intellij.python.huggingFace.cacheManager.HfCacheToolWindowFactory" icon="com.intellij.python.community.impl.huggingFace.icons.PythonCommunityImplHuggingFaceIcons.ToolWindowHuggingFace" />
+  </extensions>
+  <actions resource-bundle="messages.HuggingFaceProBundle">
+    <action id="HfOpenModelSelectionWindow" class="com.intellij.python.huggingFace.modelChoice.HfOpenModelSelectionWindowAction" icon="com.intellij.python.community.impl.huggingFace.icons.PythonCommunityImplHuggingFaceIcons.Logo">
+      <add-to-group group-id="CodeMenu" anchor="after" relative-to-action="SaveAsTemplate" />
+    </action>
+    <group id="HfCacheManagementContextMenu">
+      <action id="HfRemoveFromCacheAction" class="com.intellij.python.huggingFace.cacheManager.ui.HfRemoveFromCacheAction" icon="com.intellij.icons.AllIcons.General.Delete" />
+      <action id="HfCopyPathToClipboard" class="com.intellij.python.huggingFace.cacheManager.ui.HfCopyPathToClipboard" icon="com.intellij.icons.AllIcons.General.Copy" />
+    </group>
+  </actions>
+</idea-plugin>]]></module>
+        <module name="intellij.python.docker"><![CDATA[<idea-plugin package="com.intellij.python.docker">
+  <dependencies>
+    <plugin id="com.intellij.modules.python-pro-fleet-not-capable" />
+    <module name="intellij.clouds.docker.shared" />
+    <module name="intellij.clouds.docker.remoteRun" />
+    <plugin id="com.intellij.modules.python" />
+    <module name="intellij.python.remoteInterpreter" />
+  </dependencies>
+  <projectListeners>
+    <listener class="com.intellij.python.docker.watcher.PyDockerProjectInterpretersWatcher$ProjectListener" topic="com.intellij.openapi.project.ProjectManagerListener" />
+    <listener class="com.intellij.python.docker.watcher.PyDockerProjectInterpretersWatcher$ModuleListener" topic="com.intellij.openapi.project.ModuleListener" />
+    <listener class="com.intellij.python.docker.watcher.PyDockerProjectInterpretersWatcher$SdkEntitiesChangeListener" topic="com.intellij.platform.backend.workspace.WorkspaceModelChangeListener" />
+  </projectListeners>
+  <extensions defaultExtensionNs="com.intellij">
+    <remote.pathMappingProvider implementation="com.intellij.python.docker.DockerComposeMappingProvider" id="pyDockerComposePathMappingProvider" />
+    <remote.credentialsLanguageContribution implementation="com.intellij.python.docker.DockerCredentialsPythonContribution" />
+    <remote.credentialsLanguageContribution implementation="com.intellij.python.docker.DockerComposeCredentialsPythonContribution" />
+    <docker.remote.dockerCredentialsEditorLanguageContribution implementation="com.intellij.python.docker.remote.DockerCredentialsEditorPythonContribution" />
+    <docker.remote.dockerComposeCredentialsEditorLanguageContribution implementation="com.intellij.python.docker.remote.DockerComposeCredentialsEditorPythonContribution" />
+  </extensions>
+  <extensions defaultExtensionNs="Pythonid">
+    <pythonSdkReadOnlyProvider implementation="com.intellij.python.docker.readOnly.DockerPythonSdkReadOnlyProvider" />
+    <remoteSkeletonGeneratorFactory implementation="com.intellij.python.docker.PyDockerSkeletonGeneratorFactory" />
+    <remoteSkeletonGeneratorFactory implementation="com.intellij.python.docker.compose.PyDockerComposeSkeletonGeneratorFactory" />
+    <remoteProcessStarterManager implementation="com.intellij.python.docker.DockerProcessStarterManager" />
+    <remoteProcessStarterManager implementation="com.intellij.python.docker.compose.DockerComposeProcessStarterManager" />
+    <runConfigurationExtension implementation="com.intellij.python.docker.run.DockerContainerSettingsRunConfigurationExtension" />
+    <runConfigurationExtension implementation="com.intellij.python.docker.compose.run.DockerComposeSettingsRunConfigurationExtension" />
+    <remoteConsoleProcessCreator implementation="com.intellij.python.docker.console.PythonConsoleDockerProcessCreator" />
+    <remoteConsoleProcessCreator implementation="com.intellij.python.docker.compose.console.PythonConsoleDockerComposeProcessCreator" />
+    <debugSessionFactory implementation="com.intellij.python.docker.debugger.PyDockerDebugSessionFactory" />
+    <debugSessionFactory implementation="com.intellij.python.docker.compose.debugger.PyDockerComposeDebugSessionFactory" />
+    <remoteSdkEditor implementation="com.intellij.python.docker.PyDockerSdkEditor" />
+    <remoteSdkEditor implementation="com.intellij.python.docker.compose.PyDockerComposeSdkEditor" />
+    <interpreterTargetEnvironmentFactory implementation="com.intellij.python.docker.run.PyDockerTargetEnvironmentFactory" />
+    <interpreterTargetEnvironmentFactory implementation="com.intellij.python.docker.compose.target.PyDockerComposeTargetEnvironmentFactory" />
+    <connectionCredentialsToTargetConfigurationConverter implementation="com.intellij.python.docker.run.target.DockerCredentialsToTargetConfigurationConverter" />
+    <connectionCredentialsToTargetConfigurationConverter implementation="com.intellij.python.docker.compose.target.DockerComposeCredentialsToTargetConfigurationConverter" />
+    <pythonCommandLineTargetEnvironmentProvider implementation="com.intellij.python.docker.compose.run.DockerComposeEnvironmentProvider" />
+  </extensions>
+</idea-plugin>]]></module>
+        <module name="intellij.python.duplicatesDetection"><![CDATA[<idea-plugin package="com.intellij.python.duplicatesDetection">
+  <dependencies>
+    <plugin id="com.intellij.modules.duplicatesDetector" />
+    <plugin id="com.intellij.modules.python" />
+    <module name="intellij.python" />
+    <plugin id="com.intellij.modules.lang" />
+  </dependencies>
+  <extensions defaultExtensionNs="com.intellij">
+    <duplicateScope language="Python" implementationClass="com.intellij.python.duplicatesDetection.PyDuplicateScope" />
+  </extensions>
+</idea-plugin>]]></module>
+        <module name="intellij.python.endpoints"><![CDATA[<idea-plugin visibility="internal" package="com.intellij.python.endpoints">
+  <dependencies>
+    <plugin id="com.intellij.modules.python" />
+    <plugin id="com.intellij.modules.lang" />
+  </dependencies>
+  <extensionPoints>
+    <extensionPoint qualifiedName="com.intellij.python.endpoints.webStructureActionBuilder" interface="com.intellij.python.endpoints.WebStructureActionFactory" dynamic="true" />
+  </extensionPoints>
+  <extensions defaultExtensionNs="com.intellij">
+    <microservices.urlResolverFactory implementation="com.intellij.python.endpoints.WebApplicationUrlResolver$Factory" />
+    <codeInsight.lineMarkerProvider language="Python" implementationClass="com.intellij.python.endpoints.WebStructureLineMarkerProvider" />
+    <gotoTargetPresentationProvider implementation="com.intellij.python.endpoints.webStructure.WebStructureGotoTargetPresentationProvider" />
+    <codeInsight.daemonBoundCodeVisionProvider implementation="com.intellij.python.endpoints.WebStructureCodeVisionProvider" />
+    <config.codeVisionGroupSettingProvider implementation="com.intellij.python.endpoints.WebStructureCodeVisionGroupSettingProvider" />
+    <codeInsight.codeVisionSettingsPreviewLanguage modelId="python.web.structure" language="Python" />
+    <statistics.counterUsagesCollector implementationClass="com.intellij.python.endpoints.WebStructureUsagesCollector" />
+    <python.endpoints.webStructureActionBuilder id="PythonWebStructureFindUsages" implementation="com.intellij.python.endpoints.webStructure.FindUsagesActionFactory" order="first" />
+    <python.endpoints.webStructureActionBuilder id="PythonWebStructureNavigateBack" implementation="com.intellij.python.endpoints.webStructure.GoToParentContextActionFactory" order="last, before PythonWebStructureCopyToClipboard" />
+    <python.endpoints.webStructureActionBuilder id="PythonWebStructureCopyToClipboard" implementation="com.intellij.python.endpoints.webStructure.CopyToClipboardActionFactory" order="last" />
+  </extensions>
+</idea-plugin>]]></module>
+        <module name="intellij.python.endpointsHttpclient"><![CDATA[<idea-plugin package="com.intellij.python.endpointsHttpclient">
+  <dependencies>
+    <module name="intellij.python.endpoints" />
+    <plugin id="com.jetbrains.restClient" />
+  </dependencies>
+  <extensions defaultExtensionNs="com.intellij.python.endpoints">
+    <webStructureActionBuilder id="PythonWebStructureGoToHttpClient" implementation="com.intellij.python.endpointsHttpclient.webStructure.GoToHttpClientActionFactory" order="first, before PythonWebStructureShowAllEndpoints, after PythonWebStructureFindUsages" />
+  </extensions>
+</idea-plugin>]]></module>
+        <module name="intellij.python.endpointsMicroservicesUI"><![CDATA[<idea-plugin package="com.intellij.python.endpointsMicroservicesUI">
+  <dependencies>
+    <module name="intellij.python.endpoints" />
+    <module name="intellij.microservices.backend" />
+  </dependencies>
+  <extensions defaultExtensionNs="com.intellij.python.endpoints">
+    <webStructureActionBuilder id="PythonWebStructureShowAllEndpoints" implementation="com.intellij.python.endpointsMicroservicesUI.webStructure.ShowAllEndpointsActionFactory" order="first, after PythonWebStructureFindUsages" />
+  </extensions>
+</idea-plugin>]]></module>
+        <module name="intellij.python.gherkin"><![CDATA[<idea-plugin visibility="internal" package="com.intellij.python.gherkin">
+  <dependencies>
+    <plugin id="gherkin" />
+    <plugin id="com.intellij.modules.python" />
+    <module name="intellij.python" />
+    <plugin id="intellij.python.dap.plugin" />
+  </dependencies>
+  <extensions defaultExtensionNs="org.jetbrains.plugins.cucumber.steps">
+    <cucumberJvmExtensionPoint implementation="com.intellij.python.gherkin.behave.PyBehaveJvmExtensionPoint" />
+  </extensions>
+  <extensions defaultExtensionNs="Pythonid">
+    <typeProvider implementation="com.intellij.python.gherkin.PyBDDTypeProvider" />
+    <inspectionExtension implementation="com.intellij.python.gherkin.PyBDDInspectionExtension" />
+    <pythonDocumentationQuickInfoProvider implementation="com.intellij.python.gherkin.PyBDDDocumentationProvider" />
+  </extensions>
+  <extensionPoints>
+    <extensionPoint qualifiedName="Pythonid.pyBddParametersInspection" interface="com.intellij.python.gherkin.parametersInspection.PyBDDParametersInspectionExtension" dynamic="true" />
+    <extensionPoint qualifiedName="Pythonid.pyBddTestCommandLineEnvCustomization" interface="com.intellij.python.gherkin.bddConfiguration.PyBDDTestCommandLineStateEnvCustomization" dynamic="true" />
+  </extensionPoints>
+  <extensions defaultExtensionNs="com.intellij">
+    <projectConfigurable groupId="language" instance="com.intellij.python.gherkin.gui.PyBDDProjectConfigurable" id="com.intellij.python.gherkin.gui.PyBDDProjectConfigurable" key="com.intellij.python.gherkin.configuration.display-name" bundle="messages.PyBDDBundle" />
+    <languageInjector implementation="com.intellij.python.gherkin.extensions.PyBDDRegexpLanguageInjector" />
+    <moduleService serviceImplementation="com.intellij.python.gherkin.api.PyBDDFrameworkConfig" />
+    <configurationType implementation="com.intellij.python.gherkin.behave.PyBehaveRunConfigurationType" />
+    <runConfigurationProducer implementation="com.intellij.python.gherkin.behave.PyBehaveRunConfigurationProducer" />
+    <localInspection language="Python" shortName="PyBehaveInspection" bundle="messages.PyBundle" key="INSP.settings.bdd.behave.specific" groupKey="INSP.GROUP.python" enabledByDefault="false" level="WARNING" suppressId="PyBehave" implementationClass="com.intellij.python.gherkin.behave.PyBehaveInspection" />
+    <localInspection language="Python" shortName="PyBDDParametersInspection" bundle="messages.PyBundle" key="INSP.settings.bdd.step.definition.arguments" suppressId="PyBDDParameters" groupKey="INSP.GROUP.python" enabledByDefault="true" level="WARNING" implementationClass="com.intellij.python.gherkin.parametersInspection.PyBDDParametersInspection" />
+    <customUsageSearcher implementation="com.intellij.python.gherkin.PyBDDCustomUsageSearcher" />
+    <vetoRenameCondition implementation="com.intellij.python.gherkin.PyBDDDecoratorRenamingPreventer" />
+    <python.dap.run.debugpyConfigProvider implementation="com.intellij.python.gherkin.behave.debug.dap.PyBehaveRunConfigProvider" />
+  </extensions>
+  <extensions defaultExtensionNs="Pythonid" />
+</idea-plugin>]]></module>
+        <module name="intellij.python.javascript.debugger"><![CDATA[<idea-plugin package="com.intellij.python.javascript.debugger">
+  <dependencies>
+    <plugin id="com.intellij.modules.python" />
+    <module name="intellij.python" />
+    <module name="intellij.javascript.debugger.backend" />
+  </dependencies>
+  <extensions defaultExtensionNs="org.jetbrains">
+    <javaScriptDebuggerStarter implementation="com.intellij.python.javascript.debugger.DjangoServerJavaScriptDebuggerStarter" />
+  </extensions>
+</idea-plugin>]]></module>
+        <module name="intellij.python.profiler"><![CDATA[<idea-plugin package="com.intellij.python.profiler">
+  <dependencies>
+    <plugin id="com.intellij.diagram" />
+    <plugin id="com.intellij.modules.python-pro-fleet-not-capable" />
+    <module name="intellij.profiler.asyncOne" />
+    <module name="intellij.profiler.common" />
+    <plugin id="com.intellij.modules.python" />
+    <module name="intellij.python" />
+    <module name="intellij.platform.coverage" />
+  </dependencies>
+  <extensions defaultExtensionNs="com.intellij">
+    <registryKey defaultValue="true" description="Show profiling results in the tool window instead of the old approach with an editor tab" restartRequired="true" key="python.profiler.use.toolwindow.with.flamegraph" />
+    <profiler.executor implementation="com.intellij.python.profiler.ProfilerExecutor" />
+    <programRunner implementation="com.intellij.python.profiler.PythonProfileRunner" />
+    <fileEditorProvider implementation="com.intellij.python.profiler.ProfilerSessionEditorProvider" />
+    <fileType.fileViewProviderFactory filetype="Profiler Session" implementationClass="com.intellij.python.profiler.ProfilerSessionFileViewProviderFactory" />
+    <registryKey key="python.profiler.use.snapshot.file.locally" defaultValue="true" description="Use profiler snapshot file for loading results when Python profiler is started on the local machine." />
+    <statistics.counterUsagesCollector implementationClass="com.intellij.python.profiler.statistics.PyProfilerUsageCollector" />
+    <profiler.statistics.profilerStatisticsAllowedList implementation="com.intellij.python.profiler.statistics.PythonProfilerStatisticsAllowedList" />
+  </extensions>
+  <actions resource-bundle="messages.PythonProfilerBundle">
+    <action id="PyProfiler.OpenPStat" class="com.intellij.python.profiler.PyOpenPStatAction" icon="com.intellij.python.profiler.PythonProfilerIcons.OpenPYHeapSnapshot">
+      <add-to-group group-id="ToolsMenu" anchor="after" relative-to-action="PyDebugger.AttachToProcess" />
+    </action>
+    <action class="com.intellij.python.profiler.NavigateToSourceAction" id="PyProfile.NavigateToSource" use-shortcut-of="EditSource" />
+    <action class="com.intellij.python.profiler.ShowOnCallGraphAction" id="PyProfile.ShowOnCallGraph" />
+    <group id="PyProfiler.Popup.Actions">
+      <reference ref="PyProfile.NavigateToSource" />
+      <reference ref="PyProfile.ShowOnCallGraph" />
+    </group>
+  </actions>
+  <extensionPoints>
+    <extensionPoint qualifiedName="com.intellij.python.profiler.PythonProfilerCustomizer" interface="com.intellij.python.profiler.PythonProfilerCustomizer" dynamic="true" />
+  </extensionPoints>
+  <extensions defaultExtensionNs="com.intellij.python.profiler">
+    <PythonProfilerCustomizer implementation="com.intellij.python.profiler.lines.PythonLineProfiler" />
+  </extensions>
+</idea-plugin>]]></module>
+        <module name="intellij.python.pyramid"><![CDATA[<idea-plugin package="com.intellij.python.pyramid">
+  <dependencies>
+    <module name="intellij.python.core.impl" />
+    <plugin id="com.intellij.modules.python" />
+    <plugin id="com.intellij.modules.lang" />
+    <module name="intellij.python.templateLanguages" />
+    <module name="intellij.template.lang.core" />
+    <module name="intellij.django.core" />
+    <plugin id="intellij.python.dap.plugin" />
+  </dependencies>
+  <extensions defaultExtensionNs="com.intellij">
+    <configurationType implementation="com.intellij.python.pyramid.run.PyramidRunConfigurationType" />
+    <codeInsight.lineMarkerProvider language="Python" implementationClass="com.intellij.python.pyramid.annotator.PyramidViewLineMarkerProvider" />
+    <codeInsight.lineMarkerProvider language="HTML" implementationClass="com.intellij.python.pyramid.annotator.PyramidTemplateLineMarkerProvider" />
+    <codeInsight.lineMarkerProvider language="XML" implementationClass="com.intellij.python.pyramid.annotator.PyramidTemplateLineMarkerProvider" />
+    <codeInsight.lineMarkerProvider language="Chameleon" implementationClass="com.intellij.python.pyramid.annotator.PyramidTemplateLineMarkerProvider" />
+    <localInspection shortName="PyramidSetupInspection" suppressId="PyramidSetup" bundle="messages.PythonProBundle" key="pyramid.setup.inspection.name" groupKey="pyramid.inspection.group.name" enabledByDefault="true" level="WARNING" implementationClass="com.intellij.python.pyramid.annotator.PyramidSetupInspection" />
+    <fileType name="Chameleon" language="Chameleon" extensions="pt" implementationClass="com.intellij.python.pyramid.templates.file.ChameleonFileType" fieldName="INSTANCE" />
+    <lang.fileViewProviderFactory language="Chameleon" implementationClass="com.intellij.python.pyramid.templates.file.ChameleonFileProviderFactory" />
+    <lang.parserDefinition language="Chameleon" implementationClass="com.intellij.python.pyramid.templates.parser.ChameleonParserDefinition" />
+    <editorHighlighterProvider filetype="Chameleon" implementationClass="com.intellij.python.pyramid.templates.highlighting.ChameleonEditorHighlighterProvider" />
+    <lang.syntaxHighlighter language="Chameleon" implementationClass="com.intellij.python.pyramid.templates.highlighting.ChameleonSyntaxHighlighter" />
+    <completion.contributor language="XML" implementationClass="com.intellij.python.pyramid.templates.completion.ChameleonNamespaceCompletionContributor" />
+    <completion.contributor language="Chameleon" implementationClass="com.intellij.python.pyramid.templates.completion.ChameleonNamespaceCompletionContributor" />
+    <completion.contributor language="Python" implementationClass="com.intellij.python.pyramid.templates.completion.ChameleonPrefixTypesCompletionContributor" />
+    <completion.contributor language="Python" implementationClass="com.intellij.python.pyramid.templates.completion.ChameleonGlobalsCompletionContributor" />
+    <lang.formatter language="Chameleon" implementationClass="com.intellij.python.pyramid.templates.formatter.ChameleonFormattingModelBuilder" />
+    <lang.whiteSpaceFormattingStrategy language="Chameleon" implementationClass="com.intellij.python.pyramid.templates.formatter.ChameleonWhiteSpaceFormattingStrategy" />
+    <typedHandler implementation="com.intellij.python.pyramid.templates.completion.ChameleonSubstitutionHandler" id="ChameleonBracesHandler" />
+    <highlightRangeExtension implementation="com.intellij.python.pyramid.templates.highlighting.ChameleonAnnotatingVisitor" />
+    <annotator language="Chameleon" implementationClass="com.intellij.python.pyramid.templates.highlighting.ChameleonAnnotatingVisitor" />
+    <xml.xmlExtension implementation="com.intellij.python.pyramid.templates.highlighting.ChameleonXmlExtension" order="first" />
+    <highlightErrorFilter implementation="com.intellij.python.pyramid.templates.highlighting.ChameleonErrorFilter" />
+    <psi.fileReferenceHelper implementation="com.intellij.python.pyramid.templates.ref.PyramidStaticFileReferenceHelper" />
+    <lang.commenter language="Chameleon" implementationClass="com.intellij.python.pyramid.templates.editor.ChameleonCommenter" />
+    <internalFileTemplate name="Pyramid mytemplate pt.pt" />
+    <internalFileTemplate name="Pyramid layout pt.pt" />
+    <internalFileTemplate name="Pyramid mytemplate jinja2.jinja2" />
+    <internalFileTemplate name="Pyramid layout jinja2.jinja2" />
+    <python.dap.run.debugpyConfigProvider implementation="com.intellij.python.pyramid.run.dap.PyramidRunConfigProvider" />
+  </extensions>
+  <extensions defaultExtensionNs="Pythonid">
+    <typeProvider implementation="com.intellij.python.pyramid.codeInsight.PyramidTypeProvider" />
+    <dialectsTokenSetContributor implementation="com.intellij.python.pyramid.templates.ref.ChameleonTokenSetContributor" />
+    <visitorFilter language="Chameleon" implementationClass="com.intellij.python.pyramid.templates.highlighting.ChameleonTemplateVisitorFilter" />
+    <pyClassMembersProvider implementation="com.intellij.python.pyramid.codeInsight.PyramidRequestClassMembersProvider" />
+  </extensions>
+</idea-plugin>]]></module>
+        <module name="intellij.python.pytestBdd"><![CDATA[<idea-plugin package="com.intellij.python.pytestBdd">
+  <dependencies>
+    <plugin id="gherkin" />
+    <module name="intellij.python.gherkin" />
+    <plugin id="com.intellij.modules.python" />
+    <module name="intellij.python" />
+  </dependencies>
+  <extensions defaultExtensionNs="com.intellij">
+    <psi.referenceContributor implementation="com.intellij.python.pytestBdd.PyTestBDDReferenceContributor" language="Python" />
+  </extensions>
+  <extensions defaultExtensionNs="org.jetbrains.plugins.cucumber.steps">
+    <cucumberJvmExtensionPoint implementation="com.intellij.python.pytestBdd.PyTestBDDExtensionPoint" />
+  </extensions>
+  <extensions defaultExtensionNs="Pythonid">
+    <pyTestConfigurationSelector implementation="com.intellij.python.pytestBdd.PyTestBDDConfigurationSelector" />
+    <pyTestFixtureExtension implementation="com.intellij.python.pytestBdd.PyTestBDDFixture" />
+    <pyBddParametersInspection implementation="com.intellij.python.pytestBdd.PyTestBDDParametersInspectionExtension" />
+  </extensions>
+</idea-plugin>]]></module>
+        <module name="intellij.python.remoteInterpreter"><![CDATA[<idea-plugin visibility="internal" package="com.intellij.python.remoteInterpreter">
+  <dependencies>
+    <plugin id="org.jetbrains.plugins.remote-run" />
+    <plugin id="com.intellij.modules.python-pro-fleet-not-capable" />
+    <plugin id="com.intellij.modules.python" />
+  </dependencies>
+  <projectListeners>
+    <listener class="com.intellij.python.remoteInterpreter.PySshInterpreterDeploymentUpdater$ModuleRootListener" topic="com.intellij.openapi.roots.ModuleRootListener" />
+    <listener class="com.intellij.python.remoteInterpreter.PySshInterpreterDeploymentUpdater$PySshProjectManagerListener" topic="com.intellij.openapi.project.ProjectManagerListener" />
+    <listener class="com.intellij.python.remoteInterpreter.PySshInterpreterDeploymentUpdater$SdkTableListener" topic="com.intellij.openapi.projectRoots.ProjectJdkTable$Listener" />
+  </projectListeners>
+  <extensionPoints>
+    <extensionPoint qualifiedName="Pythonid.remoteSdkEditor" interface="com.intellij.python.remoteInterpreter.PyRemoteSdkEditor" dynamic="true" />
+  </extensionPoints>
+  <extensions defaultExtensionNs="com.intellij">
+    <applicationService serviceImplementation="com.intellij.python.remoteInterpreter.PyRemoteInterpreterFactory" />
+    <remote.credentialsLanguageContribution implementation="com.intellij.python.remoteInterpreter.SshConfigCredentialsPythonContribution" />
+    <remote.credentialsLanguageContribution implementation="com.intellij.python.remoteInterpreter.WebDeploymentCredentialsPythonContribution" />
+    <notificationGroup id="PyCharm Helpers Upload" displayType="BALLOON" bundle="messages.PythonRemoteInterpreterBundle" key="notification.group.helpers.upload" />
+    <statistics.notificationIdsHolder implementation="com.intellij.python.remoteInterpreter.statistics.PyCharmHelpersUploadIdsHolder" />
+    <notificationGroup id="Deployment" displayType="BALLOON" bundle="messages.PythonRemoteInterpreterBundle" key="notification.group.deployment" />
+    <statistics.notificationIdsHolder implementation="com.intellij.python.remoteInterpreter.statistics.DeploymentIdsHolder" />
+    <notificationGroup id="WSL rsync" displayType="STICKY_BALLOON" bundle="messages.PythonRemoteInterpreterBundle" key="notification.group.rsync" />
+    <statistics.notificationIdsHolder implementation="com.intellij.python.remoteInterpreter.statistics.WSLRSyncIdsHolder" />
+    <runConfigurationTargetEnvironmentAdjusterFactory implementation="com.intellij.python.remoteInterpreter.target.RunConfigurationSshEnvironmentAdjuster$Factory" />
+    <registryKey key="python.run.configurations.allocate.pty.for.ssh.processes" description="Force PTY allocation for SSH processes started using Python Run Configurations" defaultValue="true" restartRequired="false" />
+  </extensions>
+  <extensions defaultExtensionNs="Pythonid">
+    <remoteInterpreterManager implementation="com.intellij.python.remoteInterpreter.PyRemoteInterpreterManagerImpl" />
+    <pyCustomSdkUiProvider implementation="com.intellij.python.remoteInterpreter.PyPathMappingsUiProvider" />
+    <remoteSkeletonGeneratorFactory implementation="com.intellij.python.remoteInterpreter.PySshRemoteSkeletonGeneratorFactory" />
+    <remoteProcessStarterManager implementation="com.intellij.python.remoteInterpreter.PySshRemoteProcessStarterManager" />
+    <remoteConsoleProcessCreator implementation="com.intellij.python.remoteInterpreter.console.PythonConsoleSshProcessCreator" />
+    <remoteConsoleProcessCreator implementation="com.intellij.python.remoteInterpreter.console.PythonConsoleSshConfigProcessCreator" />
+    <remoteConsoleProcessCreator implementation="com.intellij.python.remoteInterpreter.console.PythonConsoleWebDeploymentProcessCreator" />
+    <remoteSdkEditor implementation="com.intellij.python.remoteInterpreter.PySshSdkEditor" />
+    <projectSynchronizerProvider id="PyCharmSsh" implementation="com.intellij.python.remoteInterpreter.PySshProjectSynchronizerProvider" />
+    <sshInterpreterManager implementation="com.intellij.python.remoteInterpreter.PythonSshInterpreterManagerImpl" />
+    <interpreterTargetEnvironmentFactory implementation="com.intellij.python.remoteInterpreter.PySshTargetEnvironmentFactory" />
+    <connectionCredentialsToTargetConfigurationConverter implementation="com.intellij.python.remoteInterpreter.target.SshCredentialsToTargetConfigurationConverter" />
+    <customProcessHandlerProvider implementation="com.intellij.python.remoteInterpreter.PySshProcessHandlerProvider" />
+    <execService.targetEnvironmentRequestHandler implementation="com.intellij.python.remoteInterpreter.target.HelpersAwareSshTargetEnvironmentRequestHandler" order="first" />
+  </extensions>
+  <extensions defaultExtensionNs="RemoteRun">
+    <sshConnectionProvider implementation="com.intellij.python.remoteInterpreter.console.PyRemoteSdkConnectionProvider" />
+  </extensions>
+  <extensions defaultExtensionNs="com.jetbrains.plugins.remotesdk">
+    <usagesProvider implementation="com.intellij.python.remoteInterpreter.PyRemoteSdkUsagesProvider" />
+  </extensions>
+</idea-plugin>]]></module>
+        <module name="intellij.python.uml"><![CDATA[<idea-plugin visibility="internal" package="com.intellij.python.uml">
+  <dependencies>
+    <plugin id="com.intellij.diagram" />
+    <plugin id="com.intellij.modules.python-pro-fleet-not-capable" />
+    <plugin id="com.intellij.modules.python" />
+    <module name="intellij.python" />
+  </dependencies>
+  <extensions defaultExtensionNs="com.intellij">
+    <diagram.Provider implementation="com.intellij.python.uml.python.PyDiagramProvider" />
+    <diagram.Provider implementation="com.intellij.python.uml.sqlalchemy.AlchemyUmlDiagramProvider" />
+  </extensions>
+</idea-plugin>]]></module>
+        <module name="intellij.python.wsl"><![CDATA[<idea-plugin visibility="internal">
+  <dependencies>
+    <plugin id="com.intellij.modules.os.windows" />
+    <plugin id="org.jetbrains.plugins.wsl.remoteSdk" />
+    <plugin id="com.intellij.modules.python-pro-fleet-not-capable" />
+    <plugin id="com.intellij.modules.python" />
+    <module name="intellij.python.remoteInterpreter" />
+    <plugin id="org.jetbrains.plugins.remote-run" />
+    <module name="intellij.python.common" />
+  </dependencies>
+  <extensions defaultExtensionNs="Pythonid">
+    <remoteProcessStarterManager implementation="com.intellij.python.wsl.PyWSLRemoteProcessStarterManager" />
+    <remoteSkeletonGeneratorFactory implementation="com.intellij.python.wsl.PyWSLSkeletonGeneratorFactory" />
+    <remoteConsoleProcessCreator implementation="com.intellij.python.wsl.PyWSLConsoleCreator" />
+    <projectSynchronizerProvider implementation="com.intellij.python.wsl.PyWslProjectSynchronizerProvider" />
+    <projectSdkConfigurationExtension implementation="com.intellij.python.wsl.PyWslProjectSdkConfigurator" />
+    <interpreterTargetEnvironmentFactory implementation="com.intellij.python.wsl.PythonWslInterpreterTargetEnvironmentFactory" />
+    <connectionCredentialsToTargetConfigurationConverter implementation="com.intellij.python.wsl.target.WslCredentialsToTargetConfigurationConverter" />
+  </extensions>
+  <extensions defaultExtensionNs="com.intellij">
+    <remote.credentialsLanguageContribution implementation="com.intellij.python.wsl.PyWSLCredentialsContribution" />
+  </extensions>
+</idea-plugin>]]></module>
+        <module name="intellij.python.pro.js"><![CDATA[<idea-plugin package="com.intellij.python.pro.js">
+  <dependencies>
+    <plugin id="JavaScript" />
+    <plugin id="com.intellij.modules.lang" />
+    <module name="intellij.template.lang.core" />
+  </dependencies>
+  <extensions defaultExtensionNs="com.intellij">
+    <polySymbols.context kind="framework" name="any" implementation="com.intellij.python.pro.js.PyTemplatesWebContextBlocker" />
+  </extensions>
+</idea-plugin>]]></module>
+        <module name="intellij.python.pro.localization"><![CDATA[<idea-plugin package="com.intellij.python.pro.localization">
+  <dependencies>
+    <plugin id="org.jetbrains.plugins.localization" />
+    <plugin id="com.intellij.modules.python" />
+    <module name="intellij.python" />
+    <module name="intellij.jinja" />
+    <module name="intellij.django.core" />
+    <module name="intellij.template.lang.core" />
+  </dependencies>
+  <extensions defaultExtensionNs="com.intellij">
+    <intentionAction>
+      <className>com.intellij.python.pro.localization.WrapTransTagIntention</className>
+      <bundleName>messages.DjangoBundle</bundleName>
+      <categoryKey>django</categoryKey>
+    </intentionAction>
+    <codeInsight.lineMarkerProvider language="DjangoTemplate" implementationClass="com.intellij.python.pro.localization.LocaleLineMarkerProvider" />
+    <codeInsight.lineMarkerProvider language="HTML" implementationClass="com.intellij.python.pro.localization.LocaleLineMarkerProvider" />
+    <codeInsight.lineMarkerProvider language="XML" implementationClass="com.intellij.python.pro.localization.LocaleLineMarkerProvider" />
+  </extensions>
+</idea-plugin>]]></module>
+        <module name="intellij.python.templateLanguages"><![CDATA[<idea-plugin visibility="internal" package="com.intellij.python.templateLanguages">
+  <dependencies>
+    <module name="intellij.python.core.impl" />
+    <plugin id="com.intellij.modules.python" />
+    <plugin id="com.intellij.modules.lang" />
+    <module name="intellij.jinja" />
+    <module name="intellij.template.lang.core" />
+  </dependencies>
+  <extensions defaultExtensionNs="com.intellij">
+    <projectConfigurable groupId="language" groupWeight="120" instance="com.intellij.python.templateLanguages.PyTemplateLanguageModulesConfigurable" id="com.intellij.python.templateLanguages.PyTemplateLanguageModulesConfigurable" bundle="messages.PythonProBundle" key="configurable.PyTemplateLanguageModulesConfigurable.display.name" />
+    <fileIndentOptionsProvider implementation="com.intellij.python.templateLanguages.PythonTemplateIndentOptionsProvider" />
+    <directoryProjectConfigurator implementation="com.intellij.python.templateLanguages.PyTemplatesAutoConfiguration" />
+    <multiLangCommenter implementation="com.intellij.python.templateLanguages.PyTemplatesCommentProvider" />
+    <iconProvider implementation="com.intellij.python.templateLanguages.PyTemplateRootIconProvider" order="first" />
+  </extensions>
+  <extensions defaultExtensionNs="Pythonid">
+    <templateLanguageSubstitutorDelegate implementation="com.intellij.python.templateLanguages.PyResourceRootTemplateSubstitutionDelegate" />
+    <pyRootTypeProvider implementation="com.intellij.python.templateLanguages.PyTemplateRootProvider" />
+  </extensions>
+  <actions resource-bundle="messages.PythonProBundle">
+    <action id="MarkTemplateDirectory" class="com.intellij.python.templateLanguages.PyMarkTemplateDirectoryAction">
+      <add-to-group group-id="MarkRootGroup" anchor="after" relative-to-action="MarkSourceRoot" />
+    </action>
+  </actions>
+</idea-plugin>]]></module>
+        <module name="intellij.python"><![CDATA[<idea-plugin visibility="public" package="com.intellij.python.pro">
+  <dependencies>
+    <module name="intellij.python.core.impl" />
+    <module name="intellij.django.core" />
+    <module name="intellij.jinja" />
+    <plugin id="com.intellij.modules.python" />
+    <module name="intellij.template.lang.core" />
+    <plugin id="com.intellij.modules.lang" />
+    <module name="intellij.commandInterface" />
+    <module name="intellij.python.endpoints" />
+    <module name="intellij.python.pyramid" />
+    <module name="intellij.python.templateLanguages" />
+    <module name="intellij.platform.coverage" />
+    <module name="intellij.libraries.microba" />
+    <plugin id="intellij.python.dap.plugin" />
+  </dependencies>
+  <extensions defaultExtensionNs="com.intellij">
+    <applicationService serviceImplementation="com.intellij.python.pro.duplocator.PyDuplocatorSettings" />
+    <programRunner implementation="com.intellij.python.pro.coverage.PythonCoverageRunner" />
+    <programRunner implementation="com.intellij.python.pro.debugger.remote.PyRemoteDebugRunner" />
+    <configurationType implementation="com.intellij.python.pro.debugger.remote.PyRemoteDebugConfigurationType" />
+    <fileEditorProvider implementation="com.intellij.python.pro.debugger.remote.vfs.PyRemoteDebugEditorProvider" />
+    <duplicates.profile implementation="com.intellij.python.pro.duplocator.PyDuplicatesProfile" />
+    <duplicates.presentation implementation="com.intellij.python.pro.duplocator.PyDuplicatesProfile" />
+    <registryKey key="hugging.face.model.selection" defaultValue="true" description="HF model selection feature" />
+    <registryKey key="hugging.face.cache.management" defaultValue="true" description="HF cache management feature" />
+    <fileType name="Cython" language="Cython" extensions="pxd;pxi;pyx" implementationClass="com.intellij.python.pro.cython.CythonFileType" fieldName="INSTANCE" />
+    <stubElementTypeHolder class="com.intellij.python.pro.cython.psi.elementTypes.CythonStubElementTypes" externalIdPrefix="py.CYTHON_" />
+    <lang.parserDefinition language="Cython" implementationClass="com.intellij.python.pro.cython.parser.CythonParserDefinition" />
+    <lang.syntaxHighlighterFactory language="Cython" implementationClass="com.intellij.python.pro.cython.CythonSyntaxHighlighterFactory" />
+    <annotator language="Cython" implementationClass="com.intellij.python.pro.cython.CythonBuiltinAnnotator" />
+    <completion.contributor language="Python" implementationClass="com.intellij.python.pro.cython.CythonKeywordCompletionContributor" />
+    <lang.psiStructureViewFactory language="Cython" implementationClass="com.intellij.python.pro.cython.structureView.CythonStructureViewFactory" />
+    <lang.formatter language="Cython" implementationClass="com.intellij.python.pro.cython.CythonFormattingModelBuilder" />
+    <xdebugger.breakpointType implementation="com.intellij.python.pro.cython.debug.CythonLineBreakpointType" />
+    <localInspection language="Cython" shortName="CythonUsageBeforeDeclarationInspection" suppressId="CythonUsageBeforeDeclaration" bundle="messages.CythonBundle" groupKey="INSP.GROUP.python" enabledByDefault="true" key="inspection.cython.variable.usage.before.declaration.display.name" level="WARNING" implementationClass="com.intellij.python.pro.cython.inspections.CythonUsageBeforeDeclarationInspection" />
+    <coverageEngine implementation="com.intellij.python.pro.coverage.PyCoverageEngine" />
+    <coverageRunner implementation="com.intellij.python.pro.coverage.PyCoverageRunner" />
+    <coverageOptions implementation="com.intellij.python.pro.coverage.PyCoverageOptions" />
+    <projectService serviceImplementation="com.intellij.python.pro.coverage.PyCoverageOptionsProvider" />
+    <projectService serviceImplementation="com.intellij.python.pro.coverage.PyCoverageAnnotator" />
+    <lang.foldingBuilder language="Cython" implementationClass="com.intellij.python.pro.cython.CythonFoldingBuilder" />
+    <directoryProjectGenerator implementation="com.intellij.python.pro.fastapi.newProjectWizard.PyV3FastApiProjectGenerator" />
+    <configurationType implementation="com.intellij.python.pro.fastapi.FastApiRunConfigurationType" />
+    <moduleBuilder builderClass="com.intellij.python.pro.fastapi.FastApiModuleBuilder" />
+    <python.dap.run.debugpyConfigProvider implementation="com.intellij.python.pro.fastapi.debug.dap.FastApiRunConfigProvider" />
+    <projectConfigurable groupId="language" instance="com.intellij.python.pro.flask.configuration.FlaskConfigurable" id="com.intellij.python.pro.flask.configuration.FlaskConfigurable" bundle="messages.PythonProBundle" key="flask.configurable.name" nonDefaultProject="true" />
+    <moduleService serviceImplementation="com.intellij.python.pro.flask.configuration.FlaskConfiguration" />
+    <configurationType implementation="com.intellij.python.pro.flask.runServer.FlaskRunServerConfigurationType" />
+    <runConfigurationProducer implementation="com.intellij.python.pro.flask.runServer.FlaskRunServerConfigurationProducer" />
+    <moduleBuilder builderClass="com.intellij.python.pro.flask.FlaskModuleBuilder" />
+    <directoryProjectGenerator implementation="com.intellij.python.pro.flask.project.newProjectWizard.PyV3FlaskProjectGenerator" />
+    <directoryProjectConfigurator implementation="com.intellij.python.pro.flask.project.FlaskProjectConfigurator" />
+    <internalFileTemplate name="Flask Main" />
+    <psi.referenceContributor implementation="com.intellij.python.pro.flask.codeInsight.references.FlaskPyStringReferenceContributor" language="Python" />
+    <psi.referenceContributor implementation="com.intellij.python.pro.flask.codeInsight.references.FlaskReferenceContributor" />
+    <codeInsight.lineMarkerProvider language="Python" implementationClass="com.intellij.python.pro.flask.codeInsight.FlaskLineMarkerProvider" />
+    <codeInsight.lineMarkerProvider language="Jinja2" implementationClass="com.intellij.python.pro.flask.codeInsight.FlaskLineMarkerProvider" />
+    <defaultLiveTemplates file="liveTemplates/flask.xml" />
+    <completion.contributor language="Python" implementationClass="com.intellij.python.pro.flask.completion.FlaskCompletionContributor" />
+    <completion.contributor language="Python" implementationClass="com.intellij.python.pro.flask.completion.FlaskSessionKeyCompletionContributor" />
+    <fileBasedIndex implementation="com.intellij.python.pro.flask.stubs.FlaskSessionKeyIndex" />
+    <completion.contributor language="Python" implementationClass="com.intellij.python.pro.flask.completion.FlaskRequestFormKeyCompletionContributor" />
+    <fileBasedIndex implementation="com.intellij.python.pro.flask.stubs.FlaskRequestFormKeyIndex" />
+    <completion.contributor language="Python" implementationClass="com.intellij.python.pro.flask.completion.FlaskConfigValueCompletionContributor" />
+    <completion.contributor language="Python" implementationClass="com.intellij.python.pro.flask.completion.FlaskDecoratorHttpMethodCompletionContributor" />
+    <fileBasedIndex implementation="com.intellij.python.pro.flask.stubs.FlaskGAttributesIndex" />
+    <completion.contributor language="Python" implementationClass="com.intellij.python.pro.flask.completion.FlaskGAttributesCompletionContributor" />
+    <codeInsight.lineMarkerProvider language="Chameleon" implementationClass="com.jetbrains.django.annotator.ViewLineMarkerProvider" />
+    <codeInsight.lineMarkerProvider language="Chameleon" implementationClass="com.jetbrains.django.lang.template.DjangoBlockInheritorsLineMarkerProvider" />
+    <python.dap.run.debugpyConfigProvider implementation="com.intellij.python.pro.flask.runServer.debug.dap.FlaskRunServerConfigProvider" />
+    <xdebugger.breakpointType implementation="com.intellij.python.pro.debugger.jinja2.Jinja2LineBreakpointType" />
+    <xdebugger.breakpointType implementation="com.intellij.python.pro.debugger.jinja2.Jinja2ExceptionBreakpointType" />
+    <statistics.projectUsagesCollector implementation="com.intellij.python.pro.statistics.PyProfessionalCollector" />
+    <microservices.endpointsProvider implementation="com.intellij.python.pro.fastapi.endpoints.FastApiEndpointsProvider" />
+    <psi.referenceContributor implementation="com.intellij.python.pro.fastapi.endpoints.FastApiUrlReferenceContributor" />
+    <fileBasedIndex implementation="com.intellij.python.pro.fastapi.endpoints.FastApiRouterIndex" />
+    <microservices.endpointsProvider implementation="com.intellij.python.pro.flask.endpoints.FlaskEndpointsProvider" />
+    <psi.referenceContributor implementation="com.intellij.python.pro.flask.endpoints.FlaskUrlReferenceContributor" />
+    <fileBasedIndex implementation="com.intellij.python.pro.flask.endpoints.FlaskRouterIndex" />
+    <psi.referenceContributor implementation="com.intellij.python.pro.sqlalchemy.SQLAlchemyReferenceContributor" language="Python" />
+    <completion.contributor language="Python" implementationClass="com.intellij.python.pro.sqlalchemy.SQLAlchemyCompletionContributor" />
+    <gotoDeclarationHandler implementation="com.intellij.python.pro.sqlalchemy.SQLAlchemyGoToDeclarationHandler" />
+    <stubIndex implementation="com.intellij.python.pro.sqlalchemy.stubs.SQLAlchemyModelClassStubKeyIndex" />
+    <registryKey key="django.celery.enabled" defaultValue="true" description="Enable Celery support (highly experimental)" />
+    <configurationType implementation="com.intellij.python.pro.celery.configurations.CeleryRunConfigurationType" />
+    <runConfigurationProducer implementation="com.intellij.python.pro.celery.configurations.CeleryRunAppConfigurationProducer" />
+    <runConfigurationProducer implementation="com.intellij.python.pro.celery.configurations.CeleryRunTaskConfigurationProducer" />
+    <runLineMarkerContributor language="Python" implementationClass="com.intellij.python.pro.celery.codeInsight.CeleryRunLineMarkerContributor" />
+    <completion.contributor language="Python" implementationClass="com.intellij.python.pro.celery.completion.CelerySettingsCompletionContributor" />
+    <psi.referenceContributor implementation="com.intellij.python.pro.celery.ref.CeleryReferenceContributor" language="Python" />
+    <localInspection language="Python" shortName="BeatScheduleCeleryTaskInspection" bundle="messages.PythonProBundle" key="celery.inspection.unregistered-task-display-name" groupKey="celery.inspection.group" enabledByDefault="true" level="WARNING" implementationClass="com.intellij.python.pro.celery.ref.CeleryBeatScheduleTaskInspection" />
+    <python.dap.run.debugpyConfigProvider implementation="com.intellij.python.pro.celery.debug.dap.CeleryRunAppConfigProvider" />
+    <python.dap.run.debugpyConfigProvider implementation="com.intellij.python.pro.celery.debug.dap.CeleryRunTaskConfigProvider" />
+    <registryKey key="python.debug.asyncio.repl" defaultValue="false" restartRequired="false" description="Possibility to write await outside of function" />
+    <feedback.idleFeedbackSurvey implementation="com.intellij.python.pro.statistics.PythonWebFeedbackSurvey" />
+  </extensions>
+  <extensions defaultExtensionNs="Pythonid">
+    <runConfigurationExtension implementation="com.intellij.python.pro.coverage.PythonCoverageRunConfigurationExtension" />
+    <visitorFilter language="Python" implementationClass="com.jetbrains.python.validation.PyMultiplePsiFilesVisitorFilter" />
+    <importResolver implementation="com.intellij.python.pro.flask.codeInsight.FlaskImportResolver" />
+    <pyModuleMembersProvider implementation="com.intellij.python.pro.flask.codeInsight.FlaskModuleMembersProvider" />
+    <pyClassMembersProvider implementation="com.intellij.python.pro.flask.codeInsight.FlaskSQLAlchemyMembersProvider" />
+    <typeProvider implementation="com.intellij.python.pro.flask.codeInsight.FlaskSQLAlchemyTypeProvider" />
+    <keywordArgumentProvider implementation="com.intellij.python.pro.flask.codeInsight.FlaskKeywordArgumentProvider" />
+    <typeProvider implementation="com.intellij.python.pro.flask.codeInsight.FlaskTypeProvider" />
+    <canonicalPathProvider implementation="com.intellij.python.pro.flask.codeInsight.FlaskCanonicalPathProvider" />
+    <templateContextProvider implementation="com.intellij.python.pro.flask.codeInsight.FlaskTemplateContextProvider" />
+    <consoleOptionsProvider implementation="com.intellij.python.pro.flask.console.FlaskConsoleOptionsProvider" />
+    <typeProvider implementation="com.intellij.python.pro.flask.codeInsight.FlaskGAttributesTypeProvider" />
+    <dialectsTokenSetContributor implementation="com.intellij.python.pro.cython.CythonTokenSetContributor" />
+    <typeProvider implementation="com.intellij.python.pro.cython.types.CythonTypeProvider" />
+    <importResolver implementation="com.intellij.python.pro.cython.CythonImportResolver" />
+    <visitorFilter language="Cython" implementationClass="com.intellij.python.pro.cython.CythonVisitorFilter" />
+    <pyModuleMembersProvider implementation="com.intellij.python.pro.cython.CythonModuleMembersProvider" />
+    <pyReferenceResolveProvider implementation="com.intellij.python.pro.cython.CythonReferenceResolveProvider" />
+    <inspectionExtension implementation="com.intellij.python.pro.cython.CythonInspectionExtension" />
+    <typeCheckerExtension implementation="com.intellij.python.pro.cython.types.CythonTypeChecker" />
+    <typeProvider implementation="com.intellij.python.pro.sqlalchemy.SQLAlchemyTypeProvider" />
+    <knownDecoratorProvider implementation="com.intellij.python.pro.sqlalchemy.SQLAlchemyKnownDecoratorProvider" />
+    <pyClassMembersProvider implementation="com.intellij.python.pro.sqlalchemy.SQLAlchemyClassMembersProvider" />
+    <customClassStubType implementation="com.intellij.python.pro.sqlalchemy.stubs.SQLAlchemyModelClassStubType" />
+    <breakpointHandler implementation="com.intellij.python.pro.debugger.jinja2.Jinja2LineBreakpointHandlerFactory" />
+    <breakpointHandler implementation="com.intellij.python.pro.debugger.jinja2.Jinja2ExceptionBreakpointHandlerFactory" />
+    <typeProvider implementation="com.intellij.python.pro.fastapi.FastApiTypeProvider" />
+    <typeProvider implementation="com.intellij.python.pro.flask.FlaskAppTypeProvider" />
+  </extensions>
+  <actions resource-bundle="messages.PythonProBundle">
+    <group id="PyProjectViewGroup" internal="true" class="com.intellij.ide.actions.NonTrivialActionGroup" popup="true" text="Python">
+      <action id="Devmode.AnalyzeReturns" class="com.intellij.python.pro.devmode.AnalyzeReturnsAction" text="Analyze Return Types" internal="true" />
+      <action id="Devmode.AnalyzeTypeParser" class="com.intellij.python.pro.devmode.AnalyzeTypeParserAction" text="Analyze Type Parser" internal="true" />
+      <action id="Devmode.AnalyzeParameterTypes" class="com.intellij.python.pro.devmode.AnalyzeParameterTypesAction" text="Analyze Parameter Types" internal="true" />
+      <add-to-group group-id="ProjectViewPopupMenu" anchor="last" />
+    </group>
+    <action id="RescanPythonModulesAndPackages" class="com.intellij.python.pro.sdk.RescanPythonModulesAndPackagesAction" />
+  </actions>
+  <actions>
+    <group id="Python.Internal.Pro" internal="true" popup="false">
+      <action id="PyShowWebSurvey" text="Show Python Web Survey" internal="true" class="com.intellij.python.pro.statistics.PythonShowWebSurvey" />
+      <add-to-group group-id="Internal.Python" />
+    </group>
+  </actions>
+  <extensions defaultExtensionNs="com.jetbrains.python.debugger">
+    <pyDebugAsyncioCustomizer implementation="com.intellij.python.pro.debugger.PyDebugAsyncioCustomizerImpl" order="first" />
+  </extensions>
+  <extensions defaultExtensionNs="com.jetbrains.python.console">
+    <runnerFactory implementation="com.intellij.python.pro.sdk.FrameworkAwarePythonConsoleRunnerFactory" order="first" />
+  </extensions>
+</idea-plugin>]]></module>
+        <module name="intellij.template.lang.core"><![CDATA[<idea-plugin visibility="internal" package="com.intellij.template.lang.core">
+  <dependencies>
+    <plugin id="com.intellij.modules.lang" />
+    <plugin id="com.intellij.modules.python" />
+  </dependencies>
+  <extensions defaultExtensionNs="com.intellij">
+    <moduleService serviceInterface="com.intellij.template.lang.core.templateLanguages.TemplatesService" serviceImplementation="com.intellij.template.lang.core.templateLanguages.PyTemplatesServiceImpl" />
+    <lang.substitutor language="HTML" implementationClass="com.intellij.template.lang.core.templateLanguages.PyTemplateLanguageSubstitutor" />
+    <lang.substitutor language="XHTML" implementationClass="com.intellij.template.lang.core.templateLanguages.PyTemplateLanguageSubstitutor" />
+    <lang.substitutor language="XML" implementationClass="com.intellij.template.lang.core.templateLanguages.PyTemplateLanguageSubstitutor" />
+  </extensions>
+  <extensionPoints>
+    <extensionPoint qualifiedName="Pythonid.templateContextProvider" interface="com.intellij.template.lang.core.templateLanguages.TemplateContextProvider" dynamic="true" />
+    <extensionPoint qualifiedName="Pythonid.templateLanguageSubstitutorDelegate" interface="com.intellij.template.lang.core.templateLanguages.PyTemplateLanguageSubstitutorDelegate" dynamic="true" />
+  </extensionPoints>
+</idea-plugin>]]></module>
+        <module name="intellij.python.performanceTesting"><![CDATA[<idea-plugin package="com.intellij.python.performanceTesting">
+  <dependencies>
+    <plugin id="com.jetbrains.performancePlugin" />
+    <module name="intellij.django.core" />
+  </dependencies>
+  <extensions defaultExtensionNs="com.jetbrains">
+    <performancePlugin.commandProvider implementation="com.intellij.python.performanceTesting.PyPerformanceCommandProvider" />
+  </extensions>
+</idea-plugin>]]></module>
+        <module name="intellij.scientific.py.tables"><![CDATA[<idea-plugin visibility="internal" package="com.intellij.scientific.py.tables">
+  <dependencies>
+    <plugin id="com.intellij.modules.python" />
+    <plugin id="com.intellij.modules.lang" />
+    <module name="intellij.grid.core.impl" />
+    <module name="intellij.scientific.tables" />
+    <module name="intellij.scientific.py.tables.split.common" />
+    <module name="intellij.grid.charts.impl" />
+    <plugin id="intellij.grid.plugin" />
+    <module name="intellij.grid.impl" />
+    <module name="intellij.platform.searchEverywhere" />
+  </dependencies>
+  <extensions defaultExtensionNs="com.intellij.scientific.tables">
+    <tableDataProviderFactory implementation="com.intellij.scientific.py.tables.util.PandasTableDataProviderFactory" />
+    <tableDataProviderFactory implementation="com.intellij.scientific.py.tables.util.EagerTensorTableDataProviderFactory" />
+    <tableDataProviderFactory implementation="com.intellij.scientific.py.tables.util.PandasSeriesTableDataProviderFactory" />
+    <tableDataProviderFactory implementation="com.intellij.scientific.py.tables.util.PySparkTableDataProviderFactory" />
+    <tableDataProviderFactory implementation="com.intellij.scientific.py.tables.util.GenericTableDataProviderFactory" />
+    <tableDataProviderFactory implementation="com.intellij.scientific.py.tables.util.NumpyArrayTableDataProviderFactory" />
+    <tableDataProviderFactory implementation="com.intellij.scientific.py.tables.util.NumpyRecarrayTableDataProviderFactory" />
+    <tableDataProviderFactory implementation="com.intellij.scientific.py.tables.util.PolarsDataFrameTableDataProviderFactory" />
+    <tableDataProviderFactory implementation="com.intellij.scientific.py.tables.util.PolarsSeriesTableDataProviderFactory" />
+    <tableDataProviderFactory implementation="com.intellij.scientific.py.tables.util.TorchTensorTableDataProviderFactory" />
+    <tableDataProviderFactory implementation="com.intellij.scientific.py.tables.util.ResourceVariableTableDataProviderFactory" />
+    <tableDataProviderFactory implementation="com.intellij.scientific.py.tables.util.SparseTensorTableDataProviderFactory" />
+    <tableDataProviderFactory implementation="com.intellij.scientific.py.tables.util.DatasetTableDataProviderFactory" />
+    <tableDataTypeDetector implementation="com.intellij.scientific.py.tables.output.PythonTableDataTypeDetector" />
+    <tableDataTypeDetector implementation="com.intellij.scientific.py.tables.output.GenericTableDataTypeDetector" />
+  </extensions>
+  <extensions defaultExtensionNs="com.jetbrains.python.debugger">
+    <numericContainerPopupCustomizer implementation="com.intellij.scientific.py.tables.commands.DSNumericContainerPopupCustomizer" order="first" />
+  </extensions>
+  <extensionPoints>
+    <extensionPoint qualifiedName="scientific.py.tables.tableInspectionQuickFixProvider" interface="com.intellij.scientific.py.tables.inspections.api.quickFix.TableInspectionQuickFixProvider" dynamic="true" />
+  </extensionPoints>
+  <extensions defaultExtensionNs="com.intellij">
+    <registryKey key="tables.command.slice.mode" defaultValue="false" description="Serialization mode: true if csv, false if html" />
+    <registryKey key="tables.show.inspection.action" description="Show 'Find issues in data' action for pandas dataFrames" defaultValue="true" />
+    <statistics.counterUsagesCollector implementationClass="com.intellij.scientific.py.tables.inspections.fus.PyTablesInspectionsLogger" />
+    <postStartupActivity implementation="com.intellij.scientific.py.tables.inspections.utils.TableInspectionsAutoStartActivity" />
+  </extensions>
+  <actions resource-bundle="messages.PyTablesBundle">
+    <action id="TableInspectionsToolbarAction" class="com.intellij.scientific.py.tables.actions.TableInspectionsToolbarAction">
+      <add-to-group group-id="PY.Tables.Right.Toolbar.Customize.Actions.Group" anchor="first" />
+      <add-to-group group-id="DS.Tables.Right.Toolbar" anchor="first" />
+    </action>
+    <action id="TableInspectionsInMoreGroupAction" class="com.intellij.scientific.py.tables.actions.TableInspectionsInGroupMoreAction" icon="AllIcons.General.ShowWarning">
+      <add-to-group group-id="PY.Tables.Right.Toolbar.MoreActionsGroup" anchor="first" />
+      <add-to-group group-id="DS.Tables.Right.Toolbar" anchor="first" />
+    </action>
+  </actions>
+</idea-plugin>]]></module>
+        <module name="intellij.scientific.py.tables.split.common"><![CDATA[<idea-plugin visibility="internal" package="com.intellij.scientific.py.tables.split.common" separate-jar="true">
+  <dependencies>
+    <module name="intellij.scientific.tables" />
+    <module name="intellij.grid.charts.impl" />
+    <module name="intellij.grid.core.impl" />
+    <module name="intellij.grid.impl" />
+  </dependencies>
+  <extensions defaultExtensionNs="com.intellij.database.datagrid">
+    <statisticsTableHeaderProvider implementation="com.intellij.scientific.py.tables.split.common.statistics.PyStatisticsTableHeaderProvider" />
+  </extensions>
+</idea-plugin>]]></module>
+    </content>
+    <extensions defaultExtensionNs="com.intellij">
+        <registryKey defaultValue="false"
+                     description="Enable existence of multiple workspace models, one per each isolated environment"
+                     key="ide.workspace.model.per.environment.model.separation" overrides="true"
+                     restartRequired="true"/>
+    </extensions>
+</idea-plugin>

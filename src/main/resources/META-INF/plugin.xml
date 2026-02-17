@@ -53,6 +53,10 @@
         <lang.surroundDescriptor language="Python"
                                  implementationClass="com.github.chbndrhnns.betterpy.features.pytest.surround.PytestSurroundDescriptor"/>
 
+        <moveHandlerDelegate
+                implementation="com.github.chbndrhnns.betterpy.features.refactoring.move.PyMoveDeclarationsHandler"
+                order="first"/>
+
         <psi.referenceContributor language="JSON"
                                   implementation="com.github.chbndrhnns.betterpy.features.connexion.ConnexionJsonReferenceContributor"/>
 
@@ -678,6 +682,13 @@
                 class="com.github.chbndrhnns.betterpy.features.intentions.pytest.MoveTestToClassRefactoringAction"
                 text="BetterPy: Move Test to Another Class..."
                 description="Moves a test method to another class (new or existing)">
+            <add-to-group group-id="RefactoringMenu" anchor="last"/>
+        </action>
+
+        <action id="com.github.chbndrhnns.betterpy.features.refactoring.move.PyMoveDeclarationsTempAction"
+                class="com.github.chbndrhnns.betterpy.features.refactoring.move.PyMoveDeclarationsTempAction"
+                text="BetterPy: Move Declarations (Temp)..."
+                description="Temporary move refactoring dialog for top-level Python declarations">
             <add-to-group group-id="RefactoringMenu" anchor="last"/>
         </action>
 
