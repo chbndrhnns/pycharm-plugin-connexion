@@ -31,8 +31,13 @@ class PytestTreeCellRenderer : ColoredTreeCellRenderer() {
 
             is TestTreeNode -> {
                 icon = AllIcons.Nodes.Method
-                append(node.test.functionName, SimpleTextAttributes.REGULAR_ATTRIBUTES)
-                if (node.test.fixtures.isNotEmpty()) {
+                val textAttributes =
+                    if (node.test.isSkipped) SimpleTextAttributes.GRAYED_ATTRIBUTES else SimpleTextAttributes.REGULAR_ATTRIBUTES
+                append(node.test.functionName, textAttributes)
+                if (node.test.isSkipped) {
+                    append("  ", SimpleTextAttributes.REGULAR_ATTRIBUTES)
+                    append("(skipped)", SimpleTextAttributes.GRAYED_ITALIC_ATTRIBUTES)
+                } else if (node.test.fixtures.isNotEmpty()) {
                     append("  ", SimpleTextAttributes.REGULAR_ATTRIBUTES)
                     append("(${node.test.fixtures.size} fixtures)", SimpleTextAttributes.GRAYED_ATTRIBUTES)
                 }
@@ -40,8 +45,13 @@ class PytestTreeCellRenderer : ColoredTreeCellRenderer() {
 
             is FlatTestTreeNode -> {
                 icon = AllIcons.Nodes.Method
-                append(node.label, SimpleTextAttributes.REGULAR_ATTRIBUTES)
-                if (node.test.fixtures.isNotEmpty()) {
+                val textAttributes =
+                    if (node.test.isSkipped) SimpleTextAttributes.GRAYED_ATTRIBUTES else SimpleTextAttributes.REGULAR_ATTRIBUTES
+                append(node.label, textAttributes)
+                if (node.test.isSkipped) {
+                    append("  ", SimpleTextAttributes.REGULAR_ATTRIBUTES)
+                    append("(skipped)", SimpleTextAttributes.GRAYED_ITALIC_ATTRIBUTES)
+                } else if (node.test.fixtures.isNotEmpty()) {
                     append("  ", SimpleTextAttributes.REGULAR_ATTRIBUTES)
                     append("(${node.test.fixtures.size} fixtures)", SimpleTextAttributes.GRAYED_ATTRIBUTES)
                 }

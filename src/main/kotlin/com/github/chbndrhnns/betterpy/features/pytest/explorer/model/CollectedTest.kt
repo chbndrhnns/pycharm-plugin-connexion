@@ -7,4 +7,8 @@ data class CollectedTest(
     val functionName: String,
     val fixtures: List<String>,
     val parametrizeIds: List<String> = emptyList(),
-)
+    val markers: List<String> = emptyList(),
+) {
+    val isSkipped: Boolean
+        get() = markers.any { it == "skip" || it == "skipif" }
+}

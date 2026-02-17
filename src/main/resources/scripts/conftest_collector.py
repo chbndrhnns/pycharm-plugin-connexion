@@ -15,12 +15,14 @@ def pytest_collection_finish(session):
 
     for item in session.items:
         fixtures = list(item.fixturenames)
+        markers = [marker.name for marker in item.iter_markers()]
         data["tests"].append({
             "nodeid": item.nodeid,
             "module": item.module.__name__,
             "cls": item.cls.__name__ if item.cls else None,
             "name": item.name,
             "fixtures": fixtures,
+            "markers": markers,
         })
 
     fm = session._fixturemanager

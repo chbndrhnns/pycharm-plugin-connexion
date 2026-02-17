@@ -65,6 +65,7 @@ data class JsonTestItem(
     val cls: String?,
     val name: String,
     val fixtures: List<String>,
+    val markers: List<String> = emptyList(),
 )
 
 data class JsonFixtureItem(

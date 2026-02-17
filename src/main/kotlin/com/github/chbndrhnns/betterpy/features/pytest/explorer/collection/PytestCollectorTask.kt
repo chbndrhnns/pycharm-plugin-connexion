@@ -163,6 +163,7 @@ class PytestCollectorTask(
                 functionName = funcName,
                 fixtures = test.fixtures,
                 parametrizeIds = listOfNotNull(paramId),
+                markers = test.markers,
             )
         })
         val fixtures = jsonData.fixtures.values.map { fix ->
