@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.betterpy.features.pytest.explorer.ui
 
+import com.github.chbndrhnns.betterpy.core.python.PythonVersionGuard
 import com.github.chbndrhnns.betterpy.features.pytest.explorer.collection.PytestCollectorTask
 import com.github.chbndrhnns.betterpy.features.pytest.explorer.model.CollectedTest
 import com.github.chbndrhnns.betterpy.features.pytest.explorer.model.CollectionSnapshot
@@ -132,7 +133,13 @@ class PytestExplorerPanel(
 
         service.addListener(collectionListener)
         service.addStartListener(collectionStartedListener)
-        service.getSnapshot()?.let { updateTree(it) }
+
+        // Check SDK status and update UI accordingly
+        if (!PythonVersionGuard.hasPythonSdk(project)) {
+            statusLabel.text = "Waiting for Python SDK..."
+        } else {
+            service.getSnapshot()?.let { updateTree(it) }
+        }
     }
 
     private fun createToolbar(): ActionToolbar {
@@ -332,6 +339,16 @@ class PytestExplorerPanel(
         override fun actionPerformed(e: AnActionEvent) {
             LOG.info("Manual refresh triggered")
             PytestCollectorTask(project).queue()
+        }
+
+        override fun update(e: AnActionEvent) {
+            val hasSdk = PythonVersionGuard.hasPythonSdk(project)
+            e.presentation.isEnabled = hasSdk
+            e.presentation.description = if (hasSdk) {
+                "Re-collect pytest tests and fixtures"
+            } else {
+                "Configure a Python SDK to enable test collection"
+            }
         }
 
         override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
