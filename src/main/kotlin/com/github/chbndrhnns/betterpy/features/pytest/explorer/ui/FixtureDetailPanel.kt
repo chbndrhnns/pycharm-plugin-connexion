@@ -157,12 +157,18 @@ class FixtureDetailPanel(
             }
         }
 
-        // Fallback: use collected fixture data
+        // Fallback: use collected fixture data (resolve in background to avoid EDT slowdown)
         val fixture = currentFixtureMap[fixtureName] ?: return
-        val element = PytestPsiResolver.resolveFixtureElement(project, fixture)
-        val navigatable = element as? Navigatable ?: return
-        notifyNavigation(navigatable)
-        navigatable.navigate(true)
+        AppExecutorUtil.getAppExecutorService().execute {
+            val element = ReadAction.compute<PyFunction?, Throwable> {
+                PytestPsiResolver.resolveFixtureElement(project, fixture)
+            }
+            val navigatable = element as? Navigatable ?: return@execute
+            ApplicationManager.getApplication().invokeLater {
+                notifyNavigation(navigatable)
+                navigatable.navigate(true)
+            }
+        }
     }
 
     private fun notifyNavigation(target: Any) {
