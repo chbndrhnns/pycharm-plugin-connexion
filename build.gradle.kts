@@ -17,11 +17,8 @@ group = providers.gradleProperty("pluginGroup").get()
 version = providers.gradleProperty("pluginVersion").get()
 
 fun computeDevVersion(baseVersion: String): String {
-    val branch = providers.exec {
-        commandLine("git", "rev-parse", "--abbrev-ref", "HEAD")
-    }.standardOutput.asText.get().trim().replace(Regex("[^a-zA-Z0-9._-]"), "-")
     val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
-    return "$baseVersion+$branch.$timestamp"
+    return "$baseVersion+$timestamp"
 }
 
 if (gradle.startParameter.taskNames.any { it.contains("buildPlugin") }) {
