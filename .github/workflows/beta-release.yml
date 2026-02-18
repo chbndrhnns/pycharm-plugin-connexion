@@ -65,6 +65,8 @@ jobs:
         run: ./gradlew test
 
       - name: Build Plugin
+        env:
+          RELEASE_BUILD: true
         run: ./gradlew buildPlugin
 
       - name: Publish to Beta Channel

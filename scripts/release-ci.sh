@@ -48,7 +48,7 @@ if [[ "${SKIP_TESTS:-}" != "true" ]]; then
   ./gradlew test
 fi
 
-./gradlew buildPlugin
+RELEASE_BUILD=true ./gradlew buildPlugin
 
 # Generate changelog with git-cliff if available
 if command -v git-cliff >/dev/null 2>&1; then

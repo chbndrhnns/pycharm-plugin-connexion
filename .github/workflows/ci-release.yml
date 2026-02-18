@@ -84,6 +84,8 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Build Plugin
+        env:
+          RELEASE_BUILD: true
         run: ./gradlew buildPlugin
 
       - name: Generate Release Notes

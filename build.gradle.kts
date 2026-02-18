@@ -21,7 +21,9 @@ fun computeDevVersion(baseVersion: String): String {
     return "$baseVersion+$timestamp"
 }
 
-if (gradle.startParameter.taskNames.any { it.contains("buildPlugin") }) {
+// Only add timestamp for intermediate dev builds, not for releases
+val isReleaseBuild = project.hasProperty("releaseBuild") || System.getenv("RELEASE_BUILD") != null
+if (gradle.startParameter.taskNames.any { it.contains("buildPlugin") } && !isReleaseBuild) {
     version = computeDevVersion(version.toString())
 }
 // set in ~/.gradle/gradle.properties, e.g. `/Users/me/Applications/PyCharm X.app/Contents`
