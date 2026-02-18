@@ -15,6 +15,8 @@ import com.jetbrains.python.PyNames
 import com.jetbrains.python.inspections.PyInspection
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.types.PyClassType
+import com.jetbrains.python.psi.types.PyCollectionType
+import com.jetbrains.python.psi.types.PyUnionType
 import com.jetbrains.python.psi.types.TypeEvalContext
 
 class PyConstantShouldBeFinalInspection : PyInspection() {
@@ -102,18 +104,18 @@ class PyConstantShouldBeFinalInspection : PyInspection() {
             val target = descriptor.psiElement as? PyTargetExpression ?: return
             val pyElementGenerator = PyElementGenerator.getInstance(project)
             val context = TypeEvalContext.codeAnalysis(project, target.containingFile)
+            val file = target.containingFile as? PyFile ?: return
 
             val inferredType = context.getType(target)
-            var typeText = inferredType?.name ?: "Any"
 
             val assignedValue = (target.parent as? PyAssignmentStatement)?.assignedValue
-            if (assignedValue is PyNoneLiteralExpression) {
-                typeText = "None"
+            val typeText = if (assignedValue is PyNoneLiteralExpression) {
+                "None"
+            } else {
+                renderTypeForFinal(inferredType, file)
             }
 
             val finalTypeText = "Final[$typeText]"
-
-            val file = target.containingFile as? PyFile ?: return
 
             // Ensure Final is imported
             val hasFinal =
@@ -146,6 +148,94 @@ class PyConstantShouldBeFinalInspection : PyInspection() {
             )
             val replaced = assignment.replace(newStatement)
             com.intellij.psi.codeStyle.CodeStyleManager.getInstance(project).reformat(replaced)
+        }
+
+        /**
+         * Render a PyType as annotation text suitable for Final[...].
+         * Handles deduplication of union members, parameterized collections,
+         * and qualifying types that are not directly imported in the file.
+         */
+        private fun renderTypeForFinal(type: com.jetbrains.python.psi.types.PyType?, file: PyFile): String {
+            return when (type) {
+                null -> "Any"
+                is PyUnionType -> renderUnionForFinal(type, file)
+                is PyCollectionType -> renderCollectionForFinal(type, file)
+                is PyClassType -> renderClassForFinal(type, file)
+                else -> type.name ?: "Any"
+            }
+        }
+
+        private fun renderUnionForFinal(union: PyUnionType, file: PyFile): String {
+            val parts = LinkedHashSet<String>()
+            var hasNone = false
+
+            fun collect(t: com.jetbrains.python.psi.types.PyType?) {
+                when (t) {
+                    null -> {}
+                    is PyUnionType -> t.members.forEach { collect(it) }
+                    else -> {
+                        if (isNoneType(t)) {
+                            hasNone = true
+                        } else {
+                            parts += renderTypeForFinal(t, file)
+                        }
+                    }
+                }
+            }
+            union.members.forEach { collect(it) }
+
+            val items = parts.toMutableList()
+            if (hasNone) items += "None"
+
+            return if (items.isEmpty()) "Any" else items.joinToString(" | ")
+        }
+
+        private fun renderCollectionForFinal(col: PyCollectionType, file: PyFile): String {
+            val name = qualifyTypeName(col, file)
+            val params = col.elementTypes.map { renderTypeForFinal(it, file) }
+            return if (params.isEmpty()) name else "$name[${params.joinToString(", ")}]"
+        }
+
+        private fun renderClassForFinal(cls: PyClassType, file: PyFile): String {
+            if (isNoneType(cls)) return "None"
+            if (cls is PyCollectionType) return renderCollectionForFinal(cls, file)
+            return qualifyTypeName(cls, file)
+        }
+
+        private fun qualifyTypeName(cls: PyClassType, file: PyFile): String {
+            val shortName = cls.name ?: return "Any"
+            val qName = cls.classQName ?: return shortName
+
+            // Builtins don't need qualification
+            if (qName.startsWith("builtins.")) return shortName
+
+            // Check if the short name is directly imported in the file
+            val isDirectlyImported = file.fromImports.any { imp ->
+                imp.importElements.any { ie -> ie.name == shortName }
+            } || file.importTargets.any { it.name == shortName }
+
+            if (isDirectlyImported) return shortName
+
+            // Check if a parent module is imported (e.g., `import re` makes `re.Pattern` available)
+            val parts = qName.split(".")
+            for (i in parts.size - 2 downTo 0) {
+                val moduleName = parts[i]
+                val isModuleImported = file.importTargets.any { it.name == moduleName } ||
+                        file.fromImports.any { imp ->
+                            imp.importElements.any { ie -> ie.name == moduleName }
+                        }
+                if (isModuleImported) {
+                    return parts.subList(i, parts.size).joinToString(".")
+                }
+            }
+
+            return shortName
+        }
+
+        private fun isNoneType(type: com.jetbrains.python.psi.types.PyType?): Boolean {
+            if (type !is PyClassType) return false
+            val qName = type.classQName
+            return qName != null && PyNames.NONE.contains(qName)
         }
     }
 }

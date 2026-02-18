@@ -57,4 +57,33 @@ class PyConstantShouldBeFinalInspectionTest : TestBase() {
             inspection
         )
     }
+
+    fun testDictLiteral() {
+        myFixture.doInspectionTest(
+            "inspections/PyConstantShouldBeFinalInspection/DictLiteral/test.py",
+            inspection,
+            fixName,
+            "inspections/PyConstantShouldBeFinalInspection/DictLiteral/test_after.py"
+        )
+    }
+
+    fun testQualifyWithImport() {
+        myFixture.doInspectionTest(
+            "inspections/PyConstantShouldBeFinalInspection/QualifyWithImport/test.py",
+            inspection,
+            fixName,
+            "inspections/PyConstantShouldBeFinalInspection/QualifyWithImport/test_after.py",
+            checkHighlighting = false
+        )
+    }
+
+    fun testDeduplicateUnionMembers() {
+        myFixture.doInspectionTest(
+            "inspections/PyConstantShouldBeFinalInspection/DeduplicateUnion/test.py",
+            inspection,
+            fixName,
+            "inspections/PyConstantShouldBeFinalInspection/DeduplicateUnion/test_after.py",
+            checkHighlighting = false
+        )
+    }
 }
