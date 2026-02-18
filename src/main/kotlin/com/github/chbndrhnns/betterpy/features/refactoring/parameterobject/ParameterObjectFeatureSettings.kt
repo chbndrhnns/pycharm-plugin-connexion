@@ -19,4 +19,7 @@ data class ParameterObjectFeatureSettings(
 
     /** Default base type for parameter objects (dataclass, NamedTuple, TypedDict, pydantic.BaseModel) */
     var defaultParameterObjectBaseType: String = "dataclass",
+
+    /** Test hook to skip the refactoring dialog and accept defaults. */
+    var autoAcceptRefactoringDialog: Boolean = false,
 )

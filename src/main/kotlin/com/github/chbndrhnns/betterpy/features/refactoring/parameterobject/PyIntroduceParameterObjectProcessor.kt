@@ -2,6 +2,7 @@ package com.github.chbndrhnns.betterpy.features.refactoring.parameterobject
 
 import com.github.chbndrhnns.betterpy.core.MyBundle
 import com.github.chbndrhnns.betterpy.core.psi.PyImportService
+import com.github.chbndrhnns.betterpy.featureflags.PluginSettingsState
 import com.github.chbndrhnns.betterpy.features.refactoring.parameterobject.generator.ParameterObjectGeneratorFactory
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.command.WriteCommandAction
@@ -50,6 +51,19 @@ class PyIntroduceParameterObjectProcessor(
 
         val settings = if (configSelector != null) {
             configSelector.invoke(allParams, defaultClassName)
+        } else if (PluginSettingsState.instance().state.parameterObject.autoAcceptRefactoringDialog) {
+            val defaultBaseType = ParameterObjectBaseType.fromDisplayName(
+                PluginSettingsState.instance().state.parameterObject.defaultParameterObjectBaseType
+            )
+            IntroduceParameterObjectSettings(
+                selectedParameters = allParams,
+                className = defaultClassName,
+                parameterName = IntroduceParameterObjectSettings.DEFAULT_PARAMETER_NAME,
+                baseType = defaultBaseType,
+                generateFrozen = true,
+                generateSlots = true,
+                generateKwOnly = true
+            )
         } else {
             val dialog = IntroduceParameterObjectDialog(project, allParams, defaultClassName)
             dialog.show()

@@ -1,8 +1,11 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.tasks.aware.SplitModeAware
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+
+val integrationTestSourceSetName = "integrationTest"
 
 plugins {
     id("java") // Java support
@@ -50,7 +53,22 @@ configurations.all {
         if (requested.group == "com.jetbrains.intellij.java" && requested.name == "java-compiler-ant-tasks") {
             useVersion("253.29346.308")
         }
+        // Align kotlin-stdlib with kotlin-reflect pulled by IDE Starter to avoid NoSuchFieldError on KParameter$Kind.CONTEXT
+        if (requested.group == "org.jetbrains.kotlin" && requested.name.startsWith("kotlin-stdlib")) {
+            useVersion("2.2.20")
+        }
     }
+}
+
+sourceSets {
+    create(integrationTestSourceSetName) {
+        compileClasspath += sourceSets.main.get().output
+        runtimeClasspath += sourceSets.main.get().output
+    }
+}
+
+val integrationTestImplementation: Configuration? by configurations.getting {
+    extendsFrom(configurations.testImplementation.get())
 }
 
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
@@ -80,7 +98,13 @@ dependencies {
         bundledModules(providers.gradleProperty("platformBundledModules").map { it.split(',') })
 
         testFramework(TestFrameworkType.Platform)
+        testFramework(TestFrameworkType.Starter, configurationName = integrationTestSourceSetName + "Implementation")
     }
+
+    integrationTestImplementation?.invoke("org.junit.jupiter:junit-jupiter:5.10.2")
+    integrationTestImplementation?.invoke("org.junit.platform:junit-platform-launcher:1.10.2")
+    integrationTestImplementation?.invoke("org.kodein.di:kodein-di-jvm:7.20.2")
+    integrationTestImplementation?.invoke("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.10.1")
 }
 
 // Configure IntelliJ Platform Gradle Plugin - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-extension.html
@@ -199,6 +223,25 @@ tasks.register<Exec>("generateFeatureDocs") {
     )
 }
 
+// Integration test (UI test) task using Starter + Driver frameworks
+val runIntegrationTests = project.findProperty("runIntegrationTests")
+    ?.toString()
+    ?.toBooleanStrictOrNull() == true
+
+val integrationTest by intellijPlatformTesting.testIdeUi.registering {
+    task {
+        val integrationTestSourceSet = sourceSets.getByName(integrationTestSourceSetName)
+        testClassesDirs = integrationTestSourceSet.output.classesDirs
+        classpath = integrationTestSourceSet.runtimeClasspath
+        systemProperty("path.to.build.plugin", tasks.prepareSandbox.get().pluginDirectory.get().asFile.absolutePath)
+        if (runIntegrationTests) {
+            systemProperty("runIntegrationTests", "true")
+        }
+        useJUnitPlatform()
+    }
+
+}
+
 // runIdeForUiTests task for UI testing with Robot Server Plugin
 val runIdeForUiTests by intellijPlatformTesting.runIde.registering {
     task {
@@ -225,7 +268,7 @@ val runLocalIde by intellijPlatformTesting.runIde.registering {
     }
 
     splitMode = false
-    splitModeTarget = org.jetbrains.intellij.platform.gradle.tasks.aware.SplitModeAware.SplitModeTarget.BOTH
+    splitModeTarget = SplitModeAware.SplitModeTarget.BOTH
 
     task {
         maxHeapSize = "2g"

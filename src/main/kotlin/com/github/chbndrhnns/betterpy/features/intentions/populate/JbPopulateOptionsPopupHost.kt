@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.betterpy.features.intentions.populate
 
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.ui.components.JBCheckBox
@@ -62,7 +63,7 @@ class JbPopulateOptionsPopupHost : PopulateOptionsPopupHost {
         }
 
         fun updatePreview() {
-            val preview = previewProvider(currentOptions())
+            val preview = runReadAction { previewProvider(currentOptions()) }
             previewArea.text = preview ?: "No preview available."
         }
 
