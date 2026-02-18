@@ -297,12 +297,14 @@ private fun insertFunction(
             if (afterText.isNotEmpty()) {
                 target.addBefore(parserFacade.createWhiteSpaceFromText(afterText), anchor)
             }
-            anchor.delete()
+            if (anchor.isValid) {
+                anchor.delete()
+            }
             return inserted
         }
         val inserted = target.addBefore(function, anchor) as? PyFunction
         target.addAfter(parserFacade.createWhiteSpaceFromText("\n\n"), inserted)
-        if (anchor is PsiWhiteSpace) {
+        if (anchor is PsiWhiteSpace && anchor.isValid) {
             anchor.delete()
         }
         return inserted
