@@ -12,6 +12,11 @@ on:
           - 'yes'
           - 'no'
 
+# Only allow beta releases from main branch
+run-on:
+  branches:
+    - main
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -24,6 +29,12 @@ jobs:
       contents: write
       pull-requests: write
     steps:
+      - name: Check Branch
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "ERROR: Beta releases can only be triggered from the main branch"
+          exit 1
+
       - name: Fetch Sources
         uses: actions/checkout@v4
         with:
