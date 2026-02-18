@@ -44,6 +44,12 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Generate CHANGELOG.md with git-cliff
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: --unreleased -o CHANGELOG.md
+
       - name: Bump to Beta Version
         run: |
           chmod +x ./scripts/version.sh
