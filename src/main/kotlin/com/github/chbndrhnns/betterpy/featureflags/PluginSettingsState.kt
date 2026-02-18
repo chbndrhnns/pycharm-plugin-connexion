@@ -115,6 +115,9 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         @Feature("extract-pytest-fixture")
         var enableExtractPytestFixtureRefactoring: Boolean = FeatureDefaults.defaultEnabled("extract-pytest-fixture"),
 
+        @Feature("inline-pytest-fixture")
+        var enableInlinePytestFixtureRefactoring: Boolean = FeatureDefaults.defaultEnabled("inline-pytest-fixture"),
+
         @Feature("mock-type-provider")
         var enablePyMockTypeProvider: Boolean = FeatureDefaults.defaultEnabled("mock-type-provider"),
 

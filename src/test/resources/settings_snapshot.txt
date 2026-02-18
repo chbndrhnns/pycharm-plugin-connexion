@@ -1804,6 +1804,27 @@ DialogPanel
   </body>
 </html>
 '
+  CheckBox: [x] 'Inline pytest fixture'
+  MaturityTagLabel
+    Label: 'Incubating'
+  TextField: '<html>
+  <head>
+    <style type="text/css">
+      <!--
+        a { color: #589df6 }
+        a:link { color: #589df6 }
+        a:visited { color: #800080 }
+        a:hover { color: #589df6 }
+        a:active { color: #f00000 }
+      -->
+    </style>
+    
+  </head>
+  <body>
+    Inline a pytest fixture into its usage(s) with dependency promotion
+  </body>
+</html>
+'
   CheckBox: [x] 'Jump to pytest node in test tree'
   TextField: '<html>
   <head>
