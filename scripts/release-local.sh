@@ -105,18 +105,24 @@ fi
 
 RELEASE_BUILD=true ./gradlew buildPlugin
 
+ensure_unreleased_section() {
+  if ! grep -q '^## \[Unreleased\]' CHANGELOG.md; then
+    # Insert after the header (after the CalVer format line)
+    sed -i.bak '/^This project uses.*CalVer/a\
+\
+## [Unreleased]
+' CHANGELOG.md
+    rm -f CHANGELOG.md.bak
+  fi
+}
+
 # Generate changelog with git-cliff if available
 if command -v git-cliff >/dev/null 2>&1; then
   echo "Generating changelog with git-cliff for version $VERSION..."
   git-cliff --tag "$VERSION" --unreleased -o CHANGELOG.md
 
-  # Add back [Unreleased] section for next release
-  # Insert after the header (after the CalVer format line)
-  sed -i.bak '/^This project uses.*CalVer/a\
-\
-## [Unreleased]
-' CHANGELOG.md
-  rm -f CHANGELOG.md.bak
+  # Add back [Unreleased] section for next release if missing
+  ensure_unreleased_section
 
   echo "Changelog updated in CHANGELOG.md"
 
@@ -125,11 +131,13 @@ if command -v git-cliff >/dev/null 2>&1; then
     git commit -m "docs: Update CHANGELOG.md for $VERSION" || echo "No changelog changes to commit."
   fi
 else
-  echo "WARNING: git-cliff not found. Using existing CHANGELOG.md" >&2
+  echo "ERROR: git-cliff not found. Install git-cliff to proceed." >&2
+  exit 1
 fi
 
 RELEASE_NOTE="./build/tmp/release_note.txt"
 mkdir -p "$(dirname "$RELEASE_NOTE")"
+ensure_unreleased_section
 ./gradlew getChangelog --unreleased --no-header --quiet --console=plain --output-file="$RELEASE_NOTE"
 
 # Allow interactive editing of release notes
