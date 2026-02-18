@@ -9,6 +9,7 @@ import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.DumbAware
@@ -86,14 +87,16 @@ class PopulateArgumentsIntention : IntentionAction, HighPriorityAction, DumbAwar
                 service.buildPreviewText(project, pyFile, editor, option)
             },
             onChosen = { chosen ->
-                val missing = service.missingParametersFor(call, chosen, ctx)
-                if (missing.isEmpty()) return@showOptions
-                service.chooseUnionMembers(editor, unionPopupHost, missing, ctx) { unionSelections ->
-                    // The chooser callback runs outside the original intention command.
-                    // Wrap PSI modifications into a write command to satisfy the platform contract.
-                    WriteCommandAction.runWriteCommandAction(project, text, null, Runnable {
-                        service.populateArguments(project, pyFile, call, chosen, ctx, unionSelections)
-                    }, pyFile)
+                runReadAction {
+                    val missing = service.missingParametersFor(call, chosen, ctx)
+                    if (missing.isEmpty()) return@runReadAction
+                    service.chooseUnionMembers(editor, unionPopupHost, missing, ctx) { unionSelections ->
+                        // The chooser callback runs outside the original intention command.
+                        // Wrap PSI modifications into a write command to satisfy the platform contract.
+                        WriteCommandAction.runWriteCommandAction(project, text, null, Runnable {
+                            service.populateArguments(project, pyFile, call, chosen, ctx, unionSelections)
+                        }, pyFile)
+                    }
                 }
             }
         )

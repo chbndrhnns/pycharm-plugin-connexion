@@ -4,6 +4,7 @@ import com.github.chbndrhnns.betterpy.core.psi.PyImportService
 import com.github.chbndrhnns.betterpy.features.intentions.shared.PopupHost
 import com.github.chbndrhnns.betterpy.features.intentions.shared.PyBuiltinNames
 import com.intellij.codeInsight.intention.preview.IntentionPreviewUtils
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiNamedElement
@@ -139,9 +140,11 @@ class PopulateArgumentsService {
                 editor = editor,
                 title = "Select union type for ${request.paramName}",
                 items = request.options,
-                render = { valueGenerator.renderUnionChoiceLabel(it) },
+                render = { runReadAction { valueGenerator.renderUnionChoiceLabel(it) } },
                 onChosen = { chosen ->
-                    selections[request.signature] = valueGenerator.renderTypeName(chosen)
+                    runReadAction {
+                        selections[request.signature] = valueGenerator.renderTypeName(chosen)
+                    }
                     chooseNext(index + 1)
                 }
             )
