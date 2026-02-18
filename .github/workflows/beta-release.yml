@@ -12,11 +12,6 @@ on:
           - 'yes'
           - 'no'
 
-# Only allow beta releases from main branch
-run-on:
-  branches:
-    - main
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
