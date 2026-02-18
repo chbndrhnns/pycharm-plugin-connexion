@@ -1,0 +1,14 @@
+id: inline-pytest-fixture
+displayName: Inline pytest fixture
+description: Inline a pytest fixture into its usage(s) with dependency promotion
+category: PYTEST
+maturity: INCUBATING
+youtrackIssues: [ ]
+loggingCategories:
+  - com.github.chbndrhnns.betterpy.features.pytest.inlinefixture
+since: ''
+removeIn: ''
+defaultEnabled: true
+registrations:
+  - type: refactoringAction
+    className: com.github.chbndrhnns.betterpy.features.pytest.inlinefixture.InlineFixtureRefactoringAction

@@ -685,6 +685,13 @@
             <add-to-group group-id="RefactoringMenu" anchor="last"/>
         </action>
 
+        <action id="com.github.chbndrhnns.betterpy.features.pytest.inlinefixture.InlineFixtureRefactoringAction"
+                class="com.github.chbndrhnns.betterpy.features.pytest.inlinefixture.InlineFixtureRefactoringAction"
+                text="BetterPy: Inline Pytest Fixture..."
+                description="Inlines a pytest fixture into its usage(s)">
+            <add-to-group group-id="RefactoringMenu" anchor="last"/>
+        </action>
+
         <action id="com.github.chbndrhnns.betterpy.features.actions.CopyBuildNumberAction"
                 class="com.github.chbndrhnns.betterpy.features.actions.CopyBuildNumberAction"
                 text="BetterPy: Copy Build Number"

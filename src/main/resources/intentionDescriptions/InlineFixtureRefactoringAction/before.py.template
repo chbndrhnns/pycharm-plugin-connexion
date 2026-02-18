@@ -1,0 +1,9 @@
+import pytest
+
+@pytest.fixture
+def db():
+    return create_db()
+
+
+def test_query(db):
+    assert db is not None
