@@ -53,9 +53,6 @@ class FeatureCatalogSyncTest : TestBase() {
 
     fun testPluginXmlRegistrationsCoveredByCatalog() {
         val catalog = FeatureCatalogLoader.load()
-        catalog.filter { it.id == "advanced-pytest-fixtures" }.forEach { feature ->
-            println("DEBUG: Loaded feature ${feature.id} with registrations: ${feature.registrations}")
-        }
         val catalogRegistrations = catalog
             .flatMap { it.registrations }
             .map { it.type to it.className }
