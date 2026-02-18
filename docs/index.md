@@ -13,7 +13,6 @@ The plugin focuses on **"Strong Typing"** by making it easy to introduce and use
 - **Argument Population**: Fill function call arguments based on signatures for dataclasses, Pydantic models, and more.
 - **Refactoring Tools**: Introduce Parameter Object, toggle visibility, and copy code blocks with dependencies.
 - **Pytest Integration**: Enhanced navigation and actions for pytest suites.
-- **Connexion/OpenAPI Support**: Navigation and inspections for Connexion-based projects.
 
 ## Target Audience
 
@@ -24,5 +23,5 @@ Python developers using PyCharm or IntelliJ IDEA who want to:
 
 ## Prerequisites
 
-- **IDE**: PyCharm 2025.2+ or IntelliJ IDEA 2025.2+
+- **IDE**: PyCharm 2025.3+ or IntelliJ IDEA 2025.3+
 - **Plugin**: Python plugin must be installed and enabled.

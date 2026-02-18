@@ -289,16 +289,6 @@ class PluginSettingsState : PersistentStateComponent<PluginSettingsState.State> 
         @Feature("rename-to-self-filter")
         var enableRenameToSelfFilter: Boolean = FeatureDefaults.defaultEnabled("rename-to-self-filter"),
 
-        // ---- Connexion ----
-        @Feature("connexion-line-markers")
-        var enableConnexionLineMarkers: Boolean = FeatureDefaults.defaultEnabled("connexion-line-markers"),
-
-        @Feature("connexion-inspections")
-        var enableConnexionInspections: Boolean = FeatureDefaults.defaultEnabled("connexion-inspections"),
-
-        @Feature("connexion-completion")
-        var enableConnexionCompletion: Boolean = FeatureDefaults.defaultEnabled("connexion-completion"),
-
         @Feature("newtype-typevar-paramspec-rename")
         var enableNewTypeTypeVarParamSpecRename: Boolean = FeatureDefaults.defaultEnabled("newtype-typevar-paramspec-rename"),
 

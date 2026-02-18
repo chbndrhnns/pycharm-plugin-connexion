@@ -26,7 +26,3 @@ Warns when a variable that looks like a constant (uppercase naming) is not annot
 ### Abstract Method Not Implemented
 Ensures all abstract methods are implemented in concrete subclasses.
 
-## Connexion / OpenAPI
-
-### Connexion Path/Operation ID Inspections
-Validates that the `operationId` in your OpenAPI specification correctly points to an existing Python function in your project.

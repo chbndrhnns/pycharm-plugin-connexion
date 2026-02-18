@@ -1549,66 +1549,6 @@ DialogPanel
 </html>
 '
   
-    Label: 'Connexion'
-    JSeparator
-  CheckBox: [x] 'Connexion completion'
-  TextField: '<html>
-  <head>
-    <style type="text/css">
-      <!--
-        a { color: #589df6 }
-        a:link { color: #589df6 }
-        a:visited { color: #800080 }
-        a:hover { color: #589df6 }
-        a:active { color: #f00000 }
-      -->
-    </style>
-    
-  </head>
-  <body>
-    Enables code completion for Connexion API framework
-  </body>
-</html>
-'
-  CheckBox: [x] 'Connexion inspections'
-  TextField: '<html>
-  <head>
-    <style type="text/css">
-      <!--
-        a { color: #589df6 }
-        a:link { color: #589df6 }
-        a:visited { color: #800080 }
-        a:hover { color: #589df6 }
-        a:active { color: #f00000 }
-      -->
-    </style>
-    
-  </head>
-  <body>
-    Enables inspections for Connexion API framework
-  </body>
-</html>
-'
-  CheckBox: [x] 'Connexion line markers'
-  TextField: '<html>
-  <head>
-    <style type="text/css">
-      <!--
-        a { color: #589df6 }
-        a:link { color: #589df6 }
-        a:visited { color: #800080 }
-        a:hover { color: #589df6 }
-        a:active { color: #f00000 }
-      -->
-    </style>
-    
-  </head>
-  <body>
-    Adds navigation gutter icons between OpenAPI specs and Python handlers
-  </body>
-</html>
-'
-  
     Label: 'Documentation'
     JSeparator
   CheckBox: [x] 'Enhanced Dataclass Quick Info'

@@ -59,7 +59,6 @@ nav:
   - Advanced:
     - Import Handling: advanced/import-handling.md
     - PSI References: advanced/psi-references.md
-    - Connexion / OpenAPI: advanced/connexion.md
     - Search Everywhere: advanced/search-everywhere.md
     - Structure View: advanced/structure-view.md
     - Console & Usage Filtering: advanced/filtering.md

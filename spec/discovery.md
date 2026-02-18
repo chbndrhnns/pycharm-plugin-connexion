@@ -85,7 +85,6 @@ class FeatureDiscoveryNotifier : ProjectActivity {
     private fun analyzeProjectForFeatureSuggestions(project: Project): List<FeatureSuggestion> {
         // If project uses pytest → suggest pytest features
         // If project has dataclasses → suggest type wrapping features
-        // If project has OpenAPI specs → suggest Connexion features
         // etc.
     }
 }
