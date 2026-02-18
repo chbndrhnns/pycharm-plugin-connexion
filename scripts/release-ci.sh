@@ -27,7 +27,7 @@ fi
 
 CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 if [[ "$CURRENT_BRANCH" != "main" ]]; then
-  git fetch origin main --depth=1
+  git fetch origin main --unshallow 2>/dev/null || git fetch origin main
   if ! git merge-base --is-ancestor HEAD origin/main; then
     echo "ERROR: Release tag must be based on main." >&2
     exit 1
