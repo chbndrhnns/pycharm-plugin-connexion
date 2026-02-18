@@ -34,6 +34,7 @@ do(frozenset({<caret>1, 2, 3}))
 
 ## Pending Features
 
+- [ ] feat: Extract Protocol from class/method
 - [ ] feat: Turn static method into instance method
 - [ ] feat: Support introduce parameter for this case:
 
