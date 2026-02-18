@@ -7,3 +7,6 @@
 build
 hs_err*.log
 .aider*
+
+allure-results
+out/
