@@ -109,6 +109,15 @@ fi
 if command -v git-cliff >/dev/null 2>&1; then
   echo "Generating changelog with git-cliff for version $VERSION..."
   git-cliff --tag "$VERSION" --unreleased -o CHANGELOG.md
+
+  # Add back [Unreleased] section for next release
+  # Insert after the header (after the CalVer format line)
+  sed -i.bak '/^This project uses.*CalVer/a\
+\
+## [Unreleased]
+' CHANGELOG.md
+  rm -f CHANGELOG.md.bak
+
   echo "Changelog updated in CHANGELOG.md"
 
   if [[ "$SKIP_COMMIT" != "yes" ]]; then
