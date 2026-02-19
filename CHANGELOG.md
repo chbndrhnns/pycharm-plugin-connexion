@@ -8,9 +8,12 @@ This project uses **CalVer** (Calendar Versioning) with the format `YYYY.MM.PATC
 
 ## [Unreleased]
 
-## [2026.02.0] - 2026-02-18
+## [2026.02.1] - 2026-02-19
+
+### 🚀 Features
+
+- Enable error reporting (#11)
 
 ### ⚙️ Miscellaneous Tasks
 
-- Install git-cliff
-- Bump version to 2026.02.0
+- Bump version to 2026.02.1
