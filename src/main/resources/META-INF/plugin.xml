@@ -20,6 +20,8 @@
     <depends optional="true" config-file="yaml-support.xml">org.jetbrains.plugins.yaml</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <errorHandler implementation="com.intellij.diagnostic.JetBrainsMarketplaceErrorReportSubmitter"/>
+
         <psi.referenceContributor language="JSON"
                                   implementation="com.github.chbndrhnns.connexion.features.connexion.ConnexionJsonReferenceContributor"/>
 
