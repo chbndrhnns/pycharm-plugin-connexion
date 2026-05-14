@@ -19,7 +19,7 @@ internal object OpenApiYamlSpecUtil {
         val text = yamlFile.text
         if ((!text.contains(ConnexionConstants.OPENAPI) && !text.contains(ConnexionConstants.SWAGGER)) || !text.contains(
                 ConnexionConstants.PATHS
-            )
+            ) || (!text.contains(ConnexionConstants.X_OPENAPI_ROUTER_CONTROLLER) && !text.contains(ConnexionConstants.X_SWAGGER_ROUTER_CONTROLLER))
         ) {
             return false
         }

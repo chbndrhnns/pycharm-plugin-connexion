@@ -78,4 +78,41 @@ class ConnexionInspectionTest : TestBase() {
 
         myFixture.checkHighlighting(true, false, true)
     }
+
+    fun testJsonIgnoredWithoutController() {
+        myFixture.configureByText(
+            "openapi.json", """
+            {
+              "openapi": "3.0.0",
+              "paths": {
+                "/pets": {
+                  "get": {
+                    "operationId": "missing_function"
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        )
+
+        // No highlighting errors expected because there is no controller specified
+        myFixture.checkHighlighting(true, false, true)
+    }
+
+    fun testYamlIgnoredWithoutController() {
+        myFixture.enableInspections(ConnexionYamlInspection::class.java)
+
+        myFixture.configureByText(
+            "openapi.yaml", """
+            openapi: 3.0.0
+            paths:
+              /pets:
+                get:
+                  operationId: missing_function
+        """.trimIndent()
+        )
+
+        // No highlighting errors expected because there is no controller specified
+        myFixture.checkHighlighting(true, false, true)
+    }
 }
