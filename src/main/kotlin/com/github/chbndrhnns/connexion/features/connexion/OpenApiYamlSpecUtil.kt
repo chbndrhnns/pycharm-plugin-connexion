@@ -1,5 +1,6 @@
 package com.github.chbndrhnns.connexion.features.connexion
 
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.psi.PsiFile
 import org.jetbrains.yaml.psi.YAMLFile
 import org.jetbrains.yaml.psi.YAMLMapping
@@ -11,6 +12,7 @@ import org.jetbrains.yaml.psi.YAMLScalar
  * IMPORTANT: This object must only be accessed when the YAML plugin is available.
  */
 internal object OpenApiYamlSpecUtil {
+    private val LOG = logger<OpenApiYamlSpecUtil>()
 
     fun isOpenApiYamlFile(file: PsiFile): Boolean {
         val yamlFile = file as? YAMLFile ?: return false
@@ -21,12 +23,21 @@ internal object OpenApiYamlSpecUtil {
                 ConnexionConstants.PATHS
             ) || (!text.contains(ConnexionConstants.X_OPENAPI_ROUTER_CONTROLLER) && !text.contains(ConnexionConstants.X_SWAGGER_ROUTER_CONTROLLER))
         ) {
+            LOG.debug("File ${file.name} ignored: missing 'openapi'/'swagger', 'paths', or router controller keys in text.")
             return false
         }
 
         val root = yamlFile.documents.firstOrNull()?.topLevelValue as? YAMLMapping ?: return false
-        return (root.getKeyValueByKey(ConnexionConstants.OPENAPI) != null || root.getKeyValueByKey(ConnexionConstants.SWAGGER) != null) &&
+        val isMatch = (root.getKeyValueByKey(ConnexionConstants.OPENAPI) != null || root.getKeyValueByKey(ConnexionConstants.SWAGGER) != null) &&
                 root.getKeyValueByKey(ConnexionConstants.PATHS) != null
+                
+        if (isMatch) {
+            LOG.debug("File ${file.name} successfully parsed as OpenAPI YAML.")
+        } else {
+            LOG.debug("File ${file.name} ignored: 'openapi'/'swagger' or 'paths' keys not found at root level.")
+        }
+        
+        return isMatch
     }
 
     fun extractYamlOperations(file: PsiFile): List<OpenApiSpecUtil.OpenApiOperation> {

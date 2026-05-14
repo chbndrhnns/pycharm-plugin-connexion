@@ -8,6 +8,7 @@ import com.intellij.json.psi.JsonStringLiteral
 import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.fileTypes.FileTypeManager
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.psi.PsiElement
@@ -21,6 +22,7 @@ import com.jetbrains.python.psi.PyFunction
 import com.jetbrains.python.psi.stubs.PyFunctionNameIndex
 
 object OpenApiSpecUtil {
+    private val LOG = logger<OpenApiSpecUtil>()
 
     private val YAML_PLUGIN_ID: PluginId = PluginId.getId("org.jetbrains.plugins.yaml")
 
@@ -52,12 +54,21 @@ object OpenApiSpecUtil {
                 ConnexionConstants.PATHS
             ) || (!text.contains(ConnexionConstants.X_OPENAPI_ROUTER_CONTROLLER) && !text.contains(ConnexionConstants.X_SWAGGER_ROUTER_CONTROLLER))
         ) {
+            LOG.debug("File ${file.name} ignored: missing 'openapi'/'swagger', 'paths', or router controller keys in text.")
             return false
         }
 
         val root = file.topLevelValue as? JsonObject ?: return false
-        return (root.findProperty(ConnexionConstants.OPENAPI) != null || root.findProperty(ConnexionConstants.SWAGGER) != null) &&
+        val isMatch = (root.findProperty(ConnexionConstants.OPENAPI) != null || root.findProperty(ConnexionConstants.SWAGGER) != null) &&
                 root.findProperty(ConnexionConstants.PATHS) != null
+                
+        if (isMatch) {
+            LOG.debug("File ${file.name} successfully parsed as OpenAPI JSON.")
+        } else {
+            LOG.debug("File ${file.name} ignored: 'openapi'/'swagger' or 'paths' keys not found at root level.")
+        }
+        
+        return isMatch
     }
 
     fun findAllOpenApiFiles(project: Project): List<PsiFile> {
