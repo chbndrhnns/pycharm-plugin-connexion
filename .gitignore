@@ -9,3 +9,4 @@ hs_err*.log
 .aider*
 
 .junie/memory
+.env
