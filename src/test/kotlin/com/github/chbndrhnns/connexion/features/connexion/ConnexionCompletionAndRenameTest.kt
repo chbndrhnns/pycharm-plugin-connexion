@@ -85,6 +85,7 @@ class ConnexionCompletionAndRenameTest : TestBase() {
             paths:
               /pets:
                 get:
+                  x-openapi-router-controller: dummy
                   operationId: pkg.api.list_pets
         """.trimIndent()
         )
@@ -100,6 +101,7 @@ class ConnexionCompletionAndRenameTest : TestBase() {
             paths:
               /pets:
                 get:
+                  x-openapi-router-controller: dummy
                   operationId: pkg.api.get_all_pets
         """.trimIndent(), true
         )
