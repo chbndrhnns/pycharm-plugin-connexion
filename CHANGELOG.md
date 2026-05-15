@@ -8,12 +8,10 @@ This project uses **CalVer** (Calendar Versioning) with the format `YYYY.MM.PATC
 
 ## [Unreleased]
 
-## [2026.02.1] - 2026-02-19
-
 ### 🚀 Features
 
-- Enable error reporting (#11)
+- Add debug logging for OpenAPI file parsing
 
-### ⚙️ Miscellaneous Tasks
+### 🐛 Bug Fixes
 
-- Bump version to 2026.02.1
+- Ignore OpenAPI files without router controller

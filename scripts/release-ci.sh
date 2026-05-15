@@ -50,6 +50,8 @@ fi
 
 RELEASE_BUILD=true ./gradlew buildPlugin
 
+# ── Changelog helpers ──────────────────────────────────────────────
+
 ensure_unreleased_section() {
   if ! grep -q '^## \[Unreleased\]' CHANGELOG.md; then
     # Insert after the header (after the CalVer format line)
@@ -61,24 +63,78 @@ ensure_unreleased_section() {
   fi
 }
 
-# Generate changelog with git-cliff if available
-if command -v git-cliff >/dev/null 2>&1; then
-  echo "Generating changelog with git-cliff for version $VERSION..."
-  git-cliff --tag "$VERSION" --unreleased -o CHANGELOG.md
+# Extract hand-authored content from the [Unreleased] section.
+extract_handwritten_notes() {
+  local changelog="$1" output="$2"
+  : > "$output"
+  if grep -q '^## \[Unreleased\]' "$changelog"; then
+    awk '/^## \[Unreleased\]/{f=1;next} /^## \[/{f=0} f' "$changelog" > "$output"
+  fi
+}
 
-  # Add back [Unreleased] section for next release if missing
-  ensure_unreleased_section
+# Remove the [Unreleased] section (heading + content) from the changelog.
+strip_unreleased_section() {
+  local changelog="$1"
+  awk '/^## \[Unreleased\]/{s=1;next} /^## \[/{s=0} !s' "$changelog" > "${changelog}.tmp"
+  mv "${changelog}.tmp" "$changelog"
+}
 
-  echo "Changelog updated in CHANGELOG.md"
-else
+# Insert hand-authored notes right after the version heading line.
+inject_handwritten_notes() {
+  local changelog="$1" notes_file="$2" version="$3"
+  [[ -s "$notes_file" ]] || return 0
+  local target="## [${version}]"
+  {
+    while IFS= read -r line || [[ -n "$line" ]]; do
+      printf '%s\n' "$line"
+      if [[ "$line" == "$target"* ]]; then
+        cat "$notes_file"
+      fi
+    done < "$changelog"
+  } > "${changelog}.tmp" && mv "${changelog}.tmp" "$changelog"
+}
+
+# Extract release notes for a specific version from CHANGELOG.md.
+extract_version_notes() {
+  local changelog="$1" version="$2" output="$3"
+  awk -v ver="$version" '
+    /^## \[/{if(index($0,"["ver"]")>0){f=1;next}else if(f){exit}}
+    f
+  ' "$changelog" > "$output"
+}
+
+# ── Generate changelog ─────────────────────────────────────────────
+
+if ! command -v git-cliff >/dev/null 2>&1; then
   echo "ERROR: git-cliff not found. Install git-cliff to proceed." >&2
   exit 1
 fi
 
+echo "Generating changelog with git-cliff for version $VERSION..."
+
+HAND_AUTHORED_FILE="./build/tmp/hand_authored_notes.md"
+mkdir -p "$(dirname "$HAND_AUTHORED_FILE")"
+
+# Preserve hand-authored notes from [Unreleased] before git-cliff regenerates
+extract_handwritten_notes CHANGELOG.md "$HAND_AUTHORED_FILE"
+
+# Remove [Unreleased] section so it doesn't interfere with --prepend
+strip_unreleased_section CHANGELOG.md
+
+# Generate new version entry from conventional commits and prepend to changelog
+git-cliff --tag "$VERSION" --unreleased --prepend CHANGELOG.md
+
+# Merge hand-authored notes into the new version section
+inject_handwritten_notes CHANGELOG.md "$HAND_AUTHORED_FILE" "$VERSION"
+
+# Add empty [Unreleased] section for the next development cycle
+ensure_unreleased_section
+
+echo "Changelog updated in CHANGELOG.md"
+
 RELEASE_NOTE="./build/tmp/release_note.txt"
 mkdir -p "$(dirname "$RELEASE_NOTE")"
-ensure_unreleased_section
-./gradlew getChangelog --unreleased --no-header --quiet --console=plain --output-file="$RELEASE_NOTE"
+extract_version_notes CHANGELOG.md "$VERSION" "$RELEASE_NOTE"
 
 if ! ls ./build/distributions/*.zip >/dev/null 2>&1; then
   echo "ERROR: No plugin zip found in ./build/distributions." >&2
