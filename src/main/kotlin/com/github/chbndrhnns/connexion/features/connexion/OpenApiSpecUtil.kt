@@ -1,13 +1,12 @@
 package com.github.chbndrhnns.connexion.features.connexion
 
-import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.json.JsonFileType
 import com.intellij.json.psi.JsonFile
 import com.intellij.json.psi.JsonObject
 import com.intellij.json.psi.JsonStringLiteral
-import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.fileTypes.FileTypeManager
+import com.intellij.openapi.fileTypes.UnknownFileType
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectRootManager
@@ -24,10 +23,8 @@ import com.jetbrains.python.psi.stubs.PyFunctionNameIndex
 object OpenApiSpecUtil {
     private val LOG = logger<OpenApiSpecUtil>()
 
-    private val YAML_PLUGIN_ID: PluginId = PluginId.getId("org.jetbrains.plugins.yaml")
-
     private fun isYamlAvailable(): Boolean {
-        return PluginManagerCore.getPlugin(YAML_PLUGIN_ID) != null && !PluginManagerCore.isDisabled(YAML_PLUGIN_ID)
+        return FileTypeManager.getInstance().getFileTypeByExtension("yaml") !is UnknownFileType
     }
 
     private fun yamlFileTypes(): List<FileType> {
