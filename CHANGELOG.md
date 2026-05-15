@@ -8,6 +8,8 @@ This project uses **CalVer** (Calendar Versioning) with the format `YYYY.MM.PATC
 
 ## [Unreleased]
 
+## [2026.05.0] - 2026-05-15
+
 ### 🚀 Features
 
 - Add debug logging for OpenAPI file parsing
@@ -15,3 +17,18 @@ This project uses **CalVer** (Calendar Versioning) with the format `YYYY.MM.PATC
 ### 🐛 Bug Fixes
 
 - Ignore OpenAPI files without router controller
+
+### 🚀 Features
+
+- Add debug logging for OpenAPI file parsing
+- *(release)* Preserve hand-authored changelog notes during release
+- *(release)* Preserve hand-authored changelog notes in local release script
+
+### 🐛 Bug Fixes
+
+- Ignore OpenAPI files without router controller
+
+### ⚙️ Miscellaneous Tasks
+
+- Ignore .env
+- Bump version to 2026.05.0
