@@ -8,6 +8,16 @@ This project uses **CalVer** (Calendar Versioning) with the format `YYYY.MM.PATC
 
 ## [Unreleased]
 
+## [2026.05.1] - 2026-05-15
+
+
+### 🐛 Bug Fixes
+
+- Replace internal PluginManagerCore API with public FileTypeManager check
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump version to 2026.05.1
 ## [2026.05.0] - 2026-05-15
 
 ### 🚀 Features
