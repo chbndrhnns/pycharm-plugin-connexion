@@ -44,7 +44,44 @@ private class ConnexionYamlReferenceProvider : PsiReferenceProvider() {
 
         val file = element.containingFile
         if (!OpenApiSpecUtil.isOpenApiFile(file)) return PsiReference.EMPTY_ARRAY
-        return arrayOf(ConnexionYamlReference(element))
+
+        val operationReference = ConnexionYamlReference(element)
+        val references = mutableListOf<PsiReference>()
+        references.add(operationReference)
+
+        if (operationReference.findController() != null) {
+            return references.toTypedArray()
+        }
+
+        val manipulator = ElementManipulators.getManipulator(element)
+        if (manipulator != null) {
+            val valueRange = manipulator.getRangeInElement(element)
+            val value = valueRange.substring(element.text)
+            val valueStartOffset = valueRange.startOffset
+
+            val isColon = value.contains(":")
+            val pathValue = if (isColon) value.substringBefore(":") else value.substringBeforeLast(".")
+
+            if (pathValue != value && pathValue.isNotEmpty()) {
+                var start = 0
+                var currentPrefix = ""
+                while (true) {
+                    val dotIndex = pathValue.indexOf('.', start)
+                    val end = if (dotIndex == -1) pathValue.length else dotIndex
+                    val range = com.intellij.openapi.util.TextRange(valueStartOffset + start, valueStartOffset + end)
+
+                    references.add(ConnexionControllerReference(element, range, currentPrefix))
+
+                    val part = pathValue.substring(start, end)
+                    if (currentPrefix.isEmpty()) currentPrefix = part else currentPrefix += ".$part"
+
+                    if (dotIndex == -1) break
+                    start = dotIndex + 1
+                }
+            }
+        }
+
+        return references.toTypedArray()
     }
 }
 

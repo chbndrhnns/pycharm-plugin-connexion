@@ -31,7 +31,6 @@ class ConnexionControllerReference(
     }
 
     override fun handleElementRename(newElementName: String): PsiElement {
-        // newElementName is the new name of the file (e.g. "new_api.py") or directory ("new_pkg")
         val nameWithoutExt = newElementName.removeSuffix(".py")
         return super.handleElementRename(nameWithoutExt)
     }

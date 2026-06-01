@@ -44,7 +44,43 @@ private class ConnexionJsonReferenceProvider : PsiReferenceProvider() {
 
         val file = element.containingFile
         if (!OpenApiSpecUtil.isOpenApiFile(file)) return PsiReference.EMPTY_ARRAY
-        return arrayOf(ConnexionJsonReference(element))
+
+        val operationReference = ConnexionJsonReference(element)
+        val references = mutableListOf<PsiReference>()
+        references.add(operationReference)
+
+        if (operationReference.findController() != null) {
+            return references.toTypedArray()
+        }
+
+        val text = element.text
+        if (text.length >= 2) {
+            val valueStartOffset = 1
+            val value = text.substring(1, text.length - 1)
+
+            val isColon = value.contains(":")
+            val pathValue = if (isColon) value.substringBefore(":") else value.substringBeforeLast(".")
+
+            if (pathValue != value && pathValue.isNotEmpty()) {
+                var start = 0
+                var currentPrefix = ""
+                while (true) {
+                    val dotIndex = pathValue.indexOf('.', start)
+                    val end = if (dotIndex == -1) pathValue.length else dotIndex
+                    val range = com.intellij.openapi.util.TextRange(valueStartOffset + start, valueStartOffset + end)
+
+                    references.add(ConnexionControllerReference(element, range, currentPrefix))
+
+                    val part = pathValue.substring(start, end)
+                    if (currentPrefix.isEmpty()) currentPrefix = part else currentPrefix += ".$part"
+
+                    if (dotIndex == -1) break
+                    start = dotIndex + 1
+                }
+            }
+        }
+
+        return references.toTypedArray()
     }
 }
 

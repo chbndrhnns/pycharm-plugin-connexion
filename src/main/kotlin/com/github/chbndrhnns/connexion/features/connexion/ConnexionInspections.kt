@@ -36,6 +36,9 @@ class ConnexionYamlInspection : LocalInspectionTool() {
 private fun checkReferences(element: PsiElement, holder: ProblemsHolder) {
     for (ref in element.references) {
         if (ref is ConnexionReferenceBase || ref is ConnexionControllerReference) {
+            if (ref is ConnexionReferenceBase && ref.findController() == null && !ref.isQualified(ref.operationIdText())) {
+                continue
+            }
             if (ref.resolve() == null) {
                 val description = if (ref is ConnexionReferenceBase)
                     ConnexionConstants.UNRESOLVED_OPERATION_ID

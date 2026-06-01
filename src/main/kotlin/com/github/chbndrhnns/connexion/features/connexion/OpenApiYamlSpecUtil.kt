@@ -21,9 +21,9 @@ internal object OpenApiYamlSpecUtil {
         val text = yamlFile.text
         if ((!text.contains(ConnexionConstants.OPENAPI) && !text.contains(ConnexionConstants.SWAGGER)) || !text.contains(
                 ConnexionConstants.PATHS
-            ) || (!text.contains(ConnexionConstants.X_OPENAPI_ROUTER_CONTROLLER) && !text.contains(ConnexionConstants.X_SWAGGER_ROUTER_CONTROLLER))
+            ) || (!text.contains(ConnexionConstants.X_OPENAPI_ROUTER_CONTROLLER) && !text.contains(ConnexionConstants.X_SWAGGER_ROUTER_CONTROLLER) && !text.contains(ConnexionConstants.OPERATION_ID))
         ) {
-            LOG.debug("File ${file.name} ignored: missing 'openapi'/'swagger', 'paths', or router controller keys in text.")
+            LOG.debug("File ${file.name} ignored: missing 'openapi'/'swagger', 'paths', or 'operationId'/router controller keys in text.")
             return false
         }
 

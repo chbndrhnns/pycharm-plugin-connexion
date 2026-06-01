@@ -294,4 +294,82 @@ class ConnexionCompletionAndRenameTest : TestBase() {
         """.trimIndent()
         )
     }
+    fun testRenameControllerDirectoryInOperationId() {
+        myFixture.tempDirFixture.createFile("pkg/api.py", "")
+
+        myFixture.configureByText(
+            "openapi.json", """
+            {
+              "openapi": "3.0.0",
+              "paths": {
+                "/pets": {
+                  "get": {
+                    "operationId": "pkg.api.list_pets"
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        )
+
+        val psiManager = com.intellij.psi.PsiManager.getInstance(project)
+        val baseDir = com.intellij.openapi.roots.ProjectRootManager.getInstance(project).contentRoots.first()
+        val pkgDir = baseDir.findChild("pkg")
+        val pkgPsiDir = psiManager.findDirectory(pkgDir!!)!!
+
+        myFixture.renameElement(pkgPsiDir, "renamed_pkg")
+
+        myFixture.checkResult(
+            """
+            {
+              "openapi": "3.0.0",
+              "paths": {
+                "/pets": {
+                  "get": {
+                    "operationId": "renamed_pkg.api.list_pets"
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        )
+    }
+
+    fun testRenameControllerModuleInOperationId() {
+        myFixture.tempDirFixture.createFile("pkg/api.py", "")
+
+        myFixture.configureByText(
+            "openapi.json", """
+            {
+              "openapi": "3.0.0",
+              "paths": {
+                "/pets": {
+                  "get": {
+                    "operationId": "pkg.api.list_pets"
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        )
+
+        myFixture.configureByFile("pkg/api.py")
+        val file = myFixture.file
+        myFixture.renameElement(file, "new_api.py")
+
+        myFixture.checkResult(
+            "openapi.json", """
+            {
+              "openapi": "3.0.0",
+              "paths": {
+                "/pets": {
+                  "get": {
+                    "operationId": "pkg.new_api.list_pets"
+                  }
+                }
+              }
+            }
+        """.trimIndent(), true
+        )
+    }
 }

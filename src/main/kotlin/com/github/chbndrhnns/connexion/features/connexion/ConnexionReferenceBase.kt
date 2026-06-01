@@ -62,11 +62,11 @@ abstract class ConnexionReferenceBase(element: PsiElement) : PsiPolyVariantRefer
         return emptyArray()
     }
 
-    protected open fun operationIdText(): String = element.text.removeSurrounding("\"").removeSurrounding("'")
+    internal open fun operationIdText(): String = element.text.removeSurrounding("\"").removeSurrounding("'")
 
-    protected abstract fun findController(): String?
+    internal abstract fun findController(): String?
 
-    protected fun isQualified(name: String): Boolean = name.contains(".") || name.contains(":")
+    internal fun isQualified(name: String): Boolean = name.contains(".") || name.contains(":")
 
     protected fun normalize(name: String): String = name.replace(":", ".")
 }

@@ -54,6 +54,33 @@ class ConnexionInspectionTest : TestBase() {
         myFixture.checkHighlighting(true, false, true)
     }
 
+    fun testJsonQualifiedOperationIdWithControllerDoesNotFlagRelativeModule() {
+        myFixture.tempDirFixture.createFile(
+            "my_pkg/api.py", """
+            def list_pets():
+                pass
+        """.trimIndent()
+        )
+
+        myFixture.configureByText(
+            "openapi.json", """
+            {
+              "openapi": "3.0.0",
+              "paths": {
+                "/pets": {
+                  "get": {
+                    "x-openapi-router-controller": "my_pkg",
+                    "operationId": "api.list_pets"
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        )
+
+        myFixture.checkHighlighting(true, false, true)
+    }
+
     fun testYamlMissingOperationId() {
         myFixture.enableInspections(ConnexionYamlInspection::class.java)
 
@@ -73,6 +100,30 @@ class ConnexionInspectionTest : TestBase() {
                 get:
                   x-openapi-router-controller: api
                   operationId: <error descr="Connexion: Unresolved operation ID">missing_function</error>
+        """.trimIndent()
+        )
+
+        myFixture.checkHighlighting(true, false, true)
+    }
+
+    fun testYamlQualifiedOperationIdWithControllerDoesNotFlagRelativeModule() {
+        myFixture.enableInspections(ConnexionYamlInspection::class.java)
+
+        myFixture.tempDirFixture.createFile(
+            "my_pkg/api.py", """
+            def list_pets():
+                pass
+        """.trimIndent()
+        )
+
+        myFixture.configureByText(
+            "openapi.yaml", """
+            openapi: 3.0.0
+            paths:
+              /pets:
+                get:
+                  x-openapi-router-controller: my_pkg
+                  operationId: api.list_pets
         """.trimIndent()
         )
 
