@@ -37,6 +37,188 @@ class ConnexionCompletionAndRenameTest : TestBase() {
         assertDoesntContain(strings, "_private")
     }
 
+    fun testJsonQualifiedOperationIdCompletionUsesControllerPrefix() {
+        myFixture.tempDirFixture.createFile(
+            "my_pkg/api.py", """
+            def list_pets(): pass
+            def get_pet(): pass
+            def _private(): pass
+        """.trimIndent()
+        )
+        myFixture.tempDirFixture.createFile(
+            "api.py", """
+            def root_function(): pass
+        """.trimIndent()
+        )
+
+        myFixture.configureByText(
+            "openapi.json", """
+            {
+              "openapi": "3.0.0",
+              "paths": {
+                "/pets": {
+                  "get": {
+                    "x-openapi-router-controller": "my_pkg",
+                    "operationId": "api.<caret>"
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        )
+
+        myFixture.complete(CompletionType.BASIC)
+        val strings = myFixture.lookupElementStrings
+        assertNotNull(strings)
+        assertContainsElements(strings!!, "api.list_pets", "api.get_pet")
+        assertDoesntContain(strings, "_private", "root_function")
+    }
+
+    fun testOperationIdModuleCompletionUsesControllerPrefix() {
+        myFixture.tempDirFixture.createFile("my_pkg/api.py", "")
+        myFixture.tempDirFixture.createFile("my_pkg/sub/nested_api.py", "")
+        myFixture.tempDirFixture.createFile("api.py", "")
+
+        myFixture.configureByText(
+            "openapi.json", """
+            {
+              "openapi": "3.0.0",
+              "paths": {
+                "/pets": {
+                  "get": {
+                    "x-openapi-router-controller": "my_pkg",
+                    "operationId": "<caret>"
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        )
+
+        myFixture.complete(CompletionType.BASIC)
+        val strings = myFixture.lookupElementStrings
+        assertNotNull(strings)
+        assertContainsElements(strings!!, "api", "sub")
+        assertDoesntContain(strings, "nested_api")
+    }
+
+    fun testNestedOperationIdModuleCompletionUsesControllerPrefix() {
+        myFixture.tempDirFixture.createFile("my_pkg/sub/nested_api.py", "")
+        myFixture.tempDirFixture.createFile("my_pkg/sub/other_api.py", "")
+        myFixture.tempDirFixture.createFile("sub/root_api.py", "")
+
+        myFixture.configureByText(
+            "openapi.json", """
+            {
+              "openapi": "3.0.0",
+              "paths": {
+                "/pets": {
+                  "get": {
+                    "x-openapi-router-controller": "my_pkg",
+                    "operationId": "sub.<caret>"
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        )
+
+        myFixture.complete(CompletionType.BASIC)
+        val strings = myFixture.lookupElementStrings
+        assertNotNull(strings)
+        assertContainsElements(strings!!, "sub.nested_api", "sub.other_api")
+        assertDoesntContain(strings, "sub.root_api")
+    }
+
+    fun testYamlQualifiedOperationIdCompletionUsesControllerPrefix() {
+        myFixture.tempDirFixture.createFile(
+            "my_pkg/api.py", """
+            def list_pets(): pass
+            def get_pet(): pass
+            def _private(): pass
+        """.trimIndent()
+        )
+        myFixture.tempDirFixture.createFile(
+            "api.py", """
+            def root_function(): pass
+        """.trimIndent()
+        )
+
+        myFixture.configureByText(
+            "openapi.yaml", """
+            openapi: 3.0.0
+            paths:
+              /pets:
+                get:
+                  x-openapi-router-controller: my_pkg
+                  operationId: api.<caret>
+        """.trimIndent()
+        )
+
+        myFixture.complete(CompletionType.BASIC)
+        val strings = myFixture.lookupElementStrings
+        assertNotNull(strings)
+        assertContainsElements(strings!!, "api.list_pets", "api.get_pet")
+        assertDoesntContain(strings, "_private", "root_function")
+    }
+
+    fun testQualifiedOperationIdCompletionWithoutController() {
+        myFixture.tempDirFixture.createFile(
+            "pkg/api.py", """
+            def list_pets(): pass
+            def get_pet(): pass
+            def _private(): pass
+        """.trimIndent()
+        )
+
+        myFixture.configureByText(
+            "openapi.json", """
+            {
+              "openapi": "3.0.0",
+              "paths": {
+                "/pets": {
+                  "get": {
+                    "operationId": "pkg.api.<caret>"
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        )
+
+        myFixture.complete(CompletionType.BASIC)
+        val strings = myFixture.lookupElementStrings
+        assertNotNull(strings)
+        assertContainsElements(strings!!, "pkg.api.list_pets", "pkg.api.get_pet")
+        assertDoesntContain(strings, "_private")
+    }
+
+    fun testQualifiedOperationIdModuleCompletionWithoutController() {
+        myFixture.tempDirFixture.createFile("pkg/api.py", "")
+        myFixture.tempDirFixture.createFile("pkg/sub/nested_api.py", "")
+
+        myFixture.configureByText(
+            "openapi.json", """
+            {
+              "openapi": "3.0.0",
+              "paths": {
+                "/pets": {
+                  "get": {
+                    "operationId": "pkg.<caret>"
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+        )
+
+        myFixture.complete(CompletionType.BASIC)
+        val strings = myFixture.lookupElementStrings
+        assertNotNull(strings)
+        assertContainsElements(strings!!, "pkg.api", "pkg.sub")
+        assertDoesntContain(strings, "nested_api")
+    }
+
     fun testRenameFunctionUpdatesOperationId() {
         myFixture.configureByText(
             "api.py", """

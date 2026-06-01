@@ -4,6 +4,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementResolveResult
 import com.intellij.psi.PsiPolyVariantReferenceBase
 import com.intellij.psi.ResolveResult
+import com.jetbrains.python.psi.PyFile
 
 abstract class ConnexionReferenceBase(element: PsiElement) : PsiPolyVariantReferenceBase<PsiElement>(element, true) {
 
@@ -12,26 +13,16 @@ abstract class ConnexionReferenceBase(element: PsiElement) : PsiPolyVariantRefer
         val operationId = operationIdText()
         if (operationId.isBlank()) return ResolveResult.EMPTY_ARRAY
 
-        val controller = findController()
+        val candidates = candidateQualifiedNames()
 
-        val candidates = mutableSetOf<String>()
-        if (controller != null) {
-            candidates.add(normalize("$controller.$operationId"))
-        }
-
-        if (isQualified(operationId) || controller == null) {
-            candidates.add(normalize(operationId))
-        }
-
-        if (candidates.isEmpty()) return ResolveResult.EMPTY_ARRAY
-
-        val results = mutableListOf<ResolveResult>()
         for (qName in candidates) {
             val resolved = OpenApiSpecUtil.resolvePythonSymbol(qName, project)
-            results.addAll(resolved.map { PsiElementResolveResult(it) })
+            if (resolved.isNotEmpty()) {
+                return resolved.map { PsiElementResolveResult(it) }.toTypedArray()
+            }
         }
 
-        return results.toTypedArray()
+        return ResolveResult.EMPTY_ARRAY
     }
 
     override fun handleElementRename(newElementName: String): PsiElement {
@@ -47,15 +38,31 @@ abstract class ConnexionReferenceBase(element: PsiElement) : PsiPolyVariantRefer
     }
 
     override fun getVariants(): Array<Any> {
-        val controller = findController() ?: return emptyArray()
+        val controller = findController()
         val project = element.project
+
+        val operationModule = operationIdModulePrefix()
+        val modulePath = when {
+            controller != null && operationModule.isNotEmpty() -> "$controller.$operationModule"
+            controller != null -> controller
+            operationModule.isNotEmpty() -> operationModule
+            else -> return emptyArray()
+        }
+
+        val item = OpenApiSpecUtil.resolvePath(project, normalize(modulePath))
         
-        val item = OpenApiSpecUtil.resolvePath(project, controller)
-        
-        if (item is com.jetbrains.python.psi.PyFile) {
-             return item.topLevelFunctions
+        if (item is com.intellij.psi.PsiDirectory) {
+            val dirs = item.subdirectories.mapNotNull { operationVariantText(operationModule, it.name) }
+            val files = item.files
+                .filter { it is PyFile && it.name != "__init__.py" }
+                .mapNotNull { operationVariantText(operationModule, it.name.removeSuffix(".py")) }
+            return (dirs + files).toTypedArray()
+        }
+
+        if (item is PyFile) {
+            return item.topLevelFunctions
                 .filter { !it.name.orEmpty().startsWith("_") }
-                .mapNotNull { it.name }
+                .mapNotNull { operationVariantText(operationModule, it.name) }
                 .toTypedArray()
         }
         
@@ -68,5 +75,53 @@ abstract class ConnexionReferenceBase(element: PsiElement) : PsiPolyVariantRefer
 
     internal fun isQualified(name: String): Boolean = name.contains(".") || name.contains(":")
 
+    internal fun controllerPathResolves(): Boolean {
+        val controller = findController() ?: return true
+        return OpenApiSpecUtil.resolvePath(element.project, normalize(controller)) != null
+    }
+
+    internal fun resolvesToModulePath(): Boolean {
+        return candidateQualifiedNames().any { OpenApiSpecUtil.resolvePath(element.project, it) != null }
+    }
+
     protected fun normalize(name: String): String = name.replace(":", ".")
+
+    private fun candidateQualifiedNames(): List<String> {
+        val operationId = operationIdText()
+        if (operationId.isBlank()) return emptyList()
+
+        val controller = findController()
+        val candidates = mutableListOf<String>()
+        if (controller != null) {
+            candidates.add(normalize("$controller.$operationId"))
+        }
+
+        if (isQualified(operationId) || controller == null) {
+            val operationQName = normalize(operationId)
+            if (!candidates.contains(operationQName)) {
+                candidates.add(operationQName)
+            }
+        }
+        return candidates
+    }
+
+    private fun operationIdModulePrefix(): String {
+        val operationId = operationIdText()
+            .replace("IntellijIdeaRulezzz", "")
+            .trimEnd()
+
+        return when {
+            operationId.contains(":") -> operationId.substringBeforeLast(":")
+            operationId.contains(".") -> operationId.substringBeforeLast(".")
+            else -> ""
+        }
+    }
+
+    private fun operationVariantText(modulePrefix: String, functionName: String?): String? {
+        if (functionName == null) return null
+        if (modulePrefix.isEmpty()) return functionName
+
+        val separator = if (operationIdText().contains(":")) ":" else "."
+        return "$modulePrefix$separator$functionName"
+    }
 }

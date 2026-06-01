@@ -36,8 +36,16 @@ class ConnexionYamlInspection : LocalInspectionTool() {
 private fun checkReferences(element: PsiElement, holder: ProblemsHolder) {
     for (ref in element.references) {
         if (ref is ConnexionReferenceBase || ref is ConnexionControllerReference) {
-            if (ref is ConnexionReferenceBase && ref.findController() == null && !ref.isQualified(ref.operationIdText())) {
-                continue
+            if (ref is ConnexionReferenceBase) {
+                if (ref.findController() == null && !ref.isQualified(ref.operationIdText())) {
+                    continue
+                }
+                if (operationTargetResolvesLikeGutter(ref.element)) {
+                    continue
+                }
+                if (!ref.controllerPathResolves() || ref.resolvesToModulePath()) {
+                    continue
+                }
             }
             if (ref.resolve() == null) {
                 val description = if (ref is ConnexionReferenceBase)
@@ -54,4 +62,15 @@ private fun checkReferences(element: PsiElement, holder: ProblemsHolder) {
             }
         }
     }
+}
+
+private fun operationTargetResolvesLikeGutter(element: PsiElement): Boolean {
+    if (!OpenApiSpecUtil.isOpenApiFile(element.containingFile)) return false
+
+    val op = OpenApiSpecUtil.extractOperations(element.containingFile)
+        .find { it.operationIdElement == element }
+        ?: return false
+
+    val qName = if (op.controller != null) "${op.controller}.${op.operationId}" else op.operationId
+    return OpenApiSpecUtil.resolvePythonSymbol(qName.replace(":", "."), element.project).isNotEmpty()
 }
