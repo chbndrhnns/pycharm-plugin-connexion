@@ -8,6 +8,18 @@ This project uses **CalVer** (Calendar Versioning) with the format `YYYY.MM.PATC
 
 ## [Unreleased]
 
+## [2026.06.0] - 2026-06-01
+
+
+### 🚀 Features
+
+- Support qualified operationId module references
+- Support split operation id references
+
+### ⚙️ Miscellaneous Tasks
+
+- Use 2026.1 platformVersion
+- Bump version to 2026.06.0
 ## [2026.05.1] - 2026-05-15
 
 
